@@ -75,6 +75,8 @@ Check and report:
 
 - Whether the design-system contract was enforced, evolved, inferred from code,
   or not applicable.
+- Whether the bundled Vercel Geist seed templates were used as the initial
+  baseline, and whether the project had a stronger style authority.
 - New hard-coded colors, arbitrary spacing, arbitrary radii, arbitrary shadows,
   font sizes, or timing values, and why they are justified.
 - Light/dark token parity for the touched tokens and states.

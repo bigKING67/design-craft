@@ -17,8 +17,10 @@ Use this order when evidence conflicts:
 2. Scoped `AGENTS.md`, README, framework conventions, and current repo state.
 3. Project `DESIGN.md` or equivalent style authority.
 4. Local frontend route planner output.
-5. `frontend-craft` references.
-6. Upstream generic visual or Impeccable guidance.
+5. Bundled Vercel Geist seed templates for new or weak developer-product
+   systems.
+6. `frontend-craft` references.
+7. Upstream generic visual or Impeccable guidance.
 
 Do not let generic visual rules override a project's product context, design
 system, data density, report grammar, or runtime truth.
@@ -68,6 +70,10 @@ Read only the references needed for the current task:
 - Design-system contracts, `DESIGN.md` shape, token naming, light/dark parity,
   component state coverage, focus rules, motion policy, and UI copy rules:
   `references/design-system-contract.md`.
+- New or weakly specified developer-product, SaaS, dashboard, admin, infra,
+  docs, or tooling surfaces without a stronger style authority:
+  `templates/vercel-geist/design.md` and
+  `templates/vercel-geist/design.dark.md` as the default initial seed.
 - Impeccable-style command selection, audit/polish/harden/optimize/live:
   `references/impeccable-workflow.md`.
 - Code elegance, component boundaries, state, types, errors:

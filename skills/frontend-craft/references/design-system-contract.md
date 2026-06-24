@@ -8,6 +8,20 @@ This reference is about system discipline, not a specific aesthetic. It should
 help preserve the product's own visual language instead of making every project
 look like one upstream design system.
 
+## Default seed
+
+For a new project or a weakly specified developer-product surface, start from
+the bundled Vercel Geist templates:
+
+- `templates/vercel-geist/design.md`
+- `templates/vercel-geist/design.dark.md`
+
+Use them as the default initial `DESIGN.md` pair for SaaS, dashboard, admin,
+infra, docs, tooling, and other developer-facing product surfaces. If the
+project already has a credible `DESIGN.md`, token system, brand guide, or strong
+runtime style, keep the project authority first and use the Geist templates as a
+comparison baseline for missing token layers, states, focus, motion, and copy.
+
 ## Authority
 
 - Live runtime behavior, scoped project rules, and the project `DESIGN.md`
@@ -16,8 +30,9 @@ look like one upstream design system.
   conflict, verify the current runtime before deciding whether docs are stale.
 - Do not create a parallel style authority. Evolve the existing one when the
   user approves a system change.
-- Do not copy an external system's token values by default. Absorb structure,
-  naming discipline, state semantics, and validation methods.
+- The bundled Geist templates are allowed as the default seed when no stronger
+  project style authority exists. Once a project-specific system exists, prefer
+  adapting it over repeatedly re-applying the seed.
 
 ## Recommended DESIGN.md shape
 

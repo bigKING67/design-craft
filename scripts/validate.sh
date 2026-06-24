@@ -30,6 +30,9 @@ required_files=(
   "skills/frontend-craft/references/report-quality.md"
   "skills/frontend-craft/references/surface-playbooks.md"
   "skills/frontend-craft/references/validation-contract.md"
+  "skills/frontend-craft/templates/vercel-geist/README.md"
+  "skills/frontend-craft/templates/vercel-geist/design.md"
+  "skills/frontend-craft/templates/vercel-geist/design.dark.md"
   "evals/landing-page.md"
   "evals/dashboard-quality.md"
   "evals/datahub-special-report.md"
@@ -58,6 +61,11 @@ fi
 
 if ! grep -q "Apache-2.0" THIRD_PARTY_NOTICES.md; then
   echo "THIRD_PARTY_NOTICES.md is missing Apache-2.0 notice" >&2
+  exit 1
+fi
+
+if ! grep -q "Vercel Geist" THIRD_PARTY_NOTICES.md; then
+  echo "THIRD_PARTY_NOTICES.md is missing Vercel Geist notice" >&2
   exit 1
 fi
 
@@ -123,6 +131,15 @@ for ref in \
   "source-map.md"; do
   if ! grep -q "${ref}" skills/frontend-craft/SKILL.md; then
     echo "SKILL.md does not route reference: ${ref}" >&2
+    exit 1
+  fi
+done
+
+for template in \
+  "templates/vercel-geist/design.md" \
+  "templates/vercel-geist/design.dark.md"; do
+  if ! grep -q "${template}" skills/frontend-craft/SKILL.md; then
+    echo "SKILL.md does not route template: ${template}" >&2
     exit 1
   fi
 done

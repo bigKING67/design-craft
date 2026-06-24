@@ -85,6 +85,7 @@ def build_score(root: Path, run_smoke: bool) -> list[Dimension]:
     design_system = read_text(root / "skills/frontend-craft/references/design-system-contract.md")
     report = read_text(root / "skills/frontend-craft/references/report-quality.md")
     surface = read_text(root / "skills/frontend-craft/references/surface-playbooks.md")
+    source_map = read_text(root / "skills/frontend-craft/references/source-map.md")
 
     detector_smoke = False
     score_smoke = False
@@ -119,6 +120,23 @@ def build_score(root: Path, run_smoke: bool) -> list[Dimension]:
                 ("surface-specific" in surface.lower() or "surface playbooks" in surface.lower(), "surface playbooks present", "Cover surface-specific product jobs."),
                 ("candidate_skills" in skill, "route candidate semantics present", "Separate route candidates from selected skills."),
                 (has(root, "skills/frontend-craft/references/design-system-contract.md"), "design-system contract exists", "Add design-system contract reference."),
+                (
+                    has(root, "skills/frontend-craft/templates/vercel-geist/design.md")
+                    and has(root, "skills/frontend-craft/templates/vercel-geist/design.dark.md"),
+                    "Vercel Geist seed templates vendored",
+                    "Vendor the default Vercel Geist seed templates.",
+                ),
+                (
+                    "templates/vercel-geist/design.md" in skill
+                    and "templates/vercel-geist/design.dark.md" in skill,
+                    "Vercel Geist seed routed from SKILL.md",
+                    "Route the Vercel Geist seed templates from SKILL.md.",
+                ),
+                (
+                    "default seed" in design_system.lower() and "Vercel Geist" in design_system,
+                    "default seed policy documented",
+                    "Document when to use the bundled Vercel Geist seed.",
+                ),
                 ("theme parity" in design_system.lower(), "theme parity guidance present", "Cover light/dark token parity."),
                 ("token layers" in design_system.lower(), "token layer guidance present", "Cover token role separation."),
             ],
@@ -152,6 +170,7 @@ def build_score(root: Path, run_smoke: bool) -> list[Dimension]:
                 (has(root, "upstreams.lock.json"), "upstream lock exists", "Add upstream lock file."),
                 (has(root, "skills/frontend-craft/references/source-map.md"), "source map exists", "Add source-map reference."),
                 (has(root, "scripts/upstream_absorption_report.py"), "upstream absorption report exists", "Add upstream absorption report script."),
+                ("templates/vercel-geist/design.md" in source_map, "Vercel Geist source map present", "Map vendored Vercel templates in source-map."),
                 (("data flow" in read_text(root / "skills/frontend-craft/references/architecture-quality.md").lower()) or ("data-flow" in read_text(root / "skills/frontend-craft/references/architecture-quality.md").lower()), "data-flow guidance present", "Add data-flow guidance."),
                 ("migration" in read_text(root / "skills/frontend-craft/references/architecture-quality.md").lower(), "migration risk covered", "Add migration/compatibility guidance."),
             ],
@@ -177,6 +196,11 @@ def build_score(root: Path, run_smoke: bool) -> list[Dimension]:
                 ("focus-visible" in design_system.lower(), "focus-visible guidance present", "Cover keyboard focus states."),
                 ("component state matrix" in design_system.lower(), "component state matrix present", "Cover shared component states."),
                 (("voice" in design_system.lower()) and ("content" in design_system.lower()), "voice/content guidance present", "Cover action, error, toast, and empty-state copy."),
+                (
+                    "vercel geist seed templates" in validation.lower(),
+                    "Geist seed validation contract present",
+                    "Require delivery to report whether the Geist seed was used.",
+                ),
                 (detector_smoke or not run_smoke, "detector smoke passes", "Fix detector smoke."),
                 (score_smoke or not run_smoke, "score smoke passes", "Fix score script smoke."),
             ],

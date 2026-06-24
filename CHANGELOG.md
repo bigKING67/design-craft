@@ -4,6 +4,8 @@ All notable local changes to `frontend-craft` are recorded here.
 
 ## Unreleased
 
+- Vendored Vercel Geist `design.md` and `design.dark.md` as complete default
+  seed templates for new or weak developer-product design systems.
 - Added a design-system contract reference covering `DESIGN.md` structure,
   token role separation, theme parity, component states, focus-visible, motion,
   and UI copy quality.

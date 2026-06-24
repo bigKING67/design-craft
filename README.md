@@ -12,6 +12,8 @@ browser-validation workflow as the source of truth, then folds in:
   loops.
 - Design-system contract checks for `DESIGN.md`, token roles, light/dark parity,
   component states, focus, motion, and UI copy.
+- Bundled Vercel Geist `design.md` / `design.dark.md` seed templates for new or
+  weakly specified developer-product surfaces.
 - Project quality gates for architecture, performance, code elegance, validation,
   and file/directory structure governance.
 
@@ -55,6 +57,20 @@ Verify the installed copy when needed:
 ```bash
 diff -qr skills/frontend-craft /Users/gaoqian/.agents/skills/frontend-craft
 ```
+
+## Default design seed
+
+For new or weakly specified developer-product, SaaS, dashboard, admin, infra,
+docs, and tooling surfaces, start from the bundled Vercel Geist templates:
+
+```text
+skills/frontend-craft/templates/vercel-geist/design.md
+skills/frontend-craft/templates/vercel-geist/design.dark.md
+```
+
+When a project already has a credible `DESIGN.md`, token system, brand guide, or
+strong runtime visual language, use these files as the comparison baseline
+rather than replacing project authority blindly.
 
 ## Validate
 

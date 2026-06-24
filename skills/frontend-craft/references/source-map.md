@@ -55,17 +55,22 @@ production-readiness flows.
   - `https://vercel.com/design.md`
   - `https://vercel.com/design.dark.md`
 - Review note: inspected as public design-system references on 2026-06-24.
-- Absorbed into:
+- Vendored templates:
+  - `templates/vercel-geist/design.md`
+  - `templates/vercel-geist/design.dark.md`
+- Workflow absorption:
   - `references/design-system-contract.md`
 
-Use these references for the idea of an agent-readable design contract:
-structured tokens plus human-readable rationale, identical light/dark token
-names with theme-specific values, role-based color scales, component state
-coverage, motion limits, focus rules, and UI copy discipline.
+Use the vendored files as the default initial template for new or weakly
+specified developer-product, SaaS, dashboard, admin, infra, docs, and tooling
+surfaces. They provide a strong complete baseline: structured tokens plus
+human-readable rationale, identical light/dark token names with theme-specific
+values, role-based color scales, component state coverage, motion limits, focus
+rules, and UI copy discipline.
 
-Do not copy Vercel's token tables, Geist-specific values, or brand aesthetic as
-defaults. `frontend-craft` absorbs the contract shape and validation method, not
-the visual identity.
+When a project already has a credible `DESIGN.md`, token system, brand guide, or
+strong runtime visual language, keep the project authority first and use the
+Geist templates as a comparison baseline for missing system pieces.
 
 ## Maintenance rule
 

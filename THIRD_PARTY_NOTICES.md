@@ -34,6 +34,16 @@ checks, design-system-aware validation, and production-readiness review.
 The full upstream license is available at:
 `upstreams/impeccable/LICENSE`.
 
+## Vercel Geist design references
+
+- Source: https://vercel.com/design.md
+- Source: https://vercel.com/design.dark.md
+- Local path: `skills/frontend-craft/templates/vercel-geist/`
+- Retrieved: 2026-06-24
+
+The fusion layer vendors these public design-system references as complete seed
+templates for new or weakly specified developer-product design systems.
+
 ## Fusion-layer policy
 
 - Keep upstream directories pristine.
