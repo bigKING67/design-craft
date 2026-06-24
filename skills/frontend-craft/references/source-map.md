@@ -68,6 +68,11 @@ human-readable rationale, identical light/dark token names with theme-specific
 values, role-based color scales, component state coverage, motion limits, focus
 rules, and UI copy discipline.
 
+Use `scripts/frontend_craft_seed_design.sh` to copy the vendored pair into a
+target project as `DESIGN.md` and `DESIGN.dark.md`. The route wrapper reports
+`vercel_geist_seed_applicable` so a new or weak developer-product surface does
+not rely on an implicit style-authority guess.
+
 When a project already has a credible `DESIGN.md`, token system, brand guide, or
 strong runtime visual language, keep the project authority first and use the
 Geist templates as a comparison baseline for missing system pieces.

@@ -19,10 +19,13 @@ has established ones.
 For the `frontend-craft` source repo itself, use:
 
 - `scripts/frontend_craft_route.sh --target <repo> --surface <surface> --intent <intent> --scope <scope>`
-- `scripts/frontend_craft_audit.sh --target <repo> --mode <audit|polish|harden|optimize|structure|architecture>`
+- `scripts/frontend_craft_audit.sh --target <repo> --mode <critique|audit|polish|harden|optimize|structure|architecture>`
 - `scripts/frontend_craft_detect.sh --target <path>` for upstream Impeccable
   findings plus local frontend-craft review signals; use `--json-only` only when
   raw upstream detector compatibility is required.
+- `scripts/frontend_craft_seed_design.sh --target <project-dir>` when a new or
+  weak developer-product surface needs the bundled Vercel Geist `DESIGN.md`
+  pair as its initial design-system authority.
 - `scripts/frontend_craft_score.py --self`
 - `scripts/validate.sh`
 
@@ -101,6 +104,7 @@ When route planner is used, report:
 - `browser_validation_required`
 - `directory_governance_required`
 - `performance_review_required`
+- `vercel_geist_seed_applicable` and reason
 
 Never say a subagent was enabled unless it actually spawned. Never say browser
 validation passed unless a browser tool verified the target.

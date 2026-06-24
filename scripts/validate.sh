@@ -43,6 +43,7 @@ required_files=(
   "scripts/frontend_craft_audit.sh"
   "scripts/frontend_craft_detect.sh"
   "scripts/frontend_craft_route.sh"
+  "scripts/frontend_craft_seed_design.sh"
   "scripts/frontend_craft_score.py"
   "scripts/upstream_absorption_report.py"
 )
@@ -96,6 +97,7 @@ for path in \
   "scripts/frontend_craft_audit.sh" \
   "scripts/frontend_craft_detect.sh" \
   "scripts/frontend_craft_route.sh" \
+  "scripts/frontend_craft_seed_design.sh" \
   "scripts/frontend_craft_score.py" \
   "scripts/upstream_absorption_report.py"; do
   if [[ ! -x "${path}" ]]; then
@@ -107,6 +109,7 @@ done
 bash -n scripts/frontend_craft_audit.sh
 bash -n scripts/frontend_craft_detect.sh
 bash -n scripts/frontend_craft_route.sh
+bash -n scripts/frontend_craft_seed_design.sh
 make -n validate >/dev/null
 make -n release-gate >/dev/null
 python3 -m py_compile scripts/frontend_craft_score.py
@@ -116,6 +119,14 @@ python3 scripts/upstream_absorption_report.py --json >/dev/null
 bash scripts/frontend_craft_detect.sh --target skills/frontend-craft --json-only >/dev/null
 bash scripts/frontend_craft_detect.sh --target skills/frontend-craft --full-json >/dev/null
 bash scripts/frontend_craft_audit.sh --target skills/frontend-craft --mode audit --skip-route --skip-score >/dev/null
+bash scripts/frontend_craft_audit.sh --target skills/frontend-craft --mode critique --skip-route --skip-score >/dev/null
+bash scripts/frontend_craft_seed_design.sh --target skills/frontend-craft --dry-run >/dev/null
+
+tmp_design_seed_dir="$(mktemp -d -t frontend-craft-seed.XXXXXX)"
+trap 'rm -rf "${tmp_design_seed_dir}"' EXIT
+bash scripts/frontend_craft_seed_design.sh --target "${tmp_design_seed_dir}" >/dev/null
+cmp skills/frontend-craft/templates/vercel-geist/design.md "${tmp_design_seed_dir}/DESIGN.md" >/dev/null
+cmp skills/frontend-craft/templates/vercel-geist/design.dark.md "${tmp_design_seed_dir}/DESIGN.dark.md" >/dev/null
 
 for ref in \
   "design-system-contract.md" \

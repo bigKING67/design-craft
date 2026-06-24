@@ -72,6 +72,15 @@ When a project already has a credible `DESIGN.md`, token system, brand guide, or
 strong runtime visual language, use these files as the comparison baseline
 rather than replacing project authority blindly.
 
+Seed a project directly with:
+
+```bash
+bash scripts/frontend_craft_seed_design.sh --target /path/to/project
+```
+
+The helper refuses to overwrite an existing `DESIGN.md` or `DESIGN.dark.md`
+unless `--force` is explicit.
+
 ## Validate
 
 Preferred one-command gate:
@@ -100,12 +109,12 @@ bash scripts/frontend_craft_route.sh \
   --scope page
 ```
 
-Run an audit/polish/harden/optimize/structure/architecture pass:
+Run a critique/audit/polish/harden/optimize/structure/architecture pass:
 
 ```bash
 bash scripts/frontend_craft_audit.sh \
   --target /path/to/project \
-  --mode audit
+  --mode critique
 ```
 
 Run the detector. Default text output includes pinned Impeccable findings plus

@@ -1,4 +1,4 @@
-.PHONY: validate score audit upstream-report install release-gate
+.PHONY: validate score audit critique seed-dry-run upstream-report install release-gate
 
 validate:
 	bash scripts/validate.sh
@@ -9,11 +9,17 @@ score:
 audit:
 	bash scripts/frontend_craft_audit.sh --target . --mode audit --skip-route
 
+critique:
+	bash scripts/frontend_craft_audit.sh --target . --mode critique --skip-route
+
+seed-dry-run:
+	bash scripts/frontend_craft_seed_design.sh --target . --dry-run
+
 upstream-report:
 	python3 scripts/upstream_absorption_report.py
 
 install:
 	bash scripts/install_local.sh
 
-release-gate: validate score audit upstream-report install
+release-gate: validate score audit critique seed-dry-run upstream-report install
 	diff -qr skills/frontend-craft /Users/gaoqian/.agents/skills/frontend-craft

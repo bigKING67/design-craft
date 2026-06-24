@@ -184,6 +184,7 @@ payload = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
 status = int(sys.argv[2])
 
 surface = payload.get("inputs", {}).get("surface") or "auto"
+intent = payload.get("inputs", {}).get("intent") or "auto"
 refs = {"references/validation-contract.md"}
 if surface in {"landing", "promo", "homepage", "marketing", "brand"}:
     refs.add("references/visual-judgment.md")
@@ -197,6 +198,34 @@ if payload.get("directory_governance_required"):
     refs.add("references/project-structure.md")
 if payload.get("frontend_tier") in {"L2", "L3"}:
     refs.add("references/engineering-quality.md")
+
+developer_product_surfaces = {"auto", "dashboard", "app", "admin", "data-app"}
+non_seed_intents = {"brand", "high-motion", "mobile-flow", "reference-only"}
+has_style_authority = bool(payload.get("style_authority_path"))
+existing_project = bool(payload.get("inputs", {}).get("existing_project"))
+vercel_geist_seed_applicable = (
+    not has_style_authority
+    and surface in developer_product_surfaces
+    and intent not in non_seed_intents
+)
+if vercel_geist_seed_applicable:
+    refs.add("templates/vercel-geist/design.md")
+    refs.add("templates/vercel-geist/design.dark.md")
+    if existing_project:
+        vercel_geist_seed_reason = (
+            "existing developer-product surface has no resolved style authority; "
+            "use the Geist seed only if runtime/project style is weak"
+        )
+    else:
+        vercel_geist_seed_reason = (
+            "new developer-product surface has no resolved style authority"
+        )
+elif has_style_authority:
+    vercel_geist_seed_reason = "stronger style authority was resolved"
+elif surface not in developer_product_surfaces:
+    vercel_geist_seed_reason = "surface is not a default developer-product seed case"
+else:
+    vercel_geist_seed_reason = "intent calls for another style authority path"
 
 print("frontend-craft route summary:")
 for key in [
@@ -214,6 +243,8 @@ for key in [
     "performance_review_required",
 ]:
     print(f"- {key}: {payload.get(key)}")
+print(f"- vercel_geist_seed_applicable: {vercel_geist_seed_applicable}")
+print(f"- vercel_geist_seed_reason: {vercel_geist_seed_reason}")
 
 print("- recommended_frontend_craft_references:")
 for ref in sorted(refs):

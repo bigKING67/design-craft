@@ -38,6 +38,19 @@ For nontrivial design work, capture:
 
 Do not over-interview. Ask only if a missing answer changes implementation.
 
+## Critique pass
+
+Use `critique` for a read-only judgment pass before implementation or when a UI
+"feels off" but the fix is not yet obvious. It should produce:
+
+- A one-line design read: surface, audience, vibe, primary job.
+- Product-fit verdict: what decision or action is clearer or still buried.
+- Visual-fit verdict: hierarchy, density, typography, color intent, motion.
+- Generic-output verdict: AI tells, nested-card soup, fake polish, vague copy.
+- Top P0/P1/P2/P3 issues and the recommended next mode.
+
+Do not turn critique into implementation unless the user asks for changes.
+
 ## Audit dimensions
 
 Score mentally or explicitly across:

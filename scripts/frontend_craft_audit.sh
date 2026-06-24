@@ -21,7 +21,7 @@ Usage:
 
 Options:
   --target <path>     Project, folder, or file to audit.
-  --mode <mode>       audit|polish|harden|optimize|structure|architecture.
+  --mode <mode>       critique|audit|polish|harden|optimize|structure|architecture.
   --surface <value>   Route planner surface, default auto.
   --intent <value>    Route planner intent, default auto.
   --scope <value>     Route planner scope, default auto.
@@ -100,7 +100,7 @@ while [[ $# -gt 0 ]]; do
 done
 
 case "${MODE}" in
-  audit|polish|harden|optimize|structure|architecture) ;;
+  critique|audit|polish|harden|optimize|structure|architecture) ;;
   *)
     echo "Unknown mode: ${MODE}" >&2
     usage >&2
@@ -175,6 +175,16 @@ fi
 
 section "mode checklist"
 case "${MODE}" in
+  critique)
+    cat <<'EOF'
+- Start with one design read: surface, audience, vibe, and primary job.
+- Judge product-job fit before decoration: what decision or action becomes clearer?
+- Check hierarchy, density, typography rhythm, color intent, motion restraint, and responsive risk.
+- Call out generic AI tells: nested-card soup, vague labels, fake gradients, ornamental noise, and weak empty states.
+- Classify issues as P0/P1/P2/P3 and recommend the next pass: shape, polish, harden, optimize, or implement.
+- Keep this read-only unless the user asks for changes.
+EOF
+    ;;
   audit)
     cat <<'EOF'
 - Confirm authority order: live runtime > scoped AGENTS/README > DESIGN.md > route > frontend-craft references.

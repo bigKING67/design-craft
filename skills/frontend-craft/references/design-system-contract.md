@@ -22,6 +22,10 @@ project already has a credible `DESIGN.md`, token system, brand guide, or strong
 runtime style, keep the project authority first and use the Geist templates as a
 comparison baseline for missing token layers, states, focus, motion, and copy.
 
+Use `scripts/frontend_craft_seed_design.sh --target <project-dir>` when the
+right move is to create the initial pair directly. The helper refuses to
+overwrite existing `DESIGN.md` or `DESIGN.dark.md` unless `--force` is explicit.
+
 ## Authority
 
 - Live runtime behavior, scoped project rules, and the project `DESIGN.md`
@@ -33,6 +37,9 @@ comparison baseline for missing token layers, states, focus, motion, and copy.
 - The bundled Geist templates are allowed as the default seed when no stronger
   project style authority exists. Once a project-specific system exists, prefer
   adapting it over repeatedly re-applying the seed.
+- If `frontend_craft_route.sh` reports `vercel_geist_seed_applicable: true`,
+  treat that as a prompt to create or compare against the seed, not as
+  permission to ignore live runtime style.
 
 ## Recommended DESIGN.md shape
 

@@ -89,6 +89,8 @@ def build_score(root: Path, run_smoke: bool) -> list[Dimension]:
 
     detector_smoke = False
     score_smoke = False
+    critique_smoke = False
+    seed_smoke = False
     if run_smoke:
         detector_smoke = check_command(
             ["bash", "scripts/frontend_craft_detect.sh", "--target", "skills/frontend-craft", "--json-only"],
@@ -96,6 +98,14 @@ def build_score(root: Path, run_smoke: bool) -> list[Dimension]:
         )
         score_smoke = check_command(
             [sys.executable, "scripts/frontend_craft_score.py", "--target", str(root), "--no-smoke", "--json"],
+            root,
+        )
+        critique_smoke = check_command(
+            ["bash", "scripts/frontend_craft_audit.sh", "--target", "skills/frontend-craft", "--mode", "critique", "--skip-route", "--skip-score"],
+            root,
+        )
+        seed_smoke = check_command(
+            ["bash", "scripts/frontend_craft_seed_design.sh", "--target", "skills/frontend-craft", "--dry-run"],
             root,
         )
 
@@ -136,6 +146,16 @@ def build_score(root: Path, run_smoke: bool) -> list[Dimension]:
                     "default seed" in design_system.lower() and "Vercel Geist" in design_system,
                     "default seed policy documented",
                     "Document when to use the bundled Vercel Geist seed.",
+                ),
+                (
+                    has(root, "scripts/frontend_craft_seed_design.sh"),
+                    "Vercel Geist seed helper exists",
+                    "Add a helper for seeding DESIGN.md from the bundled Geist templates.",
+                ),
+                (
+                    "vercel_geist_seed_applicable" in read_text(root / "scripts/frontend_craft_route.sh"),
+                    "route summary reports Vercel seed applicability",
+                    "Make route summaries say when the Geist seed is applicable.",
                 ),
                 ("theme parity" in design_system.lower(), "theme parity guidance present", "Cover light/dark token parity."),
                 ("token layers" in design_system.lower(), "token layer guidance present", "Cover token role separation."),
@@ -201,8 +221,11 @@ def build_score(root: Path, run_smoke: bool) -> list[Dimension]:
                     "Geist seed validation contract present",
                     "Require delivery to report whether the Geist seed was used.",
                 ),
+                ("critique" in read_text(root / "scripts/frontend_craft_audit.sh"), "critique mode present", "Add a lightweight critique mode."),
                 (detector_smoke or not run_smoke, "detector smoke passes", "Fix detector smoke."),
                 (score_smoke or not run_smoke, "score smoke passes", "Fix score script smoke."),
+                (critique_smoke or not run_smoke, "critique smoke passes", "Fix critique mode smoke."),
+                (seed_smoke or not run_smoke, "seed helper smoke passes", "Fix Vercel Geist seed helper smoke."),
             ],
         ),
     ]

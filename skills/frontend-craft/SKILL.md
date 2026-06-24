@@ -40,6 +40,8 @@ system, data density, report grammar, or runtime truth.
 4. Pick the smallest mode that covers the task:
    - `shape`: UX/design brief before implementation.
    - `craft`: new feature or substantial UI build.
+   - `critique`: read-only design-rightness, product fit, hierarchy, and
+     anti-slop review.
    - `audit`: read-only quality review.
    - `polish`: finished UI refinement.
    - `harden`: production edge cases, error states, i18n, overflow.
@@ -50,7 +52,11 @@ system, data density, report grammar, or runtime truth.
    `/Users/gaoqian/Documents/sixseven/codeproject/frontend-craft/scripts/frontend_craft_route.sh`
    for route summaries,
    `/Users/gaoqian/Documents/sixseven/codeproject/frontend-craft/scripts/frontend_craft_audit.sh`
-   for read-only audit/polish/harden/optimize/structure/architecture passes,
+   for read-only critique/audit/polish/harden/optimize/structure/architecture
+   passes,
+   `/Users/gaoqian/Documents/sixseven/codeproject/frontend-craft/scripts/frontend_craft_seed_design.sh`
+   for seeding `DESIGN.md` and `DESIGN.dark.md` from the bundled Vercel Geist
+   templates,
    `/Users/gaoqian/Documents/sixseven/codeproject/frontend-craft/scripts/frontend_craft_detect.sh`
    for detector signals, and
    `/Users/gaoqian/Documents/sixseven/codeproject/frontend-craft/scripts/frontend_craft_score.py`

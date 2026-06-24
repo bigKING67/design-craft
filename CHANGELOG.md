@@ -4,6 +4,13 @@ All notable local changes to `frontend-craft` are recorded here.
 
 ## Unreleased
 
+- Added `scripts/frontend_craft_seed_design.sh` to seed `DESIGN.md` and
+  `DESIGN.dark.md` from the bundled Vercel Geist templates without overwriting
+  existing project authority unless `--force` is explicit.
+- Added `critique` as a first-class read-only frontend-craft pass for
+  design-rightness, product fit, hierarchy, and anti-slop review.
+- Added route-summary `vercel_geist_seed_applicable` output so weak
+  developer-product surfaces expose the default seed decision explicitly.
 - Vendored Vercel Geist `design.md` and `design.dark.md` as complete default
   seed templates for new or weak developer-product design systems.
 - Added a design-system contract reference covering `DESIGN.md` structure,
