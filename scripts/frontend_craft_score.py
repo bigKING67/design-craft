@@ -12,7 +12,7 @@ from pathlib import Path
 
 
 WEIGHTS = {
-    "Design Taste": 20,
+    "Visual Judgment": 20,
     "Product Fit": 15,
     "Engineering Quality": 15,
     "Performance": 15,
@@ -99,13 +99,13 @@ def build_score(root: Path, run_smoke: bool) -> list[Dimension]:
 
     return [
         score_dimension(
-            "Design Taste",
-            WEIGHTS["Design Taste"],
+            "Visual Judgment",
+            WEIGHTS["Visual Judgment"],
             [
-                (has(root, "skills/frontend-craft/references/design-taste.md"), "design-taste reference exists", "Add design-taste reference."),
-                ("anti-slop" in skill.lower() or "anti-slop" in read_text(root / "skills/frontend-craft/references/design-taste.md").lower(), "anti-slop encoded", "Encode anti-slop visual judgment."),
+                (has(root, "skills/frontend-craft/references/visual-judgment.md"), "visual-judgment reference exists", "Add visual-judgment reference."),
+                ("anti-slop" in skill.lower() or "anti-slop" in read_text(root / "skills/frontend-craft/references/visual-judgment.md").lower(), "anti-slop encoded", "Encode anti-slop visual judgment."),
                 ("design read" in skill.lower(), "design read required", "Require a concise design read for major visual work."),
-                ("generic AI tells" in skill or "generic" in read_text(root / "skills/frontend-craft/references/design-taste.md").lower(), "generic-output guard present", "Add generic-output failure modes."),
+                ("generic AI tells" in skill or "generic" in read_text(root / "skills/frontend-craft/references/visual-judgment.md").lower(), "generic-output guard present", "Add generic-output failure modes."),
             ],
         ),
         score_dimension(
@@ -147,6 +147,7 @@ def build_score(root: Path, run_smoke: bool) -> list[Dimension]:
                 (has(root, "skills/frontend-craft/references/architecture-quality.md"), "architecture reference exists", "Add architecture-quality reference."),
                 (has(root, "upstreams.lock.json"), "upstream lock exists", "Add upstream lock file."),
                 (has(root, "skills/frontend-craft/references/source-map.md"), "source map exists", "Add source-map reference."),
+                (has(root, "scripts/upstream_absorption_report.py"), "upstream absorption report exists", "Add upstream absorption report script."),
                 (("data flow" in read_text(root / "skills/frontend-craft/references/architecture-quality.md").lower()) or ("data-flow" in read_text(root / "skills/frontend-craft/references/architecture-quality.md").lower()), "data-flow guidance present", "Add data-flow guidance."),
                 ("migration" in read_text(root / "skills/frontend-craft/references/architecture-quality.md").lower(), "migration risk covered", "Add migration/compatibility guidance."),
             ],
@@ -167,6 +168,7 @@ def build_score(root: Path, run_smoke: bool) -> list[Dimension]:
             [
                 (has(root, "scripts/validate.sh"), "validation script exists", "Add validation script."),
                 ("browser validation" in validation.lower(), "browser validation contract present", "Document browser validation rules."),
+                (has(root, "evals/golden-tasks/datahub-industry-news.md"), "golden task evidence exists", "Add at least one golden real-task card."),
                 (has(root, "scripts/frontend_craft_score.py"), "score script exists", "Add deterministic score script."),
                 (detector_smoke or not run_smoke, "detector smoke passes", "Fix detector smoke."),
                 (score_smoke or not run_smoke, "score smoke passes", "Fix score script smoke."),
@@ -183,6 +185,11 @@ def maturity_cap(root: Path) -> tuple[int, list[str]]:
     if len(eval_files) < 3:
         cap = min(cap, 86)
         reasons.append("fewer than three forward evals under evals/*.md")
+
+    golden_tasks = sorted((root / "evals/golden-tasks").glob("*.md")) if (root / "evals/golden-tasks").is_dir() else []
+    if not golden_tasks:
+        cap = min(cap, 94)
+        reasons.append("no golden real-task cards under evals/golden-tasks/*.md")
 
     if not has(root, "scripts/frontend_craft_audit.sh"):
         cap = min(cap, 90)

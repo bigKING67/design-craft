@@ -54,7 +54,7 @@ Avoid:
 
 ## DataHub and special-report defaults
 
-- Business truth and project `DESIGN.md` outrank generic taste rules.
+- Business truth and project `DESIGN.md` outrank generic visual rules.
 - Use formal-report density: compact header, readable charts, restrained cards.
 - Net-change labels should be quiet; keep noisy contribution math in tooltip or
   details when it distracts from the main story.

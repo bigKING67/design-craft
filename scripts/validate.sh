@@ -20,7 +20,7 @@ required_files=(
   "skills/frontend-craft/SKILL.md"
   "skills/frontend-craft/agents/openai.yaml"
   "skills/frontend-craft/references/source-map.md"
-  "skills/frontend-craft/references/design-taste.md"
+  "skills/frontend-craft/references/visual-judgment.md"
   "skills/frontend-craft/references/impeccable-workflow.md"
   "skills/frontend-craft/references/engineering-quality.md"
   "skills/frontend-craft/references/performance-quality.md"
@@ -35,10 +35,12 @@ required_files=(
   "evals/frontend-architecture.md"
   "evals/forward-test-log.md"
   "evals/live-task-log.md"
+  "evals/golden-tasks/datahub-industry-news.md"
   "scripts/frontend_craft_audit.sh"
   "scripts/frontend_craft_detect.sh"
   "scripts/frontend_craft_route.sh"
   "scripts/frontend_craft_score.py"
+  "scripts/upstream_absorption_report.py"
 )
 
 for path in "${required_files[@]}"; do
@@ -85,7 +87,8 @@ for path in \
   "scripts/frontend_craft_audit.sh" \
   "scripts/frontend_craft_detect.sh" \
   "scripts/frontend_craft_route.sh" \
-  "scripts/frontend_craft_score.py"; do
+  "scripts/frontend_craft_score.py" \
+  "scripts/upstream_absorption_report.py"; do
   if [[ ! -x "${path}" ]]; then
     echo "Script is not executable: ${path}" >&2
     exit 1
@@ -98,12 +101,15 @@ bash -n scripts/frontend_craft_route.sh
 make -n validate >/dev/null
 make -n release-gate >/dev/null
 python3 -m py_compile scripts/frontend_craft_score.py
+python3 -m py_compile scripts/upstream_absorption_report.py
 python3 scripts/frontend_craft_score.py --self --no-smoke --json >/dev/null
+python3 scripts/upstream_absorption_report.py --json >/dev/null
 bash scripts/frontend_craft_detect.sh --target skills/frontend-craft --json-only >/dev/null
+bash scripts/frontend_craft_detect.sh --target skills/frontend-craft --full-json >/dev/null
 bash scripts/frontend_craft_audit.sh --target skills/frontend-craft --mode audit --skip-route --skip-score >/dev/null
 
 for ref in \
-  "design-taste.md" \
+  "visual-judgment.md" \
   "impeccable-workflow.md" \
   "engineering-quality.md" \
   "performance-quality.md" \

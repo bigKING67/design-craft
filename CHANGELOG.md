@@ -2,6 +2,18 @@
 
 All notable local changes to `frontend-craft` are recorded here.
 
+## Unreleased
+
+- Renamed the internal visual reference from `design-taste.md` to
+  `visual-judgment.md` to make `frontend-craft` the active workflow and keep
+  upstream taste-skill only as provenance/manual absorption input.
+- Added the first golden real-task card for DataHub `marketing/industry-news`
+  route behavior and validation expectations.
+- Added an upstream absorption report command to classify pinned submodule drift
+  before manually merging upstream ideas into the fusion layer.
+- Extended the detector wrapper with local frontend-craft review signals while
+  preserving raw upstream JSON compatibility.
+
 ## 0.1.0 - 2026-06-24
 
 - Initialized `frontend-craft` as a personal Codex frontend workflow skill.

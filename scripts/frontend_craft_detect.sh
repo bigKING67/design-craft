@@ -5,14 +5,19 @@ ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 DETECTOR="${ROOT_DIR}/upstreams/impeccable/skill/scripts/detect.mjs"
 TARGET="."
 JSON_ONLY=0
+FULL_JSON=0
 
 usage() {
   cat <<'EOF'
 Usage:
-  scripts/frontend_craft_detect.sh [--target <path>] [--json-only]
+  scripts/frontend_craft_detect.sh [--target <path>] [--json-only] [--full-json]
   scripts/frontend_craft_detect.sh <path>
 
-Runs the pinned Impeccable detector as a frontend-craft signal.
+Runs the pinned Impeccable detector plus lightweight frontend-craft signals.
+
+Options:
+  --json-only   Emit the raw upstream Impeccable detector JSON for compatibility.
+  --full-json   Emit combined upstream and frontend-craft signal JSON.
 EOF
 }
 
@@ -32,6 +37,10 @@ while [[ $# -gt 0 ]]; do
       ;;
     --json-only)
       JSON_ONLY=1
+      shift
+      ;;
+    --full-json)
+      FULL_JSON=1
       shift
       ;;
     -h|--help)
@@ -83,8 +92,9 @@ if [[ "${JSON_ONLY}" == "1" ]]; then
   exit 0
 fi
 
-python3 - "${TMP_JSON}" "${TARGET}" "${DETECTOR_TARGET}" "${DETECTOR_NOTE}" <<'PY'
+python3 - "${TMP_JSON}" "${TARGET}" "${DETECTOR_TARGET}" "${DETECTOR_NOTE}" "${FULL_JSON}" <<'PY'
 import json
+import re
 import sys
 from collections import Counter
 from pathlib import Path
@@ -93,6 +103,22 @@ path = Path(sys.argv[1])
 target = sys.argv[2]
 detector_target = sys.argv[3]
 detector_note = sys.argv[4]
+full_json = sys.argv[5] == "1"
+
+target_path = Path(target)
+scan_root = target_path if target_path.is_dir() else target_path.parent
+skip_dirs = {
+    ".git",
+    ".next",
+    ".turbo",
+    "build",
+    "coverage",
+    "dist",
+    "node_modules",
+    "out",
+    "upstreams",
+}
+text_suffixes = {".css", ".js", ".jsx", ".md", ".mdx", ".scss", ".ts", ".tsx"}
 
 try:
     payload = json.loads(path.read_text(encoding="utf-8"))
@@ -107,12 +133,207 @@ elif isinstance(payload, dict):
 else:
     items = []
 
+def is_frontend_craft_self_scan(root: Path) -> bool:
+    if (root / "skills/frontend-craft/SKILL.md").is_file():
+        return True
+    skill_file = root / "SKILL.md"
+    if skill_file.is_file():
+        return "name: frontend-craft" in skill_file.read_text(encoding="utf-8", errors="ignore")
+    return False
+
+
+def iter_text_files(root: Path):
+    if root.is_file():
+        if root.suffix.lower() in text_suffixes:
+            yield root
+        return
+    for candidate in root.rglob("*"):
+        if not candidate.is_file():
+            continue
+        rel_parts = candidate.relative_to(root).parts
+        if any(part in skip_dirs for part in rel_parts):
+            continue
+        if candidate.suffix.lower() in text_suffixes:
+            yield candidate
+
+
+def read_file(candidate: Path) -> str:
+    try:
+        if candidate.stat().st_size > 300_000:
+            return ""
+        return candidate.read_text(encoding="utf-8", errors="ignore")
+    except Exception:
+        return ""
+
+
+def rel(candidate: Path) -> str:
+    try:
+        return str(candidate.relative_to(scan_root))
+    except ValueError:
+        return str(candidate)
+
+
+def finding(rule: str, severity: str, candidate: Path, message: str) -> dict:
+    return {
+        "source": "frontend-craft",
+        "severity": severity,
+        "rule": rule,
+        "path": rel(candidate),
+        "message": message,
+    }
+
+
+def find_design_authority(root: Path) -> Path | None:
+    start = root if root.is_dir() else root.parent
+    for current in [start, *start.parents]:
+        design = current / "DESIGN.md"
+        if design.is_file():
+            return design
+    return None
+
+
+def scan_local_signals(root: Path) -> tuple[list[dict], list[str]]:
+    notes: list[str] = []
+    signals: list[dict] = []
+    if is_frontend_craft_self_scan(root):
+        notes.append("frontend-craft self scan: local signal rules skipped to avoid self-referential findings")
+        return signals, notes
+
+    files = list(iter_text_files(root))
+    joined_names = " ".join(str(file).lower() for file in files)
+    looks_frontend = any(
+        marker in joined_names
+        for marker in (".tsx", ".jsx", "/src/", "/app/", "package.json", ".css", ".scss")
+    ) or (root / "package.json").is_file()
+
+    if looks_frontend and find_design_authority(root) is None:
+        signals.append(
+            {
+                "source": "frontend-craft",
+                "severity": "info",
+                "rule": "missing-design-authority",
+                "path": ".",
+                "message": "No DESIGN.md was found from target upward; route output should document the effective style authority or explain why none exists.",
+            }
+        )
+
+    for candidate in files:
+        text = read_file(candidate)
+        if not text:
+            continue
+        lower = text.lower()
+
+        browser_claim = re.search(r"browser validation[:\s-]*(passed|pass|ok|complete|completed|verified)", lower)
+        browser_evidence = (
+            "browser validation target" in lower
+            or "tmwd_browser" in lower
+            or "screenshot" in lower
+            or re.search(r"https?://|localhost|127\.0\.0\.1", lower)
+        )
+        if browser_claim and not browser_evidence:
+            signals.append(
+                finding(
+                    "browser-validation-claim-without-target",
+                    "warn",
+                    candidate,
+                    "Browser validation appears claimed without a target URL, browser tool, or screenshot evidence.",
+                )
+            )
+
+        generic_card_count = len(re.findall(r"\b(card|cards|grid|bento|gradient|glassmorphism|beautiful|sleek)\b", lower))
+        data_terms = len(re.findall(r"\b(data|table|chart|metric|report|dashboard|kpi|query)\b", lower))
+        if generic_card_count >= 14 and data_terms <= 3:
+            signals.append(
+                finding(
+                    "generic-card-grid-overuse",
+                    "info",
+                    candidate,
+                    "High generic card/grid language density; verify hierarchy is product-specific rather than templated.",
+                )
+            )
+
+        if "dashboard" in lower:
+            decorative_terms = len(re.findall(r"\b(gradient|glow|blur|shadow|glass|animated|decoration|hero)\b", lower))
+            analytical_terms = len(re.findall(r"\b(filter|table|chart|axis|metric|kpi|empty|loading|error|export)\b", lower))
+            if decorative_terms >= 8 and analytical_terms <= 4:
+                signals.append(
+                    finding(
+                        "dashboard-decoration-over-content",
+                        "info",
+                        candidate,
+                        "Dashboard language is decoration-heavy; confirm analytical affordances and states are not secondary.",
+                    )
+                )
+
+        if "report" in lower:
+            table_terms = len(re.findall(r"\b(table|row|column|tbody|thead|tr|td)\b", lower))
+            chart_terms = len(re.findall(r"\b(chart|figure|visual|summary|insight|takeaway)\b", lower))
+            if table_terms >= 12 and chart_terms <= 3:
+                signals.append(
+                    finding(
+                        "report-table-wall-risk",
+                        "info",
+                        candidate,
+                        "Report content appears table-heavy; verify business summary and chart-first hierarchy.",
+                    )
+                )
+
+        performance_claim = re.search(r"\b(performant|optimized|high performance|性能强|性能优化)\b", lower) or re.search(
+            r"\b(fast|faster)\b.{0,48}\b(load|render|page|interaction|query|chart|dashboard)\b|\b(load|render|page|interaction|query|chart|dashboard)\b.{0,48}\b(fast|faster)\b",
+            lower,
+        )
+        measurement_terms = re.search(r"\b(measured|measurement|baseline|lighthouse|web vitals|fps|bundle|profiled|trace)\b", lower)
+        if performance_claim and not measurement_terms:
+            signals.append(
+                finding(
+                    "performance-claim-without-measurement",
+                    "info",
+                    candidate,
+                    "Performance is claimed without measurement terms; add baseline/after evidence when this is delivery text.",
+                )
+            )
+
+        if any(part in {"shared", "common", "utils", "helpers"} for part in candidate.parts):
+            signals.append(
+                finding(
+                    "shared-abstraction-review",
+                    "info",
+                    candidate,
+                    "Shared/helper path detected; confirm at least two real call sites with the same intent before abstraction.",
+                )
+            )
+
+    return signals, notes
+
+
+local_signals, local_notes = scan_local_signals(target_path)
+
+if full_json:
+    print(
+        json.dumps(
+            {
+                "target": target,
+                "detector_target": detector_target,
+                "detector_note": detector_note,
+                "upstream_findings": items,
+                "frontend_craft_signal_findings": local_signals,
+                "frontend_craft_notes": local_notes,
+            },
+            ensure_ascii=False,
+            indent=2,
+        )
+    )
+    raise SystemExit(0)
+
 print(f"frontend-craft detector target: {target}")
 if detector_target != target:
     print(f"detector_scan_target: {detector_target}")
 if detector_note:
     print(f"detector_note: {detector_note}")
-print(f"findings: {len(items)}")
+print(f"upstream_detector_findings: {len(items)}")
+print(f"frontend_craft_signal_findings: {len(local_signals)}")
+for note in local_notes:
+    print(f"frontend_craft_note: {note}")
 
 if items:
     severities = Counter(str(item.get("severity", "unknown")) for item in items if isinstance(item, dict))
@@ -120,9 +341,18 @@ if items:
         print("severity_counts: " + ", ".join(f"{key}={value}" for key, value in sorted(severities.items())))
     print("Treat findings as signals; project DESIGN.md and runtime evidence remain higher authority.")
 else:
-    print("No detector findings.")
+    print("No upstream detector findings.")
 
-print("\nraw_json:")
+if local_signals:
+    local_severities = Counter(str(item.get("severity", "unknown")) for item in local_signals)
+    print("frontend_craft_signal_severity_counts: " + ", ".join(f"{key}={value}" for key, value in sorted(local_severities.items())))
+    print("Frontend-craft signals are review prompts, not automatic failures.")
+else:
+    print("No frontend-craft local signal findings.")
+
+print("\nupstream_raw_json:")
 PY
 
-cat "${TMP_JSON}"
+if [[ "${FULL_JSON}" != "1" ]]; then
+  cat "${TMP_JSON}"
+fi

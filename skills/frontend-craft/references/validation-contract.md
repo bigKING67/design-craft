@@ -20,7 +20,9 @@ For the `frontend-craft` source repo itself, use:
 
 - `scripts/frontend_craft_route.sh --target <repo> --surface <surface> --intent <intent> --scope <scope>`
 - `scripts/frontend_craft_audit.sh --target <repo> --mode <audit|polish|harden|optimize|structure|architecture>`
-- `scripts/frontend_craft_detect.sh --target <path>`
+- `scripts/frontend_craft_detect.sh --target <path>` for upstream Impeccable
+  findings plus local frontend-craft review signals; use `--json-only` only when
+  raw upstream detector compatibility is required.
 - `scripts/frontend_craft_score.py --self`
 - `scripts/validate.sh`
 

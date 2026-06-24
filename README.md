@@ -6,7 +6,8 @@ Personal frontend craft workflow for Codex.
 machine. It keeps the existing Codex route planner, project `DESIGN.md`, and
 browser-validation workflow as the source of truth, then folds in:
 
-- taste-skill style anti-slop judgment, brief inference, and aesthetic pressure.
+- anti-slop visual judgment, brief inference, and aesthetic pressure absorbed
+  into `frontend-craft`.
 - Impeccable-style audit, polish, harden, optimize, detector, and live-iteration
   loops.
 - Project quality gates for architecture, performance, code elegance, validation,
@@ -14,15 +15,16 @@ browser-validation workflow as the source of truth, then folds in:
 
 The skill is intentionally personal and local-first. For DataHub, dashboards,
 special reports, and similar business surfaces, scoped project rules, live
-runtime behavior, and project `DESIGN.md` always outrank generic taste rules.
+runtime behavior, and project `DESIGN.md` always outrank generic visual rules.
 
 ## Layout
 
 ```text
 frontend-craft/
 ├── skills/frontend-craft/        # Installable Codex skill
-├── scripts/                      # Deterministic route/audit/detect/score tools
+├── scripts/                      # Deterministic route/audit/detect/score/review tools
 ├── evals/                        # Forward-test and live-task evidence
+│   └── golden-tasks/             # Reproducible real-task evidence cards
 ├── upstreams/                    # Pristine upstream submodules; do not edit
 ├── docs/                         # Repo maintenance and release process
 ├── THIRD_PARTY_NOTICES.md        # Attribution and licenses
@@ -88,10 +90,18 @@ bash scripts/frontend_craft_audit.sh \
   --mode audit
 ```
 
-Run the pinned detector directly:
+Run the detector. Default text output includes pinned Impeccable findings plus
+local frontend-craft review signals; `--json-only` remains raw upstream JSON for
+compatibility, and `--full-json` emits the combined payload.
 
 ```bash
 bash scripts/frontend_craft_detect.sh --target /path/to/project
+```
+
+Review pinned upstream drift and absorption candidates without fetching:
+
+```bash
+make upstream-report
 ```
 
 Score this workflow itself:
@@ -111,10 +121,20 @@ Do not edit upstream files directly. Update the fusion layer under
 `skills/frontend-craft/`, update attribution when needed, and record upstream
 commit changes in `upstreams.lock.json`.
 
+Runtime routing should use `frontend-craft` as the baseline. The upstream
+`taste-skill` checkout is retained only for provenance and deliberate manual
+absorption, not as an automatic updater or legacy route source.
+
 Refresh upstreams with:
 
 ```bash
 bash scripts/sync_upstreams.sh
+```
+
+Before absorbing upstream changes, run:
+
+```bash
+python3 scripts/upstream_absorption_report.py
 ```
 
 ## Local release gate

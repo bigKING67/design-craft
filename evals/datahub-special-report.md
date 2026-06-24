@@ -27,7 +27,8 @@ caveats, and supporting tables. Make it feel formal, readable, and evidence-led.
 
 - Uses formal report grammar: compact header, executive summary, section
   hierarchy, chart-first evidence, quiet navigation, footnote-sized caveats.
-- Keeps DataHub/project `DESIGN.md` and live data truth above generic taste.
+- Keeps DataHub/project `DESIGN.md` and live data truth above generic visual
+  guidance.
 - Avoids giant tables as the primary narrative.
 - Handles net-change labels, >100% share/contribution, and caveats quietly
   unless they are the main point.

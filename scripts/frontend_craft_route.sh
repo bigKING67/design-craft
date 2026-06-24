@@ -186,7 +186,7 @@ status = int(sys.argv[2])
 surface = payload.get("inputs", {}).get("surface") or "auto"
 refs = {"references/validation-contract.md"}
 if surface in {"landing", "promo", "homepage", "marketing", "brand"}:
-    refs.add("references/design-taste.md")
+    refs.add("references/visual-judgment.md")
 if surface in {"dashboard", "admin", "app", "data-app"}:
     refs.add("references/surface-playbooks.md")
 if surface in {"dashboard", "data-app"}:

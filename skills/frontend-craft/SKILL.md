@@ -1,6 +1,6 @@
 ---
 name: frontend-craft
-description: Personal frontend craft and quality workflow for Codex. Use when working on frontend pages, components, dashboards, admin apps, landing pages, reports, data visualizations, UX polish, visual redesigns, responsive behavior, accessibility, UI performance, frontend architecture, code elegance, project quality, or file/directory structure governance. Fuses the local route-plan/DESIGN.md/browser-validation workflow with taste-skill anti-slop judgment and Impeccable-style audit, polish, harden, optimize, detector, and live iteration practices.
+description: Personal frontend craft and quality workflow for Codex. Use when working on frontend pages, components, dashboards, admin apps, landing pages, reports, data visualizations, UX polish, visual redesigns, responsive behavior, accessibility, UI performance, frontend architecture, code elegance, project quality, or file/directory structure governance. Fuses the local route-plan/DESIGN.md/browser-validation workflow with anti-slop visual judgment and Impeccable-style audit, polish, harden, optimize, detector, and live iteration practices.
 ---
 
 # Frontend Craft
@@ -18,7 +18,7 @@ Use this order when evidence conflicts:
 3. Project `DESIGN.md` or equivalent style authority.
 4. Local frontend route planner output.
 5. `frontend-craft` references.
-6. Upstream generic taste or Impeccable guidance.
+6. Upstream generic visual or Impeccable guidance.
 
 Do not let generic visual rules override a project's product context, design
 system, data density, report grammar, or runtime truth.
@@ -52,7 +52,9 @@ system, data density, report grammar, or runtime truth.
    `/Users/gaoqian/Documents/sixseven/codeproject/frontend-craft/scripts/frontend_craft_detect.sh`
    for detector signals, and
    `/Users/gaoqian/Documents/sixseven/codeproject/frontend-craft/scripts/frontend_craft_score.py`
-   for self-audits.
+   for self-audits. When maintaining this skill repo, use
+   `/Users/gaoqian/Documents/sixseven/codeproject/frontend-craft/scripts/upstream_absorption_report.py`
+   before absorbing new upstream commits.
 6. Implement minimally, verify with the most relevant commands, and use a real
    browser for visible UI, interaction, responsive, report, dashboard, download,
    upload, or login-state changes.
@@ -62,7 +64,7 @@ system, data density, report grammar, or runtime truth.
 Read only the references needed for the current task:
 
 - Visual redesign, landing pages, brand pages, portfolios:
-  `references/design-taste.md`.
+  `references/visual-judgment.md`.
 - Impeccable-style command selection, audit/polish/harden/optimize/live:
   `references/impeccable-workflow.md`.
 - Code elegance, component boundaries, state, types, errors:
@@ -84,7 +86,7 @@ Read only the references needed for the current task:
   `references/source-map.md`.
 
 For broad "make this frontend excellent" tasks, read:
-`design-taste.md`, `impeccable-workflow.md`,
+`visual-judgment.md`, `impeccable-workflow.md`,
 `engineering-quality.md`, `performance-quality.md`,
 `project-structure.md`, `report-quality.md` when reports/dashboards are in
 scope, and `validation-contract.md`.

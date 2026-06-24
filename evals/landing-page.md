@@ -18,7 +18,7 @@ typographic hierarchy, work on mobile, and preserve the project's existing
 
 ## Expected frontend-craft references
 
-- `references/design-taste.md`
+- `references/visual-judgment.md`
 - `references/impeccable-workflow.md`
 - `references/engineering-quality.md`
 - `references/performance-quality.md`

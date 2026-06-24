@@ -1,0 +1,103 @@
+# Golden task: DataHub marketing industry-news
+
+## Purpose
+
+Use this card to verify that `frontend-craft` routes a real DataHub page through
+the local Codex frontend workflow while keeping DataHub product context,
+`DESIGN.md`, and live runtime behavior above generic visual rules.
+
+## Target
+
+```text
+/Users/gaoqian/Documents/sixseven/workman/groland/datahub/src/app/marketing/industry-news
+```
+
+## Surface contract
+
+- Surface: `dashboard`
+- Intent: `visual-refine`
+- Scope: `page`
+- Expected tier: `L2`
+- Expected style authority:
+  `/Users/gaoqian/Documents/sixseven/workman/groland/datahub/DESIGN.md`
+- Expected authority mode: `enforce`
+- Browser validation: required for any visible UI change.
+- Directory governance: required.
+- Performance review: required.
+
+## Route command
+
+```bash
+bash scripts/frontend_craft_route.sh \
+  --target /Users/gaoqian/Documents/sixseven/workman/groland/datahub/src/app/marketing/industry-news \
+  --surface dashboard \
+  --intent visual-refine \
+  --scope page
+```
+
+## Expected route evidence
+
+- `frontend_tier`: `L2`
+- `candidate_skills`: includes `frontend-craft`
+- `preflight_status`: `pass`
+- `preflight_code`: `OK`
+- `style_authority_path`:
+  `/Users/gaoqian/Documents/sixseven/workman/groland/datahub/DESIGN.md`
+- `browser_validation_required`: `true`
+- `directory_governance_required`: `true`
+- `performance_review_required`: `true`
+
+## Detector command
+
+```bash
+bash scripts/frontend_craft_detect.sh \
+  --target /Users/gaoqian/Documents/sixseven/workman/groland/datahub/src/app/marketing/industry-news \
+  --full-json
+```
+
+Expected current smoke result: upstream findings `0`; local frontend-craft signal
+findings `0`.
+
+## Selected frontend-craft references
+
+For a real implementation pass, read at minimum:
+
+- `references/validation-contract.md`
+- `references/surface-playbooks.md`
+- `references/report-quality.md`
+- `references/performance-quality.md`
+- `references/project-structure.md`
+- `references/engineering-quality.md`
+
+Do not read `references/visual-judgment.md` as a license to override DataHub's
+dashboard grammar. Use it only for anti-slop checks after the DataHub
+`DESIGN.md` and runtime page behavior are understood.
+
+## Validation expectation
+
+If this task changes UI, a complete run should include:
+
+1. Route command above.
+2. Relevant DataHub type/lint/build/test command for the touched surface.
+3. Real browser validation on the target route.
+4. DOM or screenshot evidence for:
+   - no unwanted horizontal overflow;
+   - readable dashboard/report density;
+   - project typography/color/component contracts preserved;
+   - loading, empty, long-content, and responsive states when impacted.
+
+## Current evidence status
+
+As of 2026-06-24, this golden card is backed by route smoke plus detector smoke
+against the target path. Browser validation is intentionally not claimed here.
+
+## Regression signals
+
+Treat these as regressions:
+
+- The route no longer discovers DataHub `DESIGN.md`.
+- `frontend_tier` drops below `L2` for this page-level visual-refine task.
+- `browser_validation_required` becomes false.
+- Generic visual guidance overrides DataHub dashboard/report contracts.
+- Candidate skills are reported as selected skills without the references being
+  read and applied.

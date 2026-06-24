@@ -1,7 +1,12 @@
-# Design taste fusion
+# Visual judgment
 
 Use this when the task is visual, brand-facing, report-like, or asks for a UI
 that should not look generated.
+
+This is `frontend-craft`'s fused visual judgment layer. It preserves the useful
+anti-slop and brief-inference ideas absorbed from upstream taste guidance, but
+it is not a legacy skill entrypoint and must stay subordinate to live runtime
+truth, scoped project rules, and project `DESIGN.md`.
 
 ## Design read first
 

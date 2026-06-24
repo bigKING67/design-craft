@@ -52,10 +52,13 @@ production-readiness flows.
 When updating upstreams:
 
 1. Run `scripts/sync_upstreams.sh`.
-2. Inspect upstream changelogs and key skill/command files.
-3. Update this source map only after deciding what the fusion layer should
+2. Run `scripts/upstream_absorption_report.py` to classify changed files as
+   `candidate_absorb`, `provenance_only`, or `manual_review` without fetching or
+   editing submodules.
+3. Inspect upstream changelogs and key skill/command files.
+4. Update this source map only after deciding what the fusion layer should
    absorb.
-4. Never overwrite `skills/frontend-craft` automatically from upstream.
+5. Never overwrite `skills/frontend-craft` automatically from upstream.
 
 ## Attribution rule
 

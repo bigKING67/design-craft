@@ -9,7 +9,7 @@ ran and what remains unverified.
 - Target:
   `/Users/gaoqian/Documents/sixseven/workman/groland/datahub/src/app/marketing/industry-news`
 - Purpose: verify that the workflow can route a real DataHub frontend surface
-  while preserving DataHub `DESIGN.md` authority over generic taste guidance.
+  while preserving DataHub `DESIGN.md` authority over generic visual guidance.
 - Expected authority:
   `/Users/gaoqian/Documents/sixseven/workman/groland/datahub/DESIGN.md`
 - Route command:
@@ -33,4 +33,13 @@ ran and what remains unverified.
   - `browser_validation_required`: `true`
   - `directory_governance_required`: `true`
   - `performance_review_required`: `true`
+- Detector smoke after local signal expansion:
+
+  ```bash
+  bash scripts/frontend_craft_detect.sh \
+    --target /Users/gaoqian/Documents/sixseven/workman/groland/datahub/src/app/marketing/industry-news \
+    --full-json
+  ```
+
+  Result: upstream findings `0`; frontend-craft local signal findings `0`.
 - Browser validation: not claimed by this log entry.
