@@ -4,6 +4,12 @@ All notable local changes to `frontend-craft` are recorded here.
 
 ## Unreleased
 
+- Added `scripts/frontend_craft_pass.sh` as the preferred neutral wrapper for
+  critique/audit/polish/harden/optimize/structure/architecture passes while
+  keeping `frontend_craft_audit.sh` as a compatibility entrypoint.
+- Added `references/intent-map.md` to map subjective requests such as "太 AI",
+  "颜色平", "排版不对", "文案弱", "移动端差", and "卡顿" to the smallest useful
+  frontend-craft pass.
 - Added `scripts/frontend_craft_seed_design.sh` to seed `DESIGN.md` and
   `DESIGN.dark.md` from the bundled Vercel Geist templates without overwriting
   existing project authority unless `--force` is explicit.

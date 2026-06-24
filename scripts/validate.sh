@@ -23,6 +23,7 @@ required_files=(
   "skills/frontend-craft/references/design-system-contract.md"
   "skills/frontend-craft/references/visual-judgment.md"
   "skills/frontend-craft/references/impeccable-workflow.md"
+  "skills/frontend-craft/references/intent-map.md"
   "skills/frontend-craft/references/engineering-quality.md"
   "skills/frontend-craft/references/performance-quality.md"
   "skills/frontend-craft/references/architecture-quality.md"
@@ -42,6 +43,7 @@ required_files=(
   "evals/golden-tasks/datahub-industry-news.md"
   "scripts/frontend_craft_audit.sh"
   "scripts/frontend_craft_detect.sh"
+  "scripts/frontend_craft_pass.sh"
   "scripts/frontend_craft_route.sh"
   "scripts/frontend_craft_seed_design.sh"
   "scripts/frontend_craft_score.py"
@@ -96,6 +98,7 @@ for path in \
   "scripts/validate.sh" \
   "scripts/frontend_craft_audit.sh" \
   "scripts/frontend_craft_detect.sh" \
+  "scripts/frontend_craft_pass.sh" \
   "scripts/frontend_craft_route.sh" \
   "scripts/frontend_craft_seed_design.sh" \
   "scripts/frontend_craft_score.py" \
@@ -108,6 +111,7 @@ done
 
 bash -n scripts/frontend_craft_audit.sh
 bash -n scripts/frontend_craft_detect.sh
+bash -n scripts/frontend_craft_pass.sh
 bash -n scripts/frontend_craft_route.sh
 bash -n scripts/frontend_craft_seed_design.sh
 make -n validate >/dev/null
@@ -118,6 +122,7 @@ python3 scripts/frontend_craft_score.py --self --no-smoke --json >/dev/null
 python3 scripts/upstream_absorption_report.py --json >/dev/null
 bash scripts/frontend_craft_detect.sh --target skills/frontend-craft --json-only >/dev/null
 bash scripts/frontend_craft_detect.sh --target skills/frontend-craft --full-json >/dev/null
+bash scripts/frontend_craft_pass.sh --target skills/frontend-craft --mode audit --skip-route --skip-score >/dev/null
 bash scripts/frontend_craft_audit.sh --target skills/frontend-craft --mode audit --skip-route --skip-score >/dev/null
 bash scripts/frontend_craft_audit.sh --target skills/frontend-craft --mode critique --skip-route --skip-score >/dev/null
 bash scripts/frontend_craft_seed_design.sh --target skills/frontend-craft --dry-run >/dev/null
@@ -132,6 +137,7 @@ for ref in \
   "design-system-contract.md" \
   "visual-judgment.md" \
   "impeccable-workflow.md" \
+  "intent-map.md" \
   "engineering-quality.md" \
   "performance-quality.md" \
   "architecture-quality.md" \

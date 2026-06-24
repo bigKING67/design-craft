@@ -34,6 +34,7 @@ It expands to:
 ```bash
 bash scripts/validate.sh
 python3 scripts/frontend_craft_score.py --self
+bash scripts/frontend_craft_pass.sh --target . --mode audit --skip-route
 bash scripts/frontend_craft_audit.sh --target . --mode audit --skip-route
 bash scripts/frontend_craft_audit.sh --target . --mode critique --skip-route
 bash scripts/frontend_craft_seed_design.sh --target . --dry-run
@@ -50,7 +51,7 @@ Expected result:
 - Python scorer compiles and runs.
 - Detector smoke passes against `skills/frontend-craft` and keeps raw
   `--json-only` compatibility for upstream Impeccable output.
-- Audit wrapper and critique mode smokes pass.
+- Preferred pass wrapper, audit wrapper, and critique mode smokes pass.
 - Vercel Geist seed helper smoke passes and preserves template byte parity.
 - Upstream absorption report runs without fetching or modifying submodules.
 - Upstream lock commits match checked-out submodule commits.

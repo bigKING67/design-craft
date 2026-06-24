@@ -26,7 +26,7 @@ runtime behavior, and project `DESIGN.md` always outrank generic visual rules.
 ```text
 frontend-craft/
 ├── skills/frontend-craft/        # Installable Codex skill
-├── scripts/                      # Deterministic route/audit/detect/score/review tools
+├── scripts/                      # Deterministic route/pass/detect/score/review tools
 ├── evals/                        # Forward-test and live-task evidence
 │   └── golden-tasks/             # Reproducible real-task evidence cards
 ├── upstreams/                    # Pristine upstream submodules; do not edit
@@ -94,7 +94,7 @@ Equivalent direct commands:
 ```bash
 bash scripts/validate.sh
 python3 scripts/frontend_craft_score.py --self
-bash scripts/frontend_craft_audit.sh --target . --mode audit --skip-route
+bash scripts/frontend_craft_pass.sh --target . --mode audit --skip-route
 ```
 
 ## Common commands
@@ -112,10 +112,12 @@ bash scripts/frontend_craft_route.sh \
 Run a critique/audit/polish/harden/optimize/structure/architecture pass:
 
 ```bash
-bash scripts/frontend_craft_audit.sh \
+bash scripts/frontend_craft_pass.sh \
   --target /path/to/project \
   --mode critique
 ```
+
+`frontend_craft_audit.sh` remains as a compatibility entrypoint.
 
 Run the detector. Default text output includes pinned Impeccable findings plus
 local frontend-craft review signals; `--json-only` remains raw upstream JSON for

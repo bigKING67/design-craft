@@ -54,6 +54,8 @@ system, data density, report grammar, or runtime truth.
    `/Users/gaoqian/Documents/sixseven/codeproject/frontend-craft/scripts/frontend_craft_audit.sh`
    for read-only critique/audit/polish/harden/optimize/structure/architecture
    passes,
+   `/Users/gaoqian/Documents/sixseven/codeproject/frontend-craft/scripts/frontend_craft_pass.sh`
+   as the preferred neutral wrapper for those quality passes,
    `/Users/gaoqian/Documents/sixseven/codeproject/frontend-craft/scripts/frontend_craft_seed_design.sh`
    for seeding `DESIGN.md` and `DESIGN.dark.md` from the bundled Vercel Geist
    templates,
@@ -82,6 +84,9 @@ Read only the references needed for the current task:
   `templates/vercel-geist/design.dark.md` as the default initial seed.
 - Impeccable-style command selection, audit/polish/harden/optimize/live:
   `references/impeccable-workflow.md`.
+- Subjective user complaint mapping, such as "太 AI", "颜色平", "排版不对",
+  "文案弱", "移动端差", "卡顿", or "目录乱":
+  `references/intent-map.md`.
 - Code elegance, component boundaries, state, types, errors:
   `references/engineering-quality.md`.
 - UI performance, Web Vitals, render hot paths, charts/tables:
@@ -104,7 +109,8 @@ For broad "make this frontend excellent" tasks, read:
 `visual-judgment.md`, `impeccable-workflow.md`,
 `engineering-quality.md`, `performance-quality.md`,
 `project-structure.md`, `report-quality.md` when reports/dashboards are in
-scope, and `validation-contract.md`.
+scope, `intent-map.md` when the brief is subjective, and
+`validation-contract.md`.
 
 ## Design read
 

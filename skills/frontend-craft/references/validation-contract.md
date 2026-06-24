@@ -19,7 +19,10 @@ has established ones.
 For the `frontend-craft` source repo itself, use:
 
 - `scripts/frontend_craft_route.sh --target <repo> --surface <surface> --intent <intent> --scope <scope>`
+- `scripts/frontend_craft_pass.sh --target <repo> --mode <critique|audit|polish|harden|optimize|structure|architecture>`
+  as the preferred neutral pass wrapper.
 - `scripts/frontend_craft_audit.sh --target <repo> --mode <critique|audit|polish|harden|optimize|structure|architecture>`
+  as the compatibility entrypoint behind the pass wrapper.
 - `scripts/frontend_craft_detect.sh --target <path>` for upstream Impeccable
   findings plus local frontend-craft review signals; use `--json-only` only when
   raw upstream detector compatibility is required.

@@ -89,6 +89,7 @@ def build_score(root: Path, run_smoke: bool) -> list[Dimension]:
 
     detector_smoke = False
     score_smoke = False
+    pass_smoke = False
     critique_smoke = False
     seed_smoke = False
     if run_smoke:
@@ -98,6 +99,10 @@ def build_score(root: Path, run_smoke: bool) -> list[Dimension]:
         )
         score_smoke = check_command(
             [sys.executable, "scripts/frontend_craft_score.py", "--target", str(root), "--no-smoke", "--json"],
+            root,
+        )
+        pass_smoke = check_command(
+            ["bash", "scripts/frontend_craft_pass.sh", "--target", "skills/frontend-craft", "--mode", "audit", "--skip-route", "--skip-score"],
             root,
         )
         critique_smoke = check_command(
@@ -118,6 +123,7 @@ def build_score(root: Path, run_smoke: bool) -> list[Dimension]:
                 ("anti-slop" in skill.lower() or "anti-slop" in read_text(root / "skills/frontend-craft/references/visual-judgment.md").lower(), "anti-slop encoded", "Encode anti-slop visual judgment."),
                 ("design read" in skill.lower(), "design read required", "Require a concise design read for major visual work."),
                 ("generic AI tells" in skill or "generic" in read_text(root / "skills/frontend-craft/references/visual-judgment.md").lower(), "generic-output guard present", "Add generic-output failure modes."),
+                (has(root, "skills/frontend-craft/references/intent-map.md"), "intent map reference exists", "Add an intent map for subjective frontend requests."),
             ],
         ),
         score_dimension(
@@ -169,6 +175,7 @@ def build_score(root: Path, run_smoke: bool) -> list[Dimension]:
                 ("component" in read_text(root / "skills/frontend-craft/references/engineering-quality.md").lower(), "component boundary guidance present", "Add component boundary guidance."),
                 ("observable" in skill.lower() or "errors" in read_text(root / "skills/frontend-craft/references/engineering-quality.md").lower(), "error observability covered", "Cover observable errors."),
                 (has(root, "scripts/frontend_craft_route.sh"), "route wrapper exists", "Add route wrapper script."),
+                (has(root, "scripts/frontend_craft_pass.sh"), "pass wrapper exists", "Add a neutral pass wrapper script."),
                 (has(root, "scripts/frontend_craft_detect.sh"), "detector wrapper exists", "Add detector wrapper script."),
             ],
         ),
@@ -222,8 +229,10 @@ def build_score(root: Path, run_smoke: bool) -> list[Dimension]:
                     "Require delivery to report whether the Geist seed was used.",
                 ),
                 ("critique" in read_text(root / "scripts/frontend_craft_audit.sh"), "critique mode present", "Add a lightweight critique mode."),
+                ("太 AI" in read_text(root / "skills/frontend-craft/references/intent-map.md"), "subjective intent mapping present", "Map subjective user phrases to workflow modes."),
                 (detector_smoke or not run_smoke, "detector smoke passes", "Fix detector smoke."),
                 (score_smoke or not run_smoke, "score smoke passes", "Fix score script smoke."),
+                (pass_smoke or not run_smoke, "pass wrapper smoke passes", "Fix pass wrapper smoke."),
                 (critique_smoke or not run_smoke, "critique smoke passes", "Fix critique mode smoke."),
                 (seed_smoke or not run_smoke, "seed helper smoke passes", "Fix Vercel Geist seed helper smoke."),
             ],
