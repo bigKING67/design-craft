@@ -10,6 +10,8 @@ browser-validation workflow as the source of truth, then folds in:
   into `frontend-craft`.
 - Impeccable-style audit, polish, harden, optimize, detector, and live-iteration
   loops.
+- Design-system contract checks for `DESIGN.md`, token roles, light/dark parity,
+  component states, focus, motion, and UI copy.
 - Project quality gates for architecture, performance, code elegance, validation,
   and file/directory structure governance.
 

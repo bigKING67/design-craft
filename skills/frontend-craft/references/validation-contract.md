@@ -60,6 +60,31 @@ Default flow:
 4. Inspect DOM/computed style only when needed to prove a specific condition.
 5. Finalize managed tabs unless the user asked to keep them.
 
+## Design-system validation
+
+Use design-system validation when:
+
+- A project `DESIGN.md` exists or is changed.
+- Theme files, CSS variables, design tokens, Tailwind theme values, or shared UI
+  component styles are changed.
+- Light/dark mode, focus styles, motion primitives, form states, toast/error UI,
+  or empty states are changed.
+- A visual polish changes colors, typography, spacing, radii, shadows, or motion.
+
+Check and report:
+
+- Whether the design-system contract was enforced, evolved, inferred from code,
+  or not applicable.
+- New hard-coded colors, arbitrary spacing, arbitrary radii, arbitrary shadows,
+  font sizes, or timing values, and why they are justified.
+- Light/dark token parity for the touched tokens and states.
+- Visible `:focus-visible` for touched interactive elements.
+- Disabled, loading, error, empty, and success states where the changed surface
+  owns those states.
+- UI copy quality for actions, errors, toasts, empty states, and loading labels;
+  avoid weak labels such as `OK`, `Confirm`, `Submit`, `Success`, and
+  `Something went wrong` when a specific action or recovery step is known.
+
 ## Route summary fields
 
 When route planner is used, report:
@@ -69,6 +94,7 @@ When route planner is used, report:
 - `selected_skills`
 - `execution_mode` and `subagent_required`
 - `style_authority_path`, source, mode, and revision policy
+- `design_system_contract`
 - `preflight_status` and `preflight_code`
 - `browser_validation_required`
 - `directory_governance_required`

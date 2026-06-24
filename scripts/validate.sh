@@ -20,6 +20,7 @@ required_files=(
   "skills/frontend-craft/SKILL.md"
   "skills/frontend-craft/agents/openai.yaml"
   "skills/frontend-craft/references/source-map.md"
+  "skills/frontend-craft/references/design-system-contract.md"
   "skills/frontend-craft/references/visual-judgment.md"
   "skills/frontend-craft/references/impeccable-workflow.md"
   "skills/frontend-craft/references/engineering-quality.md"
@@ -109,6 +110,7 @@ bash scripts/frontend_craft_detect.sh --target skills/frontend-craft --full-json
 bash scripts/frontend_craft_audit.sh --target skills/frontend-craft --mode audit --skip-route --skip-score >/dev/null
 
 for ref in \
+  "design-system-contract.md" \
   "visual-judgment.md" \
   "impeccable-workflow.md" \
   "engineering-quality.md" \

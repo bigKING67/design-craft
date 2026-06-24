@@ -82,6 +82,7 @@ def score_dimension(name: str, weight: int, checks: list[tuple[bool, str, str]])
 def build_score(root: Path, run_smoke: bool) -> list[Dimension]:
     skill = read_text(root / "skills/frontend-craft/SKILL.md")
     validation = read_text(root / "skills/frontend-craft/references/validation-contract.md")
+    design_system = read_text(root / "skills/frontend-craft/references/design-system-contract.md")
     report = read_text(root / "skills/frontend-craft/references/report-quality.md")
     surface = read_text(root / "skills/frontend-craft/references/surface-playbooks.md")
 
@@ -117,6 +118,9 @@ def build_score(root: Path, run_smoke: bool) -> list[Dimension]:
                 ("DataHub" in report or "report" in report.lower(), "report/data surface covered", "Add report/DataHub-specific grammar."),
                 ("surface-specific" in surface.lower() or "surface playbooks" in surface.lower(), "surface playbooks present", "Cover surface-specific product jobs."),
                 ("candidate_skills" in skill, "route candidate semantics present", "Separate route candidates from selected skills."),
+                (has(root, "skills/frontend-craft/references/design-system-contract.md"), "design-system contract exists", "Add design-system contract reference."),
+                ("theme parity" in design_system.lower(), "theme parity guidance present", "Cover light/dark token parity."),
+                ("token layers" in design_system.lower(), "token layer guidance present", "Cover token role separation."),
             ],
         ),
         score_dimension(
@@ -170,6 +174,9 @@ def build_score(root: Path, run_smoke: bool) -> list[Dimension]:
                 ("browser validation" in validation.lower(), "browser validation contract present", "Document browser validation rules."),
                 (has(root, "evals/golden-tasks/datahub-industry-news.md"), "golden task evidence exists", "Add at least one golden real-task card."),
                 (has(root, "scripts/frontend_craft_score.py"), "score script exists", "Add deterministic score script."),
+                ("focus-visible" in design_system.lower(), "focus-visible guidance present", "Cover keyboard focus states."),
+                ("component state matrix" in design_system.lower(), "component state matrix present", "Cover shared component states."),
+                (("voice" in design_system.lower()) and ("content" in design_system.lower()), "voice/content guidance present", "Cover action, error, toast, and empty-state copy."),
                 (detector_smoke or not run_smoke, "detector smoke passes", "Fix detector smoke."),
                 (score_smoke or not run_smoke, "score smoke passes", "Fix score script smoke."),
             ],

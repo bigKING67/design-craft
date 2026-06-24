@@ -4,6 +4,9 @@ All notable local changes to `frontend-craft` are recorded here.
 
 ## Unreleased
 
+- Added a design-system contract reference covering `DESIGN.md` structure,
+  token role separation, theme parity, component states, focus-visible, motion,
+  and UI copy quality.
 - Renamed the internal visual reference from `design-taste.md` to
   `visual-judgment.md` to make `frontend-craft` the active workflow and keep
   upstream taste-skill only as provenance/manual absorption input.

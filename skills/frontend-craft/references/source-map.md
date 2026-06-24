@@ -47,6 +47,26 @@ Use this upstream for command taxonomy, audit/polish/harden/optimize/live
 iteration patterns, deterministic detector checks, design context files, and
 production-readiness flows.
 
+## External design references
+
+### Vercel Geist `design.md`
+
+- URLs:
+  - `https://vercel.com/design.md`
+  - `https://vercel.com/design.dark.md`
+- Review note: inspected as public design-system references on 2026-06-24.
+- Absorbed into:
+  - `references/design-system-contract.md`
+
+Use these references for the idea of an agent-readable design contract:
+structured tokens plus human-readable rationale, identical light/dark token
+names with theme-specific values, role-based color scales, component state
+coverage, motion limits, focus rules, and UI copy discipline.
+
+Do not copy Vercel's token tables, Geist-specific values, or brand aesthetic as
+defaults. `frontend-craft` absorbs the contract shape and validation method, not
+the visual identity.
+
 ## Maintenance rule
 
 When updating upstreams:

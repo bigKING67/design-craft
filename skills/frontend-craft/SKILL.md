@@ -65,6 +65,9 @@ Read only the references needed for the current task:
 
 - Visual redesign, landing pages, brand pages, portfolios:
   `references/visual-judgment.md`.
+- Design-system contracts, `DESIGN.md` shape, token naming, light/dark parity,
+  component state coverage, focus rules, motion policy, and UI copy rules:
+  `references/design-system-contract.md`.
 - Impeccable-style command selection, audit/polish/harden/optimize/live:
   `references/impeccable-workflow.md`.
 - Code elegance, component boundaries, state, types, errors:
@@ -108,6 +111,9 @@ unverified:
 
 - Visual: not templated, clear hierarchy, good density, responsive, accessible
   contrast, no generic AI tells.
+- Design system: token roles are respected; hard-coded visual values are
+  justified; theme parity, focus-visible states, component states, and UI copy
+  quality are covered when relevant.
 - Product: solves the user's job, preserves information architecture, handles
   empty/loading/error/long-data states when relevant.
 - Engineering: clear component boundaries, no needless abstraction, observable
@@ -128,6 +134,8 @@ For frontend implementation work, summarize:
 - `frontend_tier` and route command used, when applicable.
 - `candidate_skills` versus `selected_skills`.
 - `style_authority_path` and whether it was enforced or intentionally evolved.
+- `design_system_contract`: enforced existing tokens, evolved tokens, inferred
+  temporary system, or not applicable.
 - Files changed and structure impact.
 - Validation commands and observed results.
 - Browser validation target and result, or why it was skipped.
