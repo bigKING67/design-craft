@@ -1,6 +1,6 @@
 # Live task log
 
-This file records real task evidence for the `frontend-craft` workflow. It is
+This file records real task evidence for the `design-craft` workflow. It is
 not a substitute for validation output; every entry must state what actually
 ran and what remains unverified.
 
@@ -15,7 +15,7 @@ ran and what remains unverified.
 - Route command:
 
   ```bash
-  bash scripts/frontend_craft_route.sh \
+  bash scripts/design_craft_route.sh \
     --target /Users/gaoqian/Documents/sixseven/workman/groland/datahub/src/app/marketing/industry-news \
     --surface dashboard \
     --intent visual-refine \
@@ -24,7 +24,7 @@ ran and what remains unverified.
 
 - Evidence status at 2026-06-24 route-policy migration:
   - `frontend_tier`: `L2`
-  - `candidate_skills`: `frontend-craft`, `minimalist-ui`,
+  - `candidate_skills`: `design-craft`, `minimalist-ui`,
     `redesign-existing-projects`
   - `preflight_status`: `pass`
   - `preflight_code`: `OK`
@@ -38,12 +38,12 @@ ran and what remains unverified.
 - Detector smoke after local signal expansion:
 
   ```bash
-  bash scripts/frontend_craft_detect.sh \
+  bash scripts/design_craft_detect.sh \
     --target /Users/gaoqian/Documents/sixseven/workman/groland/datahub/src/app/marketing/industry-news \
     --full-json
   ```
 
-  Result: upstream findings `0`; frontend-craft local signal findings `0`.
+  Result: upstream findings `0`; design-craft local signal findings `0`.
 - Browser validation: not claimed by this log entry.
 - Screenshot validation: not claimed by this log entry.
 
@@ -51,7 +51,7 @@ ran and what remains unverified.
 
 - Target:
   current Chrome tabs observed through TMWD, sampled read-only for
-  `frontend-craft` product UI taste calibration.
+  `design-craft` product UI taste calibration.
 - Selected cases:
   - `cpa-management-quota`
   - `cpa-usage-keeper`

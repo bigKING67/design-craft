@@ -2,7 +2,7 @@
 
 ## Prompt
 
-Use `frontend-craft` to refine a DataHub special report route. The report is
+Use `design-craft` to refine a DataHub special report route. The report is
 for business review, with sections, ECharts charts, contribution metrics,
 caveats, and supporting tables. Make it feel formal, readable, and evidence-led.
 
@@ -16,7 +16,7 @@ caveats, and supporting tables. Make it feel formal, readable, and evidence-led.
 - `browser_screenshot_required`: `true`
 - `performance_review_required`: `true`
 
-## Expected frontend-craft references
+## Expected design-craft references
 
 - `references/report-quality.md`
 - `references/surface-playbooks.md`

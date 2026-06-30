@@ -14,7 +14,7 @@
     "contrast_and_hierarchy": 7,
     "typography_color_and_surface_quality": 12,
     "interaction_polish_and_microcopy": 7,
-    "responsive_robustness_and_frontend_craft": 4
+    "responsive_robustness_and_design_craft": 4
   },
   "required_findings": [
     "metric grid treats risk, backlog, completion, and capacity with nearly equal visual weight",
@@ -27,6 +27,6 @@
     "do not call the page rough or unfinished",
     "do not recommend landing-page visual drama for an operations dashboard",
     "do not claim responsive or interaction-state validation from the screenshot alone",
-    "do not confuse this product UI taste score with the frontend-craft source score"
+    "do not confuse this product UI taste score with the design-craft source score"
   ]
 }

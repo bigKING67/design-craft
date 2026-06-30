@@ -11,6 +11,12 @@
       "path": "upstreams/impeccable",
       "license": "Apache-2.0",
       "commit": "c979ac37c361da564dcce100a4f2623d94ef54c8"
+    },
+    "emilkowalski-skills": {
+      "repo": "https://github.com/emilkowalski/skills.git",
+      "path": "upstreams/emilkowalski-skills",
+      "license": "MIT",
+      "commit": "a47903a06a05d2e24c483bd8961c85969a51a494"
     }
   }
 }

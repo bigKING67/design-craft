@@ -4,3 +4,6 @@
 [submodule "upstreams/impeccable"]
 	path = upstreams/impeccable
 	url = https://github.com/pbakaus/impeccable.git
+[submodule "upstreams/emilkowalski-skills"]
+	path = upstreams/emilkowalski-skills
+	url = https://github.com/emilkowalski/skills.git

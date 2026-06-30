@@ -2,41 +2,55 @@
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-SKILL_SRC="${ROOT_DIR}/skills/frontend-craft"
-INSTALL_ROOT="${FRONTEND_CRAFT_SKILL_ROOT:-${HOME}/.agents/skills}"
-TARGET="${INSTALL_ROOT}/frontend-craft"
-BACKUP_ROOT="${HOME}/.agents/backups/frontend-craft"
+INSTALL_ROOT="${DESIGN_CRAFT_SKILL_ROOT:-${FRONTEND_CRAFT_SKILL_ROOT:-${HOME}/.agents/skills}}"
+BACKUP_BASE="${HOME}/.agents/backups"
 DRY_RUN=0
 
 if [[ "${1:-}" == "--dry-run" ]]; then
   DRY_RUN=1
 fi
 
-if [[ ! -f "${SKILL_SRC}/SKILL.md" ]]; then
-  echo "Missing skill source: ${SKILL_SRC}/SKILL.md" >&2
-  exit 1
-fi
+install_one() {
+  local name="$1"
+  local source="${ROOT_DIR}/skills/${name}"
+  local target="${INSTALL_ROOT}/${name}"
+  local backup_root="${BACKUP_BASE}/${name}"
 
-echo "Source: ${SKILL_SRC}"
-echo "Target: ${TARGET}"
+  if [[ ! -f "${source}/SKILL.md" ]]; then
+    echo "Missing skill source: ${source}/SKILL.md" >&2
+    exit 1
+  fi
+
+  echo "Source: ${source}"
+  echo "Target: ${target}"
+
+  if [[ "${DRY_RUN}" == "1" ]]; then
+    if [[ -e "${target}" ]]; then
+      echo "Would backup existing ${name} target under: ${backup_root}"
+    fi
+    echo "Would install ${name} skill."
+    return
+  fi
+
+  mkdir -p "${INSTALL_ROOT}"
+
+  if [[ -e "${target}" ]]; then
+    local stamp
+    local backup
+    stamp="$(date -u +%Y%m%dT%H%M%SZ)"
+    backup="${backup_root}/${stamp}"
+    mkdir -p "${backup_root}"
+    mv "${target}" "${backup}"
+    echo "Backed up existing ${name} skill to: ${backup}"
+  fi
+
+  cp -R "${source}" "${target}"
+  echo "Installed ${name} skill to: ${target}"
+}
+
+install_one "design-craft"
+install_one "frontend-craft"
 
 if [[ "${DRY_RUN}" == "1" ]]; then
-  if [[ -e "${TARGET}" ]]; then
-    echo "Would backup existing target under: ${BACKUP_ROOT}"
-  fi
-  echo "Would install frontend-craft skill."
-  exit 0
+  echo "dry_run: no files changed"
 fi
-
-mkdir -p "${INSTALL_ROOT}"
-
-if [[ -e "${TARGET}" ]]; then
-  stamp="$(date -u +%Y%m%dT%H%M%SZ)"
-  backup="${BACKUP_ROOT}/${stamp}"
-  mkdir -p "${BACKUP_ROOT}"
-  mv "${TARGET}" "${backup}"
-  echo "Backed up existing skill to: ${backup}"
-fi
-
-cp -R "${SKILL_SRC}" "${TARGET}"
-echo "Installed frontend-craft skill to: ${TARGET}"

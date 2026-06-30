@@ -52,7 +52,7 @@ Use `critique` for a read-only judgment pass before implementation or when a UI
 If the user asks for a score, why the UI is not full marks, or a concrete
 product UI review, read `product-ui-taste-review.md` and use its 100-point
 output contract. Keep that score scoped to the reviewed UI, not this
-`frontend-craft` repo.
+`design-craft` repo.
 
 For a full unanchored critique of a viewable target, include method provenance
 in the first line:

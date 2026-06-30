@@ -2,7 +2,7 @@
 
 Use this when the user's request is phrased as a subjective frontend complaint
 instead of a precise mode. It maps common wording to the smallest useful
-frontend-craft pass.
+design-craft pass.
 
 Project evidence still wins: live runtime, scoped `AGENTS.md`, project
 `DESIGN.md`, route output, and existing components outrank this map.
@@ -63,7 +63,7 @@ Project evidence still wins: live runtime, scoped `AGENTS.md`, project
   style authority exists, use the bundled Vercel Geist seed via:
 
   ```bash
-  scripts/frontend_craft_seed_design.sh --target <project-dir>
+  scripts/design_craft_seed_design.sh --target <project-dir>
   ```
 
 - If a project already has credible `DESIGN.md`, tokens, brand guide, or strong

@@ -55,6 +55,27 @@ Use this upstream for command taxonomy, audit/polish/harden/optimize/live
 iteration patterns, deterministic detector checks, design context files, and
 production-readiness flows.
 
+### emilkowalski/skills
+
+- URL: `https://github.com/emilkowalski/skills`
+- License: MIT
+- Local path: `upstreams/emilkowalski-skills`
+- Initial pinned commit:
+  `a47903a06a05d2e24c483bd8961c85969a51a494`
+- Initial commit note:
+  `2026-06-29T15:30:16+02:00 Update README.md`
+- Primary material to inspect:
+  - `skills/emil-design-eng/SKILL.md`
+  - `skills/review-animations/SKILL.md`
+  - `skills/review-animations/STANDARDS.md`
+  - `skills/animation-vocabulary/SKILL.md`
+
+Use this upstream for motion purpose, frequency-based animation decisions,
+easing and duration standards, origin-aware physicality, interruptibility,
+gesture craft, animation performance, reduced-motion behavior, strict motion
+reviews, and animation vocabulary. Do not absorb its standalone greeting or
+tone; keep the local `design-craft` voice evidence-led and project-aware.
+
 ## External design references
 
 ### Vercel Geist `design.md`
@@ -76,7 +97,7 @@ human-readable rationale, identical light/dark token names with theme-specific
 values, role-based color scales, component state coverage, motion limits, focus
 rules, and UI copy discipline.
 
-Use `scripts/frontend_craft_seed_design.sh` to copy the vendored pair into a
+Use `scripts/design_craft_seed_design.sh` to copy the vendored pair into a
 target project as `DESIGN.md` and `DESIGN.dark.md`. The route wrapper reports
 `vercel_geist_seed_applicable` so a new or weak developer-product surface does
 not rely on an implicit style-authority guess.
@@ -100,10 +121,10 @@ Geist templates as a comparison baseline for missing system pieces.
 - `evals/product-ui-taste/groland-content-assets-l3/`: L3 resilient
   calibration case with desktop/mobile TMWD screenshots, selector/clip
   artifacts, redacted DOM/computed-style JSON, and partial focus-state evidence.
-- `scripts/frontend_craft_taste_review.sh`: deterministic packet generator for
+- `scripts/design_craft_taste_review.sh`: deterministic packet generator for
   product UI taste reviews; it does not replace the agent's judgment.
-- `scripts/frontend_craft_browser_evidence.py`: emits the redacted
-  `frontend-craft.browser-evidence.v1` browser sampler and validates product UI
+- `scripts/design_craft_browser_evidence.py`: emits the redacted
+  `design-craft.browser-evidence.v1` browser sampler and validates product UI
   score anti-inflation rules.
 
 ## Maintenance rule
@@ -119,7 +140,7 @@ When updating upstreams:
 4. Inspect upstream changelogs and key skill/command files.
 5. Update this source map only after deciding what the fusion layer should
    absorb.
-6. Never overwrite `skills/frontend-craft` automatically from upstream.
+6. Never overwrite `skills/design-craft` automatically from upstream.
 
 ## Attribution rule
 

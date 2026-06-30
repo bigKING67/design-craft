@@ -1,17 +1,25 @@
-# frontend-craft
+# design-craft
 
-Personal frontend craft workflow for Codex.
+Personal design engineering, product UI, UX, visual taste, motion, and frontend
+quality workflow for Codex.
 
-`frontend-craft` is the local fusion layer for high-quality frontend work on this
-machine. It keeps the existing Codex route planner, project `DESIGN.md`, and
-browser-validation workflow as the source of truth, then folds in:
+`design-craft` is the canonical local fusion layer for high-quality product
+experience work on this machine. It supersedes the former `frontend-craft`
+name because the workflow now covers more than frontend code: UI/UX judgment,
+design-system contracts, motion craft, product taste, implementation quality,
+browser evidence, and long-term project structure. It keeps the existing Codex
+route planner, project `DESIGN.md`, and browser-validation workflow as the
+source of truth, then folds in:
 
 - anti-slop visual judgment, brief inference, and aesthetic pressure absorbed
-  into `frontend-craft`.
+  into `design-craft`.
 - Impeccable-style audit, polish, harden, optimize, detector, and live-iteration
   loops.
 - Design-system contract checks for `DESIGN.md`, token roles, light/dark parity,
   component states, focus, motion, and UI copy.
+- Emil Kowalski-style motion purpose, frequency, timing/easing, physicality,
+  interruptibility, gesture, performance, reduced-motion, and animation
+  vocabulary checks.
 - Bundled Vercel Geist `design.md` / `design.dark.md` seed templates for new or
   weakly specified developer-product surfaces.
 - Project quality gates for architecture, performance, code elegance, validation,
@@ -24,8 +32,8 @@ runtime behavior, and project `DESIGN.md` always outrank generic visual rules.
 ## Layout
 
 ```text
-frontend-craft/
-├── skills/frontend-craft/        # Installable Codex skill
+design-craft/
+├── skills/design-craft/        # Installable Codex skill
 ├── scripts/                      # Deterministic route/pass/detect/score/review tools
 ├── evals/                        # Forward-test and live-task evidence
 │   ├── golden-tasks/             # Reproducible real-task evidence cards
@@ -37,7 +45,7 @@ frontend-craft/
 └── VERSION                       # Local release version
 ```
 
-`skills/frontend-craft/` should stay lean. Repo-level documents such as this
+`skills/design-craft/` should stay lean. Repo-level documents such as this
 README, the changelog, and maintenance notes belong at the repository root or in
 `docs/`, not inside the installed skill folder.
 
@@ -50,14 +58,18 @@ bash scripts/install_local.sh
 The installer syncs:
 
 ```text
+skills/design-craft -> /Users/gaoqian/.agents/skills/design-craft
 skills/frontend-craft -> /Users/gaoqian/.agents/skills/frontend-craft
 ```
 
 Verify the installed copy when needed:
 
 ```bash
-diff -qr skills/frontend-craft /Users/gaoqian/.agents/skills/frontend-craft
+diff -qr skills/design-craft /Users/gaoqian/.agents/skills/design-craft
 ```
+
+`skills/frontend-craft` is a legacy compatibility alias only. New route and
+preflight defaults should use `design-craft`.
 
 ## Default design seed
 
@@ -65,8 +77,8 @@ For new or weakly specified developer-product, SaaS, dashboard, admin, infra,
 docs, and tooling surfaces, start from the bundled Vercel Geist templates:
 
 ```text
-skills/frontend-craft/templates/vercel-geist/design.md
-skills/frontend-craft/templates/vercel-geist/design.dark.md
+skills/design-craft/templates/vercel-geist/design.md
+skills/design-craft/templates/vercel-geist/design.dark.md
 ```
 
 When a project already has a credible `DESIGN.md`, token system, brand guide, or
@@ -76,7 +88,7 @@ rather than replacing project authority blindly.
 Seed a project directly with:
 
 ```bash
-bash scripts/frontend_craft_seed_design.sh --target /path/to/project
+bash scripts/design_craft_seed_design.sh --target /path/to/project
 ```
 
 The helper refuses to overwrite an existing `DESIGN.md` or `DESIGN.dark.md`
@@ -94,8 +106,8 @@ Equivalent direct commands:
 
 ```bash
 bash scripts/validate.sh
-python3 scripts/frontend_craft_score.py --self
-bash scripts/frontend_craft_pass.sh --target . --mode audit --skip-route
+python3 scripts/design_craft_score.py --self
+bash scripts/design_craft_pass.sh --target . --mode audit --skip-route
 ```
 
 ## Common commands
@@ -103,7 +115,7 @@ bash scripts/frontend_craft_pass.sh --target . --mode audit --skip-route
 Route a frontend task through the local Codex route planner:
 
 ```bash
-bash scripts/frontend_craft_route.sh \
+bash scripts/design_craft_route.sh \
   --target /path/to/project \
   --surface dashboard \
   --intent visual-refine \
@@ -113,18 +125,26 @@ bash scripts/frontend_craft_route.sh \
 Run a critique/audit/polish/harden/optimize/structure/architecture pass:
 
 ```bash
-bash scripts/frontend_craft_pass.sh \
+bash scripts/design_craft_pass.sh \
   --target /path/to/project \
   --mode critique
 ```
 
-`frontend_craft_audit.sh` remains as a compatibility entrypoint.
+`design_craft_audit.sh` remains as a compatibility entrypoint.
+
+Run a motion-specific review pass:
+
+```bash
+bash scripts/design_craft_pass.sh \
+  --target /path/to/project \
+  --mode motion
+```
 
 Create a stable product UI taste-review packet before scoring a screenshot or
 page:
 
 ```bash
-bash scripts/frontend_craft_taste_review.sh \
+bash scripts/design_craft_taste_review.sh \
   --target /path/to/screenshot-or-project \
   --context "dashboard for internal operators" \
   --evidence-level L0
@@ -141,19 +161,19 @@ Emit a redacted DOM/computed-style sampler for TMWD `browser_execute_js`, or
 validate captured product UI evidence and score anti-inflation rules:
 
 ```bash
-python3 scripts/frontend_craft_browser_evidence.py --print-js
-python3 scripts/frontend_craft_browser_evidence.py \
+python3 scripts/design_craft_browser_evidence.py --print-js
+python3 scripts/design_craft_browser_evidence.py \
   --validate-score-json evals/product-ui-taste/groland-content-assets-l3/score.json
-python3 scripts/frontend_craft_browser_evidence.py \
+python3 scripts/design_craft_browser_evidence.py \
   --validate-evidence-json evals/product-ui-taste/groland-content-assets-l3/dom-evidence.desktop.json
 ```
 
 Run the detector. Default text output includes pinned Impeccable findings plus
-local frontend-craft review signals; `--json-only` remains raw upstream JSON for
+local design-craft review signals; `--json-only` remains raw upstream JSON for
 compatibility, and `--full-json` emits the combined payload.
 
 ```bash
-bash scripts/frontend_craft_detect.sh --target /path/to/project
+bash scripts/design_craft_detect.sh --target /path/to/project
 ```
 
 Review pinned upstream drift and absorption candidates without fetching:
@@ -171,7 +191,7 @@ python3 scripts/upstream_absorption_report.py --remote
 Score this workflow itself:
 
 ```bash
-python3 scripts/frontend_craft_score.py --self --json
+python3 scripts/design_craft_score.py --self --json
 ```
 
 ## Upstream policy
@@ -180,14 +200,16 @@ The upstream repositories are kept as pinned submodules:
 
 - `upstreams/taste-skill`
 - `upstreams/impeccable`
+- `upstreams/emilkowalski-skills`
 
 Do not edit upstream files directly. Update the fusion layer under
-`skills/frontend-craft/`, update attribution when needed, and record upstream
+`skills/design-craft/`, update attribution when needed, and record upstream
 commit changes in `upstreams.lock.json`.
 
-Runtime routing should use `frontend-craft` as the baseline. The upstream
-`taste-skill` checkout is retained only for provenance and deliberate manual
-absorption, not as an automatic updater or legacy route source.
+Runtime routing should use `design-craft` as the baseline. The upstream
+`taste-skill`, `impeccable`, and `emilkowalski-skills` checkouts are retained
+only for provenance and deliberate manual absorption, not as automatic updaters
+or legacy route sources.
 
 Refresh upstreams with:
 
@@ -218,7 +240,7 @@ audit wrapper smoke, upstream lock consistency, and local install parity.
 This repo uses local semantic versioning:
 
 - `0.x`: personal pre-1.0 workflow, allowed to evolve quickly.
-- `1.x`: stable default frontend workflow for this machine.
+- `1.x`: stable default design-craft workflow for this machine.
 - Patch releases: validation, documentation, detector, or maintenance fixes.
 
 Current version is stored in `VERSION`; notable changes are tracked in

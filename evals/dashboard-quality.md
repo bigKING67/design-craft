@@ -2,7 +2,7 @@
 
 ## Prompt
 
-Use `frontend-craft` to improve a data-heavy dashboard page with filters,
+Use `design-craft` to improve a data-heavy dashboard page with filters,
 charts, KPI cards, and tables. Preserve task flow, improve hierarchy, handle
 empty/loading/error states, and verify responsive behavior.
 
@@ -16,7 +16,7 @@ empty/loading/error states, and verify responsive behavior.
 - `browser_validation_required`: `true`
 - `browser_screenshot_required`: usually `true` for page-level visual work
 
-## Expected frontend-craft references
+## Expected design-craft references
 
 - `references/surface-playbooks.md`
 - `references/report-quality.md` when the page is report-like

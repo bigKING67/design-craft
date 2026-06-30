@@ -290,7 +290,7 @@ def main() -> int:
     parser = argparse.ArgumentParser(
         description="Report pinned upstream drift and candidate absorption files without fetching or modifying submodules."
     )
-    parser.add_argument("--root", default=str(ROOT), help="frontend-craft repo root")
+    parser.add_argument("--root", default=str(ROOT), help="design-craft repo root")
     parser.add_argument("--json", action="store_true", help="Emit JSON")
     parser.add_argument("--remote", action="store_true", help="Also check remote HEAD/main/master with git ls-remote")
     args = parser.parse_args()

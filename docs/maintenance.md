@@ -1,23 +1,24 @@
-# frontend-craft maintenance
+# design-craft maintenance
 
 This document is the local release and maintenance checklist for
-`frontend-craft`.
+`design-craft`.
 
 ## Maintenance rules
 
-- Keep `upstreams/` pristine. Do not edit `upstreams/taste-skill` or
-  `upstreams/impeccable` directly.
+- Keep `upstreams/` pristine. Do not edit `upstreams/taste-skill`,
+  `upstreams/impeccable`, or `upstreams/emilkowalski-skills` directly.
 - Keep the installable skill lean. `README.md`, `CHANGELOG.md`, release notes,
   and maintenance docs belong at the repo root or under `docs/`, not inside
-  `skills/frontend-craft/`.
+  `skills/design-craft/`.
 - Keep project-specific truth above generic visual guidance:
   live runtime behavior, scoped `AGENTS.md`, README/framework conventions, and
   project `DESIGN.md` outrank the fusion references.
-- Treat `upstreams/taste-skill` and `upstreams/impeccable` as provenance and
-  deliberate absorption inputs only. Do not reintroduce automatic upstream
-  skill overwrites or legacy taste routing.
-- Keep helper scripts deterministic and cheap enough to run before real frontend
-  work.
+- Treat `upstreams/taste-skill`, `upstreams/impeccable`, and
+  `upstreams/emilkowalski-skills` as provenance and deliberate absorption inputs
+  only. Do not reintroduce automatic upstream skill overwrites or legacy taste
+  routing.
+- Keep helper scripts deterministic and cheap enough to run before real
+  UI/UX/design/frontend work.
 - Record meaningful task evidence under `evals/`; do not claim browser
   validation unless a browser validation actually ran.
 
@@ -33,16 +34,18 @@ It expands to:
 
 ```bash
 bash scripts/validate.sh
-python3 scripts/frontend_craft_score.py --self
-bash scripts/frontend_craft_pass.sh --target . --mode audit --skip-route
-bash scripts/frontend_craft_audit.sh --target . --mode audit --skip-route
-bash scripts/frontend_craft_audit.sh --target . --mode critique --skip-route
-bash scripts/frontend_craft_taste_review.sh --target skills/frontend-craft --context "release smoke" --evidence-level L0
-bash scripts/frontend_craft_seed_design.sh --target . --dry-run
+python3 scripts/design_craft_score.py --self
+bash scripts/design_craft_pass.sh --target . --mode audit --skip-route
+bash scripts/design_craft_audit.sh --target . --mode audit --skip-route
+bash scripts/design_craft_audit.sh --target . --mode critique --skip-route
+bash scripts/design_craft_pass.sh --target skills/design-craft --mode motion --skip-route --skip-score
+bash scripts/design_craft_taste_review.sh --target skills/design-craft --context "release smoke" --evidence-level L0
+bash scripts/design_craft_seed_design.sh --target . --dry-run
 python3 scripts/upstream_absorption_report.py
 python3 scripts/upstream_absorption_report.py --remote
 bash scripts/install_local.sh
-diff -qr skills/frontend-craft /Users/gaoqian/.agents/skills/frontend-craft
+diff -qr skills/design-craft /Users/gaoqian/.agents/skills/design-craft
+grep -Fq 'renamed to `design-craft`' /Users/gaoqian/.agents/skills/frontend-craft/SKILL.md
 ```
 
 Expected result:
@@ -51,9 +54,11 @@ Expected result:
 - Required references, scripts, notices, evals, and version files exist.
 - Shell scripts pass `bash -n`.
 - Python scorer compiles and runs.
-- Detector smoke passes against `skills/frontend-craft` and keeps raw
+- Detector smoke passes against `skills/design-craft` and keeps raw
   `--json-only` compatibility for upstream Impeccable output.
 - Preferred pass wrapper, audit wrapper, and critique mode smokes pass.
+- Motion-specific pass smoke passes and the Emil-derived motion references are
+  present.
 - Product UI taste-review packet smoke passes and keeps score evidence levels
   explicit.
 - Product UI browser evidence helper compiles, emits a redacted TMWD DOM/style
@@ -62,7 +67,8 @@ Expected result:
 - Upstream absorption report runs without fetching or modifying submodules; the
   optional `--remote` check reports remote drift with `git ls-remote`.
 - Upstream lock commits match checked-out submodule commits.
-- Installed skill matches the source skill.
+- Installed canonical skill matches the source skill, and the installed
+  `frontend-craft` legacy alias points to `design-craft`.
 
 ## Upstream sync procedure
 
@@ -98,10 +104,10 @@ Expected result:
 5. Review upstream licenses and attribution if upstream content changed:
 
    ```bash
-   git diff -- THIRD_PARTY_NOTICES.md upstreams.lock.json skills/frontend-craft/references/source-map.md
+   git diff -- THIRD_PARTY_NOTICES.md upstreams.lock.json skills/design-craft/references/source-map.md
    ```
 
-6. Update the fusion layer only under `skills/frontend-craft/`.
+6. Update the fusion layer only under `skills/design-craft/`.
 
 7. Run the release gate:
 
@@ -114,8 +120,8 @@ Expected result:
 - Update `VERSION` for every local release.
 - Update `CHANGELOG.md` with user-visible changes.
 - Use `0.x` while the workflow is still evolving quickly.
-- Use `1.x` only after repeated live frontend tasks prove the workflow stable as
-  the default Codex frontend route.
+- Use `1.x` only after repeated live UI/UX/design/frontend tasks prove the
+  workflow stable as the default Codex route baseline.
 
 ## Live task evidence
 
@@ -138,7 +144,7 @@ type-check, lint, build, or route validation did not run, say that explicitly.
 ## Golden task evidence
 
 Use `evals/golden-tasks/` for stable task cards that should remain reproducible
-across `frontend-craft` changes. Each card should record:
+across `design-craft` changes. Each card should record:
 
 - Target path and surface.
 - Route command and decisive route output.
@@ -164,8 +170,11 @@ cases. Each case should record:
 - False-positive guards, especially claims that cannot be made from the
   available evidence.
 - Browser evidence JSON, when captured, should use
-  `frontend-craft.browser-evidence.v1` and pass
-  `scripts/frontend_craft_browser_evidence.py --validate-evidence-json`.
+  `design-craft.browser-evidence.v1` and pass
+  `scripts/design_craft_browser_evidence.py --validate-evidence-json`.
+  The validator still accepts the old `frontend-craft.browser-evidence.v1`
+  schema for historical artifacts, but new captures should emit the canonical
+  schema.
 - L3 cases must include at least two responsive viewports plus state checks; a
   responsive layout that still preserves weak hierarchy should not inflate the
   score.
@@ -187,6 +196,8 @@ Before committing a release:
 4. Upstream absorption report reviewed when upstream commits or detector rules changed.
 5. Product UI taste calibration still passes when taste scoring changed.
 6. Install parity check:
-   `diff -qr skills/frontend-craft /Users/gaoqian/.agents/skills/frontend-craft`
-7. Confirm no repo docs were added inside `skills/frontend-craft/`.
-8. Commit with a scoped message.
+   `diff -qr skills/design-craft /Users/gaoqian/.agents/skills/design-craft`
+7. Legacy alias check:
+   `grep -Fq 'renamed to \`design-craft\`' /Users/gaoqian/.agents/skills/frontend-craft/SKILL.md`
+8. Confirm no repo docs were added inside `skills/design-craft/`.
+9. Commit with a scoped message.

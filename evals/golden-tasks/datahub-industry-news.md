@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Use this card to verify that `frontend-craft` routes a real DataHub page through
+Use this card to verify that `design-craft` routes a real DataHub page through
 the local Codex frontend workflow while keeping DataHub product context,
 `DESIGN.md`, and live runtime behavior above generic visual rules.
 
@@ -30,7 +30,7 @@ the local Codex frontend workflow while keeping DataHub product context,
 ## Route command
 
 ```bash
-bash scripts/frontend_craft_route.sh \
+bash scripts/design_craft_route.sh \
   --target /Users/gaoqian/Documents/sixseven/workman/groland/datahub/src/app/marketing/industry-news \
   --surface dashboard \
   --intent visual-refine \
@@ -40,7 +40,7 @@ bash scripts/frontend_craft_route.sh \
 ## Expected route evidence
 
 - `frontend_tier`: `L2`
-- `candidate_skills`: includes `frontend-craft`
+- `candidate_skills`: includes `design-craft`
 - `preflight_status`: `pass`
 - `preflight_code`: `OK`
 - `style_authority_path`:
@@ -54,15 +54,15 @@ bash scripts/frontend_craft_route.sh \
 ## Detector command
 
 ```bash
-bash scripts/frontend_craft_detect.sh \
+bash scripts/design_craft_detect.sh \
   --target /Users/gaoqian/Documents/sixseven/workman/groland/datahub/src/app/marketing/industry-news \
   --full-json
 ```
 
-Expected current smoke result: upstream findings `0`; local frontend-craft signal
+Expected current smoke result: upstream findings `0`; local design-craft signal
 findings `0`.
 
-## Selected frontend-craft references
+## Selected design-craft references
 
 For a real implementation pass, read at minimum:
 

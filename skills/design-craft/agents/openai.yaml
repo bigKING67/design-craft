@@ -1,0 +1,4 @@
+interface:
+  display_name: "Design Craft"
+  short_description: "Personal UI/UX/design engineering quality workflow"
+  default_prompt: "Use $design-craft to plan, implement, and verify a product UI/UX, motion, design-system, or frontend quality upgrade."

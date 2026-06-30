@@ -1,7 +1,7 @@
 # Vercel Geist design templates
 
 This directory vendors the public Vercel Geist `design.md` references as local
-seed templates for `frontend-craft`.
+seed templates for `design-craft`.
 
 - `design.md`: fetched from `https://vercel.com/design.md`
 - `design.dark.md`: fetched from `https://vercel.com/design.dark.md`

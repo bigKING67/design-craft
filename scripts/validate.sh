@@ -2,40 +2,47 @@
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-SKILL_DIR="${ROOT_DIR}/skills/frontend-craft"
+SKILL_DIR="${ROOT_DIR}/skills/design-craft"
+LEGACY_SKILL_DIR="${ROOT_DIR}/skills/frontend-craft"
 VALIDATOR="/Users/gaoqian/.codex/skills/.system/skill-creator/scripts/quick_validate.py"
 
 cd "${ROOT_DIR}"
 
 python3 "${VALIDATOR}" "${SKILL_DIR}"
+python3 "${VALIDATOR}" "${LEGACY_SKILL_DIR}"
 
 required_files=(
   "README.md"
   "CHANGELOG.md"
   "VERSION"
   "Makefile"
+  ".gitmodules"
   "docs/maintenance.md"
   "THIRD_PARTY_NOTICES.md"
   "upstreams.lock.json"
+  "skills/design-craft/SKILL.md"
+  "skills/design-craft/agents/openai.yaml"
+  "skills/design-craft/references/source-map.md"
+  "skills/design-craft/references/design-system-contract.md"
+  "skills/design-craft/references/visual-judgment.md"
+  "skills/design-craft/references/product-ui-taste-review.md"
+  "skills/design-craft/references/taste-score-calibration.md"
+  "skills/design-craft/references/impeccable-workflow.md"
+  "skills/design-craft/references/intent-map.md"
+  "skills/design-craft/references/motion-quality.md"
+  "skills/design-craft/references/motion-vocabulary.md"
+  "skills/design-craft/references/engineering-quality.md"
+  "skills/design-craft/references/performance-quality.md"
+  "skills/design-craft/references/architecture-quality.md"
+  "skills/design-craft/references/project-structure.md"
+  "skills/design-craft/references/report-quality.md"
+  "skills/design-craft/references/surface-playbooks.md"
+  "skills/design-craft/references/validation-contract.md"
+  "skills/design-craft/templates/vercel-geist/README.md"
+  "skills/design-craft/templates/vercel-geist/design.md"
+  "skills/design-craft/templates/vercel-geist/design.dark.md"
   "skills/frontend-craft/SKILL.md"
   "skills/frontend-craft/agents/openai.yaml"
-  "skills/frontend-craft/references/source-map.md"
-  "skills/frontend-craft/references/design-system-contract.md"
-  "skills/frontend-craft/references/visual-judgment.md"
-  "skills/frontend-craft/references/product-ui-taste-review.md"
-  "skills/frontend-craft/references/taste-score-calibration.md"
-  "skills/frontend-craft/references/impeccable-workflow.md"
-  "skills/frontend-craft/references/intent-map.md"
-  "skills/frontend-craft/references/engineering-quality.md"
-  "skills/frontend-craft/references/performance-quality.md"
-  "skills/frontend-craft/references/architecture-quality.md"
-  "skills/frontend-craft/references/project-structure.md"
-  "skills/frontend-craft/references/report-quality.md"
-  "skills/frontend-craft/references/surface-playbooks.md"
-  "skills/frontend-craft/references/validation-contract.md"
-  "skills/frontend-craft/templates/vercel-geist/README.md"
-  "skills/frontend-craft/templates/vercel-geist/design.md"
-  "skills/frontend-craft/templates/vercel-geist/design.dark.md"
   "evals/landing-page.md"
   "evals/dashboard-quality.md"
   "evals/datahub-special-report.md"
@@ -54,6 +61,14 @@ required_files=(
   "evals/product-ui-taste/groland-content-assets-l3/score.json"
   "evals/product-ui-taste/groland-content-assets-l3/dom-evidence.desktop.json"
   "evals/product-ui-taste/groland-content-assets-l3/dom-evidence.mobile.json"
+  "scripts/design_craft_audit.sh"
+  "scripts/design_craft_detect.sh"
+  "scripts/design_craft_browser_evidence.py"
+  "scripts/design_craft_pass.sh"
+  "scripts/design_craft_route.sh"
+  "scripts/design_craft_seed_design.sh"
+  "scripts/design_craft_taste_review.sh"
+  "scripts/design_craft_score.py"
   "scripts/frontend_craft_audit.sh"
   "scripts/frontend_craft_detect.sh"
   "scripts/frontend_craft_browser_evidence.py"
@@ -87,6 +102,11 @@ if ! grep -q "Vercel Geist" THIRD_PARTY_NOTICES.md; then
   exit 1
 fi
 
+if ! grep -q "emilkowalski/skills" THIRD_PARTY_NOTICES.md; then
+  echo "THIRD_PARTY_NOTICES.md is missing emilkowalski/skills notice" >&2
+  exit 1
+fi
+
 if ! grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+$' VERSION; then
   echo "VERSION must contain a semantic version such as 0.1.0" >&2
   exit 1
@@ -102,8 +122,25 @@ if ! grep -q "make release-gate" docs/maintenance.md; then
   exit 1
 fi
 
-if rg -n "\\[TODO|TODO:" "skills/frontend-craft"; then
-  echo "Skill still contains TODO markers" >&2
+if ! grep -Fq 'renamed to `design-craft`' skills/frontend-craft/SKILL.md; then
+  echo "legacy frontend-craft alias must point users to design-craft" >&2
+  exit 1
+fi
+
+legacy_extra_files="$(
+  find skills/frontend-craft -type f \
+    ! -path "skills/frontend-craft/SKILL.md" \
+    ! -path "skills/frontend-craft/agents/openai.yaml" \
+    -print
+)"
+if [[ -n "${legacy_extra_files}" ]]; then
+  echo "legacy frontend-craft alias must stay minimal; unexpected files:" >&2
+  echo "${legacy_extra_files}" >&2
+  exit 1
+fi
+
+if rg -n "\\[TODO|TODO:" "skills/design-craft"; then
+  echo "Canonical skill still contains TODO markers" >&2
   exit 1
 fi
 
@@ -111,6 +148,14 @@ for path in \
   "scripts/install_local.sh" \
   "scripts/sync_upstreams.sh" \
   "scripts/validate.sh" \
+  "scripts/design_craft_audit.sh" \
+  "scripts/design_craft_detect.sh" \
+  "scripts/design_craft_browser_evidence.py" \
+  "scripts/design_craft_pass.sh" \
+  "scripts/design_craft_route.sh" \
+  "scripts/design_craft_seed_design.sh" \
+  "scripts/design_craft_taste_review.sh" \
+  "scripts/design_craft_score.py" \
   "scripts/frontend_craft_audit.sh" \
   "scripts/frontend_craft_detect.sh" \
   "scripts/frontend_craft_browser_evidence.py" \
@@ -126,34 +171,57 @@ for path in \
   fi
 done
 
-bash -n scripts/frontend_craft_audit.sh
-bash -n scripts/frontend_craft_detect.sh
-bash -n scripts/frontend_craft_pass.sh
-bash -n scripts/frontend_craft_route.sh
-bash -n scripts/frontend_craft_seed_design.sh
-bash -n scripts/frontend_craft_taste_review.sh
+for path in \
+  scripts/design_craft_audit.sh \
+  scripts/design_craft_detect.sh \
+  scripts/design_craft_pass.sh \
+  scripts/design_craft_route.sh \
+  scripts/design_craft_seed_design.sh \
+  scripts/design_craft_taste_review.sh \
+  scripts/frontend_craft_audit.sh \
+  scripts/frontend_craft_detect.sh \
+  scripts/frontend_craft_pass.sh \
+  scripts/frontend_craft_route.sh \
+  scripts/frontend_craft_seed_design.sh \
+  scripts/frontend_craft_taste_review.sh; do
+  bash -n "${path}"
+done
+
 make -n validate >/dev/null
 make -n release-gate >/dev/null
-python3 -m py_compile scripts/frontend_craft_score.py
-python3 -m py_compile scripts/frontend_craft_browser_evidence.py
-python3 -m py_compile scripts/upstream_absorption_report.py
-python3 scripts/frontend_craft_score.py --self --no-smoke --json >/dev/null
-python3 scripts/frontend_craft_browser_evidence.py --check --print-js >/dev/null
+
+for path in \
+  scripts/design_craft_score.py \
+  scripts/design_craft_browser_evidence.py \
+  scripts/frontend_craft_score.py \
+  scripts/frontend_craft_browser_evidence.py \
+  scripts/upstream_absorption_report.py; do
+  python3 -m py_compile "${path}"
+done
+
+python3 scripts/design_craft_score.py --self --no-smoke --json >/dev/null
+python3 scripts/design_craft_browser_evidence.py --check --print-js >/dev/null
 python3 scripts/upstream_absorption_report.py --json >/dev/null
 python3 scripts/upstream_absorption_report.py --json --remote >/dev/null
-bash scripts/frontend_craft_detect.sh --target skills/frontend-craft --json-only >/dev/null
-bash scripts/frontend_craft_detect.sh --target skills/frontend-craft --full-json >/dev/null
-bash scripts/frontend_craft_pass.sh --target skills/frontend-craft --mode audit --skip-route --skip-score >/dev/null
-bash scripts/frontend_craft_audit.sh --target skills/frontend-craft --mode audit --skip-route --skip-score >/dev/null
-bash scripts/frontend_craft_audit.sh --target skills/frontend-craft --mode critique --skip-route --skip-score >/dev/null
-bash scripts/frontend_craft_seed_design.sh --target skills/frontend-craft --dry-run >/dev/null
-bash scripts/frontend_craft_taste_review.sh --target skills/frontend-craft --context "validation smoke" --evidence-level L0 >/dev/null
 
-tmp_design_seed_dir="$(mktemp -d -t frontend-craft-seed.XXXXXX)"
+bash scripts/design_craft_detect.sh --target skills/design-craft --json-only >/dev/null
+bash scripts/design_craft_detect.sh --target skills/design-craft --full-json >/dev/null
+bash scripts/design_craft_pass.sh --target skills/design-craft --mode audit --skip-route --skip-score >/dev/null
+bash scripts/design_craft_pass.sh --target skills/design-craft --mode critique --skip-route --skip-score >/dev/null
+bash scripts/design_craft_pass.sh --target skills/design-craft --mode motion --skip-route --skip-score >/dev/null
+bash scripts/design_craft_audit.sh --target skills/design-craft --mode audit --skip-route --skip-score >/dev/null
+bash scripts/design_craft_audit.sh --target skills/design-craft --mode critique --skip-route --skip-score >/dev/null
+bash scripts/design_craft_seed_design.sh --target skills/design-craft --dry-run >/dev/null
+bash scripts/design_craft_taste_review.sh --target skills/design-craft --context "validation smoke" --evidence-level L0 >/dev/null
+
+bash scripts/frontend_craft_pass.sh --target skills/design-craft --mode motion --skip-route --skip-score >/dev/null
+python3 scripts/frontend_craft_score.py --self --no-smoke --json >/dev/null
+
+tmp_design_seed_dir="$(mktemp -d -t design-craft-seed.XXXXXX)"
 trap 'rm -rf "${tmp_design_seed_dir}"' EXIT
-bash scripts/frontend_craft_seed_design.sh --target "${tmp_design_seed_dir}" >/dev/null
-cmp skills/frontend-craft/templates/vercel-geist/design.md "${tmp_design_seed_dir}/DESIGN.md" >/dev/null
-cmp skills/frontend-craft/templates/vercel-geist/design.dark.md "${tmp_design_seed_dir}/DESIGN.dark.md" >/dev/null
+bash scripts/design_craft_seed_design.sh --target "${tmp_design_seed_dir}" >/dev/null
+cmp skills/design-craft/templates/vercel-geist/design.md "${tmp_design_seed_dir}/DESIGN.md" >/dev/null
+cmp skills/design-craft/templates/vercel-geist/design.dark.md "${tmp_design_seed_dir}/DESIGN.dark.md" >/dev/null
 
 for ref in \
   "design-system-contract.md" \
@@ -162,6 +230,8 @@ for ref in \
   "taste-score-calibration.md" \
   "impeccable-workflow.md" \
   "intent-map.md" \
+  "motion-quality.md" \
+  "motion-vocabulary.md" \
   "engineering-quality.md" \
   "performance-quality.md" \
   "architecture-quality.md" \
@@ -170,7 +240,7 @@ for ref in \
   "surface-playbooks.md" \
   "validation-contract.md" \
   "source-map.md"; do
-  if ! grep -q "${ref}" skills/frontend-craft/SKILL.md; then
+  if ! grep -q "${ref}" skills/design-craft/SKILL.md; then
     echo "SKILL.md does not route reference: ${ref}" >&2
     exit 1
   fi
@@ -179,8 +249,15 @@ done
 for template in \
   "templates/vercel-geist/design.md" \
   "templates/vercel-geist/design.dark.md"; do
-  if ! grep -q "${template}" skills/frontend-craft/SKILL.md; then
+  if ! grep -q "${template}" skills/design-craft/SKILL.md; then
     echo "SKILL.md does not route template: ${template}" >&2
+    exit 1
+  fi
+done
+
+for upstream_name in taste-skill impeccable emilkowalski-skills; do
+  if ! grep -q "\"${upstream_name}\"" upstreams.lock.json; then
+    echo "upstreams.lock.json is missing ${upstream_name}" >&2
     exit 1
   fi
 done
@@ -278,13 +355,13 @@ if errors:
 PY
 
 for score_json in evals/product-ui-taste/*/score.json; do
-  python3 scripts/frontend_craft_browser_evidence.py --validate-score-json "${score_json}" >/dev/null
+  python3 scripts/design_craft_browser_evidence.py --validate-score-json "${score_json}" >/dev/null
 done
 
 for evidence_json in evals/product-ui-taste/*/dom-evidence*.json; do
   if [[ -e "${evidence_json}" ]]; then
-    python3 scripts/frontend_craft_browser_evidence.py --validate-evidence-json "${evidence_json}" >/dev/null
+    python3 scripts/design_craft_browser_evidence.py --validate-evidence-json "${evidence_json}" >/dev/null
   fi
 done
 
-echo "frontend-craft validation passed."
+echo "design-craft validation passed."

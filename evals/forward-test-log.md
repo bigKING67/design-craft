@@ -3,7 +3,7 @@
 Date: 2026-06-24
 
 Scope: independent read-only subagent passes against the local
-`frontend-craft` skill. These runs evaluated planning behavior and skill
+`design-craft` skill. These runs evaluated planning behavior and skill
 selection quality only; they did not implement a live frontend task.
 
 ## Runs

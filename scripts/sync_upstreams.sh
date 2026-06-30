@@ -4,39 +4,61 @@ set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "${ROOT_DIR}"
 
-before_taste="$(git -C upstreams/taste-skill rev-parse HEAD 2>/dev/null || true)"
-before_impeccable="$(git -C upstreams/impeccable rev-parse HEAD 2>/dev/null || true)"
+upstreams=(
+  "taste-skill"
+  "impeccable"
+  "emilkowalski-skills"
+)
 
-git submodule update --init --remote upstreams/taste-skill upstreams/impeccable
+before_lines=()
+for name in "${upstreams[@]}"; do
+  before_lines+=("${name}:$(git -C "upstreams/${name}" rev-parse HEAD 2>/dev/null || true)")
+done
 
-after_taste="$(git -C upstreams/taste-skill rev-parse HEAD)"
-after_impeccable="$(git -C upstreams/impeccable rev-parse HEAD)"
+git submodule update --init --remote \
+  upstreams/taste-skill \
+  upstreams/impeccable \
+  upstreams/emilkowalski-skills
 
-python3 - "${after_taste}" "${after_impeccable}" <<'PY'
+python3 - <<'PY'
 import json
-import sys
+import subprocess
 from pathlib import Path
 
-taste, impeccable = sys.argv[1], sys.argv[2]
-payload = {
-    "upstreams": {
-        "taste-skill": {
-            "repo": "https://github.com/Leonxlnx/taste-skill.git",
-            "path": "upstreams/taste-skill",
-            "license": "MIT",
-            "commit": taste,
-        },
-        "impeccable": {
-            "repo": "https://github.com/pbakaus/impeccable.git",
-            "path": "upstreams/impeccable",
-            "license": "Apache-2.0",
-            "commit": impeccable,
-        },
-    }
+upstreams = {
+    "taste-skill": {
+        "repo": "https://github.com/Leonxlnx/taste-skill.git",
+        "path": "upstreams/taste-skill",
+        "license": "MIT",
+    },
+    "impeccable": {
+        "repo": "https://github.com/pbakaus/impeccable.git",
+        "path": "upstreams/impeccable",
+        "license": "Apache-2.0",
+    },
+    "emilkowalski-skills": {
+        "repo": "https://github.com/emilkowalski/skills.git",
+        "path": "upstreams/emilkowalski-skills",
+        "license": "MIT",
+    },
 }
-Path("upstreams.lock.json").write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
+
+for meta in upstreams.values():
+    meta["commit"] = subprocess.check_output(
+        ["git", "-C", meta["path"], "rev-parse", "HEAD"],
+        text=True,
+    ).strip()
+
+Path("upstreams.lock.json").write_text(
+    json.dumps({"upstreams": upstreams}, indent=2) + "\n",
+    encoding="utf-8",
+)
 PY
 
-echo "taste-skill: ${before_taste:-none} -> ${after_taste}"
-echo "impeccable: ${before_impeccable:-none} -> ${after_impeccable}"
-echo "Updated upstreams.lock.json. Review upstream changes before changing skills/frontend-craft."
+for line in "${before_lines[@]}"; do
+  name="${line%%:*}"
+  before="${line#*:}"
+  after="$(git -C "upstreams/${name}" rev-parse HEAD)"
+  echo "${name}: ${before:-none} -> ${after}"
+done
+echo "Updated upstreams.lock.json. Review upstream changes before changing skills/design-craft."

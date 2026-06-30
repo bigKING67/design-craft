@@ -1,8 +1,8 @@
 # Third-party notices
 
-This project is a personal fusion layer built on top of two upstream open-source
-frontend design-skill projects. Upstream repositories are kept as pristine
-submodules under `upstreams/`.
+This project is a personal fusion layer built on top of upstream open-source
+design engineering and frontend quality skill projects. Upstream repositories
+are kept as pristine submodules under `upstreams/`.
 
 ## Leonxlnx/taste-skill
 
@@ -40,11 +40,27 @@ The full upstream license is available at:
 
 - Source: https://vercel.com/design.md
 - Source: https://vercel.com/design.dark.md
-- Local path: `skills/frontend-craft/templates/vercel-geist/`
+- Local path: `skills/design-craft/templates/vercel-geist/`
 - Retrieved: 2026-06-24
 
 The fusion layer vendors these public design-system references as complete seed
 templates for new or weakly specified developer-product design systems.
+
+## emilkowalski/skills
+
+- Repository: https://github.com/emilkowalski/skills
+- License: MIT
+- Local path: `upstreams/emilkowalski-skills`
+- Initial pinned commit:
+  `a47903a06a05d2e24c483bd8961c85969a51a494`
+
+The fusion layer references and adapts ideas around motion purpose, animation
+frequency, easing and duration standards, physicality, gesture handling,
+animation performance, reduced-motion behavior, strict animation review, and
+animation vocabulary.
+
+The full upstream license is available at:
+`upstreams/emilkowalski-skills/LICENSE`.
 
 ## Fusion-layer policy
 

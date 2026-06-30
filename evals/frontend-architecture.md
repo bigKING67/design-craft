@@ -2,7 +2,7 @@
 
 ## Prompt
 
-Use `frontend-craft` to review or implement a frontend architecture change:
+Use `design-craft` to review or implement a frontend architecture change:
 route ownership, data adapters, component boundaries, state ownership, and file
 layout must remain coherent and maintainable.
 
@@ -14,7 +14,7 @@ layout must remain coherent and maintainable.
 - `directory_governance_required`: `true`
 - `performance_review_required`: depends on data/render path
 
-## Expected frontend-craft references
+## Expected design-craft references
 
 - `references/architecture-quality.md`
 - `references/engineering-quality.md`

@@ -2,7 +2,7 @@
 
 ## Prompt
 
-Use `frontend-craft` to build or redesign a premium landing page for a
+Use `design-craft` to build or redesign a premium landing page for a
 developer tool. The page must avoid generic AI SaaS patterns, keep strong
 typographic hierarchy, work on mobile, and preserve the project's existing
 `DESIGN.md` unless the user explicitly approves evolution.
@@ -17,7 +17,7 @@ typographic hierarchy, work on mobile, and preserve the project's existing
 - `candidate_skills` reported separately from actually used skills
 - `style_authority_path` read when present
 
-## Expected frontend-craft references
+## Expected design-craft references
 
 - `references/visual-judgment.md`
 - `references/impeccable-workflow.md`

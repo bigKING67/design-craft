@@ -140,7 +140,7 @@ Implementation smells that usually lower the score:
 ## 100-point score
 
 Use this score for the concrete UI under review. Do not confuse it with
-`scripts/frontend_craft_score.py --self`, which scores this workflow repo.
+`scripts/design_craft_score.py --self`, which scores this workflow repo.
 When the exact score is the main deliverable, also read
 `taste-score-calibration.md` and label the evidence level before the score.
 
@@ -297,7 +297,7 @@ Design maturity level: <band>
 ### 14. Microcopy
 ### 15. Accessibility
 ### 16. Responsive and Edge Cases
-### 17. Frontend Craft
+### 17. Design Craft
 
 ## Redesign Recommendation
 
