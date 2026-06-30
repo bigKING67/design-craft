@@ -46,3 +46,36 @@ ran and what remains unverified.
   Result: upstream findings `0`; frontend-craft local signal findings `0`.
 - Browser validation: not claimed by this log entry.
 - Screenshot validation: not claimed by this log entry.
+
+## 2026-06-30 - Product UI taste L2 browser evidence calibration
+
+- Target:
+  current Chrome tabs observed through TMWD, sampled read-only for
+  `frontend-craft` product UI taste calibration.
+- Selected cases:
+  - `cpa-management-quota`
+  - `cpa-usage-keeper`
+  - `groland-datahub-home`
+  - `groland-content-assets-live`
+- Skipped cases:
+  - external finance console, because it is sensitive.
+  - ChatGPT conversation page, because it is private conversation content.
+- Evidence status:
+  - `tmwd` transport health: healthy.
+  - Browser tab list: observed through `browser_tab_ops`.
+  - Screenshot artifacts: captured through TMWD `browser_screenshot_ops` using
+    `Page.captureScreenshot`, stored outside the repo under
+    `~/.tmwd-browser-mcp/runtime/runs/frontend-craft-live-evals/`.
+  - DOM/computed style: sampled with `browser_execute_js` for body, headings,
+    controls, and surface summaries.
+- Eval path:
+  `evals/product-ui-taste/live-browser-samples/`
+- Evidence level:
+  L2 browser evidence.
+- Browser validation:
+  claimed only for viewport screenshot and DOM/computed-style observation.
+- Screenshot validation:
+  claimed only for the artifact path/hash/dimensions recorded in the eval case.
+- Not verified:
+  mobile layout, hover, focus, selected, loading, empty, error, success,
+  keyboard, touch, or before/after improvement.

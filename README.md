@@ -130,6 +130,11 @@ bash scripts/frontend_craft_taste_review.sh \
   --evidence-level L0
 ```
 
+Product UI taste calibration cases live under `evals/product-ui-taste/`. Static
+cases use L0/L1 evidence; live browser cases should record TMWD screenshot
+artifact paths, SHA-256 hashes, dimensions, DOM/computed-style summaries, and
+the states that were not verified.
+
 Run the detector. Default text output includes pinned Impeccable findings plus
 local frontend-craft review signals; `--json-only` remains raw upstream JSON for
 compatibility, and `--full-json` emits the combined payload.

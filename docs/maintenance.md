@@ -165,6 +165,10 @@ cases. Each case should record:
 Keep binary screenshots out of the repo unless the image itself is required for
 reproducibility and attribution is clear.
 
+For live browser cases, keep the screenshot PNGs in the TMWD repo-external run
+directory and record only artifact path, SHA-256, dimensions, collection time,
+evidence level, and a redacted visual/DOM summary in the eval case.
+
 ## Release checklist
 
 Before committing a release:

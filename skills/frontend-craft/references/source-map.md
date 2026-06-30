@@ -93,6 +93,10 @@ Geist templates as a comparison baseline for missing system pieces.
   anti-inflation rules for numeric taste scores.
 - `evals/product-ui-taste/material-ops-home/`: first screenshot-derived
   calibration case for a clean but generic operations dashboard.
+- `evals/product-ui-taste/live-browser-samples/`: L2 browser evidence
+  calibration set from real TMWD-observed Chrome tabs; screenshot binaries stay
+  outside the repo and the eval records artifact path, hash, dimensions, and
+  redacted DOM/style summaries.
 - `scripts/frontend_craft_taste_review.sh`: deterministic packet generator for
   product UI taste reviews; it does not replace the agent's judgment.
 

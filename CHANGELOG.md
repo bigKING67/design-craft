@@ -4,6 +4,11 @@ All notable local changes to `frontend-craft` are recorded here.
 
 ## Unreleased
 
+- Added `evals/product-ui-taste/live-browser-samples` with four real Chrome
+  tab L2 product UI taste calibration samples backed by TMWD screenshot
+  artifacts and DOM/computed-style evidence.
+- Validation now checks every product UI taste `score.json` and requires at
+  least one L2+ browser evidence case.
 - Added TMWD `browser_screenshot_ops` screenshot evidence to the frontend
   validation contract, route summary, and delivery expectations.
 - Added `references/product-ui-taste-review.md` for concrete product UI scoring,

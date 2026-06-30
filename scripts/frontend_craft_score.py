@@ -42,6 +42,26 @@ def has(root: Path, rel: str) -> bool:
     return (root / rel).exists()
 
 
+def has_product_ui_l2_case(root: Path) -> bool:
+    for score_path in sorted((root / "evals/product-ui-taste").glob("*/score.json")):
+        try:
+            payload = json.loads(score_path.read_text(encoding="utf-8"))
+        except Exception:
+            continue
+        entries = payload.get("cases")
+        if entries is None:
+            entries = [payload]
+        if not isinstance(entries, list):
+            continue
+        for entry in entries:
+            if not isinstance(entry, dict):
+                continue
+            level = entry.get("evidence_level") or payload.get("evidence_level")
+            if level in {"L2", "L3", "L4"} and entry.get("screenshot_sha256"):
+                return True
+    return False
+
+
 def infer_root(target: Path) -> Path:
     target = target.expanduser().resolve()
     if target.is_file():
@@ -246,6 +266,7 @@ def build_score(root: Path, run_smoke: bool) -> list[Dimension]:
                 ("product UI taste score" in validation, "product UI score is distinct from source score", "Distinguish UI taste scores from the workflow source score."),
                 (has(root, "scripts/frontend_craft_taste_review.sh"), "taste review wrapper exists", "Add a stable product UI taste review wrapper."),
                 (has(root, "evals/product-ui-taste/material-ops-home/score.json"), "product UI taste golden case exists", "Add at least one product UI taste calibration case."),
+                (has_product_ui_l2_case(root), "product UI taste L2 browser case exists", "Add at least one product UI taste case with browser screenshot and DOM/style evidence."),
                 ("critique" in read_text(root / "scripts/frontend_craft_audit.sh"), "critique mode present", "Add a lightweight critique mode."),
                 ("太 AI" in read_text(root / "skills/frontend-craft/references/intent-map.md"), "subjective intent mapping present", "Map subjective user phrases to workflow modes."),
                 (detector_smoke or not run_smoke, "detector smoke passes", "Fix detector smoke."),
@@ -283,7 +304,7 @@ def maturity_cap(root: Path) -> tuple[int, list[str]]:
     elif not has(root, "evals/live-task-log.md"):
         cap = min(cap, 96)
         reasons.append("independent forward tests passed, but no live implementation task log yet")
-    elif "Browser validation: not claimed" in read_text(root / "evals/live-task-log.md"):
+    elif "Browser validation: not claimed" in read_text(root / "evals/live-task-log.md") and not has_product_ui_l2_case(root):
         reasons.append("live task log exists; browser validation is intentionally not claimed yet")
 
     return cap, reasons

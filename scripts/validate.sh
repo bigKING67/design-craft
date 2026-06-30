@@ -46,6 +46,9 @@ required_files=(
   "evals/product-ui-taste/material-ops-home/input.md"
   "evals/product-ui-taste/material-ops-home/review.expected.md"
   "evals/product-ui-taste/material-ops-home/score.json"
+  "evals/product-ui-taste/live-browser-samples/input.md"
+  "evals/product-ui-taste/live-browser-samples/review.expected.md"
+  "evals/product-ui-taste/live-browser-samples/score.json"
   "scripts/frontend_craft_audit.sh"
   "scripts/frontend_craft_detect.sh"
   "scripts/frontend_craft_pass.sh"
@@ -197,21 +200,69 @@ import json
 import sys
 from pathlib import Path
 
-score_path = Path("evals/product-ui-taste/material-ops-home/score.json")
-payload = json.loads(score_path.read_text(encoding="utf-8"))
 errors = []
-if payload.get("evidence_level") != "L0":
-    errors.append("material-ops-home evidence_level must stay L0 until browser evidence is added")
-expected = payload.get("expected_score")
-low, high = payload.get("acceptable_range", [None, None])
-if not isinstance(expected, int) or not isinstance(low, int) or not isinstance(high, int):
-    errors.append("material-ops-home score fields must be integers")
-elif not (low <= expected <= high):
-    errors.append("material-ops-home expected_score must fit acceptable_range")
-required = payload.get("required_findings", [])
-guards = payload.get("false_positive_guards", [])
-if len(required) < 3 or len(guards) < 3:
-    errors.append("material-ops-home must keep required findings and false-positive guards")
+score_paths = sorted(Path("evals/product-ui-taste").glob("*/score.json"))
+if not score_paths:
+    errors.append("product-ui-taste must include at least one score.json")
+
+levels = {"L0", "L1", "L2", "L3", "L4"}
+has_l2_plus = False
+
+for score_path in score_paths:
+    payload = json.loads(score_path.read_text(encoding="utf-8"))
+    root_case_id = payload.get("case_id") or score_path.parent.name
+    entries = payload.get("cases")
+    if entries is None:
+        entries = [payload]
+    if not isinstance(entries, list) or not entries:
+        errors.append(f"{score_path}: cases must be a non-empty list or omitted for a singleton case")
+        continue
+
+    for index, entry in enumerate(entries):
+        case_id = entry.get("case_id") or f"{root_case_id}[{index}]"
+        level = entry.get("evidence_level") or payload.get("evidence_level")
+        if level not in levels:
+            errors.append(f"{score_path}: {case_id} evidence_level must be one of {sorted(levels)}")
+        if level in {"L2", "L3", "L4"}:
+            has_l2_plus = True
+            if not entry.get("screenshot_sha256"):
+                errors.append(f"{score_path}: {case_id} L2+ case must record screenshot_sha256")
+            dims = entry.get("screenshot_dimensions")
+            if (
+                not isinstance(dims, list)
+                or len(dims) != 2
+                or not all(isinstance(value, int) and value > 0 for value in dims)
+            ):
+                errors.append(f"{score_path}: {case_id} L2+ case must record screenshot_dimensions")
+
+        expected = entry.get("expected_score")
+        acceptable = entry.get("acceptable_range")
+        if (
+            not isinstance(expected, int)
+            or not isinstance(acceptable, list)
+            or len(acceptable) != 2
+            or not all(isinstance(value, int) for value in acceptable)
+        ):
+            errors.append(f"{score_path}: {case_id} score fields must be integers")
+        else:
+            low, high = acceptable
+            if not low <= expected <= high:
+                errors.append(f"{score_path}: {case_id} expected_score must fit acceptable_range")
+
+        if not isinstance(entry.get("maturity_band"), str) or not entry["maturity_band"]:
+            errors.append(f"{score_path}: {case_id} maturity_band is required")
+
+        required = entry.get("required_findings", [])
+        guards = entry.get("false_positive_guards", [])
+        if len(required) < 3 or len(guards) < 3:
+            errors.append(f"{score_path}: {case_id} must keep required findings and false-positive guards")
+
+material_payload = json.loads(Path("evals/product-ui-taste/material-ops-home/score.json").read_text(encoding="utf-8"))
+if material_payload.get("evidence_level") != "L0":
+    errors.append("material-ops-home evidence_level must stay L0 as the static screenshot calibration case")
+if not has_l2_plus:
+    errors.append("product-ui-taste must include at least one L2+ browser evidence case")
+
 if errors:
     print("\n".join(errors), file=sys.stderr)
     sys.exit(1)
