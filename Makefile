@@ -1,4 +1,6 @@
-.PHONY: validate score pass audit critique motion taste-review seed-dry-run route-smoke upstream-report upstream-remote-report install legacy-alias-smoke release-gate
+DESIGN_CRAFT_SKILL_ROOT ?= $(HOME)/.agents/skills
+
+.PHONY: validate score pass audit critique motion taste-review seed-dry-run route-smoke doctor init-dry-run smell-smoke upstream-report upstream-remote-report install legacy-alias-smoke release-gate
 
 validate:
 	bash scripts/validate.sh
@@ -44,6 +46,23 @@ route-smoke:
 	} > "$$tmp_dir/DESIGN.md"; \
 	bash scripts/design_craft_route.sh --target "$$tmp_dir" --surface dashboard --intent visual-refine --scope page >/dev/null
 
+doctor:
+	bash scripts/design_craft_doctor.sh --target . --json >/dev/null
+
+init-dry-run:
+	@tmp_dir="$$(mktemp -d -t design-craft-init.XXXXXX)"; \
+	trap 'rm -rf "$$tmp_dir"' EXIT; \
+	bash scripts/design_craft_init_agent.sh --agent codex --target "$$tmp_dir" --scope project --dry-run >/dev/null; \
+	bash scripts/design_craft_init_agent.sh --agent cursor --target "$$tmp_dir" --scope project --with-rule --dry-run >/dev/null; \
+	bash scripts/design_craft_init_agent.sh --agent claude --target "$$tmp_dir" --scope project --dry-run >/dev/null; \
+	bash scripts/design_craft_init_agent.sh --agent pi --target "$$tmp_dir" --scope project --dry-run >/dev/null; \
+	bash scripts/design_craft_init_agent.sh --agent generic --target "$$tmp_dir" --scope project --dry-run >/dev/null
+
+smell-smoke:
+	python3 scripts/design_craft_css_smell_scan.py --target evals/fixtures/css-smells --json >/dev/null
+	python3 scripts/design_craft_focus_audit.py --target evals/fixtures/focus-smells --json >/dev/null
+	python3 scripts/design_craft_token_audit.py --target evals/fixtures/token-smells --json >/dev/null
+
 upstream-report:
 	python3 scripts/upstream_absorption_report.py
 
@@ -55,7 +74,7 @@ install:
 
 legacy-alias-smoke:
 	bash scripts/frontend_craft_pass.sh --target skills/design-craft --mode motion --skip-route --skip-score >/dev/null
-	grep -Fq 'renamed to `design-craft`' /Users/gaoqian/.agents/skills/frontend-craft/SKILL.md
+	grep -Fq 'renamed to `design-craft`' "$(DESIGN_CRAFT_SKILL_ROOT)/frontend-craft/SKILL.md"
 
-release-gate: validate score pass audit critique motion taste-review seed-dry-run route-smoke upstream-report upstream-remote-report install legacy-alias-smoke
-	diff -qr skills/design-craft /Users/gaoqian/.agents/skills/design-craft
+release-gate: validate score pass audit critique motion taste-review seed-dry-run route-smoke doctor init-dry-run smell-smoke upstream-report upstream-remote-report install legacy-alias-smoke
+	diff -qr skills/design-craft "$(DESIGN_CRAFT_SKILL_ROOT)/design-craft"

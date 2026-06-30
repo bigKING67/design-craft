@@ -28,12 +28,15 @@ source of truth, then folds in:
 The skill is intentionally personal and local-first. For DataHub, dashboards,
 special reports, and similar business surfaces, scoped project rules, live
 runtime behavior, and project `DESIGN.md` always outrank generic visual rules.
+The canonical package is still portable: agent-specific integration belongs in
+`adapters/`, while `skills/design-craft/` remains the single source skill.
 
 ## Layout
 
 ```text
 design-craft/
 ├── skills/design-craft/        # Installable Codex skill
+├── adapters/                     # Thin Codex/Cursor/Claude/Pi/generic install adapters
 ├── scripts/                      # Deterministic route/pass/detect/score/review tools
 ├── evals/                        # Forward-test and live-task evidence
 │   ├── golden-tasks/             # Reproducible real-task evidence cards
@@ -62,18 +65,46 @@ bash scripts/install_local.sh
 The installer syncs:
 
 ```text
-skills/design-craft -> /Users/gaoqian/.agents/skills/design-craft
-skills/frontend-craft -> /Users/gaoqian/.agents/skills/frontend-craft
+skills/design-craft -> ${DESIGN_CRAFT_SKILL_ROOT:-$HOME/.agents/skills}/design-craft
+skills/frontend-craft -> ${DESIGN_CRAFT_SKILL_ROOT:-$HOME/.agents/skills}/frontend-craft
 ```
 
 Verify the installed copy when needed:
 
 ```bash
-diff -qr skills/design-craft /Users/gaoqian/.agents/skills/design-craft
+diff -qr skills/design-craft "${DESIGN_CRAFT_SKILL_ROOT:-$HOME/.agents/skills}/design-craft"
 ```
 
 `skills/frontend-craft` is a legacy compatibility alias only. New route and
 preflight defaults should use `design-craft`.
+
+## Agent adapters
+
+Install the same canonical skill into a host-specific location:
+
+```bash
+bash scripts/design_craft_init_agent.sh --agent codex --target /path/to/project --scope project --dry-run
+bash scripts/design_craft_init_agent.sh --agent cursor --target /path/to/project --scope project --with-rule --dry-run
+bash scripts/design_craft_init_agent.sh --agent claude --target /path/to/project --scope project --dry-run
+bash scripts/design_craft_init_agent.sh --agent pi --target /path/to/project --scope project --dry-run
+bash scripts/design_craft_init_agent.sh --agent generic --target /path/to/project --scope project --dry-run
+```
+
+Adapter notes live under:
+
+```text
+adapters/codex/
+adapters/cursor/
+adapters/claude/
+adapters/pi/
+adapters/generic/
+```
+
+Run a portability check without modifying files:
+
+```bash
+bash scripts/design_craft_doctor.sh --target . --json
+```
 
 ## Default design seed
 
@@ -172,6 +203,15 @@ python3 scripts/design_craft_browser_evidence.py \
   --validate-evidence-json evals/product-ui-taste/groland-content-assets-l3/dom-evidence.desktop.json
 ```
 
+Run static UI smell scanners. These are review signals, not a replacement for
+design judgment or browser evidence:
+
+```bash
+python3 scripts/design_craft_css_smell_scan.py --target /path/to/project
+python3 scripts/design_craft_focus_audit.py --target /path/to/project
+python3 scripts/design_craft_token_audit.py --target /path/to/project
+```
+
 Run the detector. Default text output includes pinned Impeccable findings plus
 local design-craft review signals; `--json-only` remains raw upstream JSON for
 compatibility, and `--full-json` emits the combined payload.
@@ -238,7 +278,8 @@ make release-gate
 The release gate is documented in `docs/maintenance.md`. It checks the skill
 schema, required references, shell/Python syntax, detector smoke, score smoke,
 audit wrapper smoke, fixture-based route smoke, upstream lock consistency, and
-local install parity.
+local install parity. It also smoke-tests adapters, doctor output, and the
+static smell scanners.
 
 Route smoke uses a temporary fixture project with its own `DESIGN.md`, because
 `design-craft` itself is a reusable skill system rather than a product UI target:

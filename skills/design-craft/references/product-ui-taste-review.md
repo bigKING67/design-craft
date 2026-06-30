@@ -8,6 +8,11 @@ review. It is not a replacement for project authority: live runtime evidence,
 scoped project rules, `DESIGN.md`, tokens, components, and product context still
 win over this generic rubric.
 
+When the user needs concrete redesign direction, pair this with
+`design-move-library.md`. When the issue is basic hierarchy, grouping,
+alignment, repetition, or contrast, pair it with
+`foundational-visual-principles.md`.
+
 ## When to use
 
 Use with `critique` when the user asks for:
@@ -317,6 +322,8 @@ After:
 - Components or variants to standardize.
 - Layout primitives to use.
 - CSS smells to remove.
+- Static scanner findings to address, if `design_craft_css_smell_scan.py`,
+  `design_craft_focus_audit.py`, or `design_craft_token_audit.py` was used.
 - Responsive and state behavior to cover.
 
 ## Acceptance Checklist

@@ -37,6 +37,15 @@ For the `design-craft` source repo itself, use:
 - `scripts/design_craft_browser_evidence.py --validate-score-json <path>` and
   `--validate-evidence-json <path>` to guard product UI score inflation and
   captured browser evidence schema.
+- `scripts/design_craft_css_smell_scan.py --target <path>`,
+  `scripts/design_craft_focus_audit.py --target <path>`, and
+  `scripts/design_craft_token_audit.py --target <path>` to collect static UI
+  smell signals. Treat these as review prompts, not automatic design verdicts.
+- `scripts/design_craft_doctor.sh --target <path>` for local portability and
+  optional capability checks.
+- `scripts/design_craft_init_agent.sh --agent <codex|cursor|claude|pi|generic>
+  --target <path> --dry-run` before installing the canonical skill into another
+  host agent.
 - `scripts/design_craft_score.py --self`
 - `scripts/upstream_absorption_report.py --remote` when checking whether pinned
   upstreams have newer remote heads before absorption work.
@@ -125,6 +134,9 @@ Check and report:
 - UI copy quality for actions, errors, toasts, empty states, and loading labels;
   avoid weak labels such as `OK`, `Confirm`, `Submit`, `Success`, and
   `Something went wrong` when a specific action or recovery step is known.
+- Static scanner findings, when used, with clear severity and target path. Do
+  not present scanner findings as proof of visual quality without browser or
+  runtime evidence.
 
 ## Route summary fields
 
@@ -176,6 +188,22 @@ L3/L4 product UI score cases must include `responsive_viewports` and
 `state_checks` in their `score.json`. If flat hierarchy or card soup remains the
 main visible issue, do not score above 84 just because the layout fits multiple
 viewports.
+
+The `evals/product-ui-taste/before-after/_template/` files are scaffolding only.
+They are not real L4 evidence and must not be cited as a completed improvement.
+
+## Cross-agent validation
+
+When validating adapter portability, use:
+
+- `scripts/design_craft_init_agent.sh --agent <agent> --target <temp-dir>
+  --scope project --dry-run`
+- `scripts/design_craft_doctor.sh --target . --json`
+- `evals/cross-agent/` prompts only after real agent outputs are collected.
+
+Do not claim Cursor, Claude, Pi, Codex, or another host behaves consistently
+until that host has actually run the same benchmark prompt and its output is
+recorded.
 
 ## Unverified work
 

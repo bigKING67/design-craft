@@ -4,9 +4,15 @@ set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 SKILL_DIR="${ROOT_DIR}/skills/design-craft"
 LEGACY_SKILL_DIR="${ROOT_DIR}/skills/frontend-craft"
-VALIDATOR="/Users/gaoqian/.codex/skills/.system/skill-creator/scripts/quick_validate.py"
+VALIDATOR="${SKILL_CREATOR_QUICK_VALIDATE:-${HOME}/.codex/skills/.system/skill-creator/scripts/quick_validate.py}"
 
 cd "${ROOT_DIR}"
+
+if [[ ! -f "${VALIDATOR}" ]]; then
+  echo "Missing skill validator: ${VALIDATOR}" >&2
+  echo "Set SKILL_CREATOR_QUICK_VALIDATE to a compatible quick_validate.py path." >&2
+  exit 1
+fi
 
 python3 "${VALIDATOR}" "${SKILL_DIR}"
 python3 "${VALIDATOR}" "${LEGACY_SKILL_DIR}"
@@ -23,6 +29,8 @@ required_files=(
   "skills/design-craft/SKILL.md"
   "skills/design-craft/agents/openai.yaml"
   "skills/design-craft/references/source-map.md"
+  "skills/design-craft/references/foundational-visual-principles.md"
+  "skills/design-craft/references/design-move-library.md"
   "skills/design-craft/references/design-system-contract.md"
   "skills/design-craft/references/visual-judgment.md"
   "skills/design-craft/references/product-ui-taste-review.md"
@@ -61,9 +69,42 @@ required_files=(
   "evals/product-ui-taste/groland-content-assets-l3/score.json"
   "evals/product-ui-taste/groland-content-assets-l3/dom-evidence.desktop.json"
   "evals/product-ui-taste/groland-content-assets-l3/dom-evidence.mobile.json"
+  "evals/product-ui-taste/before-after/README.md"
+  "evals/product-ui-taste/before-after/_template/input.md"
+  "evals/product-ui-taste/before-after/_template/score.before.json"
+  "evals/product-ui-taste/before-after/_template/score.after.json"
+  "evals/product-ui-taste/before-after/_template/diff-summary.md"
+  "evals/product-ui-taste/before-after/_template/validation.md"
+  "evals/cross-agent/README.md"
+  "evals/cross-agent/_template/prompt.md"
+  "evals/cross-agent/_template/expected-findings.md"
+  "evals/cross-agent/_template/scorecard.md"
+  "evals/cross-agent/same-prompt-dashboard-review/prompt.md"
+  "evals/cross-agent/same-prompt-dashboard-review/expected-findings.md"
+  "evals/cross-agent/same-prompt-dashboard-review/scorecard.md"
+  "evals/cross-agent/same-prompt-landing-polish/prompt.md"
+  "evals/cross-agent/same-prompt-landing-polish/expected-findings.md"
+  "evals/cross-agent/same-prompt-landing-polish/scorecard.md"
+  "evals/cross-agent/same-prompt-motion-review/prompt.md"
+  "evals/cross-agent/same-prompt-motion-review/expected-findings.md"
+  "evals/cross-agent/same-prompt-motion-review/scorecard.md"
+  "evals/fixtures/css-smells/card-soup.css"
+  "evals/fixtures/focus-smells/Button.tsx"
+  "evals/fixtures/token-smells/panel.css"
+  "adapters/codex/README.md"
+  "adapters/cursor/README.md"
+  "adapters/cursor/.cursor/rules/design-craft.mdc"
+  "adapters/claude/README.md"
+  "adapters/pi/README.md"
+  "adapters/generic/README.md"
   "scripts/design_craft_audit.sh"
   "scripts/design_craft_detect.sh"
+  "scripts/design_craft_doctor.sh"
+  "scripts/design_craft_init_agent.sh"
   "scripts/design_craft_browser_evidence.py"
+  "scripts/design_craft_css_smell_scan.py"
+  "scripts/design_craft_focus_audit.py"
+  "scripts/design_craft_token_audit.py"
   "scripts/design_craft_pass.sh"
   "scripts/design_craft_route.sh"
   "scripts/design_craft_seed_design.sh"
@@ -150,7 +191,12 @@ for path in \
   "scripts/validate.sh" \
   "scripts/design_craft_audit.sh" \
   "scripts/design_craft_detect.sh" \
+  "scripts/design_craft_doctor.sh" \
+  "scripts/design_craft_init_agent.sh" \
   "scripts/design_craft_browser_evidence.py" \
+  "scripts/design_craft_css_smell_scan.py" \
+  "scripts/design_craft_focus_audit.py" \
+  "scripts/design_craft_token_audit.py" \
   "scripts/design_craft_pass.sh" \
   "scripts/design_craft_route.sh" \
   "scripts/design_craft_seed_design.sh" \
@@ -174,6 +220,8 @@ done
 for path in \
   scripts/design_craft_audit.sh \
   scripts/design_craft_detect.sh \
+  scripts/design_craft_doctor.sh \
+  scripts/design_craft_init_agent.sh \
   scripts/design_craft_pass.sh \
   scripts/design_craft_route.sh \
   scripts/design_craft_seed_design.sh \
@@ -193,6 +241,9 @@ make -n release-gate >/dev/null
 for path in \
   scripts/design_craft_score.py \
   scripts/design_craft_browser_evidence.py \
+  scripts/design_craft_css_smell_scan.py \
+  scripts/design_craft_focus_audit.py \
+  scripts/design_craft_token_audit.py \
   scripts/frontend_craft_score.py \
   scripts/frontend_craft_browser_evidence.py \
   scripts/upstream_absorption_report.py; do
@@ -201,11 +252,23 @@ done
 
 python3 scripts/design_craft_score.py --self --no-smoke --json >/dev/null
 python3 scripts/design_craft_browser_evidence.py --check --print-js >/dev/null
+python3 scripts/design_craft_css_smell_scan.py --target evals/fixtures/css-smells --json >/dev/null
+python3 scripts/design_craft_focus_audit.py --target evals/fixtures/focus-smells --json >/dev/null
+python3 scripts/design_craft_token_audit.py --target evals/fixtures/token-smells --json >/dev/null
 python3 scripts/upstream_absorption_report.py --json >/dev/null
 python3 scripts/upstream_absorption_report.py --json --remote >/dev/null
 
 bash scripts/design_craft_detect.sh --target skills/design-craft --json-only >/dev/null
 bash scripts/design_craft_detect.sh --target skills/design-craft --full-json >/dev/null
+bash scripts/design_craft_detect.sh --target evals/fixtures/css-smells --full-json >/dev/null
+bash scripts/design_craft_doctor.sh --target . --json >/dev/null
+tmp_init_dir="$(mktemp -d -t design-craft-init.XXXXXX)"
+trap 'rm -rf "${tmp_design_seed_dir:-}" "${tmp_init_dir:-}"' EXIT
+bash scripts/design_craft_init_agent.sh --agent codex --target "${tmp_init_dir}" --scope project --dry-run >/dev/null
+bash scripts/design_craft_init_agent.sh --agent cursor --target "${tmp_init_dir}" --scope project --with-rule --dry-run >/dev/null
+bash scripts/design_craft_init_agent.sh --agent claude --target "${tmp_init_dir}" --scope project --dry-run >/dev/null
+bash scripts/design_craft_init_agent.sh --agent pi --target "${tmp_init_dir}" --scope project --dry-run >/dev/null
+bash scripts/design_craft_init_agent.sh --agent generic --target "${tmp_init_dir}" --scope project --dry-run >/dev/null
 bash scripts/design_craft_pass.sh --target skills/design-craft --mode audit --skip-route --skip-score >/dev/null
 bash scripts/design_craft_pass.sh --target skills/design-craft --mode critique --skip-route --skip-score >/dev/null
 bash scripts/design_craft_pass.sh --target skills/design-craft --mode motion --skip-route --skip-score >/dev/null
@@ -218,13 +281,15 @@ bash scripts/frontend_craft_pass.sh --target skills/design-craft --mode motion -
 python3 scripts/frontend_craft_score.py --self --no-smoke --json >/dev/null
 
 tmp_design_seed_dir="$(mktemp -d -t design-craft-seed.XXXXXX)"
-trap 'rm -rf "${tmp_design_seed_dir}"' EXIT
+trap 'rm -rf "${tmp_design_seed_dir:-}" "${tmp_init_dir:-}"' EXIT
 bash scripts/design_craft_seed_design.sh --target "${tmp_design_seed_dir}" >/dev/null
 cmp skills/design-craft/templates/vercel-geist/design.md "${tmp_design_seed_dir}/DESIGN.md" >/dev/null
 cmp skills/design-craft/templates/vercel-geist/design.dark.md "${tmp_design_seed_dir}/DESIGN.dark.md" >/dev/null
 
 for ref in \
   "design-system-contract.md" \
+  "foundational-visual-principles.md" \
+  "design-move-library.md" \
   "visual-judgment.md" \
   "product-ui-taste-review.md" \
   "taste-score-calibration.md" \

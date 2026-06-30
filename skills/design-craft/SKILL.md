@@ -1,6 +1,6 @@
 ---
 name: design-craft
-description: Personal design engineering and product experience quality workflow for Codex. Use when working on product UI, UX, visual taste, design systems, motion, frontend pages/components, dashboards, admin apps, landing pages, reports, data visualizations, responsive behavior, accessibility, UI performance, frontend architecture, code elegance, project quality, or file/directory structure governance. Fuses the local route-plan/DESIGN.md/browser-validation/screenshot-evidence workflow with anti-slop visual judgment, product UI taste review, motion craft, and Impeccable-style audit, polish, harden, optimize, detector, and live iteration practices.
+description: "Use for product UI/UX and frontend design-quality work: visual taste critique, design-system enforcement, UI polish, motion review, responsive/browser validation, and frontend craft. Do not use for backend-only logic, database-only migrations, pure algorithms, CLI-only tools, or non-visual refactors unless UI quality is affected."
 ---
 
 # Design Craft
@@ -8,6 +8,18 @@ description: Personal design engineering and product experience quality workflow
 Production-grade design engineering work for this machine: product UI, UX,
 visual taste, motion, design systems, frontend implementation, performance,
 architecture, project quality, and directory governance in one workflow.
+
+## When not to use
+
+Do not use `design-craft` for:
+
+- Backend-only API changes with no user-visible product surface.
+- Database-only migrations or data-model work with no UI contract.
+- Pure algorithm, parsing, or CLI-only tasks.
+- Generic refactors that do not affect product UI quality, frontend structure,
+  browser behavior, responsive behavior, accessibility, or visual output.
+- Copy-only writing where layout, hierarchy, or interface behavior is out of
+  scope.
 
 ## Non-negotiable authority order
 
@@ -48,28 +60,29 @@ system, data density, report grammar, or runtime truth.
    - `optimize`: measured UI performance work.
    - `structure`: file/directory governance.
    - `architecture`: frontend architecture and data-flow review.
-5. Use the helper scripts from the source repo when available:
-   `/Users/gaoqian/Documents/sixseven/codeproject/design-craft/scripts/design_craft_route.sh`
-   for route summaries,
-   `/Users/gaoqian/Documents/sixseven/codeproject/design-craft/scripts/design_craft_audit.sh`
-   for read-only critique/audit/polish/harden/optimize/structure/architecture
-   passes,
-   `/Users/gaoqian/Documents/sixseven/codeproject/design-craft/scripts/design_craft_pass.sh`
-   as the preferred neutral wrapper for those quality passes,
-   `/Users/gaoqian/Documents/sixseven/codeproject/design-craft/scripts/design_craft_seed_design.sh`
-   for seeding `DESIGN.md` and `DESIGN.dark.md` from the bundled Vercel Geist
-   templates,
-   `/Users/gaoqian/Documents/sixseven/codeproject/design-craft/scripts/design_craft_detect.sh`
-   for detector signals,
-   `/Users/gaoqian/Documents/sixseven/codeproject/design-craft/scripts/design_craft_taste_review.sh`
-   for stable product UI taste-review packets,
-   `/Users/gaoqian/Documents/sixseven/codeproject/design-craft/scripts/design_craft_browser_evidence.py`
-   for redacted DOM/computed-style evidence snippets and product UI score
-   anti-inflation validation, and
-   `/Users/gaoqian/Documents/sixseven/codeproject/design-craft/scripts/design_craft_score.py`
-   for self-audits. When maintaining this skill repo, use
-   `/Users/gaoqian/Documents/sixseven/codeproject/design-craft/scripts/upstream_absorption_report.py`
-   before absorbing new upstream commits.
+5. Use helper scripts when available. Resolve them from the source repo or from
+   `$DESIGN_CRAFT_HOME/scripts` first:
+   `scripts/design_craft_route.sh` for route summaries,
+   `scripts/design_craft_audit.sh` for read-only critique/audit/polish/harden/
+   optimize/structure/architecture passes,
+   `scripts/design_craft_pass.sh` as the preferred neutral wrapper,
+   `scripts/design_craft_seed_design.sh` for seeding `DESIGN.md` and
+   `DESIGN.dark.md` from the bundled Vercel Geist templates,
+   `scripts/design_craft_detect.sh` for detector and local design-craft signals,
+   `scripts/design_craft_taste_review.sh` for stable product UI taste-review
+   packets,
+   `scripts/design_craft_browser_evidence.py` for redacted DOM/computed-style
+   evidence snippets and product UI score anti-inflation validation,
+   `scripts/design_craft_css_smell_scan.py`,
+   `scripts/design_craft_focus_audit.py`, and
+   `scripts/design_craft_token_audit.py` for static review signals, and
+   `scripts/design_craft_score.py` for self-audits. When maintaining this skill
+   repo, use `scripts/upstream_absorption_report.py` before absorbing new
+   upstream commits.
+   If the scripts are unavailable in the current agent, do not fail the design
+   task only because automation is missing: read the relevant references,
+   produce the design read, choose the smallest safe mode, and report the
+   skipped automation explicitly.
 6. Implement minimally, verify with the most relevant commands, and use a real
    browser for visible UI, interaction, responsive, report, dashboard, download,
    upload, or login-state changes. When the route requires screenshot evidence,
@@ -81,6 +94,9 @@ Read only the references needed for the current task:
 
 - Visual redesign, landing pages, brand pages, portfolios:
   `references/visual-judgment.md`.
+- Foundational hierarchy, CRAP/Gestalt-style reasoning, or "why does this feel
+  off?" visual diagnosis:
+  `references/foundational-visual-principles.md`.
 - Design-system contracts, `DESIGN.md` shape, token naming, light/dark parity,
   component state coverage, focus rules, motion policy, and UI copy rules:
   `references/design-system-contract.md`.
@@ -93,6 +109,10 @@ Read only the references needed for the current task:
   `references/product-ui-taste-review.md`; add
   `references/taste-score-calibration.md` when the exact score or score band is
   the main deliverable.
+- Redesign recommendations, concrete implementation moves, dashboard/card-soup
+  repair, form/table/modal/navigation polish, and translating critique into
+  changes:
+  `references/design-move-library.md`.
 - Impeccable-style command selection, critique/audit/polish/harden/optimize/live:
   `references/impeccable-workflow.md`.
 - Subjective user complaint mapping, such as "太 AI", "颜色平", "排版不对",
@@ -124,7 +144,8 @@ Read only the references needed for the current task:
   `references/source-map.md`.
 
 For broad "make this frontend excellent" tasks, read:
-`visual-judgment.md`, `product-ui-taste-review.md`, `motion-quality.md`,
+`visual-judgment.md`, `foundational-visual-principles.md`,
+`product-ui-taste-review.md`, `design-move-library.md`, `motion-quality.md`,
 `impeccable-workflow.md`, `engineering-quality.md`, `performance-quality.md`,
 `project-structure.md`, `report-quality.md` when reports/dashboards are in
 scope, `intent-map.md` when the brief is subjective, and

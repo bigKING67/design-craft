@@ -19,6 +19,8 @@ This document is the local release and maintenance checklist for
   routing.
 - Keep helper scripts deterministic and cheap enough to run before real
   UI/UX/design/frontend work.
+- Keep agent-specific install behavior in `adapters/` and scripts. Do not fork
+  the canonical `skills/design-craft/` content per agent.
 - Record meaningful task evidence under `evals/`; do not claim browser
   validation unless a browser validation actually ran.
 - Do not add a root `DESIGN.md` to this repository. `design-craft` is a reusable
@@ -46,11 +48,14 @@ bash scripts/design_craft_pass.sh --target skills/design-craft --mode motion --s
 bash scripts/design_craft_taste_review.sh --target skills/design-craft --context "release smoke" --evidence-level L0
 tmp_dir="$(mktemp -d -t design-craft-seed-dry-run.XXXXXX)" && trap 'rm -rf "${tmp_dir}"' EXIT && bash scripts/design_craft_seed_design.sh --target "${tmp_dir}" --dry-run
 make route-smoke
+bash scripts/design_craft_doctor.sh --target . --json
+make init-dry-run
+make smell-smoke
 python3 scripts/upstream_absorption_report.py
 python3 scripts/upstream_absorption_report.py --remote
 bash scripts/install_local.sh
-diff -qr skills/design-craft /Users/gaoqian/.agents/skills/design-craft
-grep -Fq 'renamed to `design-craft`' /Users/gaoqian/.agents/skills/frontend-craft/SKILL.md
+diff -qr skills/design-craft "${DESIGN_CRAFT_SKILL_ROOT:-$HOME/.agents/skills}/design-craft"
+grep -Fq 'renamed to `design-craft`' "${DESIGN_CRAFT_SKILL_ROOT:-$HOME/.agents/skills}/frontend-craft/SKILL.md"
 ```
 
 Expected result:
@@ -68,6 +73,11 @@ Expected result:
   explicit.
 - Product UI browser evidence helper compiles, emits a redacted TMWD DOM/style
   sampler, and validates score anti-inflation plus DOM evidence JSON.
+- Static smell scanners compile and run against fixture targets.
+- Adapter docs exist, and init dry-runs cover Codex, Cursor, Claude, Pi, and
+  generic Agent Skills-compatible installs without writing files.
+- Doctor output runs without mutating files and reports required optional
+  capabilities truthfully.
 - Vercel Geist seed helper smoke passes and preserves template byte parity.
 - Route smoke passes against a temporary fixture project with its own
   `DESIGN.md`, preserving the contract that product targets provide their own
@@ -195,6 +205,28 @@ For live browser cases, keep the screenshot PNGs in the TMWD repo-external run
 directory and record only artifact path, SHA-256, dimensions, collection time,
 evidence level, and a redacted visual/DOM summary in the eval case.
 
+## L4 before/after evidence
+
+Use `evals/product-ui-taste/before-after/` only for real implementation
+improvement evidence. The `_template/` directory is scaffolding and must not be
+counted as a completed L4 case.
+
+A completed L4 case must include:
+
+- Before and after screenshot artifact path, SHA-256 hash, and dimensions.
+- Before and after scores with `evidence_level: "L4"`.
+- Diff summary naming actual changed files or implementation boundaries.
+- Validation commands and observed results.
+- Explicit unverified states.
+
+## Cross-agent benchmarks
+
+Use `evals/cross-agent/` to compare how Codex, Cursor, Claude, Pi, or another
+Agent Skills-compatible client applies the same `design-craft` prompt.
+
+Do not claim cross-agent stability until real outputs are recorded. Template
+cases define prompts and scorecards only.
+
 ## Release checklist
 
 Before committing a release:
@@ -206,8 +238,8 @@ Before committing a release:
 4. Upstream absorption report reviewed when upstream commits or detector rules changed.
 5. Product UI taste calibration still passes when taste scoring changed.
 6. Install parity check:
-   `diff -qr skills/design-craft /Users/gaoqian/.agents/skills/design-craft`
+   `diff -qr skills/design-craft "${DESIGN_CRAFT_SKILL_ROOT:-$HOME/.agents/skills}/design-craft"`
 7. Legacy alias check:
-   `grep -Fq 'renamed to \`design-craft\`' /Users/gaoqian/.agents/skills/frontend-craft/SKILL.md`
+   `grep -Fq 'renamed to \`design-craft\`' "${DESIGN_CRAFT_SKILL_ROOT:-$HOME/.agents/skills}/frontend-craft/SKILL.md"`
 8. Confirm no repo docs were added inside `skills/design-craft/`.
 9. Commit with a scoped message.

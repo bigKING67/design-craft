@@ -4,7 +4,18 @@ All notable local changes to `design-craft` are recorded here.
 
 ## Unreleased
 
-- No unreleased changes.
+- Narrowed the canonical `design-craft` trigger description and added an
+  explicit "when not to use" boundary for backend-only, database-only,
+  algorithm-only, CLI-only, and non-visual refactor tasks.
+- Added cross-agent adapter docs for Codex, Cursor, Claude, Pi, and generic
+  Agent Skills-compatible clients, plus `design_craft_init_agent.sh` and
+  `design_craft_doctor.sh` for portable install dry-runs and capability checks.
+- Added `foundational-visual-principles.md` and `design-move-library.md` so the
+  workflow can translate taste critique into concrete design moves.
+- Added static scanner helpers for CSS smells, focus-state risks, and token
+  bypasses, and wired them into detector/validation smoke coverage.
+- Added L4 before/after and cross-agent benchmark scaffolds without counting
+  templates as completed evidence.
 
 ## 0.2.1 - 2026-06-30
 

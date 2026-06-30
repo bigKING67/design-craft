@@ -125,6 +125,8 @@ def build_score(root: Path, run_smoke: bool) -> list[Dimension]:
     design_system = read_text(root / "skills/design-craft/references/design-system-contract.md")
     product_review = read_text(root / "skills/design-craft/references/product-ui-taste-review.md")
     taste_calibration = read_text(root / "skills/design-craft/references/taste-score-calibration.md")
+    foundational_principles = read_text(root / "skills/design-craft/references/foundational-visual-principles.md")
+    design_moves = read_text(root / "skills/design-craft/references/design-move-library.md")
     motion_quality = read_text(root / "skills/design-craft/references/motion-quality.md")
     motion_vocabulary = read_text(root / "skills/design-craft/references/motion-vocabulary.md")
     browser_evidence_helper = read_text(root / "scripts/design_craft_browser_evidence.py")
@@ -179,6 +181,10 @@ def build_score(root: Path, run_smoke: bool) -> list[Dimension]:
                 ("design read" in skill.lower(), "design read required", "Require a concise design read for major visual work."),
                 ("generic AI tells" in skill or "generic" in read_text(root / "skills/design-craft/references/visual-judgment.md").lower(), "generic-output guard present", "Add generic-output failure modes."),
                 (has(root, "skills/design-craft/references/product-ui-taste-review.md"), "product UI taste review reference exists", "Add product UI taste review reference."),
+                (has(root, "skills/design-craft/references/foundational-visual-principles.md"), "foundational visual principles reference exists", "Add compact CRAP/Gestalt visual principles."),
+                ("Proximity" in foundational_principles and "Contrast" in foundational_principles, "foundational principles cover CRAP anchors", "Cover proximity, alignment, repetition, and contrast."),
+                (has(root, "skills/design-craft/references/design-move-library.md"), "design move library exists", "Add a design move library for actionable redesign guidance."),
+                ("Dashboard card soup" in design_moves and "Generic AI landing page" in design_moves, "design moves cover dashboard and landing repairs", "Cover concrete dashboard and landing design moves."),
                 ("100-point score" in product_review, "100-point UI taste score present", "Add a concrete product UI scoring rubric."),
                 ("Output contract" in product_review, "product UI review output contract present", "Add a structured product UI review output contract."),
                 (has(root, "skills/design-craft/references/taste-score-calibration.md"), "taste score calibration reference exists", "Add taste score calibration examples."),
@@ -243,6 +249,9 @@ def build_score(root: Path, run_smoke: bool) -> list[Dimension]:
                 (has(root, "scripts/design_craft_route.sh"), "route wrapper exists", "Add route wrapper script."),
                 (has(root, "scripts/design_craft_pass.sh"), "pass wrapper exists", "Add a neutral pass wrapper script."),
                 (has(root, "scripts/design_craft_detect.sh"), "detector wrapper exists", "Add detector wrapper script."),
+                (has(root, "scripts/design_craft_css_smell_scan.py"), "CSS smell scanner exists", "Add static CSS smell scanner."),
+                (has(root, "scripts/design_craft_focus_audit.py"), "focus audit scanner exists", "Add static focus audit scanner."),
+                (has(root, "scripts/design_craft_token_audit.py"), "token audit scanner exists", "Add token bypass scanner."),
             ],
         ),
         score_dimension(
@@ -266,6 +275,12 @@ def build_score(root: Path, run_smoke: bool) -> list[Dimension]:
                 (has(root, "skills/design-craft/references/source-map.md"), "source map exists", "Add source-map reference."),
                 (has(root, "scripts/upstream_absorption_report.py"), "upstream absorption report exists", "Add upstream absorption report script."),
                 ("--remote" in read_text(root / "scripts/upstream_absorption_report.py"), "remote upstream drift check exists", "Add remote upstream drift reporting."),
+                (has(root, "adapters/codex/README.md"), "Codex adapter docs exist", "Add Codex adapter docs."),
+                (has(root, "adapters/cursor/README.md"), "Cursor adapter docs exist", "Add Cursor adapter docs."),
+                (has(root, "adapters/claude/README.md"), "Claude adapter docs exist", "Add Claude adapter docs."),
+                (has(root, "adapters/pi/README.md"), "Pi adapter docs exist", "Add Pi adapter docs."),
+                (has(root, "scripts/design_craft_init_agent.sh"), "cross-agent init helper exists", "Add init helper for host-specific installs."),
+                (has(root, "scripts/design_craft_doctor.sh"), "doctor helper exists", "Add doctor helper for portability checks."),
                 ("templates/vercel-geist/design.md" in source_map, "Vercel Geist source map present", "Map vendored Vercel templates in source-map."),
                 (("data flow" in read_text(root / "skills/design-craft/references/architecture-quality.md").lower()) or ("data-flow" in read_text(root / "skills/design-craft/references/architecture-quality.md").lower()), "data-flow guidance present", "Add data-flow guidance."),
                 ("migration" in read_text(root / "skills/design-craft/references/architecture-quality.md").lower(), "migration risk covered", "Add migration/compatibility guidance."),
@@ -306,6 +321,9 @@ def build_score(root: Path, run_smoke: bool) -> list[Dimension]:
                 (has(root, "evals/product-ui-taste/material-ops-home/score.json"), "product UI taste golden case exists", "Add at least one product UI taste calibration case."),
                 (has_product_ui_l2_case(root), "product UI taste L2 browser case exists", "Add at least one product UI taste case with browser screenshot and DOM/style evidence."),
                 (has_product_ui_l3_case(root), "product UI taste L3 resilient case exists", "Add at least one product UI taste case with responsive and state evidence."),
+                (has(root, "evals/product-ui-taste/before-after/README.md"), "L4 before/after eval scaffold exists", "Add L4 before/after eval scaffold."),
+                (has(root, "evals/cross-agent/README.md"), "cross-agent benchmark scaffold exists", "Add cross-agent benchmark scaffold."),
+                (has(root, "evals/fixtures/css-smells/card-soup.css"), "static scanner fixture exists", "Add scanner fixtures."),
                 ("critique" in read_text(root / "scripts/design_craft_audit.sh"), "critique mode present", "Add a lightweight critique mode."),
                 ("motion" in read_text(root / "scripts/design_craft_audit.sh"), "motion mode present", "Add a motion-specific quality pass."),
                 ("太 AI" in read_text(root / "skills/design-craft/references/intent-map.md"), "subjective intent mapping present", "Map subjective user phrases to workflow modes."),

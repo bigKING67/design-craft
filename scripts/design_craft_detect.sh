@@ -92,9 +92,10 @@ if [[ "${JSON_ONLY}" == "1" ]]; then
   exit 0
 fi
 
-python3 - "${TMP_JSON}" "${TARGET}" "${DETECTOR_TARGET}" "${DETECTOR_NOTE}" "${FULL_JSON}" <<'PY'
+python3 - "${TMP_JSON}" "${TARGET}" "${DETECTOR_TARGET}" "${DETECTOR_NOTE}" "${FULL_JSON}" "${ROOT_DIR}" <<'PY'
 import json
 import re
+import subprocess
 import sys
 from collections import Counter
 from pathlib import Path
@@ -104,6 +105,7 @@ target = sys.argv[2]
 detector_target = sys.argv[3]
 detector_note = sys.argv[4]
 full_json = sys.argv[5] == "1"
+repo_root = Path(sys.argv[6])
 
 target_path = Path(target)
 scan_root = target_path if target_path.is_dir() else target_path.parent
@@ -392,7 +394,61 @@ def scan_local_signals(root: Path) -> tuple[list[dict], list[str]]:
     return signals, notes
 
 
+def collect_scanner_signals(root: Path) -> tuple[list[dict], list[str]]:
+    scripts = [
+        ("css-smell", repo_root / "scripts/design_craft_css_smell_scan.py"),
+        ("focus-audit", repo_root / "scripts/design_craft_focus_audit.py"),
+        ("token-audit", repo_root / "scripts/design_craft_token_audit.py"),
+    ]
+    signals: list[dict] = []
+    notes: list[str] = []
+    if is_design_craft_self_scan(root):
+        notes.append("scanner signals skipped for design-craft self scan")
+        return signals, notes
+    for name, script in scripts:
+        if not script.is_file():
+            notes.append(f"{name} scanner missing: {script}")
+            continue
+        try:
+            result = subprocess.run(
+                [sys.executable, str(script), "--target", str(root), "--json"],
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=True,
+                timeout=20,
+                check=False,
+            )
+        except Exception as exc:
+            notes.append(f"{name} scanner failed to start: {exc}")
+            continue
+        if result.returncode != 0:
+            notes.append(f"{name} scanner exited {result.returncode}: {result.stderr.strip()[:160]}")
+            continue
+        try:
+            payload = json.loads(result.stdout)
+        except Exception as exc:
+            notes.append(f"{name} scanner emitted invalid JSON: {exc}")
+            continue
+        for item in payload.get("findings", []):
+            if not isinstance(item, dict):
+                continue
+            signals.append(
+                {
+                    "source": item.get("source", f"design-craft.{name}"),
+                    "severity": item.get("severity", "info"),
+                    "rule": item.get("rule", name),
+                    "path": item.get("path", "."),
+                    "line": item.get("line"),
+                    "message": item.get("message", ""),
+                }
+            )
+    return signals, notes
+
+
 local_signals, local_notes = scan_local_signals(target_path)
+scanner_signals, scanner_notes = collect_scanner_signals(target_path)
+local_signals.extend(scanner_signals)
+local_notes.extend(scanner_notes)
 
 if full_json:
     print(

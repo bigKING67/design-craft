@@ -112,6 +112,11 @@ Geist templates as a comparison baseline for missing system pieces.
   contract, page-type checks, and acceptance criteria.
 - `references/taste-score-calibration.md`: evidence levels, score bands, and
   anti-inflation rules for numeric taste scores.
+- `references/foundational-visual-principles.md`: original compact visual
+  principle layer for attention, proximity, alignment, repetition, contrast,
+  figure/ground, similarity, continuity, closure, and economy.
+- `references/design-move-library.md`: original action library that translates
+  recurring critique patterns into concrete UI moves and acceptance criteria.
 - `evals/product-ui-taste/material-ops-home/`: first screenshot-derived
   calibration case for a clean but generic operations dashboard.
 - `evals/product-ui-taste/live-browser-samples/`: L2 browser evidence
@@ -126,6 +131,16 @@ Geist templates as a comparison baseline for missing system pieces.
 - `scripts/design_craft_browser_evidence.py`: emits the redacted
   `design-craft.browser-evidence.v1` browser sampler and validates product UI
   score anti-inflation rules.
+- `scripts/design_craft_css_smell_scan.py`,
+  `scripts/design_craft_focus_audit.py`, and
+  `scripts/design_craft_token_audit.py`: original static scanners that provide
+  review signals for CSS smells, focus-state risks, and token bypasses.
+- `adapters/`: original thin host adapters for installing the canonical skill
+  into Codex, Cursor, Claude, Pi, or a generic Agent Skills-compatible client.
+- `evals/product-ui-taste/before-after/`: L4 before/after evidence scaffold;
+  the template is not itself completed evidence.
+- `evals/cross-agent/`: cross-agent benchmark scaffold for comparing how host
+  agents apply the same design-craft prompt.
 
 ## Maintenance rule
 
