@@ -209,7 +209,7 @@ def build_score(root: Path, run_smoke: bool) -> list[Dimension]:
             [
                 ("authority order" in skill.lower(), "authority order documented", "Document authority order."),
                 ("DESIGN.md" in skill, "DESIGN.md precedence present", "Make DESIGN.md/style authority explicit."),
-                ("DataHub" in report or "report" in report.lower(), "report/data surface covered", "Add report/DataHub-specific grammar."),
+                ("report" in report.lower(), "report/data surface covered", "Add report/data-surface grammar."),
                 ("surface-specific" in surface.lower() or "surface playbooks" in surface.lower(), "surface playbooks present", "Cover surface-specific product jobs."),
                 ("candidate_skills" in skill, "route candidate semantics present", "Separate route candidates from selected skills."),
                 (has(root, "skills/design-craft/references/design-system-contract.md"), "design-system contract exists", "Add design-system contract reference."),

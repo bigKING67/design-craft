@@ -25,8 +25,8 @@ source of truth, then folds in:
 - Project quality gates for architecture, performance, code elegance, validation,
   and file/directory structure governance.
 
-The skill is intentionally personal and local-first. For DataHub, dashboards,
-special reports, and similar business surfaces, scoped project rules, live
+The skill is intentionally personal and local-first. For dashboards, special
+reports, and similar business surfaces, scoped project rules, live
 runtime behavior, and project `DESIGN.md` always outrank generic visual rules.
 The canonical package is still portable: agent-specific integration belongs in
 `adapters/`, while `skills/design-craft/` remains the single source skill.

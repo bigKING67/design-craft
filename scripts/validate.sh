@@ -147,6 +147,37 @@ for path in "${required_files[@]}"; do
   fi
 done
 
+python3 - <<'PY'
+import sys
+from pathlib import Path
+
+active_generic_files = [
+    Path("README.md"),
+    Path("scripts/design_craft_score.py"),
+    Path("scripts/validate.sh"),
+    Path("skills/design-craft/references/source-map.md"),
+    Path("evals/golden-tasks/generic-review-workbench.md"),
+    Path("evals/product-ui-taste/before-after/README.md"),
+]
+project_specific_markers = [
+    "data" + "hub",
+    "gro" + "land",
+    "live" + "-center",
+    "content" + "-assets",
+]
+
+errors = []
+for path in active_generic_files:
+    text = path.read_text(encoding="utf-8").lower()
+    for marker in project_specific_markers:
+        if marker in text:
+            errors.append(f"{path}: active generic gate mentions project-specific marker {marker!r}")
+
+if errors:
+    print("\n".join(errors), file=sys.stderr)
+    sys.exit(1)
+PY
+
 if ! grep -q "MIT" THIRD_PARTY_NOTICES.md; then
   echo "THIRD_PARTY_NOTICES.md is missing MIT notice" >&2
   exit 1

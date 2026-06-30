@@ -35,6 +35,11 @@ python3 scripts/design_craft_l4_evidence_manifest.py \
 The `_template/` directory is schema scaffolding only. It is not evidence and
 must not be cited as a completed before/after improvement.
 
+Keep active examples project-neutral. Historical project-specific cases may
+remain for provenance, but current README examples, validation gates, and score
+checks should point at generic fixtures unless a user explicitly scopes a new
+project case.
+
 Completed generic fixture example:
 
 ```bash
