@@ -28,7 +28,8 @@ frontend-craft/
 ├── skills/frontend-craft/        # Installable Codex skill
 ├── scripts/                      # Deterministic route/pass/detect/score/review tools
 ├── evals/                        # Forward-test and live-task evidence
-│   └── golden-tasks/             # Reproducible real-task evidence cards
+│   ├── golden-tasks/             # Reproducible real-task evidence cards
+│   └── product-ui-taste/         # Taste-score calibration cases
 ├── upstreams/                    # Pristine upstream submodules; do not edit
 ├── docs/                         # Repo maintenance and release process
 ├── THIRD_PARTY_NOTICES.md        # Attribution and licenses
@@ -119,6 +120,16 @@ bash scripts/frontend_craft_pass.sh \
 
 `frontend_craft_audit.sh` remains as a compatibility entrypoint.
 
+Create a stable product UI taste-review packet before scoring a screenshot or
+page:
+
+```bash
+bash scripts/frontend_craft_taste_review.sh \
+  --target /path/to/screenshot-or-project \
+  --context "dashboard for internal operators" \
+  --evidence-level L0
+```
+
 Run the detector. Default text output includes pinned Impeccable findings plus
 local frontend-craft review signals; `--json-only` remains raw upstream JSON for
 compatibility, and `--full-json` emits the combined payload.
@@ -131,6 +142,12 @@ Review pinned upstream drift and absorption candidates without fetching:
 
 ```bash
 make upstream-report
+```
+
+Check remote drift without mutating submodules:
+
+```bash
+python3 scripts/upstream_absorption_report.py --remote
 ```
 
 Score this workflow itself:
@@ -163,7 +180,7 @@ bash scripts/sync_upstreams.sh
 Before absorbing upstream changes, run:
 
 ```bash
-python3 scripts/upstream_absorption_report.py
+python3 scripts/upstream_absorption_report.py --remote
 ```
 
 ## Local release gate

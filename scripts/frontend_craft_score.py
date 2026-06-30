@@ -83,6 +83,8 @@ def build_score(root: Path, run_smoke: bool) -> list[Dimension]:
     skill = read_text(root / "skills/frontend-craft/SKILL.md")
     validation = read_text(root / "skills/frontend-craft/references/validation-contract.md")
     design_system = read_text(root / "skills/frontend-craft/references/design-system-contract.md")
+    product_review = read_text(root / "skills/frontend-craft/references/product-ui-taste-review.md")
+    taste_calibration = read_text(root / "skills/frontend-craft/references/taste-score-calibration.md")
     report = read_text(root / "skills/frontend-craft/references/report-quality.md")
     surface = read_text(root / "skills/frontend-craft/references/surface-playbooks.md")
     source_map = read_text(root / "skills/frontend-craft/references/source-map.md")
@@ -92,6 +94,7 @@ def build_score(root: Path, run_smoke: bool) -> list[Dimension]:
     pass_smoke = False
     critique_smoke = False
     seed_smoke = False
+    taste_review_smoke = False
     if run_smoke:
         detector_smoke = check_command(
             ["bash", "scripts/frontend_craft_detect.sh", "--target", "skills/frontend-craft", "--json-only"],
@@ -113,6 +116,10 @@ def build_score(root: Path, run_smoke: bool) -> list[Dimension]:
             ["bash", "scripts/frontend_craft_seed_design.sh", "--target", "skills/frontend-craft", "--dry-run"],
             root,
         )
+        taste_review_smoke = check_command(
+            ["bash", "scripts/frontend_craft_taste_review.sh", "--target", "skills/frontend-craft", "--context", "score smoke", "--evidence-level", "L0"],
+            root,
+        )
 
     return [
         score_dimension(
@@ -123,6 +130,11 @@ def build_score(root: Path, run_smoke: bool) -> list[Dimension]:
                 ("anti-slop" in skill.lower() or "anti-slop" in read_text(root / "skills/frontend-craft/references/visual-judgment.md").lower(), "anti-slop encoded", "Encode anti-slop visual judgment."),
                 ("design read" in skill.lower(), "design read required", "Require a concise design read for major visual work."),
                 ("generic AI tells" in skill or "generic" in read_text(root / "skills/frontend-craft/references/visual-judgment.md").lower(), "generic-output guard present", "Add generic-output failure modes."),
+                (has(root, "skills/frontend-craft/references/product-ui-taste-review.md"), "product UI taste review reference exists", "Add product UI taste review reference."),
+                ("100-point score" in product_review, "100-point UI taste score present", "Add a concrete product UI scoring rubric."),
+                ("Output contract" in product_review, "product UI review output contract present", "Add a structured product UI review output contract."),
+                (has(root, "skills/frontend-craft/references/taste-score-calibration.md"), "taste score calibration reference exists", "Add taste score calibration examples."),
+                ("Evidence levels" in taste_calibration, "taste evidence levels calibrated", "Define evidence levels for screenshot/browser taste scores."),
                 (has(root, "skills/frontend-craft/references/intent-map.md"), "intent map reference exists", "Add an intent map for subjective frontend requests."),
             ],
         ),
@@ -165,6 +177,7 @@ def build_score(root: Path, run_smoke: bool) -> list[Dimension]:
                 ),
                 ("theme parity" in design_system.lower(), "theme parity guidance present", "Cover light/dark token parity."),
                 ("token layers" in design_system.lower(), "token layer guidance present", "Cover token role separation."),
+                ("Page-type checks" in product_review, "page-type taste checks present", "Cover forms, tables, dashboards, modals, navigation, landing, and settings review."),
             ],
         ),
         score_dimension(
@@ -197,6 +210,7 @@ def build_score(root: Path, run_smoke: bool) -> list[Dimension]:
                 (has(root, "upstreams.lock.json"), "upstream lock exists", "Add upstream lock file."),
                 (has(root, "skills/frontend-craft/references/source-map.md"), "source map exists", "Add source-map reference."),
                 (has(root, "scripts/upstream_absorption_report.py"), "upstream absorption report exists", "Add upstream absorption report script."),
+                ("--remote" in read_text(root / "scripts/upstream_absorption_report.py"), "remote upstream drift check exists", "Add remote upstream drift reporting."),
                 ("templates/vercel-geist/design.md" in source_map, "Vercel Geist source map present", "Map vendored Vercel templates in source-map."),
                 (("data flow" in read_text(root / "skills/frontend-craft/references/architecture-quality.md").lower()) or ("data-flow" in read_text(root / "skills/frontend-craft/references/architecture-quality.md").lower()), "data-flow guidance present", "Add data-flow guidance."),
                 ("migration" in read_text(root / "skills/frontend-craft/references/architecture-quality.md").lower(), "migration risk covered", "Add migration/compatibility guidance."),
@@ -228,6 +242,9 @@ def build_score(root: Path, run_smoke: bool) -> list[Dimension]:
                     "Geist seed validation contract present",
                     "Require delivery to report whether the Geist seed was used.",
                 ),
+                ("product UI taste score" in validation, "product UI score is distinct from source score", "Distinguish UI taste scores from the workflow source score."),
+                (has(root, "scripts/frontend_craft_taste_review.sh"), "taste review wrapper exists", "Add a stable product UI taste review wrapper."),
+                (has(root, "evals/product-ui-taste/material-ops-home/score.json"), "product UI taste golden case exists", "Add at least one product UI taste calibration case."),
                 ("critique" in read_text(root / "scripts/frontend_craft_audit.sh"), "critique mode present", "Add a lightweight critique mode."),
                 ("太 AI" in read_text(root / "skills/frontend-craft/references/intent-map.md"), "subjective intent mapping present", "Map subjective user phrases to workflow modes."),
                 (detector_smoke or not run_smoke, "detector smoke passes", "Fix detector smoke."),
@@ -235,6 +252,7 @@ def build_score(root: Path, run_smoke: bool) -> list[Dimension]:
                 (pass_smoke or not run_smoke, "pass wrapper smoke passes", "Fix pass wrapper smoke."),
                 (critique_smoke or not run_smoke, "critique smoke passes", "Fix critique mode smoke."),
                 (seed_smoke or not run_smoke, "seed helper smoke passes", "Fix Vercel Geist seed helper smoke."),
+                (taste_review_smoke or not run_smoke, "taste review wrapper smoke passes", "Fix taste review wrapper smoke."),
             ],
         ),
     ]

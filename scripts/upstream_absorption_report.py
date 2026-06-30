@@ -29,10 +29,14 @@ class UpstreamReport:
     license: str
     locked_commit: str
     current_commit: str | None
+    remote_commit: str | None
+    remote_ref: str | None
     exists: bool
     is_git_repo: bool
     lock_commit_available: bool
     drift: bool
+    remote_drift: bool | None
+    locked_remote_drift: bool | None
     dirty: bool
     status: list[str]
     changed_files: list[ChangedFile]
@@ -54,6 +58,34 @@ def git_output(path: Path, args: list[str]) -> str | None:
     if result.returncode != 0:
         return None
     return result.stdout.strip()
+
+
+def remote_head(repo: str) -> tuple[str | None, str | None, str | None]:
+    try:
+        result = subprocess.run(
+            ["git", "ls-remote", repo, "HEAD", "refs/heads/main", "refs/heads/master"],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+            timeout=30,
+            check=False,
+        )
+    except Exception as exc:
+        return None, None, str(exc)
+
+    if result.returncode != 0:
+        return None, None, result.stderr.strip() or f"git ls-remote exited {result.returncode}"
+
+    refs: dict[str, str] = {}
+    for line in result.stdout.splitlines():
+        fields = line.split()
+        if len(fields) == 2:
+            refs[fields[1]] = fields[0]
+
+    for ref in ("HEAD", "refs/heads/main", "refs/heads/master"):
+        if ref in refs:
+            return refs[ref], ref, None
+    return None, None, "remote did not return HEAD, main, or master"
 
 
 def categorize_changed_file(upstream_name: str, file_path: str) -> str:
@@ -128,7 +160,7 @@ def parse_name_status(text: str, upstream_name: str) -> list[ChangedFile]:
     return files
 
 
-def build_report(root: Path) -> list[UpstreamReport]:
+def build_report(root: Path, check_remote: bool = False) -> list[UpstreamReport]:
     lock_path = root / "upstreams.lock.json"
     payload = json.loads(lock_path.read_text(encoding="utf-8"))
     reports: list[UpstreamReport] = []
@@ -147,6 +179,15 @@ def build_report(root: Path) -> list[UpstreamReport]:
         current: str | None = None
         dirty = False
         drift = False
+        remote_commit: str | None = None
+        remote_ref: str | None = None
+        remote_drift: bool | None = None
+        locked_remote_drift: bool | None = None
+
+        if check_remote:
+            remote_commit, remote_ref, remote_error = remote_head(meta.get("repo", ""))
+            if remote_error:
+                notes.append(f"remote check failed: {remote_error}")
 
         if not exists:
             notes.append("path missing; initialize submodules before absorption review")
@@ -172,6 +213,14 @@ def build_report(root: Path) -> list[UpstreamReport]:
                 else:
                     notes.append("upstream lock matches current checkout")
 
+                if remote_commit:
+                    remote_drift = remote_commit != current
+                    locked_remote_drift = remote_commit != locked
+                    if remote_drift:
+                        notes.append("remote head differs from current checkout")
+                    else:
+                        notes.append("remote head matches current checkout")
+
         reports.append(
             UpstreamReport(
                 name=name,
@@ -180,10 +229,14 @@ def build_report(root: Path) -> list[UpstreamReport]:
                 license=meta.get("license", ""),
                 locked_commit=locked,
                 current_commit=current,
+                remote_commit=remote_commit,
+                remote_ref=remote_ref,
                 exists=exists,
                 is_git_repo=is_git_repo,
                 lock_commit_available=lock_available,
                 drift=drift,
+                remote_drift=remote_drift,
+                locked_remote_drift=locked_remote_drift,
                 dirty=dirty,
                 status=status_lines,
                 changed_files=changed_files,
@@ -204,7 +257,13 @@ def print_text(reports: list[UpstreamReport]) -> None:
         print(f"  license: {report.license}")
         print(f"  locked_commit: {report.locked_commit}")
         print(f"  current_commit: {report.current_commit or 'unavailable'}")
+        if report.remote_commit:
+            print(f"  remote_ref: {report.remote_ref}")
+            print(f"  remote_commit: {report.remote_commit}")
         print(f"  drift: {str(report.drift).lower()}")
+        if report.remote_drift is not None:
+            print(f"  remote_drift: {str(report.remote_drift).lower()}")
+            print(f"  locked_remote_drift: {str(report.locked_remote_drift).lower()}")
         print(f"  dirty: {str(report.dirty).lower()}")
         for note in report.notes:
             print(f"  note: {note}")
@@ -233,11 +292,12 @@ def main() -> int:
     )
     parser.add_argument("--root", default=str(ROOT), help="frontend-craft repo root")
     parser.add_argument("--json", action="store_true", help="Emit JSON")
+    parser.add_argument("--remote", action="store_true", help="Also check remote HEAD/main/master with git ls-remote")
     args = parser.parse_args()
 
     root = Path(args.root).expanduser().resolve()
     try:
-        reports = build_report(root)
+        reports = build_report(root, check_remote=args.remote)
     except Exception as exc:
         print(f"failed to build upstream absorption report: {exc}", file=sys.stderr)
         return 1

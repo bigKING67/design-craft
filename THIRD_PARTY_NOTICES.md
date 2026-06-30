@@ -26,6 +26,8 @@ The full upstream license is available at:
 - Local path: `upstreams/impeccable`
 - Initial pinned commit:
   `d2ab4ddee6fa63002fae680652b5fbd31735e280`
+- Current absorbed commit:
+  `c979ac37c361da564dcce100a4f2623d94ef54c8`
 
 The fusion layer references and adapts ideas around command taxonomy, context
 setup, audit/polish/harden/optimize/live workflows, deterministic detector

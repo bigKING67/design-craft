@@ -10,14 +10,20 @@ Project evidence still wins: live runtime, scoped `AGENTS.md`, project
 ## Visual and taste complaints
 
 - "太 AI", "模板味", "廉价", "不高级": start with `critique`; read
-  `visual-judgment.md`; then use `polish` or `redesign` only if the user asks
-  for changes.
+  `visual-judgment.md`; add `product-ui-taste-review.md` when the user wants a
+  score, concrete top issues, or acceptance criteria; then use `polish` or
+  `redesign` only if the user asks for changes.
+- "打几分", "为什么没给满", "哪里扣分", "100 分": use `critique`; read
+  `product-ui-taste-review.md` and `taste-score-calibration.md`; report the
+  evidence level, UI score, maturity band, top deductions, and acceptance
+  criteria.
 - "颜色平", "灰", "没层次", "对比不够": use `critique` or `polish`; read
   `design-system-contract.md`; check token roles, surface/text contrast,
   accent intent, and light/dark parity.
 - "排版不对", "不聚焦", "信息层级乱": use `critique`; read
-  `visual-judgment.md` and `surface-playbooks.md`; judge primary job,
-  hierarchy, scan path, type roles, and spacing rhythm.
+  `visual-judgment.md`, `product-ui-taste-review.md`, and
+  `surface-playbooks.md`; judge primary job, hierarchy, scan path, type roles,
+  and spacing rhythm.
 - "太挤", "太散", "卡片太多": use `critique` then `polish`; check density,
   grouping, section rhythm, and whether nested-card structure is hiding the
   actual task.
@@ -34,7 +40,8 @@ Project evidence still wins: live runtime, scoped `AGENTS.md`, project
   `design-system-contract.md`; fix action/object labels, recovery copy, empty
   state first action, loading copy, and toast specificity.
 - "看一下哪里有问题", "整体审一下": use `critique` first when the request is
-  subjective; use `audit` when the request asks for measurable release quality.
+  subjective; add `product-ui-taste-review.md` for product UI/screenshots; use
+  `audit` when the request asks for measurable release quality.
 - "上线前检查", "生产质量": use `audit` plus `harden`; include browser
   validation for visible UI and route-specific risk.
 

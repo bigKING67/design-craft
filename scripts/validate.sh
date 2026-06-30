@@ -22,6 +22,8 @@ required_files=(
   "skills/frontend-craft/references/source-map.md"
   "skills/frontend-craft/references/design-system-contract.md"
   "skills/frontend-craft/references/visual-judgment.md"
+  "skills/frontend-craft/references/product-ui-taste-review.md"
+  "skills/frontend-craft/references/taste-score-calibration.md"
   "skills/frontend-craft/references/impeccable-workflow.md"
   "skills/frontend-craft/references/intent-map.md"
   "skills/frontend-craft/references/engineering-quality.md"
@@ -41,11 +43,15 @@ required_files=(
   "evals/forward-test-log.md"
   "evals/live-task-log.md"
   "evals/golden-tasks/datahub-industry-news.md"
+  "evals/product-ui-taste/material-ops-home/input.md"
+  "evals/product-ui-taste/material-ops-home/review.expected.md"
+  "evals/product-ui-taste/material-ops-home/score.json"
   "scripts/frontend_craft_audit.sh"
   "scripts/frontend_craft_detect.sh"
   "scripts/frontend_craft_pass.sh"
   "scripts/frontend_craft_route.sh"
   "scripts/frontend_craft_seed_design.sh"
+  "scripts/frontend_craft_taste_review.sh"
   "scripts/frontend_craft_score.py"
   "scripts/upstream_absorption_report.py"
 )
@@ -101,6 +107,7 @@ for path in \
   "scripts/frontend_craft_pass.sh" \
   "scripts/frontend_craft_route.sh" \
   "scripts/frontend_craft_seed_design.sh" \
+  "scripts/frontend_craft_taste_review.sh" \
   "scripts/frontend_craft_score.py" \
   "scripts/upstream_absorption_report.py"; do
   if [[ ! -x "${path}" ]]; then
@@ -114,18 +121,21 @@ bash -n scripts/frontend_craft_detect.sh
 bash -n scripts/frontend_craft_pass.sh
 bash -n scripts/frontend_craft_route.sh
 bash -n scripts/frontend_craft_seed_design.sh
+bash -n scripts/frontend_craft_taste_review.sh
 make -n validate >/dev/null
 make -n release-gate >/dev/null
 python3 -m py_compile scripts/frontend_craft_score.py
 python3 -m py_compile scripts/upstream_absorption_report.py
 python3 scripts/frontend_craft_score.py --self --no-smoke --json >/dev/null
 python3 scripts/upstream_absorption_report.py --json >/dev/null
+python3 scripts/upstream_absorption_report.py --json --remote >/dev/null
 bash scripts/frontend_craft_detect.sh --target skills/frontend-craft --json-only >/dev/null
 bash scripts/frontend_craft_detect.sh --target skills/frontend-craft --full-json >/dev/null
 bash scripts/frontend_craft_pass.sh --target skills/frontend-craft --mode audit --skip-route --skip-score >/dev/null
 bash scripts/frontend_craft_audit.sh --target skills/frontend-craft --mode audit --skip-route --skip-score >/dev/null
 bash scripts/frontend_craft_audit.sh --target skills/frontend-craft --mode critique --skip-route --skip-score >/dev/null
 bash scripts/frontend_craft_seed_design.sh --target skills/frontend-craft --dry-run >/dev/null
+bash scripts/frontend_craft_taste_review.sh --target skills/frontend-craft --context "validation smoke" --evidence-level L0 >/dev/null
 
 tmp_design_seed_dir="$(mktemp -d -t frontend-craft-seed.XXXXXX)"
 trap 'rm -rf "${tmp_design_seed_dir}"' EXIT
@@ -136,6 +146,8 @@ cmp skills/frontend-craft/templates/vercel-geist/design.dark.md "${tmp_design_se
 for ref in \
   "design-system-contract.md" \
   "visual-judgment.md" \
+  "product-ui-taste-review.md" \
+  "taste-score-calibration.md" \
   "impeccable-workflow.md" \
   "intent-map.md" \
   "engineering-quality.md" \
@@ -175,6 +187,31 @@ for name, meta in payload["upstreams"].items():
     got = subprocess.check_output(["git", "-C", path, "rev-parse", "HEAD"], text=True).strip()
     if got != want:
         errors.append(f"{name}: lock commit {want} != working commit {got}")
+if errors:
+    print("\n".join(errors), file=sys.stderr)
+    sys.exit(1)
+PY
+
+python3 - <<'PY'
+import json
+import sys
+from pathlib import Path
+
+score_path = Path("evals/product-ui-taste/material-ops-home/score.json")
+payload = json.loads(score_path.read_text(encoding="utf-8"))
+errors = []
+if payload.get("evidence_level") != "L0":
+    errors.append("material-ops-home evidence_level must stay L0 until browser evidence is added")
+expected = payload.get("expected_score")
+low, high = payload.get("acceptable_range", [None, None])
+if not isinstance(expected, int) or not isinstance(low, int) or not isinstance(high, int):
+    errors.append("material-ops-home score fields must be integers")
+elif not (low <= expected <= high):
+    errors.append("material-ops-home expected_score must fit acceptable_range")
+required = payload.get("required_findings", [])
+guards = payload.get("false_positive_guards", [])
+if len(required) < 3 or len(guards) < 3:
+    errors.append("material-ops-home must keep required findings and false-positive guards")
 if errors:
     print("\n".join(errors), file=sys.stderr)
     sys.exit(1)

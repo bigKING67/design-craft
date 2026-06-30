@@ -49,6 +49,23 @@ Use `critique` for a read-only judgment pass before implementation or when a UI
 - Generic-output verdict: AI tells, nested-card soup, fake polish, vague copy.
 - Top P0/P1/P2/P3 issues and the recommended next mode.
 
+If the user asks for a score, why the UI is not full marks, or a concrete
+product UI review, read `product-ui-taste-review.md` and use its 100-point
+output contract. Keep that score scoped to the reviewed UI, not this
+`frontend-craft` repo.
+
+For a full unanchored critique of a viewable target, include method provenance
+in the first line:
+
+- `Method: dual-agent (A: <id> · B: <id>)` when independent design review and
+  detector/browser evidence were actually delegated.
+- `DEGRADED: single-context (<reason>)` when the review could not use isolated
+  assessment contexts but still continues.
+
+Do not claim dual-agent, browser overlay, or detector evidence unless those
+steps actually ran. For lightweight inline critiques, say the assessment was
+single-context instead of silently implying independent review.
+
 Do not turn critique into implementation unless the user asks for changes.
 
 ## Audit dimensions

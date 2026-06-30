@@ -60,7 +60,9 @@ system, data density, report grammar, or runtime truth.
    for seeding `DESIGN.md` and `DESIGN.dark.md` from the bundled Vercel Geist
    templates,
    `/Users/gaoqian/Documents/sixseven/codeproject/frontend-craft/scripts/frontend_craft_detect.sh`
-   for detector signals, and
+   for detector signals,
+   `/Users/gaoqian/Documents/sixseven/codeproject/frontend-craft/scripts/frontend_craft_taste_review.sh`
+   for stable product UI taste-review packets, and
    `/Users/gaoqian/Documents/sixseven/codeproject/frontend-craft/scripts/frontend_craft_score.py`
    for self-audits. When maintaining this skill repo, use
    `/Users/gaoqian/Documents/sixseven/codeproject/frontend-craft/scripts/upstream_absorption_report.py`
@@ -82,7 +84,12 @@ Read only the references needed for the current task:
   docs, or tooling surfaces without a stronger style authority:
   `templates/vercel-geist/design.md` and
   `templates/vercel-geist/design.dark.md` as the default initial seed.
-- Impeccable-style command selection, audit/polish/harden/optimize/live:
+- Product UI taste scoring, "why not 100", screenshot/product-page review,
+  concrete top issues, and acceptance criteria:
+  `references/product-ui-taste-review.md`; add
+  `references/taste-score-calibration.md` when the exact score or score band is
+  the main deliverable.
+- Impeccable-style command selection, critique/audit/polish/harden/optimize/live:
   `references/impeccable-workflow.md`.
 - Subjective user complaint mapping, such as "太 AI", "颜色平", "排版不对",
   "文案弱", "移动端差", "卡顿", or "目录乱":
@@ -106,7 +113,7 @@ Read only the references needed for the current task:
   `references/source-map.md`.
 
 For broad "make this frontend excellent" tasks, read:
-`visual-judgment.md`, `impeccable-workflow.md`,
+`visual-judgment.md`, `product-ui-taste-review.md`, `impeccable-workflow.md`,
 `engineering-quality.md`, `performance-quality.md`,
 `project-structure.md`, `report-quality.md` when reports/dashboards are in
 scope, `intent-map.md` when the brief is subjective, and

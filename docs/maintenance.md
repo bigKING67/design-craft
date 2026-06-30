@@ -37,8 +37,10 @@ python3 scripts/frontend_craft_score.py --self
 bash scripts/frontend_craft_pass.sh --target . --mode audit --skip-route
 bash scripts/frontend_craft_audit.sh --target . --mode audit --skip-route
 bash scripts/frontend_craft_audit.sh --target . --mode critique --skip-route
+bash scripts/frontend_craft_taste_review.sh --target skills/frontend-craft --context "release smoke" --evidence-level L0
 bash scripts/frontend_craft_seed_design.sh --target . --dry-run
 python3 scripts/upstream_absorption_report.py
+python3 scripts/upstream_absorption_report.py --remote
 bash scripts/install_local.sh
 diff -qr skills/frontend-craft /Users/gaoqian/.agents/skills/frontend-craft
 ```
@@ -52,8 +54,11 @@ Expected result:
 - Detector smoke passes against `skills/frontend-craft` and keeps raw
   `--json-only` compatibility for upstream Impeccable output.
 - Preferred pass wrapper, audit wrapper, and critique mode smokes pass.
+- Product UI taste-review packet smoke passes and keeps score evidence levels
+  explicit.
 - Vercel Geist seed helper smoke passes and preserves template byte parity.
-- Upstream absorption report runs without fetching or modifying submodules.
+- Upstream absorption report runs without fetching or modifying submodules; the
+  optional `--remote` check reports remote drift with `git ls-remote`.
 - Upstream lock commits match checked-out submodule commits.
 - Installed skill matches the source skill.
 
@@ -66,13 +71,19 @@ Expected result:
    git submodule status --recursive
    ```
 
-2. Sync upstream submodules:
+2. Check remote drift without mutating submodules:
+
+   ```bash
+   python3 scripts/upstream_absorption_report.py --remote
+   ```
+
+3. Sync upstream submodules only after deciding to absorb the remote head:
 
    ```bash
    bash scripts/sync_upstreams.sh
    ```
 
-3. Generate a local absorption report:
+4. Generate a local absorption report:
 
    ```bash
    python3 scripts/upstream_absorption_report.py
@@ -82,15 +93,15 @@ Expected result:
    `provenance_only` usually means notices or source-map updates; `manual_review`
    requires human judgment before changing the fusion layer.
 
-4. Review upstream licenses and attribution if upstream content changed:
+5. Review upstream licenses and attribution if upstream content changed:
 
    ```bash
    git diff -- THIRD_PARTY_NOTICES.md upstreams.lock.json skills/frontend-craft/references/source-map.md
    ```
 
-5. Update the fusion layer only under `skills/frontend-craft/`.
+6. Update the fusion layer only under `skills/frontend-craft/`.
 
-6. Run the release gate:
+7. Run the release gate:
 
    ```bash
    make release-gate
@@ -136,6 +147,21 @@ across `frontend-craft` changes. Each card should record:
 Golden tasks should be updated only when the project reality or desired workflow
 contract changes.
 
+## Product UI taste calibration
+
+Use `evals/product-ui-taste/` for stable screenshot or page-review calibration
+cases. Each case should record:
+
+- Product context and primary user job.
+- Evidence level (`L0` through `L4`).
+- Expected score or acceptable score range.
+- Required findings that a good review should surface.
+- False-positive guards, especially claims that cannot be made from the
+  available evidence.
+
+Keep binary screenshots out of the repo unless the image itself is required for
+reproducibility and attribution is clear.
+
 ## Release checklist
 
 Before committing a release:
@@ -144,7 +170,8 @@ Before committing a release:
 2. `make release-gate`
 3. Route smoke on at least one real project path when route behavior changed.
 4. Upstream absorption report reviewed when upstream commits or detector rules changed.
-5. Install parity check:
+5. Product UI taste calibration still passes when taste scoring changed.
+6. Install parity check:
    `diff -qr skills/frontend-craft /Users/gaoqian/.agents/skills/frontend-craft`
-6. Confirm no repo docs were added inside `skills/frontend-craft/`.
-7. Commit with a scoped message.
+7. Confirm no repo docs were added inside `skills/frontend-craft/`.
+8. Commit with a scoped message.

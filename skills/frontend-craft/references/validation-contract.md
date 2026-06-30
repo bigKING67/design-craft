@@ -29,7 +29,12 @@ For the `frontend-craft` source repo itself, use:
 - `scripts/frontend_craft_seed_design.sh --target <project-dir>` when a new or
   weak developer-product surface needs the bundled Vercel Geist `DESIGN.md`
   pair as its initial design-system authority.
+- `scripts/frontend_craft_taste_review.sh --target <screenshot-or-project>`
+  when a product UI taste score or screenshot critique needs a stable review
+  packet before implementation.
 - `scripts/frontend_craft_score.py --self`
+- `scripts/upstream_absorption_report.py --remote` when checking whether pinned
+  upstreams have newer remote heads before absorption work.
 - `scripts/validate.sh`
 
 ## Route planner argument hygiene
@@ -118,6 +123,21 @@ Use the score helper as a maintenance signal for this skill project, not as a
 replacement for task-specific judgment. A score below 80 means the skill is
 still seed quality. A score between 80 and 89 is usable v0.x. A score above 90
 requires forward evals and real task evidence, not only file-presence checks.
+
+The 100-point score in `product-ui-taste-review.md` is different: it grades one
+specific UI surface. When reporting both, name them explicitly as
+`frontend-craft source score` versus `product UI taste score`.
+
+For product UI taste reviews, also report the evidence level:
+
+- `L0 static`: screenshot, wireframe, or prose only.
+- `L1 contextual`: screenshot plus product/user/task context.
+- `L2 browser`: browser screenshot plus DOM/computed style or token evidence.
+- `L3 resilient`: responsive and important interaction states checked.
+- `L4 before/after`: before/after evidence plus validation commands and diff.
+
+Do not claim states or responsive behavior as verified when the evidence level
+does not cover them.
 
 ## Unverified work
 

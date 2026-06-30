@@ -4,6 +4,18 @@ All notable local changes to `frontend-craft` are recorded here.
 
 ## Unreleased
 
+- Added `references/product-ui-taste-review.md` for concrete product UI scoring,
+  top issues, page-type checks, frontend implementation notes, and acceptance
+  criteria without bloating `SKILL.md`.
+- Added `references/taste-score-calibration.md`,
+  `scripts/frontend_craft_taste_review.sh`, and the first
+  `evals/product-ui-taste/material-ops-home` calibration case so screenshot
+  taste scores carry evidence levels, score bands, and false-positive guards.
+- Added `scripts/upstream_absorption_report.py --remote` for non-mutating remote
+  upstream drift checks before syncing submodules.
+- Updated the pinned `impeccable` upstream to
+  `c979ac37c361da564dcce100a4f2623d94ef54c8` and absorbed its critique
+  provenance/degraded-run guidance into the local fusion layer.
 - Added `scripts/frontend_craft_pass.sh` as the preferred neutral wrapper for
   critique/audit/polish/harden/optimize/structure/architecture passes while
   keeping `frontend_craft_audit.sh` as a compatibility entrypoint.

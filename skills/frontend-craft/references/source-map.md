@@ -36,6 +36,14 @@ preflight thinking.
   `d2ab4ddee6fa63002fae680652b5fbd31735e280`
 - Initial commit note:
   `2026-06-22T16:01:16-07:00 Make Copilot built-in note a callout block under the Install header`
+- Current absorbed commit:
+  `c979ac37c361da564dcce100a4f2623d94ef54c8`
+- 2026-06-30 absorption note:
+  remote updates were reviewed and selectively absorbed for critique method
+  provenance, explicit degraded/single-context reporting, `.impeccable`
+  ephemeral artifact guidance, harness/subagent capability caveats, and install
+  symlink hardening provenance. Dependency bumps and generated provider output
+  remain upstream provenance only.
 - Primary material to inspect:
   - `.agents/skills/impeccable/SKILL.md`
   - `site/content/skills/*.md`
@@ -77,18 +85,31 @@ When a project already has a credible `DESIGN.md`, token system, brand guide, or
 strong runtime visual language, keep the project authority first and use the
 Geist templates as a comparison baseline for missing system pieces.
 
+## Local calibration artifacts
+
+- `references/product-ui-taste-review.md`: product UI taste rubric, output
+  contract, page-type checks, and acceptance criteria.
+- `references/taste-score-calibration.md`: evidence levels, score bands, and
+  anti-inflation rules for numeric taste scores.
+- `evals/product-ui-taste/material-ops-home/`: first screenshot-derived
+  calibration case for a clean but generic operations dashboard.
+- `scripts/frontend_craft_taste_review.sh`: deterministic packet generator for
+  product UI taste reviews; it does not replace the agent's judgment.
+
 ## Maintenance rule
 
 When updating upstreams:
 
-1. Run `scripts/sync_upstreams.sh`.
-2. Run `scripts/upstream_absorption_report.py` to classify changed files as
+1. Run `scripts/upstream_absorption_report.py --remote` when you need to know
+   whether a remote head changed without mutating submodules.
+2. Run `scripts/sync_upstreams.sh` only after deciding to absorb the remote head.
+3. Run `scripts/upstream_absorption_report.py` to classify changed files as
    `candidate_absorb`, `provenance_only`, or `manual_review` without fetching or
    editing submodules.
-3. Inspect upstream changelogs and key skill/command files.
-4. Update this source map only after deciding what the fusion layer should
+4. Inspect upstream changelogs and key skill/command files.
+5. Update this source map only after deciding what the fusion layer should
    absorb.
-5. Never overwrite `skills/frontend-craft` automatically from upstream.
+6. Never overwrite `skills/frontend-craft` automatically from upstream.
 
 ## Attribution rule
 

@@ -181,6 +181,8 @@ case "${MODE}" in
 - Judge product-job fit before decoration: what decision or action becomes clearer?
 - Check hierarchy, density, typography rhythm, color intent, motion restraint, and responsive risk.
 - Call out generic AI tells: nested-card soup, vague labels, fake gradients, ornamental noise, and weak empty states.
+- If the user asks for a score or why the UI is not 100, use product-ui-taste-review.md plus taste-score-calibration.md; label evidence level and product UI taste score.
+- Report method provenance for full critiques: dual-agent only if it actually ran; otherwise say single-context/degraded with the reason.
 - Classify issues as P0/P1/P2/P3 and recommend the next pass: shape, polish, harden, optimize, or implement.
 - Keep this read-only unless the user asks for changes.
 EOF
