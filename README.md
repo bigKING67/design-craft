@@ -192,6 +192,19 @@ the states that were not verified. L3 cases must include responsive viewport
 evidence and explicit interaction-state checks; responsive fit alone is not
 proof of better task hierarchy.
 
+Create a real L4 before/after eval scaffold:
+
+```bash
+bash scripts/design_craft_l4_eval_case.sh \
+  --case-id datahub-live-center-review-workbench \
+  --surface "/content/live-center" \
+  --primary-user "content operators"
+```
+
+The generated case is not evidence by itself. Fill real screenshot metadata,
+before/after scores, implementation diff, validation commands, and unverified
+states before counting it as L4.
+
 Emit a redacted DOM/computed-style sampler for TMWD `browser_execute_js`, or
 validate captured product UI evidence and score anti-inflation rules:
 

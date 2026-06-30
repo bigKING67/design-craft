@@ -71,6 +71,7 @@ system, data density, report grammar, or runtime truth.
    `scripts/design_craft_detect.sh` for detector and local design-craft signals,
    `scripts/design_craft_taste_review.sh` for stable product UI taste-review
    packets,
+   `scripts/design_craft_l4_eval_case.sh` for L4 before/after eval scaffolds,
    `scripts/design_craft_browser_evidence.py` for redacted DOM/computed-style
    evidence snippets and product UI score anti-inflation validation,
    `scripts/design_craft_css_smell_scan.py`,

@@ -101,6 +101,7 @@ required_files=(
   "scripts/design_craft_detect.sh"
   "scripts/design_craft_doctor.sh"
   "scripts/design_craft_init_agent.sh"
+  "scripts/design_craft_l4_eval_case.sh"
   "scripts/design_craft_browser_evidence.py"
   "scripts/design_craft_css_smell_scan.py"
   "scripts/design_craft_focus_audit.py"
@@ -193,6 +194,7 @@ for path in \
   "scripts/design_craft_detect.sh" \
   "scripts/design_craft_doctor.sh" \
   "scripts/design_craft_init_agent.sh" \
+  "scripts/design_craft_l4_eval_case.sh" \
   "scripts/design_craft_browser_evidence.py" \
   "scripts/design_craft_css_smell_scan.py" \
   "scripts/design_craft_focus_audit.py" \
@@ -222,6 +224,7 @@ for path in \
   scripts/design_craft_detect.sh \
   scripts/design_craft_doctor.sh \
   scripts/design_craft_init_agent.sh \
+  scripts/design_craft_l4_eval_case.sh \
   scripts/design_craft_pass.sh \
   scripts/design_craft_route.sh \
   scripts/design_craft_seed_design.sh \
@@ -269,6 +272,8 @@ bash scripts/design_craft_init_agent.sh --agent cursor --target "${tmp_init_dir}
 bash scripts/design_craft_init_agent.sh --agent claude --target "${tmp_init_dir}" --scope project --dry-run >/dev/null
 bash scripts/design_craft_init_agent.sh --agent pi --target "${tmp_init_dir}" --scope project --dry-run >/dev/null
 bash scripts/design_craft_init_agent.sh --agent generic --target "${tmp_init_dir}" --scope project --dry-run >/dev/null
+bash scripts/design_craft_l4_eval_case.sh --case-id validation-l4-case --surface validation --output-root "${tmp_init_dir}/l4" >/dev/null
+test -f "${tmp_init_dir}/l4/validation-l4-case/screenshots.json"
 bash scripts/design_craft_pass.sh --target skills/design-craft --mode audit --skip-route --skip-score >/dev/null
 bash scripts/design_craft_pass.sh --target skills/design-craft --mode critique --skip-route --skip-score >/dev/null
 bash scripts/design_craft_pass.sh --target skills/design-craft --mode motion --skip-route --skip-score >/dev/null
