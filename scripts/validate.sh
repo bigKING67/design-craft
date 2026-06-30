@@ -114,6 +114,7 @@ required_files=(
   "adapters/pi/README.md"
   "adapters/generic/README.md"
   "scripts/design_craft_audit.sh"
+  "scripts/design_craft_active_scope_validate.py"
   "scripts/design_craft_detect.sh"
   "scripts/design_craft_doctor.sh"
   "scripts/design_craft_init_agent.sh"
@@ -149,37 +150,9 @@ for path in "${required_files[@]}"; do
   fi
 done
 
-python3 - <<'PY'
-import sys
-from pathlib import Path
+python3 scripts/design_craft_active_scope_validate.py --check >/dev/null
+python3 scripts/design_craft_active_scope_validate.py --root . >/dev/null
 
-active_generic_files = [
-    Path("README.md"),
-    Path("scripts/design_craft_l4_capture.py"),
-    Path("scripts/design_craft_score.py"),
-    Path("scripts/validate.sh"),
-    Path("skills/design-craft/references/source-map.md"),
-    Path("evals/golden-tasks/generic-review-workbench.md"),
-    Path("evals/product-ui-taste/before-after/README.md"),
-]
-project_specific_markers = [
-    "data" + "hub",
-    "gro" + "land",
-    "live" + "-center",
-    "content" + "-assets",
-]
-
-errors = []
-for path in active_generic_files:
-    text = path.read_text(encoding="utf-8").lower()
-    for marker in project_specific_markers:
-        if marker in text:
-            errors.append(f"{path}: active generic gate mentions project-specific marker {marker!r}")
-
-if errors:
-    print("\n".join(errors), file=sys.stderr)
-    sys.exit(1)
-PY
 
 if ! grep -q "MIT" THIRD_PARTY_NOTICES.md; then
   echo "THIRD_PARTY_NOTICES.md is missing MIT notice" >&2
@@ -243,6 +216,7 @@ for path in \
   "scripts/sync_upstreams.sh" \
   "scripts/validate.sh" \
   "scripts/design_craft_audit.sh" \
+  "scripts/design_craft_active_scope_validate.py" \
   "scripts/design_craft_detect.sh" \
   "scripts/design_craft_doctor.sh" \
   "scripts/design_craft_init_agent.sh" \
@@ -299,6 +273,7 @@ make -n release-gate >/dev/null
 
 for path in \
   scripts/design_craft_score.py \
+  scripts/design_craft_active_scope_validate.py \
   scripts/design_craft_browser_evidence.py \
   scripts/design_craft_cross_agent_validate.py \
   scripts/design_craft_l4_capture.py \

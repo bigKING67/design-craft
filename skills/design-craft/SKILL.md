@@ -138,8 +138,8 @@ Read only the references needed for the current task:
   `references/project-structure.md`.
 - Surface-specific rules for landing, dashboard, data-viz, reports, mobile:
   `references/surface-playbooks.md`.
-- DataHub, dashboard exports, static reports, special reports, and formal
-  business-review pages:
+- Dashboard exports, static reports, special reports, formal business-review
+  pages, and evidence-heavy report surfaces:
   `references/report-quality.md`.
 - Validation and delivery fields:
   `references/validation-contract.md`.

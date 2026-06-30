@@ -1,8 +1,8 @@
 # Report quality
 
-Use this for DataHub, dashboard exports, static reports, special reports, and
-business-review pages where reading order and evidence quality matter more than
-landing-page drama.
+Use this for dashboard exports, static reports, special reports, formal
+business-review pages, and evidence-heavy report surfaces where reading order
+and evidence quality matter more than landing-page drama.
 
 ## Report grammar
 
@@ -52,7 +52,7 @@ Avoid:
   secondary.
 - Preserve print/export readability if reports are likely to be shared.
 
-## DataHub and special-report defaults
+## Report-surface defaults
 
 - Business truth and project `DESIGN.md` outrank generic visual rules.
 - Use formal-report density: compact header, readable charts, restrained cards.

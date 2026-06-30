@@ -141,6 +141,7 @@ Equivalent direct commands:
 
 ```bash
 bash scripts/validate.sh
+python3 scripts/design_craft_active_scope_validate.py --root .
 python3 scripts/design_craft_score.py --self
 bash scripts/design_craft_pass.sh --target . --mode audit --skip-route
 ```
@@ -322,7 +323,8 @@ The release gate is documented in `docs/maintenance.md`. It checks the skill
 schema, required references, shell/Python syntax, detector smoke, score smoke,
 audit wrapper smoke, fixture-based route smoke, upstream lock consistency, and
 local install parity. It also smoke-tests adapters, doctor output, and the
-static smell scanners.
+static smell scanners, and verifies that active generic docs/gates remain
+project-neutral.
 
 Route smoke uses a temporary fixture project with its own `DESIGN.md`, because
 `design-craft` itself is a reusable skill system rather than a product UI target:

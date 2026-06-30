@@ -37,8 +37,8 @@ Primary job: guide reading and decision-making.
 
 - Use formal report grammar: clear cover, executive summary, section hierarchy,
   chart-first evidence, quiet navigation, footnote-sized caveats.
-- For DataHub, dashboard exports, and business-review pages, also read
-  `references/report-quality.md`.
+- For dashboard exports, business-review pages, and evidence-heavy report
+  surfaces, also read `references/report-quality.md`.
 - Avoid dashboard hero treatments, heavy rounded cards, decorative section
   banners, and giant tables as the main narrative.
 - Every chart should answer a question; every table should justify its weight.

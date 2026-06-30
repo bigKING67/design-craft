@@ -318,6 +318,7 @@ def build_score(root: Path, run_smoke: bool) -> list[Dimension]:
             WEIGHTS["Validation Evidence"],
             [
                 (has(root, "scripts/validate.sh"), "validation script exists", "Add validation script."),
+                (has(root, "scripts/design_craft_active_scope_validate.py"), "active-scope validator exists", "Add a validator that keeps active generic gates project-neutral."),
                 ("browser validation" in validation.lower(), "browser validation contract present", "Document browser validation rules."),
                 ("browser_screenshot_required" in validation and "browser_screenshot_ops" in validation, "screenshot evidence contract present", "Document screenshot artifact evidence rules."),
                 (has(root, "evals/golden-tasks/generic-review-workbench.md"), "generic golden task evidence exists", "Add at least one generic golden real-task card."),
