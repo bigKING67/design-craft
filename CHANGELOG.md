@@ -26,6 +26,9 @@ All notable local changes to `design-craft` are recorded here.
 - Added a generic invalid L4 manifest fixture plus negative validation so
   strict mode must reject base64 paths, bad hashes, zero dimensions, invalid
   layout metric types, and unmatched before/after artifact keys.
+- Added complete L4 before/after case-directory validation with generic valid
+  and invalid fixtures, checking required files, placeholder text, score
+  evidence, screenshot manifest alignment, and before/after score direction.
 
 ## 0.2.1 - 2026-06-30
 

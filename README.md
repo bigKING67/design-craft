@@ -216,6 +216,15 @@ python3 scripts/design_craft_browser_evidence.py \
   --validate-evidence-json evals/product-ui-taste/groland-content-assets-l3/dom-evidence.desktop.json
 ```
 
+Validate a completed L4 before/after case directory before citing it as real
+evidence:
+
+```bash
+python3 scripts/design_craft_l4_case_validate.py \
+  --case-dir evals/product-ui-taste/before-after/<case> \
+  --strict
+```
+
 Run static UI smell scanners. These are review signals, not a replacement for
 design judgment or browser evidence:
 

@@ -91,6 +91,18 @@ required_files=(
   "evals/cross-agent/same-prompt-motion-review/scorecard.md"
   "evals/fixtures/css-smells/card-soup.css"
   "evals/fixtures/focus-smells/Button.tsx"
+  "evals/fixtures/l4-cases/generic-invalid/diff-summary.md"
+  "evals/fixtures/l4-cases/generic-invalid/input.md"
+  "evals/fixtures/l4-cases/generic-invalid/score.after.json"
+  "evals/fixtures/l4-cases/generic-invalid/score.before.json"
+  "evals/fixtures/l4-cases/generic-invalid/screenshots.json"
+  "evals/fixtures/l4-cases/generic-invalid/validation.md"
+  "evals/fixtures/l4-cases/generic-valid/diff-summary.md"
+  "evals/fixtures/l4-cases/generic-valid/input.md"
+  "evals/fixtures/l4-cases/generic-valid/score.after.json"
+  "evals/fixtures/l4-cases/generic-valid/score.before.json"
+  "evals/fixtures/l4-cases/generic-valid/screenshots.json"
+  "evals/fixtures/l4-cases/generic-valid/validation.md"
   "evals/fixtures/l4-screenshot-manifests/generic-invalid.json"
   "evals/fixtures/l4-screenshot-manifests/generic-valid.json"
   "evals/fixtures/token-smells/panel.css"
@@ -104,6 +116,7 @@ required_files=(
   "scripts/design_craft_detect.sh"
   "scripts/design_craft_doctor.sh"
   "scripts/design_craft_init_agent.sh"
+  "scripts/design_craft_l4_case_validate.py"
   "scripts/design_craft_l4_eval_case.sh"
   "scripts/design_craft_l4_evidence_manifest.py"
   "scripts/design_craft_browser_evidence.py"
@@ -198,6 +211,7 @@ for path in \
   "scripts/design_craft_detect.sh" \
   "scripts/design_craft_doctor.sh" \
   "scripts/design_craft_init_agent.sh" \
+  "scripts/design_craft_l4_case_validate.py" \
   "scripts/design_craft_l4_eval_case.sh" \
   "scripts/design_craft_l4_evidence_manifest.py" \
   "scripts/design_craft_browser_evidence.py" \
@@ -249,6 +263,7 @@ make -n release-gate >/dev/null
 for path in \
   scripts/design_craft_score.py \
   scripts/design_craft_browser_evidence.py \
+  scripts/design_craft_l4_case_validate.py \
   scripts/design_craft_l4_evidence_manifest.py \
   scripts/design_craft_css_smell_scan.py \
   scripts/design_craft_focus_audit.py \
@@ -271,6 +286,16 @@ if python3 scripts/design_craft_l4_evidence_manifest.py \
   --validate-screenshots-json evals/fixtures/l4-screenshot-manifests/generic-invalid.json \
   --strict >/dev/null 2>&1; then
   echo "Invalid L4 screenshot manifest unexpectedly passed strict validation" >&2
+  exit 1
+fi
+python3 scripts/design_craft_l4_case_validate.py --check >/dev/null
+python3 scripts/design_craft_l4_case_validate.py \
+  --case-dir evals/fixtures/l4-cases/generic-valid \
+  --strict >/dev/null
+if python3 scripts/design_craft_l4_case_validate.py \
+  --case-dir evals/fixtures/l4-cases/generic-invalid \
+  --strict >/dev/null 2>&1; then
+  echo "Invalid L4 case directory unexpectedly passed strict validation" >&2
   exit 1
 fi
 python3 scripts/design_craft_css_smell_scan.py --target evals/fixtures/css-smells --json >/dev/null
