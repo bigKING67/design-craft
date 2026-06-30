@@ -332,6 +332,7 @@ def build_score(root: Path, run_smoke: bool) -> list[Dimension]:
                 (has(root, "evals/product-ui-taste/before-after/README.md"), "L4 before/after eval scaffold exists", "Add L4 before/after eval scaffold."),
                 (has_product_ui_l4_before_after_case(root), "product UI taste L4 before/after case exists", "Add a completed L4 before/after product UI case."),
                 (has(root, "evals/cross-agent/README.md"), "cross-agent benchmark scaffold exists", "Add cross-agent benchmark scaffold."),
+                (has(root, "scripts/design_craft_cross_agent_validate.py"), "cross-agent benchmark validator exists", "Add a validator for cross-agent benchmark task definitions."),
                 (has(root, "evals/fixtures/css-smells/card-soup.css"), "static scanner fixture exists", "Add scanner fixtures."),
                 ("critique" in read_text(root / "scripts/design_craft_audit.sh"), "critique mode present", "Add a lightweight critique mode."),
                 ("motion" in read_text(root / "scripts/design_craft_audit.sh"), "motion mode present", "Add a motion-specific quality pass."),

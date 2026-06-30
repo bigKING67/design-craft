@@ -1,6 +1,6 @@
 DESIGN_CRAFT_SKILL_ROOT ?= $(HOME)/.agents/skills
 
-.PHONY: validate score pass audit critique motion taste-review seed-dry-run route-smoke doctor init-dry-run l4-capture-check smell-smoke upstream-report upstream-remote-report install legacy-alias-smoke release-gate
+.PHONY: validate score pass audit critique motion taste-review seed-dry-run route-smoke doctor init-dry-run cross-agent-check l4-capture-check smell-smoke upstream-report upstream-remote-report install legacy-alias-smoke release-gate
 
 validate:
 	bash scripts/validate.sh
@@ -58,6 +58,9 @@ init-dry-run:
 	bash scripts/design_craft_init_agent.sh --agent pi --target "$$tmp_dir" --scope project --dry-run >/dev/null; \
 	bash scripts/design_craft_init_agent.sh --agent generic --target "$$tmp_dir" --scope project --dry-run >/dev/null
 
+cross-agent-check:
+	python3 scripts/design_craft_cross_agent_validate.py --root evals/cross-agent >/dev/null
+
 l4-capture-check:
 	python3 scripts/design_craft_l4_capture.py --check >/dev/null
 
@@ -79,5 +82,5 @@ legacy-alias-smoke:
 	bash scripts/frontend_craft_pass.sh --target skills/design-craft --mode motion --skip-route --skip-score >/dev/null
 	grep -Fq 'renamed to `design-craft`' "$(DESIGN_CRAFT_SKILL_ROOT)/frontend-craft/SKILL.md"
 
-release-gate: validate score pass audit critique motion taste-review seed-dry-run route-smoke doctor init-dry-run l4-capture-check smell-smoke upstream-report upstream-remote-report install legacy-alias-smoke
+release-gate: validate score pass audit critique motion taste-review seed-dry-run route-smoke doctor init-dry-run cross-agent-check l4-capture-check smell-smoke upstream-report upstream-remote-report install legacy-alias-smoke
 	diff -qr skills/design-craft "$(DESIGN_CRAFT_SKILL_ROOT)/design-craft"

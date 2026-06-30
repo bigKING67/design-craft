@@ -14,3 +14,11 @@ The goal is not identical prose. The goal is stable behavior:
 - Does not over-modify unrelated code.
 
 Template directories are scaffolding only; they are not completed benchmarks.
+
+Validate active benchmark task definitions with:
+
+```bash
+python3 scripts/design_craft_cross_agent_validate.py --root evals/cross-agent
+```
+
+The validator checks active `same-prompt-*` task directories, not `_template/`.

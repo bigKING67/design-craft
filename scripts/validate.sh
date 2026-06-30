@@ -122,6 +122,7 @@ required_files=(
   "scripts/design_craft_l4_eval_case.sh"
   "scripts/design_craft_l4_evidence_manifest.py"
   "scripts/design_craft_browser_evidence.py"
+  "scripts/design_craft_cross_agent_validate.py"
   "scripts/design_craft_css_smell_scan.py"
   "scripts/design_craft_focus_audit.py"
   "scripts/design_craft_token_audit.py"
@@ -250,6 +251,7 @@ for path in \
   "scripts/design_craft_l4_eval_case.sh" \
   "scripts/design_craft_l4_evidence_manifest.py" \
   "scripts/design_craft_browser_evidence.py" \
+  "scripts/design_craft_cross_agent_validate.py" \
   "scripts/design_craft_css_smell_scan.py" \
   "scripts/design_craft_focus_audit.py" \
   "scripts/design_craft_token_audit.py" \
@@ -298,6 +300,7 @@ make -n release-gate >/dev/null
 for path in \
   scripts/design_craft_score.py \
   scripts/design_craft_browser_evidence.py \
+  scripts/design_craft_cross_agent_validate.py \
   scripts/design_craft_l4_capture.py \
   scripts/design_craft_l4_case_validate.py \
   scripts/design_craft_l4_evidence_manifest.py \
@@ -312,6 +315,8 @@ done
 
 python3 scripts/design_craft_score.py --self --no-smoke --json >/dev/null
 python3 scripts/design_craft_browser_evidence.py --check --print-js >/dev/null
+python3 scripts/design_craft_cross_agent_validate.py --check >/dev/null
+python3 scripts/design_craft_cross_agent_validate.py --root evals/cross-agent >/dev/null
 python3 scripts/design_craft_l4_capture.py --check >/dev/null
 python3 scripts/design_craft_l4_evidence_manifest.py --check >/dev/null
 python3 scripts/design_craft_l4_evidence_manifest.py \
