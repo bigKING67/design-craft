@@ -4,6 +4,10 @@ All notable local changes to `frontend-craft` are recorded here.
 
 ## Unreleased
 
+- Added `scripts/frontend_craft_browser_evidence.py` plus the
+  `evals/product-ui-taste/groland-content-assets-l3` case to validate
+  redacted DOM/computed-style evidence, responsive/state L3 coverage, and
+  anti-inflation rules for product UI taste scores.
 - Added `evals/product-ui-taste/live-browser-samples` with four real Chrome
   tab L2 product UI taste calibration samples backed by TMWD screenshot
   artifacts and DOM/computed-style evidence.

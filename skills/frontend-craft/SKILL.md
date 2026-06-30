@@ -62,7 +62,10 @@ system, data density, report grammar, or runtime truth.
    `/Users/gaoqian/Documents/sixseven/codeproject/frontend-craft/scripts/frontend_craft_detect.sh`
    for detector signals,
    `/Users/gaoqian/Documents/sixseven/codeproject/frontend-craft/scripts/frontend_craft_taste_review.sh`
-   for stable product UI taste-review packets, and
+   for stable product UI taste-review packets,
+   `/Users/gaoqian/Documents/sixseven/codeproject/frontend-craft/scripts/frontend_craft_browser_evidence.py`
+   for redacted DOM/computed-style evidence snippets and product UI score
+   anti-inflation validation, and
    `/Users/gaoqian/Documents/sixseven/codeproject/frontend-craft/scripts/frontend_craft_score.py`
    for self-audits. When maintaining this skill repo, use
    `/Users/gaoqian/Documents/sixseven/codeproject/frontend-craft/scripts/upstream_absorption_report.py`

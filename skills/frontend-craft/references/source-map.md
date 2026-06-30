@@ -97,8 +97,14 @@ Geist templates as a comparison baseline for missing system pieces.
   calibration set from real TMWD-observed Chrome tabs; screenshot binaries stay
   outside the repo and the eval records artifact path, hash, dimensions, and
   redacted DOM/style summaries.
+- `evals/product-ui-taste/groland-content-assets-l3/`: L3 resilient
+  calibration case with desktop/mobile TMWD screenshots, selector/clip
+  artifacts, redacted DOM/computed-style JSON, and partial focus-state evidence.
 - `scripts/frontend_craft_taste_review.sh`: deterministic packet generator for
   product UI taste reviews; it does not replace the agent's judgment.
+- `scripts/frontend_craft_browser_evidence.py`: emits the redacted
+  `frontend-craft.browser-evidence.v1` browser sampler and validates product UI
+  score anti-inflation rules.
 
 ## Maintenance rule
 

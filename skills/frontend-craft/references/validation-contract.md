@@ -32,6 +32,11 @@ For the `frontend-craft` source repo itself, use:
 - `scripts/frontend_craft_taste_review.sh --target <screenshot-or-project>`
   when a product UI taste score or screenshot critique needs a stable review
   packet before implementation.
+- `scripts/frontend_craft_browser_evidence.py --print-js` to emit a redacted
+  DOM/computed-style sampler for TMWD `browser_execute_js`.
+- `scripts/frontend_craft_browser_evidence.py --validate-score-json <path>` and
+  `--validate-evidence-json <path>` to guard product UI score inflation and
+  captured browser evidence schema.
 - `scripts/frontend_craft_score.py --self`
 - `scripts/upstream_absorption_report.py --remote` when checking whether pinned
   upstreams have newer remote heads before absorption work.
@@ -166,6 +171,11 @@ For product UI taste reviews, also report the evidence level:
 
 Do not claim states or responsive behavior as verified when the evidence level
 does not cover them.
+
+L3/L4 product UI score cases must include `responsive_viewports` and
+`state_checks` in their `score.json`. If flat hierarchy or card soup remains the
+main visible issue, do not score above 84 just because the layout fits multiple
+viewports.
 
 ## Unverified work
 

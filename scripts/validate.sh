@@ -49,8 +49,14 @@ required_files=(
   "evals/product-ui-taste/live-browser-samples/input.md"
   "evals/product-ui-taste/live-browser-samples/review.expected.md"
   "evals/product-ui-taste/live-browser-samples/score.json"
+  "evals/product-ui-taste/groland-content-assets-l3/input.md"
+  "evals/product-ui-taste/groland-content-assets-l3/review.expected.md"
+  "evals/product-ui-taste/groland-content-assets-l3/score.json"
+  "evals/product-ui-taste/groland-content-assets-l3/dom-evidence.desktop.json"
+  "evals/product-ui-taste/groland-content-assets-l3/dom-evidence.mobile.json"
   "scripts/frontend_craft_audit.sh"
   "scripts/frontend_craft_detect.sh"
+  "scripts/frontend_craft_browser_evidence.py"
   "scripts/frontend_craft_pass.sh"
   "scripts/frontend_craft_route.sh"
   "scripts/frontend_craft_seed_design.sh"
@@ -107,6 +113,7 @@ for path in \
   "scripts/validate.sh" \
   "scripts/frontend_craft_audit.sh" \
   "scripts/frontend_craft_detect.sh" \
+  "scripts/frontend_craft_browser_evidence.py" \
   "scripts/frontend_craft_pass.sh" \
   "scripts/frontend_craft_route.sh" \
   "scripts/frontend_craft_seed_design.sh" \
@@ -128,8 +135,10 @@ bash -n scripts/frontend_craft_taste_review.sh
 make -n validate >/dev/null
 make -n release-gate >/dev/null
 python3 -m py_compile scripts/frontend_craft_score.py
+python3 -m py_compile scripts/frontend_craft_browser_evidence.py
 python3 -m py_compile scripts/upstream_absorption_report.py
 python3 scripts/frontend_craft_score.py --self --no-smoke --json >/dev/null
+python3 scripts/frontend_craft_browser_evidence.py --check --print-js >/dev/null
 python3 scripts/upstream_absorption_report.py --json >/dev/null
 python3 scripts/upstream_absorption_report.py --json --remote >/dev/null
 bash scripts/frontend_craft_detect.sh --target skills/frontend-craft --json-only >/dev/null
@@ -267,5 +276,15 @@ if errors:
     print("\n".join(errors), file=sys.stderr)
     sys.exit(1)
 PY
+
+for score_json in evals/product-ui-taste/*/score.json; do
+  python3 scripts/frontend_craft_browser_evidence.py --validate-score-json "${score_json}" >/dev/null
+done
+
+for evidence_json in evals/product-ui-taste/*/dom-evidence*.json; do
+  if [[ -e "${evidence_json}" ]]; then
+    python3 scripts/frontend_craft_browser_evidence.py --validate-evidence-json "${evidence_json}" >/dev/null
+  fi
+done
 
 echo "frontend-craft validation passed."

@@ -133,7 +133,20 @@ bash scripts/frontend_craft_taste_review.sh \
 Product UI taste calibration cases live under `evals/product-ui-taste/`. Static
 cases use L0/L1 evidence; live browser cases should record TMWD screenshot
 artifact paths, SHA-256 hashes, dimensions, DOM/computed-style summaries, and
-the states that were not verified.
+the states that were not verified. L3 cases must include responsive viewport
+evidence and explicit interaction-state checks; responsive fit alone is not
+proof of better task hierarchy.
+
+Emit a redacted DOM/computed-style sampler for TMWD `browser_execute_js`, or
+validate captured product UI evidence and score anti-inflation rules:
+
+```bash
+python3 scripts/frontend_craft_browser_evidence.py --print-js
+python3 scripts/frontend_craft_browser_evidence.py \
+  --validate-score-json evals/product-ui-taste/groland-content-assets-l3/score.json
+python3 scripts/frontend_craft_browser_evidence.py \
+  --validate-evidence-json evals/product-ui-taste/groland-content-assets-l3/dom-evidence.desktop.json
+```
 
 Run the detector. Default text output includes pinned Impeccable findings plus
 local frontend-craft review signals; `--json-only` remains raw upstream JSON for

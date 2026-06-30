@@ -56,6 +56,8 @@ Expected result:
 - Preferred pass wrapper, audit wrapper, and critique mode smokes pass.
 - Product UI taste-review packet smoke passes and keeps score evidence levels
   explicit.
+- Product UI browser evidence helper compiles, emits a redacted TMWD DOM/style
+  sampler, and validates score anti-inflation plus DOM evidence JSON.
 - Vercel Geist seed helper smoke passes and preserves template byte parity.
 - Upstream absorption report runs without fetching or modifying submodules; the
   optional `--remote` check reports remote drift with `git ls-remote`.
@@ -161,6 +163,12 @@ cases. Each case should record:
 - Required findings that a good review should surface.
 - False-positive guards, especially claims that cannot be made from the
   available evidence.
+- Browser evidence JSON, when captured, should use
+  `frontend-craft.browser-evidence.v1` and pass
+  `scripts/frontend_craft_browser_evidence.py --validate-evidence-json`.
+- L3 cases must include at least two responsive viewports plus state checks; a
+  responsive layout that still preserves weak hierarchy should not inflate the
+  score.
 
 Keep binary screenshots out of the repo unless the image itself is required for
 reproducibility and attribution is clear.

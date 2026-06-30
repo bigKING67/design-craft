@@ -62,6 +62,26 @@ def has_product_ui_l2_case(root: Path) -> bool:
     return False
 
 
+def has_product_ui_l3_case(root: Path) -> bool:
+    for score_path in sorted((root / "evals/product-ui-taste").glob("*/score.json")):
+        try:
+            payload = json.loads(score_path.read_text(encoding="utf-8"))
+        except Exception:
+            continue
+        entries = payload.get("cases")
+        if entries is None:
+            entries = [payload]
+        if not isinstance(entries, list):
+            continue
+        for entry in entries:
+            if not isinstance(entry, dict):
+                continue
+            level = entry.get("evidence_level") or payload.get("evidence_level")
+            if level in {"L3", "L4"} and entry.get("responsive_viewports") and entry.get("state_checks"):
+                return True
+    return False
+
+
 def infer_root(target: Path) -> Path:
     target = target.expanduser().resolve()
     if target.is_file():
@@ -105,6 +125,7 @@ def build_score(root: Path, run_smoke: bool) -> list[Dimension]:
     design_system = read_text(root / "skills/frontend-craft/references/design-system-contract.md")
     product_review = read_text(root / "skills/frontend-craft/references/product-ui-taste-review.md")
     taste_calibration = read_text(root / "skills/frontend-craft/references/taste-score-calibration.md")
+    browser_evidence_helper = read_text(root / "scripts/frontend_craft_browser_evidence.py")
     report = read_text(root / "skills/frontend-craft/references/report-quality.md")
     surface = read_text(root / "skills/frontend-craft/references/surface-playbooks.md")
     source_map = read_text(root / "skills/frontend-craft/references/source-map.md")
@@ -265,8 +286,11 @@ def build_score(root: Path, run_smoke: bool) -> list[Dimension]:
                 ),
                 ("product UI taste score" in validation, "product UI score is distinct from source score", "Distinguish UI taste scores from the workflow source score."),
                 (has(root, "scripts/frontend_craft_taste_review.sh"), "taste review wrapper exists", "Add a stable product UI taste review wrapper."),
+                (has(root, "scripts/frontend_craft_browser_evidence.py"), "browser evidence helper exists", "Add a redacted DOM/computed-style evidence helper."),
+                ("anti-inflation" in browser_evidence_helper and "validate_score_json" in browser_evidence_helper, "taste anti-inflation validator exists", "Add a validator for score anti-inflation rules."),
                 (has(root, "evals/product-ui-taste/material-ops-home/score.json"), "product UI taste golden case exists", "Add at least one product UI taste calibration case."),
                 (has_product_ui_l2_case(root), "product UI taste L2 browser case exists", "Add at least one product UI taste case with browser screenshot and DOM/style evidence."),
+                (has_product_ui_l3_case(root), "product UI taste L3 resilient case exists", "Add at least one product UI taste case with responsive and state evidence."),
                 ("critique" in read_text(root / "scripts/frontend_craft_audit.sh"), "critique mode present", "Add a lightweight critique mode."),
                 ("太 AI" in read_text(root / "skills/frontend-craft/references/intent-map.md"), "subjective intent mapping present", "Map subjective user phrases to workflow modes."),
                 (detector_smoke or not run_smoke, "detector smoke passes", "Fix detector smoke."),

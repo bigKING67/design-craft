@@ -79,3 +79,37 @@ ran and what remains unverified.
 - Not verified:
   mobile layout, hover, focus, selected, loading, empty, error, success,
   keyboard, touch, or before/after improvement.
+
+## 2026-06-30 - Product UI taste L3 responsive and focus evidence calibration
+
+- Target:
+  `http://localhost:3000/marketing/content-assets`
+- Purpose: harden product UI taste scoring so real browser evidence can capture
+  responsive fit and interaction-state caveats without inflating a page above
+  its actual task hierarchy.
+- Evidence status:
+  - TMWD managed tab workspace: `frontend-craft-l3-evals`.
+  - Desktop viewport: 1512x823 CSS px, DPR 2, no horizontal overflow.
+  - Mobile viewport: 390x844 CSS px, DPR 2, no horizontal overflow.
+  - Screenshot artifacts: captured through TMWD `browser_screenshot_ops` as
+    viewport and clip PNG files under
+    `~/.tmwd-browser-mcp/runtime/runs/frontend-craft-l3-evals/`.
+  - DOM/computed style: summarized in
+    `evals/product-ui-taste/groland-content-assets-l3/dom-evidence.desktop.json`
+    and
+    `evals/product-ui-taste/groland-content-assets-l3/dom-evidence.mobile.json`.
+  - Focus sample: `上传素材` button clip captured; computed outline was
+    effectively absent, so evidence is recorded as partial rather than full
+    keyboard validation.
+- Eval path:
+  `evals/product-ui-taste/groland-content-assets-l3/`
+- Evidence level:
+  L3 resilient evidence.
+- Browser validation:
+  claimed for desktop/mobile viewport fit, priority-area clip, and focused
+  primary-button sample only.
+- Screenshot validation:
+  claimed only for the artifact path/hash/dimensions recorded in the eval case.
+- Not verified:
+  hover, loading, empty, error, success, permission state, full keyboard
+  navigation, touch ergonomics beyond viewport fit, or before/after improvement.
