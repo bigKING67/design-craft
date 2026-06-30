@@ -12,5 +12,25 @@ Do not count a case as L4 until it has:
 - Validation commands and observed results.
 - Unverified states, if any.
 
+Screenshot metadata belongs in `screenshots.json` using
+`design-craft.l4-screenshots.v1`. Keep PNG files outside the repository and
+store only artifact paths, SHA-256 hashes, dimensions, viewport metadata, and
+optional layout metrics in the manifest.
+
+Validate scaffold manifests while filling them:
+
+```bash
+python3 scripts/design_craft_l4_evidence_manifest.py \
+  --validate-screenshots-json evals/product-ui-taste/before-after/<case>/screenshots.json
+```
+
+Once a case is claimed as real L4 evidence, use strict validation:
+
+```bash
+python3 scripts/design_craft_l4_evidence_manifest.py \
+  --validate-screenshots-json evals/product-ui-taste/before-after/<case>/screenshots.json \
+  --strict
+```
+
 The `_template/` directory is schema scaffolding only. It is not evidence and
 must not be cited as a completed before/after improvement.

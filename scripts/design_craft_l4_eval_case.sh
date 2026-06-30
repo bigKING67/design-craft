@@ -175,20 +175,37 @@ update_score(case_dir / "score.before.json", "before", "TODO: replace with a rea
 update_score(case_dir / "score.after.json", "after", "TODO: replace with a real after strength or remaining issue")
 
 screenshots = {
+    "schema": "design-craft.l4-screenshots.v1",
     "case_id": case_id,
-    "evidence_level": "L4",
+    "route": surface if surface.startswith(("http://", "https://", "/", "file://")) else "TODO",
+    "product_surface": surface or "TODO",
     "artifacts": {
-        "before": [],
-        "after": []
+        "before": {
+            "desktop": {
+                "tool": "TODO",
+                "target": "viewport",
+                "path": "TODO",
+                "sha256": "",
+                "dimensions": [0, 0],
+                "viewport": {"width": 0, "height": 0, "dpr": 0}
+            }
+        },
+        "after": {
+            "desktop": {
+                "tool": "TODO",
+                "target": "viewport",
+                "path": "TODO",
+                "sha256": "",
+                "dimensions": [0, 0],
+                "viewport": {"width": 0, "height": 0, "dpr": 0}
+            }
+        }
     },
-    "browser": {
-        "target": "TODO",
-        "viewports": [],
-        "states": []
-    },
+    "layout_delta": {},
     "notes": [
         "Fill artifact path, sha256, dimensions, target, viewport, and state for each real screenshot.",
-        "Keep screenshot PNGs repo-external; store only metadata here."
+        "Keep screenshot PNGs repo-external; store only metadata here.",
+        "Run scripts/design_craft_l4_evidence_manifest.py --validate-screenshots-json screenshots.json --strict after filling real evidence."
     ]
 }
 case_dir.joinpath("screenshots.json").write_text(
@@ -203,3 +220,4 @@ echo "  - Fill screenshot paths, sha256 hashes, and dimensions in input.md and s
 echo "  - Fill score.before.json and score.after.json with real scores and findings."
 echo "  - Fill diff-summary.md and validation.md with actual changed files and commands."
 echo "  - Validate score files with scripts/design_craft_browser_evidence.py --validate-score-json."
+echo "  - Validate screenshot manifest with scripts/design_craft_l4_evidence_manifest.py --validate-screenshots-json ${case_dir}/screenshots.json --strict."

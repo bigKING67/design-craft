@@ -16,6 +16,9 @@ All notable local changes to `design-craft` are recorded here.
   bypasses, and wired them into detector/validation smoke coverage.
 - Added L4 before/after and cross-agent benchmark scaffolds without counting
   templates as completed evidence.
+- Added an L4 screenshot manifest validator so before/after cases can check
+  screenshot artifact paths, hashes, dimensions, viewport metadata, and layout
+  metrics before claiming real evidence.
 
 ## 0.2.1 - 2026-06-30
 

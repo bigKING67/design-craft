@@ -75,6 +75,7 @@ required_files=(
   "evals/product-ui-taste/before-after/_template/score.after.json"
   "evals/product-ui-taste/before-after/_template/diff-summary.md"
   "evals/product-ui-taste/before-after/_template/validation.md"
+  "evals/product-ui-taste/before-after/_template/screenshots.json"
   "evals/cross-agent/README.md"
   "evals/cross-agent/_template/prompt.md"
   "evals/cross-agent/_template/expected-findings.md"
@@ -102,6 +103,7 @@ required_files=(
   "scripts/design_craft_doctor.sh"
   "scripts/design_craft_init_agent.sh"
   "scripts/design_craft_l4_eval_case.sh"
+  "scripts/design_craft_l4_evidence_manifest.py"
   "scripts/design_craft_browser_evidence.py"
   "scripts/design_craft_css_smell_scan.py"
   "scripts/design_craft_focus_audit.py"
@@ -195,6 +197,7 @@ for path in \
   "scripts/design_craft_doctor.sh" \
   "scripts/design_craft_init_agent.sh" \
   "scripts/design_craft_l4_eval_case.sh" \
+  "scripts/design_craft_l4_evidence_manifest.py" \
   "scripts/design_craft_browser_evidence.py" \
   "scripts/design_craft_css_smell_scan.py" \
   "scripts/design_craft_focus_audit.py" \
@@ -244,6 +247,7 @@ make -n release-gate >/dev/null
 for path in \
   scripts/design_craft_score.py \
   scripts/design_craft_browser_evidence.py \
+  scripts/design_craft_l4_evidence_manifest.py \
   scripts/design_craft_css_smell_scan.py \
   scripts/design_craft_focus_audit.py \
   scripts/design_craft_token_audit.py \
@@ -255,6 +259,9 @@ done
 
 python3 scripts/design_craft_score.py --self --no-smoke --json >/dev/null
 python3 scripts/design_craft_browser_evidence.py --check --print-js >/dev/null
+python3 scripts/design_craft_l4_evidence_manifest.py --check >/dev/null
+python3 scripts/design_craft_l4_evidence_manifest.py \
+  --validate-screenshots-json evals/product-ui-taste/before-after/_template/screenshots.json >/dev/null
 python3 scripts/design_craft_css_smell_scan.py --target evals/fixtures/css-smells --json >/dev/null
 python3 scripts/design_craft_focus_audit.py --target evals/fixtures/focus-smells --json >/dev/null
 python3 scripts/design_craft_token_audit.py --target evals/fixtures/token-smells --json >/dev/null
@@ -274,6 +281,8 @@ bash scripts/design_craft_init_agent.sh --agent pi --target "${tmp_init_dir}" --
 bash scripts/design_craft_init_agent.sh --agent generic --target "${tmp_init_dir}" --scope project --dry-run >/dev/null
 bash scripts/design_craft_l4_eval_case.sh --case-id validation-l4-case --surface validation --output-root "${tmp_init_dir}/l4" >/dev/null
 test -f "${tmp_init_dir}/l4/validation-l4-case/screenshots.json"
+python3 scripts/design_craft_l4_evidence_manifest.py \
+  --validate-screenshots-json "${tmp_init_dir}/l4/validation-l4-case/screenshots.json" >/dev/null
 bash scripts/design_craft_pass.sh --target skills/design-craft --mode audit --skip-route --skip-score >/dev/null
 bash scripts/design_craft_pass.sh --target skills/design-craft --mode critique --skip-route --skip-score >/dev/null
 bash scripts/design_craft_pass.sh --target skills/design-craft --mode motion --skip-route --skip-score >/dev/null
