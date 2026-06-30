@@ -21,6 +21,9 @@ This document is the local release and maintenance checklist for
   UI/UX/design/frontend work.
 - Record meaningful task evidence under `evals/`; do not claim browser
   validation unless a browser validation actually ran.
+- Keep root `DESIGN.md` focused on this repository's maintenance and route-smoke
+  needs. Target project `DESIGN.md` files always outrank it for actual product
+  work.
 
 ## Local release gate
 
@@ -40,7 +43,8 @@ bash scripts/design_craft_audit.sh --target . --mode audit --skip-route
 bash scripts/design_craft_audit.sh --target . --mode critique --skip-route
 bash scripts/design_craft_pass.sh --target skills/design-craft --mode motion --skip-route --skip-score
 bash scripts/design_craft_taste_review.sh --target skills/design-craft --context "release smoke" --evidence-level L0
-bash scripts/design_craft_seed_design.sh --target . --dry-run
+tmp_dir="$(mktemp -d -t design-craft-seed-dry-run.XXXXXX)" && trap 'rm -rf "${tmp_dir}"' EXIT && bash scripts/design_craft_seed_design.sh --target "${tmp_dir}" --dry-run
+bash scripts/design_craft_route.sh --target . --surface dashboard --intent visual-refine --scope page
 python3 scripts/upstream_absorption_report.py
 python3 scripts/upstream_absorption_report.py --remote
 bash scripts/install_local.sh
@@ -64,11 +68,15 @@ Expected result:
 - Product UI browser evidence helper compiles, emits a redacted TMWD DOM/style
   sampler, and validates score anti-inflation plus DOM evidence JSON.
 - Vercel Geist seed helper smoke passes and preserves template byte parity.
+- Repository-root route smoke passes with root `DESIGN.md` as the style
+  authority.
 - Upstream absorption report runs without fetching or modifying submodules; the
   optional `--remote` check reports remote drift with `git ls-remote`.
 - Upstream lock commits match checked-out submodule commits.
 - Installed canonical skill matches the source skill, and the installed
   `frontend-craft` legacy alias points to `design-craft`.
+- Repository-root route smoke can use `DESIGN.md` as the style authority when
+  route behavior changes.
 
 ## Upstream sync procedure
 
@@ -173,8 +181,9 @@ cases. Each case should record:
   `design-craft.browser-evidence.v1` and pass
   `scripts/design_craft_browser_evidence.py --validate-evidence-json`.
   The validator still accepts the old `frontend-craft.browser-evidence.v1`
-  schema for historical artifacts, but new captures should emit the canonical
-  schema.
+  schema for historical artifacts. New captures should emit the canonical
+  schema; old TMWD run directory names may remain in evidence records when they
+  point to immutable historical artifacts.
 - L3 cases must include at least two responsive viewports plus state checks; a
   responsive layout that still preserves weak hierarchy should not inflate the
   score.
@@ -192,7 +201,9 @@ Before committing a release:
 
 1. `git status --short`
 2. `make release-gate`
-3. Route smoke on at least one real project path when route behavior changed.
+3. Route smoke on this repo or at least one real project path when route
+   behavior changed:
+   `bash scripts/design_craft_route.sh --target . --surface dashboard --intent visual-refine --scope page`
 4. Upstream absorption report reviewed when upstream commits or detector rules changed.
 5. Product UI taste calibration still passes when taste scoring changed.
 6. Install parity check:

@@ -1,4 +1,4 @@
-.PHONY: validate score pass audit critique motion taste-review seed-dry-run upstream-report upstream-remote-report install legacy-alias-smoke release-gate
+.PHONY: validate score pass audit critique motion taste-review seed-dry-run route-smoke upstream-report upstream-remote-report install legacy-alias-smoke release-gate
 
 validate:
 	bash scripts/validate.sh
@@ -22,7 +22,10 @@ taste-review:
 	bash scripts/design_craft_taste_review.sh --target skills/design-craft --context "release smoke" --evidence-level L0 >/dev/null
 
 seed-dry-run:
-	bash scripts/design_craft_seed_design.sh --target . --dry-run
+	tmp_dir="$$(mktemp -d -t design-craft-seed-dry-run.XXXXXX)" && trap 'rm -rf "$$tmp_dir"' EXIT && bash scripts/design_craft_seed_design.sh --target "$$tmp_dir" --dry-run
+
+route-smoke:
+	bash scripts/design_craft_route.sh --target . --surface dashboard --intent visual-refine --scope page >/dev/null
 
 upstream-report:
 	python3 scripts/upstream_absorption_report.py
@@ -37,5 +40,5 @@ legacy-alias-smoke:
 	bash scripts/frontend_craft_pass.sh --target skills/design-craft --mode motion --skip-route --skip-score >/dev/null
 	grep -Fq 'renamed to `design-craft`' /Users/gaoqian/.agents/skills/frontend-craft/SKILL.md
 
-release-gate: validate score pass audit critique motion taste-review seed-dry-run upstream-report upstream-remote-report install legacy-alias-smoke
+release-gate: validate score pass audit critique motion taste-review seed-dry-run route-smoke upstream-report upstream-remote-report install legacy-alias-smoke
 	diff -qr skills/design-craft /Users/gaoqian/.agents/skills/design-craft

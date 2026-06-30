@@ -4,6 +4,19 @@ All notable local changes to `design-craft` are recorded here.
 
 ## Unreleased
 
+- No unreleased changes.
+
+## 0.2.0 - 2026-06-30
+
+- Added root `DESIGN.md` as the repository-level style authority for route
+  smoke and maintenance checks, without overriding target project authority.
+- Documented repository-root route smoke in the README and maintenance
+  checklist.
+- Added repository-root route smoke to `make release-gate` and moved seed
+  dry-run checks to a temporary directory so root `DESIGN.md` stays protected.
+- Updated the L3 browser evidence JSON files to the canonical
+  `design-craft.browser-evidence.v1` schema while preserving historical
+  screenshot artifact paths.
 - Renamed the canonical workflow from `frontend-craft` to `design-craft` to
   reflect the broader long-term scope: UI, UX, visual taste, motion,
   design-system governance, frontend implementation, and product experience

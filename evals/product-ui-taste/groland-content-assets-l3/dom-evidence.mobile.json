@@ -1,5 +1,5 @@
 {
-  "schema": "frontend-craft.browser-evidence.v1",
+  "schema": "design-craft.browser-evidence.v1",
   "source": {
     "url": "http://localhost:3000/marketing/content-assets",
     "title": "Groland Datahub",
