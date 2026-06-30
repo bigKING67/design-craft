@@ -4,6 +4,8 @@ All notable local changes to `frontend-craft` are recorded here.
 
 ## Unreleased
 
+- Added TMWD `browser_screenshot_ops` screenshot evidence to the frontend
+  validation contract, route summary, and delivery expectations.
 - Added `references/product-ui-taste-review.md` for concrete product UI scoring,
   top issues, page-type checks, frontend implementation notes, and acceptance
   criteria without bloating `SKILL.md`.

@@ -232,6 +232,7 @@ def build_score(root: Path, run_smoke: bool) -> list[Dimension]:
             [
                 (has(root, "scripts/validate.sh"), "validation script exists", "Add validation script."),
                 ("browser validation" in validation.lower(), "browser validation contract present", "Document browser validation rules."),
+                ("browser_screenshot_required" in validation and "browser_screenshot_ops" in validation, "screenshot evidence contract present", "Document screenshot artifact evidence rules."),
                 (has(root, "evals/golden-tasks/datahub-industry-news.md"), "golden task evidence exists", "Add at least one golden real-task card."),
                 (has(root, "scripts/frontend_craft_score.py"), "score script exists", "Add deterministic score script."),
                 ("focus-visible" in design_system.lower(), "focus-visible guidance present", "Cover keyboard focus states."),

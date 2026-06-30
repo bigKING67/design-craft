@@ -193,6 +193,7 @@ EOF
 - Classify findings as P0/P1/P2/P3.
 - Separate candidate_skills from selected_skills.
 - Require browser validation for visible UI changes.
+- Require screenshot artifact evidence when route output requires browser screenshots.
 EOF
     ;;
   polish)

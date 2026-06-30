@@ -239,6 +239,8 @@ for key in [
     "preflight_status",
     "preflight_code",
     "browser_validation_required",
+    "browser_screenshot_required",
+    "preferred_screenshot_tool",
     "directory_governance_required",
     "performance_review_required",
 ]:

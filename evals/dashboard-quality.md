@@ -14,6 +14,7 @@ empty/loading/error states, and verify responsive behavior.
 - `directory_governance_required`: usually `true`
 - `performance_review_required`: `true`
 - `browser_validation_required`: `true`
+- `browser_screenshot_required`: usually `true` for page-level visual work
 
 ## Expected frontend-craft references
 
@@ -32,6 +33,7 @@ empty/loading/error states, and verify responsive behavior.
   loading/empty/error states.
 - Checks chart scale, tooltip overflow, legend wrapping, and resize behavior.
 - Reports performance assumptions for chart/table data scale.
+- Reports screenshot artifact evidence when route output requires it.
 
 ## Failure modes
 

@@ -31,6 +31,8 @@ ran and what remains unverified.
   - `style_authority_path`:
     `/Users/gaoqian/Documents/sixseven/workman/groland/datahub/DESIGN.md`
   - `browser_validation_required`: `true`
+  - `browser_screenshot_required`: `true`
+  - `preferred_screenshot_tool`: `tmwd_browser.browser_screenshot_ops`
   - `directory_governance_required`: `true`
   - `performance_review_required`: `true`
 - Detector smoke after local signal expansion:
@@ -43,3 +45,4 @@ ran and what remains unverified.
 
   Result: upstream findings `0`; frontend-craft local signal findings `0`.
 - Browser validation: not claimed by this log entry.
+- Screenshot validation: not claimed by this log entry.

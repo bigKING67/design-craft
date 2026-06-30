@@ -17,6 +17,7 @@ selection quality only; they did not implement a live frontend task.
   - Treated the task as L2 and enforced project `DESIGN.md` authority.
   - Separated route `candidate_skills` from actually selected skills.
   - Required desktop and mobile browser validation before claiming completion.
+  - Required screenshot artifacts before claiming screenshot validation.
   - Flagged generic SaaS patterns, motion/contrast/performance risk, and
     placeholder-content quality.
 
@@ -29,6 +30,7 @@ selection quality only; they did not implement a live frontend task.
   - Focused on filters, KPIs, charts, tables, states, responsiveness, and
     performance.
   - Required real browser validation.
+  - Required screenshot evidence when the route asks for it.
 - Correction:
   - Do not pass free-form prose into route `--intent` or `--scope`; those
     arguments must use fixed enum values.

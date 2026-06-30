@@ -13,6 +13,7 @@ typographic hierarchy, work on mobile, and preserve the project's existing
 - `intent`: `new-page`, `visual-refine`, or `redesign`
 - `scope`: `page` or `multi-page`
 - `browser_validation_required`: `true`
+- `browser_screenshot_required`: `true` for visual page work
 - `candidate_skills` reported separately from actually used skills
 - `style_authority_path` read when present
 
@@ -38,3 +39,4 @@ typographic hierarchy, work on mobile, and preserve the project's existing
 - Ignores `DESIGN.md`.
 - Ships decorative motion that hurts readability or reduced-motion behavior.
 - Claims browser validation without a browser tool result.
+- Claims screenshot validation without artifact path/hash/dimensions.

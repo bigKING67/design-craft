@@ -22,6 +22,8 @@ the local Codex frontend workflow while keeping DataHub product context,
   `/Users/gaoqian/Documents/sixseven/workman/groland/datahub/DESIGN.md`
 - Expected authority mode: `enforce`
 - Browser validation: required for any visible UI change.
+- Screenshot evidence: required for page-level visual changes when route output
+  sets `browser_screenshot_required=true`.
 - Directory governance: required.
 - Performance review: required.
 
@@ -44,6 +46,8 @@ bash scripts/frontend_craft_route.sh \
 - `style_authority_path`:
   `/Users/gaoqian/Documents/sixseven/workman/groland/datahub/DESIGN.md`
 - `browser_validation_required`: `true`
+- `browser_screenshot_required`: `true`
+- `preferred_screenshot_tool`: `tmwd_browser.browser_screenshot_ops`
 - `directory_governance_required`: `true`
 - `performance_review_required`: `true`
 
@@ -80,7 +84,9 @@ If this task changes UI, a complete run should include:
 1. Route command above.
 2. Relevant DataHub type/lint/build/test command for the touched surface.
 3. Real browser validation on the target route.
-4. DOM or screenshot evidence for:
+4. TMWD screenshot artifact evidence when `browser_screenshot_required=true`:
+   baseline `viewport`, plus `selector` or `clip` for the changed section.
+5. DOM or screenshot evidence for:
    - no unwanted horizontal overflow;
    - readable dashboard/report density;
    - project typography/color/component contracts preserved;
@@ -98,6 +104,7 @@ Treat these as regressions:
 - The route no longer discovers DataHub `DESIGN.md`.
 - `frontend_tier` drops below `L2` for this page-level visual-refine task.
 - `browser_validation_required` becomes false.
+- `browser_screenshot_required` becomes false for this page-level visual task.
 - Generic visual guidance overrides DataHub dashboard/report contracts.
 - Candidate skills are reported as selected skills without the references being
   read and applied.

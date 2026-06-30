@@ -126,6 +126,8 @@ Record task evidence under `evals/live-task-log.md` with:
 - Style authority path.
 - Validation commands.
 - Browser validation status.
+- Screenshot validation artifact path/hash/dimensions when route output requires
+  screenshot evidence, or the skipped reason.
 - What the run taught the workflow.
 
 Do not use evidence notes as a substitute for verification. If browser smoke,
@@ -142,6 +144,7 @@ across `frontend-craft` changes. Each card should record:
 - Style authority path and authority mode.
 - Required validation, including browser validation when user-visible UI is in
   scope.
+- Required screenshot evidence when `browser_screenshot_required=true`.
 - What remains unverified.
 
 Golden tasks should be updated only when the project reality or desired workflow

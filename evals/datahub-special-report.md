@@ -13,6 +13,7 @@ caveats, and supporting tables. Make it feel formal, readable, and evidence-led.
 - `scope`: `page`
 - `style_authority_path`: project `DESIGN.md`
 - `browser_validation_required`: `true`
+- `browser_screenshot_required`: `true`
 - `performance_review_required`: `true`
 
 ## Expected frontend-craft references
@@ -34,6 +35,8 @@ caveats, and supporting tables. Make it feel formal, readable, and evidence-led.
   unless they are the main point.
 - Browser-validates at least desktop and narrow viewport, including chart
   resize and tooltip/legend behavior.
+- Captures screenshot artifact evidence for the baseline viewport and the
+  changed report section when route output requires screenshots.
 
 ## Failure modes
 

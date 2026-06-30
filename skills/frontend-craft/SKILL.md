@@ -1,6 +1,6 @@
 ---
 name: frontend-craft
-description: Personal frontend craft and quality workflow for Codex. Use when working on frontend pages, components, dashboards, admin apps, landing pages, reports, data visualizations, UX polish, visual redesigns, responsive behavior, accessibility, UI performance, frontend architecture, code elegance, project quality, or file/directory structure governance. Fuses the local route-plan/DESIGN.md/browser-validation workflow with anti-slop visual judgment and Impeccable-style audit, polish, harden, optimize, detector, and live iteration practices.
+description: Personal frontend craft and quality workflow for Codex. Use when working on frontend pages, components, dashboards, admin apps, landing pages, reports, data visualizations, UX polish, visual redesigns, responsive behavior, accessibility, UI performance, frontend architecture, code elegance, project quality, or file/directory structure governance. Fuses the local route-plan/DESIGN.md/browser-validation/screenshot-evidence workflow with anti-slop visual judgment and Impeccable-style audit, polish, harden, optimize, detector, and live iteration practices.
 ---
 
 # Frontend Craft
@@ -69,7 +69,8 @@ system, data density, report grammar, or runtime truth.
    before absorbing new upstream commits.
 6. Implement minimally, verify with the most relevant commands, and use a real
    browser for visible UI, interaction, responsive, report, dashboard, download,
-   upload, or login-state changes.
+   upload, or login-state changes. When the route requires screenshot evidence,
+   report only actual screenshot artifacts, not planned screenshots.
 
 ## Reference routing
 
@@ -150,7 +151,8 @@ unverified:
 - Structure: new files follow existing project conventions; shared abstractions
   have real repeated callers.
 - Validation: targeted type/lint/test/build plus browser validation where UI is
-  user-visible.
+  user-visible; screenshot artifacts are required when route output asks for
+  `browser_screenshot_required`.
 
 ## Delivery contract
 
@@ -164,6 +166,8 @@ For frontend implementation work, summarize:
 - Files changed and structure impact.
 - Validation commands and observed results.
 - Browser validation target and result, or why it was skipped.
+- Screenshot validation tool, target, artifact path/hash/dimensions, or why it
+  was skipped.
 - Performance impact and remaining risks.
 
 Keep output concise, evidence-backed, and honest about anything not verified.

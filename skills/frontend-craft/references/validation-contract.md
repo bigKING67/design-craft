@@ -71,6 +71,29 @@ Default flow:
 4. Inspect DOM/computed style only when needed to prove a specific condition.
 5. Finalize managed tabs unless the user asked to keep them.
 
+## Screenshot evidence
+
+Use screenshot evidence when route output sets `browser_screenshot_required` or
+when the visual decision depends on actual rendered style.
+
+Preferred flow with TMWD:
+
+1. Use `browser_tab_lifecycle` with `action:"select_or_create"` and a stable
+   `workspace_key` for the project or surface.
+2. Use `browser_wait` for `selector`, `dom_stable`, or `network_idle` before
+   capturing; do not use fixed sleeps as readiness proof.
+3. Use `browser_screenshot_ops target:"viewport"` for baseline visual QA.
+4. Use `target:"selector"` or `target:"clip"` for focused changed sections.
+5. Use `target:"full_page"` only for bounded pages and pass an explicit
+   `max_pixels`.
+6. Report artifact `path`, `sha256`, `dimensions`, and `target`. Do not paste
+   base64 or claim screenshot validation when no artifact was produced.
+7. Finalize the managed tab with `browser_tab_lifecycle action:"finalize_task"`
+   unless the user asked to keep it.
+
+If `tmwd_browser` is unavailable, report the skipped reason, residual risk, and
+the exact command/tool that should capture the artifact next.
+
 ## Design-system validation
 
 Use design-system validation when:
@@ -110,12 +133,17 @@ When route planner is used, report:
 - `design_system_contract`
 - `preflight_status` and `preflight_code`
 - `browser_validation_required`
+- `browser_screenshot_required`
+- `preferred_screenshot_tool`
+- `screenshot_validation_plan`
 - `directory_governance_required`
 - `performance_review_required`
 - `vercel_geist_seed_applicable` and reason
 
 Never say a subagent was enabled unless it actually spawned. Never say browser
 validation passed unless a browser tool verified the target.
+Never say screenshot validation passed unless `browser_screenshot_ops` or an
+equivalent browser screenshot tool produced artifact path/hash/dimensions.
 
 ## Quality score
 

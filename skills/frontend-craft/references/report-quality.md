@@ -71,3 +71,5 @@ Avoid:
 - For hidden tabs or accordions, trigger resize after reveal.
 - Browser validation should inspect at least one desktop and one narrow viewport
   when chart layout changed.
+- When route output requires screenshot evidence, capture a baseline viewport
+  plus a selector/clip artifact for the changed report section.
