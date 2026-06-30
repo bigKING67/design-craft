@@ -42,8 +42,13 @@ def has(root: Path, rel: str) -> bool:
     return (root / rel).exists()
 
 
-def has_product_ui_l2_case(root: Path) -> bool:
-    for score_path in sorted((root / "evals/product-ui-taste").glob("*/score.json")):
+def iter_product_ui_score_entries(root: Path):
+    score_paths = [
+        *sorted((root / "evals/product-ui-taste").glob("*/score.json")),
+        *sorted((root / "evals/product-ui-taste/before-after").glob("*/score.before.json")),
+        *sorted((root / "evals/product-ui-taste/before-after").glob("*/score.after.json")),
+    ]
+    for score_path in score_paths:
         try:
             payload = json.loads(score_path.read_text(encoding="utf-8"))
         except Exception:
@@ -56,29 +61,31 @@ def has_product_ui_l2_case(root: Path) -> bool:
         for entry in entries:
             if not isinstance(entry, dict):
                 continue
-            level = entry.get("evidence_level") or payload.get("evidence_level")
-            if level in {"L2", "L3", "L4"} and entry.get("screenshot_sha256"):
-                return True
+            yield score_path, payload, entry
+
+
+def has_product_ui_l2_case(root: Path) -> bool:
+    for _score_path, payload, entry in iter_product_ui_score_entries(root):
+        level = entry.get("evidence_level") or payload.get("evidence_level")
+        if level in {"L2", "L3", "L4"} and entry.get("screenshot_sha256"):
+            return True
     return False
 
 
 def has_product_ui_l3_case(root: Path) -> bool:
-    for score_path in sorted((root / "evals/product-ui-taste").glob("*/score.json")):
-        try:
-            payload = json.loads(score_path.read_text(encoding="utf-8"))
-        except Exception:
-            continue
-        entries = payload.get("cases")
-        if entries is None:
-            entries = [payload]
-        if not isinstance(entries, list):
-            continue
-        for entry in entries:
-            if not isinstance(entry, dict):
-                continue
-            level = entry.get("evidence_level") or payload.get("evidence_level")
-            if level in {"L3", "L4"} and entry.get("responsive_viewports") and entry.get("state_checks"):
-                return True
+    for _score_path, payload, entry in iter_product_ui_score_entries(root):
+        level = entry.get("evidence_level") or payload.get("evidence_level")
+        if level in {"L3", "L4"} and entry.get("responsive_viewports") and entry.get("state_checks"):
+            return True
+    return False
+
+
+def has_product_ui_l4_before_after_case(root: Path) -> bool:
+    case_root = root / "evals/product-ui-taste/before-after"
+    for screenshots_path in sorted(case_root.glob("*/screenshots.json")):
+        case_dir = screenshots_path.parent
+        if (case_dir / "score.before.json").is_file() and (case_dir / "score.after.json").is_file():
+            return True
     return False
 
 
@@ -303,7 +310,7 @@ def build_score(root: Path, run_smoke: bool) -> list[Dimension]:
                 (has(root, "scripts/validate.sh"), "validation script exists", "Add validation script."),
                 ("browser validation" in validation.lower(), "browser validation contract present", "Document browser validation rules."),
                 ("browser_screenshot_required" in validation and "browser_screenshot_ops" in validation, "screenshot evidence contract present", "Document screenshot artifact evidence rules."),
-                (has(root, "evals/golden-tasks/datahub-industry-news.md"), "golden task evidence exists", "Add at least one golden real-task card."),
+                (has(root, "evals/golden-tasks/generic-review-workbench.md"), "generic golden task evidence exists", "Add at least one generic golden real-task card."),
                 (has(root, "scripts/design_craft_score.py"), "score script exists", "Add deterministic score script."),
                 ("focus-visible" in design_system.lower(), "focus-visible guidance present", "Cover keyboard focus states."),
                 ("component state matrix" in design_system.lower(), "component state matrix present", "Cover shared component states."),
@@ -322,6 +329,7 @@ def build_score(root: Path, run_smoke: bool) -> list[Dimension]:
                 (has_product_ui_l2_case(root), "product UI taste L2 browser case exists", "Add at least one product UI taste case with browser screenshot and DOM/style evidence."),
                 (has_product_ui_l3_case(root), "product UI taste L3 resilient case exists", "Add at least one product UI taste case with responsive and state evidence."),
                 (has(root, "evals/product-ui-taste/before-after/README.md"), "L4 before/after eval scaffold exists", "Add L4 before/after eval scaffold."),
+                (has_product_ui_l4_before_after_case(root), "product UI taste L4 before/after case exists", "Add a completed L4 before/after product UI case."),
                 (has(root, "evals/cross-agent/README.md"), "cross-agent benchmark scaffold exists", "Add cross-agent benchmark scaffold."),
                 (has(root, "evals/fixtures/css-smells/card-soup.css"), "static scanner fixture exists", "Add scanner fixtures."),
                 ("critique" in read_text(root / "scripts/design_craft_audit.sh"), "critique mode present", "Add a lightweight critique mode."),

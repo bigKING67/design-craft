@@ -211,9 +211,12 @@ validate captured product UI evidence and score anti-inflation rules:
 ```bash
 python3 scripts/design_craft_browser_evidence.py --print-js
 python3 scripts/design_craft_browser_evidence.py \
-  --validate-score-json evals/product-ui-taste/groland-content-assets-l3/score.json
+  --validate-score-json evals/product-ui-taste/before-after/generic-review-workbench-local-l4/score.after.json
 python3 scripts/design_craft_browser_evidence.py \
-  --validate-evidence-json evals/product-ui-taste/groland-content-assets-l3/dom-evidence.desktop.json
+  --validate-score-json evals/product-ui-taste/before-after/generic-review-workbench-local-l4/score.before.json
+python3 scripts/design_craft_l4_evidence_manifest.py \
+  --validate-screenshots-json evals/product-ui-taste/before-after/generic-review-workbench-local-l4/screenshots.json \
+  --strict
 ```
 
 Validate a completed L4 before/after case directory before citing it as real

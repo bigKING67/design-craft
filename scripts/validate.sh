@@ -53,22 +53,16 @@ required_files=(
   "skills/frontend-craft/agents/openai.yaml"
   "evals/landing-page.md"
   "evals/dashboard-quality.md"
-  "evals/datahub-special-report.md"
   "evals/frontend-architecture.md"
   "evals/forward-test-log.md"
   "evals/live-task-log.md"
-  "evals/golden-tasks/datahub-industry-news.md"
+  "evals/golden-tasks/generic-review-workbench.md"
   "evals/product-ui-taste/material-ops-home/input.md"
   "evals/product-ui-taste/material-ops-home/review.expected.md"
   "evals/product-ui-taste/material-ops-home/score.json"
   "evals/product-ui-taste/live-browser-samples/input.md"
   "evals/product-ui-taste/live-browser-samples/review.expected.md"
   "evals/product-ui-taste/live-browser-samples/score.json"
-  "evals/product-ui-taste/groland-content-assets-l3/input.md"
-  "evals/product-ui-taste/groland-content-assets-l3/review.expected.md"
-  "evals/product-ui-taste/groland-content-assets-l3/score.json"
-  "evals/product-ui-taste/groland-content-assets-l3/dom-evidence.desktop.json"
-  "evals/product-ui-taste/groland-content-assets-l3/dom-evidence.mobile.json"
   "evals/product-ui-taste/before-after/README.md"
   "evals/product-ui-taste/before-after/_template/input.md"
   "evals/product-ui-taste/before-after/_template/score.before.json"
@@ -415,9 +409,21 @@ import sys
 from pathlib import Path
 
 errors = []
-score_paths = sorted(Path("evals/product-ui-taste").glob("*/score.json"))
+score_paths = [
+    *sorted(Path("evals/product-ui-taste").glob("*/score.json")),
+    *[
+        path
+        for path in sorted(Path("evals/product-ui-taste/before-after").glob("*/score.before.json"))
+        if path.parent.name != "_template"
+    ],
+    *[
+        path
+        for path in sorted(Path("evals/product-ui-taste/before-after").glob("*/score.after.json"))
+        if path.parent.name != "_template"
+    ],
+]
 if not score_paths:
-    errors.append("product-ui-taste must include at least one score.json")
+    errors.append("product-ui-taste must include at least one score JSON file")
 
 levels = {"L0", "L1", "L2", "L3", "L4"}
 has_l2_plus = False
@@ -482,8 +488,15 @@ if errors:
     sys.exit(1)
 PY
 
-for score_json in evals/product-ui-taste/*/score.json; do
-  python3 scripts/design_craft_browser_evidence.py --validate-score-json "${score_json}" >/dev/null
+score_json_paths=(
+  evals/product-ui-taste/*/score.json
+  evals/product-ui-taste/before-after/generic-review-workbench-local-l4/score.before.json
+  evals/product-ui-taste/before-after/generic-review-workbench-local-l4/score.after.json
+)
+for score_json in "${score_json_paths[@]}"; do
+  if [[ -e "${score_json}" ]]; then
+    python3 scripts/design_craft_browser_evidence.py --validate-score-json "${score_json}" >/dev/null
+  fi
 done
 
 for evidence_json in evals/product-ui-taste/*/dom-evidence*.json; do
