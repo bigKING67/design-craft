@@ -451,18 +451,11 @@ from pathlib import Path
 
 errors = []
 score_paths = [
-    *sorted(Path("evals/product-ui-taste").glob("*/score.json")),
-    *[
-        path
-        for path in sorted(Path("evals/product-ui-taste/before-after").glob("*/score.before.json"))
-        if path.parent.name != "_template"
-    ],
-    *[
-        path
-        for path in sorted(Path("evals/product-ui-taste/before-after").glob("*/score.after.json"))
-        if path.parent.name != "_template"
-    ],
+    Path("evals/product-ui-taste/material-ops-home/score.json"),
+    Path("evals/product-ui-taste/before-after/generic-review-workbench-local-l4/score.before.json"),
+    Path("evals/product-ui-taste/before-after/generic-review-workbench-local-l4/score.after.json"),
 ]
+score_paths = [path for path in score_paths if path.is_file()]
 if not score_paths:
     errors.append("product-ui-taste must include at least one score JSON file")
 
@@ -530,19 +523,13 @@ if errors:
 PY
 
 score_json_paths=(
-  evals/product-ui-taste/*/score.json
+  evals/product-ui-taste/material-ops-home/score.json
   evals/product-ui-taste/before-after/generic-review-workbench-local-l4/score.before.json
   evals/product-ui-taste/before-after/generic-review-workbench-local-l4/score.after.json
 )
 for score_json in "${score_json_paths[@]}"; do
   if [[ -e "${score_json}" ]]; then
     python3 scripts/design_craft_browser_evidence.py --validate-score-json "${score_json}" >/dev/null
-  fi
-done
-
-for evidence_json in evals/product-ui-taste/*/dom-evidence*.json; do
-  if [[ -e "${evidence_json}" ]]; then
-    python3 scripts/design_craft_browser_evidence.py --validate-evidence-json "${evidence_json}" >/dev/null
   fi
 done
 

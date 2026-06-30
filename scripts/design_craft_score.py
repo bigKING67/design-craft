@@ -42,13 +42,23 @@ def has(root: Path, rel: str) -> bool:
     return (root / rel).exists()
 
 
-def iter_product_ui_score_entries(root: Path):
-    score_paths = [
-        *sorted((root / "evals/product-ui-taste").glob("*/score.json")),
-        *sorted((root / "evals/product-ui-taste/before-after").glob("*/score.before.json")),
-        *sorted((root / "evals/product-ui-taste/before-after").glob("*/score.after.json")),
+def active_product_ui_score_paths(root: Path) -> list[Path]:
+    """Score only active project-neutral calibration cases.
+
+    Historical project-specific cases can remain in the repo for provenance, but
+    source scoring must not depend on or read them as active evidence.
+    """
+
+    rel_paths = [
+        "evals/product-ui-taste/material-ops-home/score.json",
+        "evals/product-ui-taste/before-after/generic-review-workbench-local-l4/score.before.json",
+        "evals/product-ui-taste/before-after/generic-review-workbench-local-l4/score.after.json",
     ]
-    for score_path in score_paths:
+    return [root / rel_path for rel_path in rel_paths if (root / rel_path).is_file()]
+
+
+def iter_product_ui_score_entries(root: Path):
+    for score_path in active_product_ui_score_paths(root):
         try:
             payload = json.loads(score_path.read_text(encoding="utf-8"))
         except Exception:
@@ -81,12 +91,12 @@ def has_product_ui_l3_case(root: Path) -> bool:
 
 
 def has_product_ui_l4_before_after_case(root: Path) -> bool:
-    case_root = root / "evals/product-ui-taste/before-after"
-    for screenshots_path in sorted(case_root.glob("*/screenshots.json")):
-        case_dir = screenshots_path.parent
-        if (case_dir / "score.before.json").is_file() and (case_dir / "score.after.json").is_file():
-            return True
-    return False
+    case_dir = root / "evals/product-ui-taste/before-after/generic-review-workbench-local-l4"
+    return (
+        (case_dir / "screenshots.json").is_file()
+        and (case_dir / "score.before.json").is_file()
+        and (case_dir / "score.after.json").is_file()
+    )
 
 
 def infer_root(target: Path) -> Path:
