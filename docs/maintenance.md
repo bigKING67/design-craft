@@ -21,9 +21,10 @@ This document is the local release and maintenance checklist for
   UI/UX/design/frontend work.
 - Record meaningful task evidence under `evals/`; do not claim browser
   validation unless a browser validation actually ran.
-- Keep root `DESIGN.md` focused on this repository's maintenance and route-smoke
-  needs. Target project `DESIGN.md` files always outrank it for actual product
-  work.
+- Do not add a root `DESIGN.md` to this repository. `design-craft` is a reusable
+  skill/workflow system, not a product UI target. Target projects must provide
+  their own `DESIGN.md` or pass an explicit style authority path for L1+ route
+  checks.
 
 ## Local release gate
 
@@ -44,7 +45,7 @@ bash scripts/design_craft_audit.sh --target . --mode critique --skip-route
 bash scripts/design_craft_pass.sh --target skills/design-craft --mode motion --skip-route --skip-score
 bash scripts/design_craft_taste_review.sh --target skills/design-craft --context "release smoke" --evidence-level L0
 tmp_dir="$(mktemp -d -t design-craft-seed-dry-run.XXXXXX)" && trap 'rm -rf "${tmp_dir}"' EXIT && bash scripts/design_craft_seed_design.sh --target "${tmp_dir}" --dry-run
-bash scripts/design_craft_route.sh --target . --surface dashboard --intent visual-refine --scope page
+make route-smoke
 python3 scripts/upstream_absorption_report.py
 python3 scripts/upstream_absorption_report.py --remote
 bash scripts/install_local.sh
@@ -68,15 +69,14 @@ Expected result:
 - Product UI browser evidence helper compiles, emits a redacted TMWD DOM/style
   sampler, and validates score anti-inflation plus DOM evidence JSON.
 - Vercel Geist seed helper smoke passes and preserves template byte parity.
-- Repository-root route smoke passes with root `DESIGN.md` as the style
-  authority.
+- Route smoke passes against a temporary fixture project with its own
+  `DESIGN.md`, preserving the contract that product targets provide their own
+  design authority.
 - Upstream absorption report runs without fetching or modifying submodules; the
   optional `--remote` check reports remote drift with `git ls-remote`.
 - Upstream lock commits match checked-out submodule commits.
 - Installed canonical skill matches the source skill, and the installed
   `frontend-craft` legacy alias points to `design-craft`.
-- Repository-root route smoke can use `DESIGN.md` as the style authority when
-  route behavior changes.
 
 ## Upstream sync procedure
 
@@ -201,9 +201,8 @@ Before committing a release:
 
 1. `git status --short`
 2. `make release-gate`
-3. Route smoke on this repo or at least one real project path when route
-   behavior changed:
-   `bash scripts/design_craft_route.sh --target . --surface dashboard --intent visual-refine --scope page`
+3. Route smoke on the fixture (`make route-smoke`) or on at least one real
+   project path with its own `DESIGN.md` when route behavior changed.
 4. Upstream absorption report reviewed when upstream commits or detector rules changed.
 5. Product UI taste calibration still passes when taste scoring changed.
 6. Install parity check:

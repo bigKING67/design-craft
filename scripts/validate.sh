@@ -12,7 +12,6 @@ python3 "${VALIDATOR}" "${SKILL_DIR}"
 python3 "${VALIDATOR}" "${LEGACY_SKILL_DIR}"
 
 required_files=(
-  "DESIGN.md"
   "README.md"
   "CHANGELOG.md"
   "VERSION"

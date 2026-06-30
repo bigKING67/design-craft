@@ -33,7 +33,6 @@ runtime behavior, and project `DESIGN.md` always outrank generic visual rules.
 
 ```text
 design-craft/
-├── DESIGN.md                     # Repo-level style authority for route smoke
 ├── skills/design-craft/        # Installable Codex skill
 ├── scripts/                      # Deterministic route/pass/detect/score/review tools
 ├── evals/                        # Forward-test and live-task evidence
@@ -50,9 +49,9 @@ design-craft/
 README, the changelog, and maintenance notes belong at the repository root or in
 `docs/`, not inside the installed skill folder.
 
-`DESIGN.md` is the repository's own maintenance and route-smoke authority. It
-does not override the design authority of any target project that uses
-`design-craft`.
+This repository is not a UI target. It intentionally does not provide a root
+`DESIGN.md`; target projects must provide their own `DESIGN.md` or pass an
+explicit `--style-authority-path` for L1+ route/preflight checks.
 
 ## Install locally
 
@@ -238,18 +237,14 @@ make release-gate
 
 The release gate is documented in `docs/maintenance.md`. It checks the skill
 schema, required references, shell/Python syntax, detector smoke, score smoke,
-audit wrapper smoke, repository-root route smoke, upstream lock consistency, and
+audit wrapper smoke, fixture-based route smoke, upstream lock consistency, and
 local install parity.
 
-The repository root now includes `DESIGN.md`, so route smoke can be run directly
-against this repo when route behavior changes:
+Route smoke uses a temporary fixture project with its own `DESIGN.md`, because
+`design-craft` itself is a reusable skill system rather than a product UI target:
 
 ```bash
-bash scripts/design_craft_route.sh \
-  --target . \
-  --surface dashboard \
-  --intent visual-refine \
-  --scope page
+make route-smoke
 ```
 
 ## Versioning

@@ -6,6 +6,16 @@ All notable local changes to `design-craft` are recorded here.
 
 - No unreleased changes.
 
+## 0.2.1 - 2026-06-30
+
+- Removed the repository-root `DESIGN.md` because this repository is a reusable
+  agent-skill system, not a product UI target.
+- Changed route smoke to use a temporary fixture project with its own
+  `DESIGN.md`, preserving the rule that real target projects must provide a
+  design authority.
+- Removed root `DESIGN.md` from validation requirements and clarified that
+  `design-craft` supplies workflow guidance only.
+
 ## 0.2.0 - 2026-06-30
 
 - Added root `DESIGN.md` as the repository-level style authority for route
