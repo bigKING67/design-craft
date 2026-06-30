@@ -96,10 +96,17 @@ Observed result: passed.
 
 ## Browser tooling notes
 
-The current Codex MCP tool registry exposed TMWD screenshot and lifecycle tools
-but did not expose `browser_evidence_bundle_ops` in this thread, so the formal
-L4 screenshot manifest was written from verified artifact metadata rather than
-generated through that MCP op.
+Chrome headless CLI produced the final screenshots because the initial MCP tool
+search in this thread did not expose the L4 evidence bundle helper. Later in the
+same thread, `browser_evidence_bundle_ops` became visible and was used as a
+non-writing dry run with `verify_artifacts:true`.
+
+Observed result:
+
+- `browser_evidence_bundle_ops` returned `status:"success"`.
+- All four artifact files were verified from disk.
+- Shared before/after artifact keys were `desktop` and `compact500`.
+- The checked PNG byte counts were `193825`, `261055`, `132038`, and `136426`.
 
 TMWD managed tab cleanup:
 

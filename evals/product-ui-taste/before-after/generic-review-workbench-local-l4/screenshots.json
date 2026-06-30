@@ -9,7 +9,7 @@
     "server": "python3 -m http.server 4173 --bind 127.0.0.1 --directory evals/fixtures/l4-pages",
     "notes": [
       "PNG artifacts are stored outside the repository.",
-      "Chrome headless CLI was used because the active Codex MCP tool registry did not expose browser_evidence_bundle_ops in this thread.",
+      "Chrome headless CLI produced the screenshots; browser_evidence_bundle_ops later verified the same artifact paths, hashes, dimensions, and shared before/after keys in a dry run.",
       "Compact responsive evidence uses 500x844 because this Chrome headless run reports a minimum effective viewport width of 500px for repeatable screenshot and dump-dom evidence."
     ]
   },
