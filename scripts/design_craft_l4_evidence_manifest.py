@@ -37,6 +37,13 @@ def valid_sha256(value: Any) -> bool:
     return isinstance(value, str) and bool(SHA256_PATTERN.fullmatch(value))
 
 
+def first_present(mapping: dict[str, Any], *keys: str) -> Any:
+    for key in keys:
+        if key in mapping:
+            return mapping[key]
+    return None
+
+
 def walk_strings(value: Any) -> list[str]:
     if isinstance(value, str):
         return [value]
@@ -105,9 +112,13 @@ def validate_artifact(
         return [f"{path}: {label} must be an object"]
 
     if strict:
-        for key in ("tool", "target", "path", "sha256", "dimensions", "viewport"):
+        for key in ("tool", "target", "dimensions", "viewport"):
             if key not in artifact:
                 errors.append(f"{path}: {label} missing required field {key}")
+        if "path" not in artifact and "artifact_path" not in artifact:
+            errors.append(f"{path}: {label} missing required field path or artifact_path")
+        if "sha256" not in artifact and "artifact_sha256" not in artifact:
+            errors.append(f"{path}: {label} missing required field sha256 or artifact_sha256")
 
     tool = artifact.get("tool")
     if strict and not (isinstance(tool, str) and tool and tool != "TODO"):
@@ -119,7 +130,7 @@ def validate_artifact(
     if strict and target not in VALID_TARGETS:
         errors.append(f"{path}: {label}.target is required")
 
-    artifact_path = artifact.get("path")
+    artifact_path = first_present(artifact, "path", "artifact_path")
     if strict and not (isinstance(artifact_path, str) and artifact_path and artifact_path != "TODO"):
         errors.append(f"{path}: {label}.path must point to a repo-external screenshot artifact")
     if isinstance(artifact_path, str) and artifact_path.startswith("data:"):
@@ -128,7 +139,7 @@ def validate_artifact(
         if not Path(artifact_path).expanduser().exists():
             errors.append(f"{path}: {label}.path does not exist: {artifact_path}")
 
-    sha256 = artifact.get("sha256") or artifact.get("artifact_sha256")
+    sha256 = first_present(artifact, "sha256", "artifact_sha256")
     if strict and not valid_sha256(sha256):
         errors.append(f"{path}: {label}.sha256 must be a lowercase 64-character SHA-256")
     if not strict and sha256 not in (None, "") and not valid_sha256(sha256):

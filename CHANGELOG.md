@@ -19,6 +19,10 @@ All notable local changes to `design-craft` are recorded here.
 - Added an L4 screenshot manifest validator so before/after cases can check
   screenshot artifact paths, hashes, dimensions, viewport metadata, and layout
   metrics before claiming real evidence.
+- Added a generic strict L4 manifest fixture and allowed either
+  `path`/`sha256` or `artifact_path`/`artifact_sha256` naming in screenshot
+  manifests so TMWD artifact metadata can stay tool-shaped without schema
+  rewrites.
 
 ## 0.2.1 - 2026-06-30
 
