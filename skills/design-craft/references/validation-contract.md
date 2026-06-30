@@ -106,7 +106,11 @@ Preferred flow with TMWD:
    unless the user asked to keep it.
 
 If `tmwd_browser` is unavailable, report the skipped reason, residual risk, and
-the exact command/tool that should capture the artifact next.
+the exact command/tool that should capture the artifact next. For L4
+before/after evals, `scripts/design_craft_l4_capture.py --dry-run` may produce a
+TMWD-first capture plan, and the non-dry-run Chrome-headless fallback may write
+repo-external PNG artifacts plus `screenshots.json`; neither path verifies
+interaction states unless separate state evidence is captured.
 
 ## Design-system validation
 

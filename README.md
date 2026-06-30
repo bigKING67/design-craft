@@ -205,6 +205,24 @@ The generated case is not evidence by itself. Fill real screenshot metadata,
 before/after scores, implementation diff, validation commands, and unverified
 states before counting it as L4.
 
+Create a project-neutral L4 screenshot capture plan. Prefer the TMWD evidence
+bundle helper when the active agent exposes it; this wrapper gives a repeatable
+Chrome-headless fallback and writes only repo-external PNG artifacts plus
+`screenshots.json` metadata:
+
+```bash
+python3 scripts/design_craft_l4_capture.py \
+  --case-id generic-review-workbench-local-l4 \
+  --before-url 'http://127.0.0.1:4173/generic-review-workbench/?variant=before' \
+  --after-url 'http://127.0.0.1:4173/generic-review-workbench/?variant=after' \
+  --viewport desktop=1440x900 \
+  --viewport compact500=500x844 \
+  --dry-run
+```
+
+Remove `--dry-run` and pass `--manifest <case>/screenshots.json` only when the
+URLs are safe to capture and PNG artifacts should be written outside the repo.
+
 Emit a redacted DOM/computed-style sampler for TMWD `browser_execute_js`, or
 validate captured product UI evidence and score anti-inflation rules:
 

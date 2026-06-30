@@ -117,6 +117,7 @@ required_files=(
   "scripts/design_craft_detect.sh"
   "scripts/design_craft_doctor.sh"
   "scripts/design_craft_init_agent.sh"
+  "scripts/design_craft_l4_capture.py"
   "scripts/design_craft_l4_case_validate.py"
   "scripts/design_craft_l4_eval_case.sh"
   "scripts/design_craft_l4_evidence_manifest.py"
@@ -153,6 +154,7 @@ from pathlib import Path
 
 active_generic_files = [
     Path("README.md"),
+    Path("scripts/design_craft_l4_capture.py"),
     Path("scripts/design_craft_score.py"),
     Path("scripts/validate.sh"),
     Path("skills/design-craft/references/source-map.md"),
@@ -243,6 +245,7 @@ for path in \
   "scripts/design_craft_detect.sh" \
   "scripts/design_craft_doctor.sh" \
   "scripts/design_craft_init_agent.sh" \
+  "scripts/design_craft_l4_capture.py" \
   "scripts/design_craft_l4_case_validate.py" \
   "scripts/design_craft_l4_eval_case.sh" \
   "scripts/design_craft_l4_evidence_manifest.py" \
@@ -295,6 +298,7 @@ make -n release-gate >/dev/null
 for path in \
   scripts/design_craft_score.py \
   scripts/design_craft_browser_evidence.py \
+  scripts/design_craft_l4_capture.py \
   scripts/design_craft_l4_case_validate.py \
   scripts/design_craft_l4_evidence_manifest.py \
   scripts/design_craft_css_smell_scan.py \
@@ -308,6 +312,7 @@ done
 
 python3 scripts/design_craft_score.py --self --no-smoke --json >/dev/null
 python3 scripts/design_craft_browser_evidence.py --check --print-js >/dev/null
+python3 scripts/design_craft_l4_capture.py --check >/dev/null
 python3 scripts/design_craft_l4_evidence_manifest.py --check >/dev/null
 python3 scripts/design_craft_l4_evidence_manifest.py \
   --validate-screenshots-json evals/product-ui-taste/before-after/_template/screenshots.json >/dev/null

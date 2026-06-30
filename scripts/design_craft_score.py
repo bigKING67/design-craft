@@ -323,6 +323,7 @@ def build_score(root: Path, run_smoke: bool) -> list[Dimension]:
                 ("product UI taste score" in validation, "product UI score is distinct from source score", "Distinguish UI taste scores from the workflow source score."),
                 (has(root, "scripts/design_craft_taste_review.sh"), "taste review wrapper exists", "Add a stable product UI taste review wrapper."),
                 (has(root, "scripts/design_craft_browser_evidence.py"), "browser evidence helper exists", "Add a redacted DOM/computed-style evidence helper."),
+                (has(root, "scripts/design_craft_l4_capture.py"), "L4 capture fallback exists", "Add a deterministic L4 screenshot capture fallback."),
                 ("anti-inflation" in browser_evidence_helper and "validate_score_json" in browser_evidence_helper, "taste anti-inflation validator exists", "Add a validator for score anti-inflation rules."),
                 ("design-craft.browser-evidence.v1" in browser_evidence_helper, "design-craft browser evidence schema exists", "Emit the design-craft browser evidence schema."),
                 (has(root, "evals/product-ui-taste/material-ops-home/score.json"), "product UI taste golden case exists", "Add at least one product UI taste calibration case."),
