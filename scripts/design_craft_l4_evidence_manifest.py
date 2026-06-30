@@ -260,6 +260,33 @@ def run_self_check() -> list[str]:
     invalid_errors = validate_manifest(tmp, strict=True, require_existing_files=False)
     if not any("sha256" in error for error in invalid_errors):
         errors.append("self-check failed to reject invalid sha256")
+    invalid_payload["artifacts"] = {
+        "before": {
+            "desktop": {
+                **valid_payload["artifacts"]["before"]["desktop"],
+                "path": "data:image/png;base64,AAAA",
+                "sha256": "a" * 64,
+                "dimensions": [0, 800],
+                "viewport": {"width": 1200, "height": 800, "dpr": 0},
+                "layout_metrics": {"horizontal_overflow": "false"},
+            }
+        },
+        "after": valid_payload["artifacts"]["after"],
+    }
+    tmp.write_text(json.dumps(invalid_payload), encoding="utf-8")
+    invalid_errors = validate_manifest(tmp, strict=True, require_existing_files=False)
+    expected_markers = ("base64", "dimensions", "viewport.dpr", "horizontal_overflow")
+    for marker in expected_markers:
+        if not any(marker in error for error in invalid_errors):
+            errors.append(f"self-check failed to reject invalid {marker}")
+    invalid_payload["artifacts"] = {
+        "before": valid_payload["artifacts"]["before"],
+        "after": {"mobile": valid_payload["artifacts"]["after"]["desktop"]},
+    }
+    tmp.write_text(json.dumps(invalid_payload), encoding="utf-8")
+    invalid_errors = validate_manifest(tmp, strict=True, require_existing_files=False)
+    if not any("shared before/after artifact key" in error for error in invalid_errors):
+        errors.append("self-check failed to reject non-matching before/after keys")
     try:
         tmp.unlink()
     except OSError:

@@ -91,6 +91,7 @@ required_files=(
   "evals/cross-agent/same-prompt-motion-review/scorecard.md"
   "evals/fixtures/css-smells/card-soup.css"
   "evals/fixtures/focus-smells/Button.tsx"
+  "evals/fixtures/l4-screenshot-manifests/generic-invalid.json"
   "evals/fixtures/l4-screenshot-manifests/generic-valid.json"
   "evals/fixtures/token-smells/panel.css"
   "adapters/codex/README.md"
@@ -266,6 +267,12 @@ python3 scripts/design_craft_l4_evidence_manifest.py \
 python3 scripts/design_craft_l4_evidence_manifest.py \
   --validate-screenshots-json evals/fixtures/l4-screenshot-manifests/generic-valid.json \
   --strict >/dev/null
+if python3 scripts/design_craft_l4_evidence_manifest.py \
+  --validate-screenshots-json evals/fixtures/l4-screenshot-manifests/generic-invalid.json \
+  --strict >/dev/null 2>&1; then
+  echo "Invalid L4 screenshot manifest unexpectedly passed strict validation" >&2
+  exit 1
+fi
 python3 scripts/design_craft_css_smell_scan.py --target evals/fixtures/css-smells --json >/dev/null
 python3 scripts/design_craft_focus_audit.py --target evals/fixtures/focus-smells --json >/dev/null
 python3 scripts/design_craft_token_audit.py --target evals/fixtures/token-smells --json >/dev/null

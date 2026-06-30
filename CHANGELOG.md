@@ -23,6 +23,9 @@ All notable local changes to `design-craft` are recorded here.
   `path`/`sha256` or `artifact_path`/`artifact_sha256` naming in screenshot
   manifests so TMWD artifact metadata can stay tool-shaped without schema
   rewrites.
+- Added a generic invalid L4 manifest fixture plus negative validation so
+  strict mode must reject base64 paths, bad hashes, zero dimensions, invalid
+  layout metric types, and unmatched before/after artifact keys.
 
 ## 0.2.1 - 2026-06-30
 
