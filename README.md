@@ -196,9 +196,9 @@ Create a real L4 before/after eval scaffold:
 
 ```bash
 bash scripts/design_craft_l4_eval_case.sh \
-  --case-id datahub-live-center-review-workbench \
-  --surface "/content/live-center" \
-  --primary-user "content operators"
+  --case-id generic-review-workbench-local-l4 \
+  --surface "http://127.0.0.1:4173/generic-review-workbench/" \
+  --primary-user "review operations teammates"
 ```
 
 The generated case is not evidence by itself. Fill real screenshot metadata,

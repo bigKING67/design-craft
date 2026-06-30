@@ -76,6 +76,12 @@ required_files=(
   "evals/product-ui-taste/before-after/_template/diff-summary.md"
   "evals/product-ui-taste/before-after/_template/validation.md"
   "evals/product-ui-taste/before-after/_template/screenshots.json"
+  "evals/product-ui-taste/before-after/generic-review-workbench-local-l4/input.md"
+  "evals/product-ui-taste/before-after/generic-review-workbench-local-l4/score.before.json"
+  "evals/product-ui-taste/before-after/generic-review-workbench-local-l4/score.after.json"
+  "evals/product-ui-taste/before-after/generic-review-workbench-local-l4/diff-summary.md"
+  "evals/product-ui-taste/before-after/generic-review-workbench-local-l4/validation.md"
+  "evals/product-ui-taste/before-after/generic-review-workbench-local-l4/screenshots.json"
   "evals/cross-agent/README.md"
   "evals/cross-agent/_template/prompt.md"
   "evals/cross-agent/_template/expected-findings.md"
@@ -91,6 +97,7 @@ required_files=(
   "evals/cross-agent/same-prompt-motion-review/scorecard.md"
   "evals/fixtures/css-smells/card-soup.css"
   "evals/fixtures/focus-smells/Button.tsx"
+  "evals/fixtures/l4-pages/generic-review-workbench/index.html"
   "evals/fixtures/l4-cases/generic-invalid/diff-summary.md"
   "evals/fixtures/l4-cases/generic-invalid/input.md"
   "evals/fixtures/l4-cases/generic-invalid/score.after.json"
@@ -282,6 +289,9 @@ python3 scripts/design_craft_l4_evidence_manifest.py \
 python3 scripts/design_craft_l4_evidence_manifest.py \
   --validate-screenshots-json evals/fixtures/l4-screenshot-manifests/generic-valid.json \
   --strict >/dev/null
+python3 scripts/design_craft_l4_evidence_manifest.py \
+  --validate-screenshots-json evals/product-ui-taste/before-after/generic-review-workbench-local-l4/screenshots.json \
+  --strict >/dev/null
 if python3 scripts/design_craft_l4_evidence_manifest.py \
   --validate-screenshots-json evals/fixtures/l4-screenshot-manifests/generic-invalid.json \
   --strict >/dev/null 2>&1; then
@@ -291,6 +301,9 @@ fi
 python3 scripts/design_craft_l4_case_validate.py --check >/dev/null
 python3 scripts/design_craft_l4_case_validate.py \
   --case-dir evals/fixtures/l4-cases/generic-valid \
+  --strict >/dev/null
+python3 scripts/design_craft_l4_case_validate.py \
+  --case-dir evals/product-ui-taste/before-after/generic-review-workbench-local-l4 \
   --strict >/dev/null
 if python3 scripts/design_craft_l4_case_validate.py \
   --case-dir evals/fixtures/l4-cases/generic-invalid \

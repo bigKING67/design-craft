@@ -34,3 +34,11 @@ python3 scripts/design_craft_l4_evidence_manifest.py \
 
 The `_template/` directory is schema scaffolding only. It is not evidence and
 must not be cited as a completed before/after improvement.
+
+Completed generic fixture example:
+
+```bash
+python3 scripts/design_craft_l4_case_validate.py \
+  --case-dir evals/product-ui-taste/before-after/generic-review-workbench-local-l4 \
+  --strict
+```

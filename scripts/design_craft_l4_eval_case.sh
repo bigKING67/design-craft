@@ -13,7 +13,7 @@ Usage:
 Create a scaffold for a real L4 product UI taste before/after eval case.
 
 Required:
-  --case-id <id>              Filesystem-safe case id, for example datahub-live-center-review-workbench.
+  --case-id <id>              Filesystem-safe case id, for example generic-review-workbench-local-l4.
 
 Options:
   --surface <text>            Product surface name.
