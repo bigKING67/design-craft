@@ -43,6 +43,9 @@ For the `design-craft` source repo itself, use:
   smell signals. Treat these as review prompts, not automatic design verdicts.
 - `scripts/design_craft_doctor.sh --target <path>` for local portability and
   optional capability checks.
+- `scripts/design_craft_codex_route_pack.py --strict` to audit the local Codex
+  frontend route planner, frontend rule, preflight contract, and route tests as
+  a whitelisted migration manifest.
 - `scripts/design_craft_init_agent.sh --agent <codex|cursor|claude|pi|generic>
   --target <path> --dry-run` before installing the canonical skill into another
   host agent.

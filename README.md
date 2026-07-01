@@ -106,6 +106,19 @@ Run a portability check without modifying files:
 bash scripts/design_craft_doctor.sh --target . --json
 ```
 
+Audit or export the local Codex frontend route tools as a whitelisted migration
+bundle. This does not copy arbitrary `~/.codex` state; it records only the
+route planner, frontend rules, preflight contract, and related tests:
+
+```bash
+python3 scripts/design_craft_codex_route_pack.py --strict
+python3 scripts/design_craft_codex_route_pack.py \
+  --strict \
+  --export-dir /tmp/design-craft-codex-route-pack
+```
+
+Route-pack details live under `adapters/codex/route-pack/`.
+
 ## Default design seed
 
 For new or weakly specified developer-product, SaaS, dashboard, admin, infra,

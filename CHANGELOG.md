@@ -4,6 +4,9 @@ All notable local changes to `design-craft` are recorded here.
 
 ## Unreleased
 
+- Added a Codex frontend route-pack audit/export helper plus adapter docs, so
+  local `~/.codex` frontend route policy can be hashed, validated, and migrated
+  without copying unrelated Codex state.
 - Narrowed the canonical `design-craft` trigger description and added an
   explicit "when not to use" boundary for backend-only, database-only,
   algorithm-only, CLI-only, and non-visual refactor tasks.

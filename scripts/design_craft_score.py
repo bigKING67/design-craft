@@ -293,6 +293,8 @@ def build_score(root: Path, run_smoke: bool) -> list[Dimension]:
                 (has(root, "scripts/upstream_absorption_report.py"), "upstream absorption report exists", "Add upstream absorption report script."),
                 ("--remote" in read_text(root / "scripts/upstream_absorption_report.py"), "remote upstream drift check exists", "Add remote upstream drift reporting."),
                 (has(root, "adapters/codex/README.md"), "Codex adapter docs exist", "Add Codex adapter docs."),
+                (has(root, "adapters/codex/route-pack/README.md"), "Codex route-pack docs exist", "Add docs for Codex frontend route-pack portability."),
+                (has(root, "scripts/design_craft_codex_route_pack.py"), "Codex route-pack helper exists", "Add a helper that audits or exports the local Codex frontend route pack."),
                 (has(root, "adapters/cursor/README.md"), "Cursor adapter docs exist", "Add Cursor adapter docs."),
                 (has(root, "adapters/claude/README.md"), "Claude adapter docs exist", "Add Claude adapter docs."),
                 (has(root, "adapters/pi/README.md"), "Pi adapter docs exist", "Add Pi adapter docs."),

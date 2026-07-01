@@ -108,6 +108,7 @@ required_files=(
   "evals/fixtures/l4-screenshot-manifests/generic-valid.json"
   "evals/fixtures/token-smells/panel.css"
   "adapters/codex/README.md"
+  "adapters/codex/route-pack/README.md"
   "adapters/cursor/README.md"
   "adapters/cursor/.cursor/rules/design-craft.mdc"
   "adapters/claude/README.md"
@@ -123,6 +124,7 @@ required_files=(
   "scripts/design_craft_l4_eval_case.sh"
   "scripts/design_craft_l4_evidence_manifest.py"
   "scripts/design_craft_browser_evidence.py"
+  "scripts/design_craft_codex_route_pack.py"
   "scripts/design_craft_cross_agent_validate.py"
   "scripts/design_craft_css_smell_scan.py"
   "scripts/design_craft_focus_audit.py"
@@ -225,6 +227,7 @@ for path in \
   "scripts/design_craft_l4_eval_case.sh" \
   "scripts/design_craft_l4_evidence_manifest.py" \
   "scripts/design_craft_browser_evidence.py" \
+  "scripts/design_craft_codex_route_pack.py" \
   "scripts/design_craft_cross_agent_validate.py" \
   "scripts/design_craft_css_smell_scan.py" \
   "scripts/design_craft_focus_audit.py" \
@@ -275,6 +278,7 @@ for path in \
   scripts/design_craft_score.py \
   scripts/design_craft_active_scope_validate.py \
   scripts/design_craft_browser_evidence.py \
+  scripts/design_craft_codex_route_pack.py \
   scripts/design_craft_cross_agent_validate.py \
   scripts/design_craft_l4_capture.py \
   scripts/design_craft_l4_case_validate.py \
@@ -290,6 +294,8 @@ done
 
 python3 scripts/design_craft_score.py --self --no-smoke --json >/dev/null
 python3 scripts/design_craft_browser_evidence.py --check --print-js >/dev/null
+python3 scripts/design_craft_codex_route_pack.py --check >/dev/null
+python3 scripts/design_craft_codex_route_pack.py --strict >/dev/null
 python3 scripts/design_craft_cross_agent_validate.py --check >/dev/null
 python3 scripts/design_craft_cross_agent_validate.py --root evals/cross-agent >/dev/null
 python3 scripts/design_craft_l4_capture.py --check >/dev/null

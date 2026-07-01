@@ -40,3 +40,25 @@ This installs to:
 - For visible UI changes, use browser validation and screenshot artifacts when
   route output requires them.
 - Keep `skills/design-craft/` canonical; do not fork a Codex-only copy.
+
+## Frontend route pack
+
+The local frontend route planner is machine-level Codex configuration under
+`~/.codex`, not part of the installable skill. Keep it auditable with the route
+pack helper:
+
+```bash
+python3 scripts/design_craft_codex_route_pack.py --strict
+```
+
+Export a whitelisted migration bundle when moving machines or backing up local
+route policy:
+
+```bash
+python3 scripts/design_craft_codex_route_pack.py \
+  --strict \
+  --export-dir /tmp/design-craft-codex-route-pack
+```
+
+See `adapters/codex/route-pack/README.md` for the tracked file list, restore
+validation commands, and the screenshot evidence policy boundary.

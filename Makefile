@@ -1,6 +1,6 @@
 DESIGN_CRAFT_SKILL_ROOT ?= $(HOME)/.agents/skills
 
-.PHONY: validate score pass audit critique motion taste-review seed-dry-run route-smoke doctor init-dry-run active-scope-check cross-agent-check l4-capture-check smell-smoke upstream-report upstream-remote-report install legacy-alias-smoke release-gate
+.PHONY: validate score pass audit critique motion taste-review seed-dry-run route-smoke doctor codex-route-pack-check init-dry-run active-scope-check cross-agent-check l4-capture-check smell-smoke upstream-report upstream-remote-report install legacy-alias-smoke release-gate
 
 validate:
 	bash scripts/validate.sh
@@ -49,6 +49,10 @@ route-smoke:
 doctor:
 	bash scripts/design_craft_doctor.sh --target . --json >/dev/null
 
+codex-route-pack-check:
+	python3 scripts/design_craft_codex_route_pack.py --check >/dev/null
+	python3 scripts/design_craft_codex_route_pack.py --strict >/dev/null
+
 init-dry-run:
 	@tmp_dir="$$(mktemp -d -t design-craft-init.XXXXXX)"; \
 	trap 'rm -rf "$$tmp_dir"' EXIT; \
@@ -85,5 +89,5 @@ legacy-alias-smoke:
 	bash scripts/frontend_craft_pass.sh --target skills/design-craft --mode motion --skip-route --skip-score >/dev/null
 	grep -Fq 'renamed to `design-craft`' "$(DESIGN_CRAFT_SKILL_ROOT)/frontend-craft/SKILL.md"
 
-release-gate: validate score pass audit critique motion taste-review seed-dry-run route-smoke doctor init-dry-run active-scope-check cross-agent-check l4-capture-check smell-smoke upstream-report upstream-remote-report install legacy-alias-smoke
+release-gate: validate score pass audit critique motion taste-review seed-dry-run route-smoke doctor codex-route-pack-check init-dry-run active-scope-check cross-agent-check l4-capture-check smell-smoke upstream-report upstream-remote-report install legacy-alias-smoke
 	diff -qr skills/design-craft "$(DESIGN_CRAFT_SKILL_ROOT)/design-craft"

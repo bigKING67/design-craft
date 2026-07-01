@@ -79,6 +79,8 @@ system, data density, report grammar, or runtime truth.
    `scripts/design_craft_css_smell_scan.py`,
    `scripts/design_craft_focus_audit.py`, and
    `scripts/design_craft_token_audit.py` for static review signals, and
+   `scripts/design_craft_codex_route_pack.py` for auditing or exporting the
+   local Codex frontend route-pack manifest, and
    `scripts/design_craft_score.py` for self-audits. When maintaining this skill
    repo, use `scripts/upstream_absorption_report.py` before absorbing new
    upstream commits.

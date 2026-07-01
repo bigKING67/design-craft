@@ -21,6 +21,9 @@ This document is the local release and maintenance checklist for
   UI/UX/design/frontend work.
 - Keep agent-specific install behavior in `adapters/` and scripts. Do not fork
   the canonical `skills/design-craft/` content per agent.
+- Keep the Codex frontend route layer portable through the route-pack manifest
+  helper. Do not copy unrelated `~/.codex` state, credentials, browser profile
+  files, caches, or session logs into this repo.
 - Record meaningful task evidence under `evals/`; do not claim browser
   validation unless a browser validation actually ran.
 - Do not add a root `DESIGN.md` to this repository. `design-craft` is a reusable
@@ -49,6 +52,7 @@ bash scripts/design_craft_taste_review.sh --target skills/design-craft --context
 tmp_dir="$(mktemp -d -t design-craft-seed-dry-run.XXXXXX)" && trap 'rm -rf "${tmp_dir}"' EXIT && bash scripts/design_craft_seed_design.sh --target "${tmp_dir}" --dry-run
 make route-smoke
 bash scripts/design_craft_doctor.sh --target . --json
+python3 scripts/design_craft_codex_route_pack.py --strict
 make init-dry-run
 make smell-smoke
 python3 scripts/upstream_absorption_report.py
@@ -78,6 +82,8 @@ Expected result:
   generic Agent Skills-compatible installs without writing files.
 - Doctor output runs without mutating files and reports required optional
   capabilities truthfully.
+- Codex route-pack audit confirms the local frontend route planner, frontend
+  rule, preflight contract, and route tests are present and hashable.
 - Vercel Geist seed helper smoke passes and preserves template byte parity.
 - Route smoke passes against a temporary fixture project with its own
   `DESIGN.md`, preserving the contract that product targets provide their own
@@ -226,6 +232,28 @@ Agent Skills-compatible client applies the same `design-craft` prompt.
 
 Do not claim cross-agent stability until real outputs are recorded. Template
 cases define prompts and scorecards only.
+
+## Codex route-pack portability
+
+The local frontend route planner, route config, frontend rule, preflight
+contract, and route tests live under `~/.codex`. They are runtime policy, not
+skill contents. Use the route-pack helper to make that policy auditable:
+
+```bash
+python3 scripts/design_craft_codex_route_pack.py --strict --json
+```
+
+For migration or backup, export only the whitelisted bundle:
+
+```bash
+python3 scripts/design_craft_codex_route_pack.py \
+  --strict \
+  --export-dir /tmp/design-craft-codex-route-pack
+```
+
+After restoring to another Codex home, run the validation commands listed in
+`adapters/codex/route-pack/README.md`. Do not treat the manifest alone as proof
+that the restored route planner works.
 
 ## Release checklist
 

@@ -13,6 +13,11 @@ from pathlib import Path
 ACTIVE_FILES = [
     "README.md",
     "Makefile",
+    "adapters/codex/README.md",
+    "adapters/codex/route-pack/README.md",
+    "docs/maintenance.md",
+    "scripts/design_craft_codex_route_pack.py",
+    "scripts/design_craft_doctor.sh",
     "scripts/design_craft_score.py",
     "scripts/validate.sh",
     "scripts/design_craft_l4_capture.py",
