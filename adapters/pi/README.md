@@ -20,15 +20,18 @@ During active local development, install the local checkout as the package
 source:
 
 ```bash
-pi install /Users/gaoqian/Documents/sixseven/codeproject/design-craft
+export DESIGN_CRAFT_HOME=/path/to/design-craft
+pi install "$DESIGN_CRAFT_HOME"
 ```
 
 The package manifest exposes:
 
 ```text
 skills/design-craft
-skills/frontend-craft
 ```
+
+The author's local machine may set `DESIGN_CRAFT_HOME` to the active checkout.
+Do not rely on an example absolute path from another machine.
 
 ## Direct user-level copy install
 

@@ -1,0 +1,43 @@
+{
+  "schema": "design-craft.cross-agent-score.v1",
+  "task_id": "same-prompt-dashboard-review",
+  "agent": "pi",
+  "verified": true,
+  "agent_version": "0.80.3",
+  "date": "2026-07-01",
+  "prompt_sha256": "b622939ec19d093fc5bee6bc06d93f29f1016f47db66505642bd8752e74f584b",
+  "skill_path": "skills/design-craft",
+  "command_summary": "pi --skill skills/design-craft --tools read,grep,find,ls --no-session -p with output redirected to /tmp/design-craft-pi-output.md",
+  "output_path": "pi-output.md",
+  "score": 91,
+  "criteria": {
+    "style_authority": {
+      "passed": true,
+      "note": "Preserved the restrained enterprise console context and treated the job as next-hour triage."
+    },
+    "reference_selection": {
+      "passed": true,
+      "note": "Reported focused design-craft references relevant to dashboard critique and design moves."
+    },
+    "anti_generic_redesign": {
+      "passed": true,
+      "note": "Rejected equal card soup, decorative charting, and generic tips in favor of an operations surface."
+    },
+    "evidence_level": {
+      "passed": true,
+      "note": "Labeled evidence as L0 prompt-only and explicitly skipped browser/screenshot validation."
+    },
+    "verified_boundary": {
+      "passed": true,
+      "note": "Marked runtime, responsive, focus, state, token, and contrast claims as unverified."
+    },
+    "design_moves": {
+      "passed": true,
+      "note": "Proposed decision surface, diagnostic chart, task-first table, exception rail, and semantic color moves."
+    },
+    "scope_control": {
+      "passed": true,
+      "note": "Kept output to read-only critique and a validation plan without modifying files or broadening scope."
+    }
+  }
+}

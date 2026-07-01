@@ -5,17 +5,34 @@ ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 SKILL_DIR="${ROOT_DIR}/skills/design-craft"
 LEGACY_SKILL_DIR="${ROOT_DIR}/skills/frontend-craft"
 VALIDATOR="${SKILL_CREATOR_QUICK_VALIDATE:-${HOME}/.codex/skills/.system/skill-creator/scripts/quick_validate.py}"
+PORTABLE=0
+
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --portable)
+      PORTABLE=1
+      ;;
+    *)
+      echo "Unknown argument: $1" >&2
+      echo "Usage: $0 [--portable]" >&2
+      exit 2
+      ;;
+  esac
+  shift
+done
 
 cd "${ROOT_DIR}"
 
-if [[ ! -f "${VALIDATOR}" ]]; then
-  echo "Missing skill validator: ${VALIDATOR}" >&2
-  echo "Set SKILL_CREATOR_QUICK_VALIDATE to a compatible quick_validate.py path." >&2
-  exit 1
-fi
+if [[ "${PORTABLE}" == "0" ]]; then
+  if [[ ! -f "${VALIDATOR}" ]]; then
+    echo "Missing skill validator: ${VALIDATOR}" >&2
+    echo "Set SKILL_CREATOR_QUICK_VALIDATE to a compatible quick_validate.py path." >&2
+    exit 1
+  fi
 
-python3 "${VALIDATOR}" "${SKILL_DIR}"
-python3 "${VALIDATOR}" "${LEGACY_SKILL_DIR}"
+  python3 "${VALIDATOR}" "${SKILL_DIR}"
+  python3 "${VALIDATOR}" "${LEGACY_SKILL_DIR}"
+fi
 
 required_files=(
   "README.md"
@@ -136,6 +153,7 @@ required_files=(
   "scripts/design_craft_cross_agent_validate.py"
   "scripts/design_craft_css_smell_scan.py"
   "scripts/design_craft_focus_audit.py"
+  "scripts/design_craft_static_review.py"
   "scripts/design_craft_token_audit.py"
   "scripts/design_craft_pass.sh"
   "scripts/design_craft_route.sh"
@@ -199,7 +217,7 @@ if (pkg.version !== version) {
 if (!Array.isArray(pkg.keywords) || !pkg.keywords.includes("pi-package")) {
   throw new Error("package.json keywords must include pi-package");
 }
-const expectedSkills = ["skills/design-craft", "skills/frontend-craft"];
+const expectedSkills = ["skills/design-craft"];
 const actualSkills = pkg.pi && Array.isArray(pkg.pi.skills) ? pkg.pi.skills : [];
 for (const skill of expectedSkills) {
   if (!actualSkills.includes(skill)) {
@@ -208,6 +226,9 @@ for (const skill of expectedSkills) {
   if (!fs.existsSync(`${skill}/SKILL.md`)) {
     throw new Error(`missing package skill entrypoint: ${skill}/SKILL.md`);
   }
+}
+if (actualSkills.includes("skills/frontend-craft")) {
+  throw new Error("package.json pi.skills must not expose the legacy frontend-craft alias by default");
 }
 NODE
 
@@ -261,6 +282,7 @@ for path in \
   "scripts/design_craft_cross_agent_validate.py" \
   "scripts/design_craft_css_smell_scan.py" \
   "scripts/design_craft_focus_audit.py" \
+  "scripts/design_craft_static_review.py" \
   "scripts/design_craft_token_audit.py" \
   "scripts/design_craft_pass.sh" \
   "scripts/design_craft_route.sh" \
@@ -315,6 +337,7 @@ for path in \
   scripts/design_craft_l4_evidence_manifest.py \
   scripts/design_craft_css_smell_scan.py \
   scripts/design_craft_focus_audit.py \
+  scripts/design_craft_static_review.py \
   scripts/design_craft_token_audit.py \
   scripts/frontend_craft_score.py \
   scripts/frontend_craft_browser_evidence.py \
@@ -324,8 +347,10 @@ done
 
 python3 scripts/design_craft_score.py --self --no-smoke --json >/dev/null
 python3 scripts/design_craft_browser_evidence.py --check --print-js >/dev/null
-python3 scripts/design_craft_codex_route_pack.py --check >/dev/null
-python3 scripts/design_craft_codex_route_pack.py --strict >/dev/null
+if [[ "${PORTABLE}" == "0" ]]; then
+  python3 scripts/design_craft_codex_route_pack.py --check >/dev/null
+  python3 scripts/design_craft_codex_route_pack.py --strict >/dev/null
+fi
 python3 scripts/design_craft_cross_agent_validate.py --check >/dev/null
 python3 scripts/design_craft_cross_agent_validate.py --root evals/cross-agent >/dev/null
 python3 scripts/design_craft_l4_capture.py --check >/dev/null
@@ -366,8 +391,11 @@ fi
 python3 scripts/design_craft_css_smell_scan.py --target evals/fixtures/css-smells --json >/dev/null
 python3 scripts/design_craft_focus_audit.py --target evals/fixtures/focus-smells --json >/dev/null
 python3 scripts/design_craft_token_audit.py --target evals/fixtures/token-smells --json >/dev/null
+python3 scripts/design_craft_static_review.py --target evals/fixtures --json >/dev/null
 python3 scripts/upstream_absorption_report.py --json >/dev/null
-python3 scripts/upstream_absorption_report.py --json --remote >/dev/null
+if [[ "${PORTABLE}" == "0" ]]; then
+  python3 scripts/upstream_absorption_report.py --json --remote >/dev/null
+fi
 
 bash scripts/design_craft_detect.sh --target skills/design-craft --json-only >/dev/null
 bash scripts/design_craft_detect.sh --target skills/design-craft --full-json >/dev/null

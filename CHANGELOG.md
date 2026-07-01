@@ -2,7 +2,7 @@
 
 All notable local changes to `design-craft` are recorded here.
 
-## Unreleased
+## 0.3.0 - 2026-07-01
 
 - Added a Codex frontend route-pack audit/export helper plus adapter docs, so
   local `~/.codex` frontend route policy can be hashed, validated, and migrated
@@ -17,8 +17,19 @@ All notable local changes to `design-craft` are recorded here.
   workflow can translate taste critique into concrete design moves.
 - Added static scanner helpers for CSS smells, focus-state risks, and token
   bypasses, and wired them into detector/validation smoke coverage.
+- Added an aggregate `design_craft_static_review.py` helper that normalizes
+  scanner results into one JSON handoff packet with severity counts, top
+  findings, and design interpretation prompts.
+- Expanded the design move library with product-mood treatment variants and
+  before/after anatomy patterns for dashboards, tables, forms, landing pages,
+  and mobile adaptations.
 - Added L4 before/after and cross-agent benchmark scaffolds without counting
   templates as completed evidence.
+- Recorded Codex and Pi same-prompt dashboard benchmark outputs while keeping
+  Cursor and Claude explicitly unverified for this release.
+- Split validation into portable clone-safe checks and local full release
+  checks, and changed the default Pi package/install surface to expose only the
+  canonical `design-craft` skill unless the legacy alias is requested.
 - Added an L4 screenshot manifest validator so before/after cases can check
   screenshot artifact paths, hashes, dimensions, viewport metadata, and layout
   metrics before claiming real evidence.

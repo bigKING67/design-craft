@@ -1,7 +1,9 @@
 ---
 description: Trigger design-craft for product UI/UX and frontend design-quality work.
 globs:
-  - "**/*.{css,scss,tsx,jsx,mdx}"
+  - "**/*.{css,scss,sass,less,tsx,jsx,ts,js,mdx,vue,svelte,astro,html}"
+  - "**/{DESIGN,design,AGENTS,agents}.md"
+  - "**/*{theme,tokens,tailwind,styles,components}*.{js,ts,json,css}"
 alwaysApply: false
 ---
 

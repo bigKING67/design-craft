@@ -5,10 +5,24 @@ ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 INSTALL_ROOT="${DESIGN_CRAFT_SKILL_ROOT:-${FRONTEND_CRAFT_SKILL_ROOT:-${HOME}/.agents/skills}}"
 BACKUP_BASE="${HOME}/.agents/backups"
 DRY_RUN=0
+INCLUDE_LEGACY_ALIAS=0
 
-if [[ "${1:-}" == "--dry-run" ]]; then
-  DRY_RUN=1
-fi
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --dry-run)
+      DRY_RUN=1
+      ;;
+    --include-legacy-alias)
+      INCLUDE_LEGACY_ALIAS=1
+      ;;
+    *)
+      echo "Unknown argument: $1" >&2
+      echo "Usage: $0 [--dry-run] [--include-legacy-alias]" >&2
+      exit 2
+      ;;
+  esac
+  shift
+done
 
 install_one() {
   local name="$1"
@@ -49,7 +63,11 @@ install_one() {
 }
 
 install_one "design-craft"
-install_one "frontend-craft"
+if [[ "${INCLUDE_LEGACY_ALIAS}" == "1" ]]; then
+  install_one "frontend-craft"
+else
+  echo "Skipped legacy frontend-craft alias. Pass --include-legacy-alias to install it."
+fi
 
 if [[ "${DRY_RUN}" == "1" ]]; then
   echo "dry_run: no files changed"

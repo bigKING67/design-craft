@@ -41,11 +41,16 @@ For the `design-craft` source repo itself, use:
   `scripts/design_craft_focus_audit.py --target <path>`, and
   `scripts/design_craft_token_audit.py --target <path>` to collect static UI
   smell signals. Treat these as review prompts, not automatic design verdicts.
+- `scripts/design_craft_static_review.py --target <path> --json` when a single
+  normalized static review packet is easier to attach to an agent handoff.
 - `scripts/design_craft_doctor.sh --target <path>` for local portability and
   optional capability checks.
 - `scripts/design_craft_codex_route_pack.py --strict` to audit the local Codex
   frontend route planner, frontend rule, preflight contract, and route tests as
   a whitelisted migration manifest.
+- `scripts/design_craft_cross_agent_validate.py --root evals/cross-agent` for
+  benchmark task definitions, and `--observed-task <task-dir>` only after real
+  agent outputs have been recorded.
 - `scripts/design_craft_init_agent.sh --agent <codex|cursor|claude|pi|generic>
   --target <path> --dry-run` before installing the canonical skill into another
   host agent.
@@ -215,11 +220,15 @@ When validating adapter portability, use:
 - `scripts/design_craft_init_agent.sh --agent <agent> --target <temp-dir>
   --scope project --dry-run`
 - `scripts/design_craft_doctor.sh --target . --json`
-- `evals/cross-agent/` prompts only after real agent outputs are collected.
+- `scripts/design_craft_cross_agent_validate.py --observed-task <task-dir>`
+  only after real agent outputs are collected.
 
 Do not claim Cursor, Claude, Pi, Codex, or another host behaves consistently
 until that host has actually run the same benchmark prompt and its output is
 recorded.
+
+For the 0.3.0 dashboard benchmark, only Codex and Pi have recorded same-prompt
+outputs. Cursor and Claude are explicit unverified hosts for that benchmark.
 
 ## Unverified work
 

@@ -1,6 +1,6 @@
 {
   "name": "design-craft",
-  "version": "0.2.1",
+  "version": "0.3.0",
   "description": "Portable agent skill package for product UI, UX, frontend design quality, visual taste, motion, and design engineering workflows.",
   "license": "MIT",
   "keywords": [
@@ -19,8 +19,7 @@
   },
   "pi": {
     "skills": [
-      "skills/design-craft",
-      "skills/frontend-craft"
+      "skills/design-craft"
     ]
   },
   "scripts": {

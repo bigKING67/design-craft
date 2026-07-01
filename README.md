@@ -30,6 +30,9 @@ reports, and similar business surfaces, scoped project rules, live
 runtime behavior, and project `DESIGN.md` always outrank generic visual rules.
 The canonical package is still portable: agent-specific integration belongs in
 `adapters/`, while `skills/design-craft/` remains the single source skill.
+Release `0.3.0` adds portable/local validation split, cross-agent adapter
+evidence, static UI smell scanners, concrete design moves, and L4 before/after
+eval support without treating fixture evidence as product proof.
 
 ## Layout
 
@@ -66,7 +69,6 @@ The installer syncs:
 
 ```text
 skills/design-craft -> ${DESIGN_CRAFT_SKILL_ROOT:-$HOME/.agents/skills}/design-craft
-skills/frontend-craft -> ${DESIGN_CRAFT_SKILL_ROOT:-$HOME/.agents/skills}/frontend-craft
 ```
 
 Verify the installed copy when needed:
@@ -76,7 +78,12 @@ diff -qr skills/design-craft "${DESIGN_CRAFT_SKILL_ROOT:-$HOME/.agents/skills}/d
 ```
 
 `skills/frontend-craft` is a legacy compatibility alias only. New route and
-preflight defaults should use `design-craft`.
+preflight defaults should use `design-craft`. It is not installed by default;
+install it only for old clients that still route to the former name:
+
+```bash
+bash scripts/install_local.sh --include-legacy-alias
+```
 
 ## Install as a Pi package
 
@@ -89,13 +96,13 @@ pi install git:github.com/bigKING67/design-craft@<tag-or-commit>
 For local development, use the checkout path:
 
 ```bash
-pi install /Users/gaoqian/Documents/sixseven/codeproject/design-craft
+export DESIGN_CRAFT_HOME=/path/to/design-craft
+pi install "$DESIGN_CRAFT_HOME"
 ```
 
-The `package.json` `pi.skills` manifest exposes both `skills/design-craft` and
-the legacy `skills/frontend-craft` alias. This keeps `pi-67` as the Pi
-configuration repo while `design-craft` remains the single source for these
-skills.
+The `package.json` `pi.skills` manifest exposes only the canonical
+`skills/design-craft` skill. This keeps `pi-67` as the Pi configuration repo
+while `design-craft` remains the single source skill.
 
 ## Agent adapters
 
@@ -163,20 +170,28 @@ unless `--force` is explicit.
 
 ## Validate
 
-Preferred one-command gate:
+Portable gate for a fresh clone or another machine:
 
 ```bash
-make validate
+make validate-portable
+```
+
+Local full gate for this machine:
+
+```bash
+make release-gate-local
 ```
 
 Equivalent direct commands:
 
 ```bash
-bash scripts/validate.sh
+bash scripts/validate.sh --portable
 python3 scripts/design_craft_active_scope_validate.py --root .
 python3 scripts/design_craft_score.py --self
 bash scripts/design_craft_pass.sh --target . --mode audit --skip-route
 ```
+
+`make release-gate` remains a compatibility alias for the local full gate.
 
 ## Common commands
 
@@ -238,6 +253,11 @@ The generated case is not evidence by itself. Fill real screenshot metadata,
 before/after scores, implementation diff, validation commands, and unverified
 states before counting it as L4.
 
+Completed project-neutral fixture examples remain the portable public examples.
+The repo may also retain historical real-project L4 provenance; those cases are
+validated by the local full gate and must keep their project-specific claims
+bounded to the recorded artifacts.
+
 Create a project-neutral L4 screenshot capture plan. Prefer the TMWD evidence
 bundle helper when the active agent exposes it; this wrapper gives a repeatable
 Chrome-headless fallback and writes only repo-external PNG artifacts plus
@@ -286,14 +306,38 @@ Current project-neutral completed L4 cases are:
 - `ops-dashboard-decision-surface-l4`: a local operations dashboard fixture
   that demonstrates the `Dashboard card soup -> decision surface` design move.
 
+Historical real-project L4 provenance is retained for local verification:
+
+- One historical real application workbench before/after case records
+  desktop/mobile screenshot metadata, validation commands, and bounded
+  unverified states. It is validated by `make real-l4-check`, but public
+  portable examples remain project-neutral.
+
+Run the cross-agent dashboard benchmark validators:
+
+```bash
+python3 scripts/design_craft_cross_agent_validate.py --root evals/cross-agent
+python3 scripts/design_craft_cross_agent_validate.py \
+  --observed-task evals/cross-agent/same-prompt-dashboard-review
+```
+
+For `0.3.0`, Codex and Pi have recorded same-prompt outputs. Cursor and Claude
+are explicitly unverified and must not be advertised as stable behavior hosts
+until real outputs are collected.
+
 Run static UI smell scanners. These are review signals, not a replacement for
 design judgment or browser evidence:
 
 ```bash
+python3 scripts/design_craft_static_review.py --target /path/to/project --json
 python3 scripts/design_craft_css_smell_scan.py --target /path/to/project
 python3 scripts/design_craft_focus_audit.py --target /path/to/project
 python3 scripts/design_craft_token_audit.py --target /path/to/project
 ```
+
+`design_craft_static_review.py` normalizes the three scanner outputs into one
+handoff-friendly JSON packet with severity counts, top findings, and design
+interpretation prompts.
 
 Run the detector. Default text output includes pinned Impeccable findings plus
 local design-craft review signals; `--json-only` remains raw upstream JSON for
@@ -355,15 +399,17 @@ python3 scripts/upstream_absorption_report.py --remote
 Before tagging or treating a version as stable, run:
 
 ```bash
-make release-gate
+make validate-portable
+make release-gate-local
 ```
 
-The release gate is documented in `docs/maintenance.md`. It checks the skill
-schema, required references, shell/Python syntax, detector smoke, score smoke,
-audit wrapper smoke, fixture-based route smoke, L4 before/after case packets,
-upstream lock consistency, and local install parity. It also smoke-tests
-adapters, doctor output, and the static smell scanners, and verifies that
-active generic docs/gates remain project-neutral.
+`make release-gate` remains a compatibility alias for `make release-gate-local`.
+The gate split is documented in `docs/maintenance.md`. The portable gate checks
+package shape, syntax, validators, static scanners, and project-neutral L4
+fixtures without local Codex or install-state assumptions. The local gate adds
+skill quick validation, Codex route-pack checks, observed cross-agent evidence,
+historical real-project L4 provenance, upstream remote drift, and local install
+parity.
 
 Route smoke uses a temporary fixture project with its own `DESIGN.md`, because
 `design-craft` itself is a reusable skill system rather than a product UI target:

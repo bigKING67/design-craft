@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import json
 import re
 import shutil
 import sys
@@ -25,6 +26,18 @@ REQUIRED_CRITERIA = {
     "design moves": ("design moves",),
     "scope control": ("unrelated", "scope"),
 }
+OBSERVED_SCHEMA = "design-craft.cross-agent-score.v1"
+OBSERVED_HOSTS = ("codex", "pi")
+UNVERIFIED_HOSTS = ("cursor", "claude")
+OBSERVED_REQUIRED_CRITERIA = (
+    "style_authority",
+    "reference_selection",
+    "anti_generic_redesign",
+    "evidence_level",
+    "verified_boundary",
+    "design_moves",
+    "scope_control",
+)
 
 
 def read_text(path: Path) -> str:
@@ -136,6 +149,101 @@ def validate_root(root: Path) -> list[str]:
     return errors
 
 
+def sha256_text(text: str) -> str:
+    import hashlib
+
+    return hashlib.sha256(text.encode("utf-8")).hexdigest()
+
+
+def validate_observed_score(task_dir: Path, host: str, prompt_hash: str) -> list[str]:
+    errors: list[str] = []
+    path = task_dir / f"score.{host}.json"
+    if not path.is_file():
+        return [f"{path}: missing observed score file"]
+    try:
+        payload = json.loads(read_text(path))
+    except json.JSONDecodeError as exc:
+        return [f"{path}: invalid JSON: {exc}"]
+
+    if payload.get("schema") != OBSERVED_SCHEMA:
+        errors.append(f"{path}: schema must be {OBSERVED_SCHEMA}")
+    if payload.get("task_id") != task_dir.name:
+        errors.append(f"{path}: task_id must be {task_dir.name}")
+    if payload.get("agent") != host:
+        errors.append(f"{path}: agent must be {host}")
+    if payload.get("verified") is not True:
+        errors.append(f"{path}: observed host must set verified=true")
+    if payload.get("prompt_sha256") != prompt_hash:
+        errors.append(f"{path}: prompt_sha256 must match prompt.md")
+    for key in ("agent_version", "date", "skill_path", "command_summary"):
+        if not isinstance(payload.get(key), str) or not payload[key].strip():
+            errors.append(f"{path}: {key} must be a non-empty string")
+    score = payload.get("score")
+    if not isinstance(score, int) or not 0 <= score <= 100:
+        errors.append(f"{path}: score must be an integer from 0 to 100")
+
+    criteria = payload.get("criteria")
+    if not isinstance(criteria, dict):
+        errors.append(f"{path}: criteria must be an object")
+        return errors
+    for criterion in OBSERVED_REQUIRED_CRITERIA:
+        result = criteria.get(criterion)
+        if not isinstance(result, dict):
+            errors.append(f"{path}: criteria.{criterion} must be an object")
+            continue
+        if not isinstance(result.get("passed"), bool):
+            errors.append(f"{path}: criteria.{criterion}.passed must be boolean")
+        note = result.get("note")
+        if not isinstance(note, str) or len(note.strip()) < 8:
+            errors.append(f"{path}: criteria.{criterion}.note must explain the result")
+    return errors
+
+
+def validate_observed_task(task_dir: Path) -> list[str]:
+    errors = validate_task_dir(task_dir)
+    if errors:
+        return errors
+
+    prompt_path = task_dir / "prompt.md"
+    prompt_hash = sha256_text(read_text(prompt_path))
+
+    for host in OBSERVED_HOSTS:
+        output = task_dir / f"{host}-output.md"
+        if not output.is_file():
+            errors.append(f"{output}: missing observed output")
+        else:
+            text = read_text(output)
+            if len(text.strip()) < 400:
+                errors.append(f"{output}: observed output is too sparse")
+            lowered = text.lower()
+            for term in ("evidence", "unverified", "design move"):
+                if term not in lowered:
+                    errors.append(f"{output}: output should mention {term!r}")
+        errors.extend(validate_observed_score(task_dir, host, prompt_hash))
+
+    for host in UNVERIFIED_HOSTS:
+        unverified_path = task_dir / f"{host}-unverified.md"
+        if not unverified_path.is_file():
+            errors.append(f"{unverified_path}: missing explicit {host} unverified note")
+        else:
+            text = read_text(unverified_path).lower()
+            if "unverified" not in text or "reason" not in text:
+                errors.append(f"{unverified_path}: must record {host} as unverified with a reason")
+        score_path = task_dir / f"score.{host}.json"
+        if score_path.exists():
+            errors.append(f"{score_path}: do not record a {host} score until {host} really runs")
+
+    comparison_path = task_dir / "comparison.md"
+    if not comparison_path.is_file():
+        errors.append(f"{comparison_path}: missing comparison summary")
+    else:
+        comparison = read_text(comparison_path).lower()
+        for term in ("codex", "pi", "claude", "cursor", "unverified"):
+            if term not in comparison:
+                errors.append(f"{comparison_path}: comparison must mention {term}")
+    return errors
+
+
 def write_valid_task(root: Path) -> None:
     task = root / "same-prompt-generic"
     task.mkdir(parents=True)
@@ -185,11 +293,14 @@ def main() -> int:
     parser = argparse.ArgumentParser(description="Validate design-craft cross-agent benchmark tasks.")
     parser.add_argument("--check", action="store_true", help="Run built-in self-checks.")
     parser.add_argument("--root", default="evals/cross-agent", help="Cross-agent benchmark root.")
+    parser.add_argument("--observed-task", help="Validate one task directory with recorded agent outputs.")
     args = parser.parse_args()
 
     errors: list[str] = []
     if args.check:
         errors.extend(run_self_check())
+    elif args.observed_task:
+        errors.extend(validate_observed_task(Path(args.observed_task)))
     else:
         errors.extend(validate_root(Path(args.root)))
 

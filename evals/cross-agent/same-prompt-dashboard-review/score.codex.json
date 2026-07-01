@@ -1,0 +1,43 @@
+{
+  "schema": "design-craft.cross-agent-score.v1",
+  "task_id": "same-prompt-dashboard-review",
+  "agent": "codex",
+  "verified": true,
+  "agent_version": "codex-cli 0.142.5",
+  "date": "2026-07-01",
+  "prompt_sha256": "b622939ec19d093fc5bee6bc06d93f29f1016f47db66505642bd8752e74f584b",
+  "skill_path": "/Users/gaoqian/.agents/skills/design-craft",
+  "command_summary": "codex exec in read-only sandbox with output-last-message written to /tmp/design-craft-codex-output.md",
+  "output_path": "codex-output.md",
+  "score": 94,
+  "criteria": {
+    "style_authority": {
+      "passed": true,
+      "note": "Used restrained enterprise console and product context as the design read."
+    },
+    "reference_selection": {
+      "passed": true,
+      "note": "Selected dashboard/product UI taste, design moves, surface playbook, and validation guidance."
+    },
+    "anti_generic_redesign": {
+      "passed": true,
+      "note": "Diagnosed card soup and decorative charting instead of applying decorative redesign."
+    },
+    "evidence_level": {
+      "passed": true,
+      "note": "Labeled the run as L0 static/prose-only and avoided browser claims."
+    },
+    "verified_boundary": {
+      "passed": true,
+      "note": "Separated prompt-supported claims from inferred judgments and explicit unverified runtime states."
+    },
+    "design_moves": {
+      "passed": true,
+      "note": "Proposed lead/support/action queue, priority tiers, analytical chart, task-first table, and contextual rail."
+    },
+    "scope_control": {
+      "passed": true,
+      "note": "Stayed within dashboard UI critique and validation plan without backend or unrelated implementation changes."
+    }
+  }
+}

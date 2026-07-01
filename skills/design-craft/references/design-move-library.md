@@ -4,6 +4,45 @@ Use this after diagnosis, when a critique must become a concrete UI direction or
 implementation plan. Moves are not style presets. Apply them under the project's
 runtime behavior, `DESIGN.md`, components, data model, and product job.
 
+## Treatment variants
+
+Pick the product mood before applying a move. The same structure should not look
+the same in every product.
+
+- **Enterprise dense**: compact type, subtle dividers, table-first rhythm,
+  semantic status color, minimal elevation.
+- **Premium editorial**: larger lead object, calmer scan path, stronger
+  typographic contrast, fewer simultaneous modules.
+- **Developer tool**: command/status grammar, monospace or tabular metrics,
+  inline logs, explicit system state, low decoration.
+- **Ops command center**: blocker-first hierarchy, high-contrast exceptions,
+  queue/action rail, short labels, strong state semantics.
+- **Consumer playful**: friendlier copy, softer surfaces, more illustration or
+  motion, but still one clear job and restrained state color.
+- **Formal report**: evidence-first narrative, clear scope/date/entity header,
+  print/export-safe sections, chart takeaways before raw tables.
+
+Use these as treatment constraints, not theme presets. Project `DESIGN.md` and
+runtime evidence still outrank the variant.
+
+## Before/after anatomy patterns
+
+- **Bad dashboard**: 12 equal KPI cards + decorative chart + table + generic
+  tips. **Better**: lead risk object + supporting metric strip + exception
+  queue + diagnostic chart + task-first table.
+- **Bad table**: schema-order columns + buried status + detached filters.
+  **Better**: identity/status/risk/impact/next-action first, metadata grouped
+  later, filters adjacent to affected data.
+- **Bad form**: database-order fields + generic submit + detached errors.
+  **Better**: decision-grouped sections, local help/error text, verb-object
+  actions, separated destructive controls.
+- **Bad landing page**: centered claim + vague gradient + equal cards.
+  **Better**: audience/job/outcome claim + product proof + workflow sequence +
+  objection handling.
+- **Bad mobile adaptation**: desktop order stacked vertically. **Better**:
+  mobile top task first, advanced controls disclosed, sticky behavior audited,
+  no hover-only affordances.
+
 ## Generic AI landing page -> product-specific proof sequence
 
 Problem: The page looks like a polished SaaS template rather than a product with

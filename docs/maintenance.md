@@ -31,18 +31,47 @@ This document is the local release and maintenance checklist for
   their own `DESIGN.md` or pass an explicit style authority path for L1+ route
   checks.
 
+## Portable validation gate
+
+Run this on a fresh clone or another machine before trusting the package shape:
+
+```bash
+make validate-portable
+```
+
+It expands to portable checks only: required files, package/version
+consistency, shell syntax, Python compile, cross-agent task definitions, L4
+case/manifest validators, static scanner fixtures, and source score smoke. It
+does not depend on local Codex quick validators, route-pack state, install
+parity, or remote upstream freshness.
+
+Expected result:
+
+- Required references, scripts, notices, evals, and version files exist.
+- Shell scripts pass `bash -n`.
+- Python scripts compile and core validators run.
+- Static smell scanners and the aggregate static review packet run against
+  fixture targets.
+- Cross-agent task definitions validate.
+- Project-neutral L4 fixtures validate in strict mode.
+- Version in `VERSION` matches `package.json`.
+
 ## Local release gate
 
 Run this before a version bump, initial commit, or route-policy change:
 
 ```bash
-make release-gate
+make release-gate-local
 ```
+
+`make release-gate` remains a compatibility alias for the local full gate.
 
 It expands to:
 
 ```bash
-bash scripts/validate.sh
+bash scripts/validate.sh --portable
+python3 "$SKILL_CREATOR_QUICK_VALIDATE" skills/design-craft
+python3 "$SKILL_CREATOR_QUICK_VALIDATE" skills/frontend-craft
 python3 scripts/design_craft_score.py --self
 bash scripts/design_craft_pass.sh --target . --mode audit --skip-route
 bash scripts/design_craft_audit.sh --target . --mode audit --skip-route
@@ -54,12 +83,14 @@ make route-smoke
 bash scripts/design_craft_doctor.sh --target . --json
 python3 scripts/design_craft_codex_route_pack.py --strict
 make init-dry-run
+make real-l4-check
+make cross-agent-observed-check
 make smell-smoke
 python3 scripts/upstream_absorption_report.py
 python3 scripts/upstream_absorption_report.py --remote
 bash scripts/install_local.sh
 diff -qr skills/design-craft "${DESIGN_CRAFT_SKILL_ROOT:-$HOME/.agents/skills}/design-craft"
-grep -Fq 'renamed to `design-craft`' "${DESIGN_CRAFT_SKILL_ROOT:-$HOME/.agents/skills}/frontend-craft/SKILL.md"
+bash scripts/install_local.sh --dry-run --include-legacy-alias
 ```
 
 Expected result:
@@ -78,6 +109,8 @@ Expected result:
 - Product UI browser evidence helper compiles, emits a redacted TMWD DOM/style
   sampler, and validates score anti-inflation plus DOM evidence JSON.
 - Static smell scanners compile and run against fixture targets.
+- The aggregate static review helper returns normalized severity counts and
+  interpretation prompts.
 - Adapter docs exist, and init dry-runs cover Codex, Cursor, Claude, Pi, and
   generic Agent Skills-compatible installs without writing files.
 - Doctor output runs without mutating files and reports required optional
@@ -88,11 +121,16 @@ Expected result:
 - Route smoke passes against a temporary fixture project with its own
   `DESIGN.md`, preserving the contract that product targets provide their own
   design authority.
+- Historical real-project L4 provenance validates only in the local full gate;
+  current public examples stay project-neutral.
+- Observed cross-agent evidence validates for the hosts that actually ran the
+  same benchmark prompt. Uncollected hosts must remain explicitly unverified.
 - Upstream absorption report runs without fetching or modifying submodules; the
   optional `--remote` check reports remote drift with `git ls-remote`.
 - Upstream lock commits match checked-out submodule commits.
-- Installed canonical skill matches the source skill, and the installed
-  `frontend-craft` legacy alias points to `design-craft`.
+- Installed canonical skill matches the source skill. The `frontend-craft`
+  legacy alias remains source-validated and is installed only when explicitly
+  requested.
 
 ## Upstream sync procedure
 
@@ -269,15 +307,18 @@ that the restored route planner works.
 Before committing a release:
 
 1. `git status --short`
-2. `make release-gate`
-3. Route smoke on the fixture (`make route-smoke`) or on at least one real
+2. `make validate-portable`
+3. `make release-gate-local`
+4. Route smoke on the fixture (`make route-smoke`) or on at least one real
    project path with its own `DESIGN.md` when route behavior changed.
-4. Upstream absorption report reviewed when upstream commits or detector rules changed.
-5. Product UI taste calibration and completed L4 case validation still pass
+5. Upstream absorption report reviewed when upstream commits or detector rules changed.
+6. Product UI taste calibration and completed L4 case validation still pass
    when taste scoring changed.
-6. Install parity check:
+7. Install parity check:
    `diff -qr skills/design-craft "${DESIGN_CRAFT_SKILL_ROOT:-$HOME/.agents/skills}/design-craft"`
-7. Legacy alias check:
-   `grep -Fq 'renamed to \`design-craft\`' "${DESIGN_CRAFT_SKILL_ROOT:-$HOME/.agents/skills}/frontend-craft/SKILL.md"`
-8. Confirm no repo docs were added inside `skills/design-craft/`.
-9. Commit with a scoped message.
+8. Legacy alias source check:
+   `grep -Fq 'renamed to \`design-craft\`' skills/frontend-craft/SKILL.md`
+9. Optional legacy install dry-run:
+   `bash scripts/install_local.sh --dry-run --include-legacy-alias`
+10. Confirm no repo docs were added inside `skills/design-craft/`.
+11. Commit with a scoped message.
