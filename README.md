@@ -260,6 +260,13 @@ python3 scripts/design_craft_l4_case_validate.py \
   --strict
 ```
 
+Current project-neutral completed L4 cases are:
+
+- `generic-review-workbench-local-l4`: a local review-workbench fixture with
+  before/after viewport screenshots and responsive metadata.
+- `ops-dashboard-decision-surface-l4`: a local operations dashboard fixture
+  that demonstrates the `Dashboard card soup -> decision surface` design move.
+
 Run static UI smell scanners. These are review signals, not a replacement for
 design judgment or browser evidence:
 
@@ -334,10 +341,10 @@ make release-gate
 
 The release gate is documented in `docs/maintenance.md`. It checks the skill
 schema, required references, shell/Python syntax, detector smoke, score smoke,
-audit wrapper smoke, fixture-based route smoke, upstream lock consistency, and
-local install parity. It also smoke-tests adapters, doctor output, and the
-static smell scanners, and verifies that active generic docs/gates remain
-project-neutral.
+audit wrapper smoke, fixture-based route smoke, L4 before/after case packets,
+upstream lock consistency, and local install parity. It also smoke-tests
+adapters, doctor output, and the static smell scanners, and verifies that
+active generic docs/gates remain project-neutral.
 
 Route smoke uses a temporary fixture project with its own `DESIGN.md`, because
 `design-craft` itself is a reusable skill system rather than a product UI target:

@@ -32,6 +32,9 @@ All notable local changes to `design-craft` are recorded here.
 - Added complete L4 before/after case-directory validation with generic valid
   and invalid fixtures, checking required files, placeholder text, score
   evidence, screenshot manifest alignment, and before/after score direction.
+- Added the `ops-dashboard-decision-surface-l4` project-neutral L4 fixture,
+  capturing a dashboard card-soup to decision-surface before/after improvement
+  with repo-external viewport screenshot metadata and strict case validation.
 
 ## 0.2.1 - 2026-06-30
 

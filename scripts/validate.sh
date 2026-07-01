@@ -76,6 +76,12 @@ required_files=(
   "evals/product-ui-taste/before-after/generic-review-workbench-local-l4/diff-summary.md"
   "evals/product-ui-taste/before-after/generic-review-workbench-local-l4/validation.md"
   "evals/product-ui-taste/before-after/generic-review-workbench-local-l4/screenshots.json"
+  "evals/product-ui-taste/before-after/ops-dashboard-decision-surface-l4/input.md"
+  "evals/product-ui-taste/before-after/ops-dashboard-decision-surface-l4/score.before.json"
+  "evals/product-ui-taste/before-after/ops-dashboard-decision-surface-l4/score.after.json"
+  "evals/product-ui-taste/before-after/ops-dashboard-decision-surface-l4/diff-summary.md"
+  "evals/product-ui-taste/before-after/ops-dashboard-decision-surface-l4/validation.md"
+  "evals/product-ui-taste/before-after/ops-dashboard-decision-surface-l4/screenshots.json"
   "evals/cross-agent/README.md"
   "evals/cross-agent/_template/prompt.md"
   "evals/cross-agent/_template/expected-findings.md"
@@ -92,6 +98,7 @@ required_files=(
   "evals/fixtures/css-smells/card-soup.css"
   "evals/fixtures/focus-smells/Button.tsx"
   "evals/fixtures/l4-pages/generic-review-workbench/index.html"
+  "evals/fixtures/l4-pages/ops-dashboard-decision-surface/index.html"
   "evals/fixtures/l4-cases/generic-invalid/diff-summary.md"
   "evals/fixtures/l4-cases/generic-invalid/input.md"
   "evals/fixtures/l4-cases/generic-invalid/score.after.json"
@@ -308,6 +315,9 @@ python3 scripts/design_craft_l4_evidence_manifest.py \
 python3 scripts/design_craft_l4_evidence_manifest.py \
   --validate-screenshots-json evals/product-ui-taste/before-after/generic-review-workbench-local-l4/screenshots.json \
   --strict >/dev/null
+python3 scripts/design_craft_l4_evidence_manifest.py \
+  --validate-screenshots-json evals/product-ui-taste/before-after/ops-dashboard-decision-surface-l4/screenshots.json \
+  --strict >/dev/null
 if python3 scripts/design_craft_l4_evidence_manifest.py \
   --validate-screenshots-json evals/fixtures/l4-screenshot-manifests/generic-invalid.json \
   --strict >/dev/null 2>&1; then
@@ -320,6 +330,9 @@ python3 scripts/design_craft_l4_case_validate.py \
   --strict >/dev/null
 python3 scripts/design_craft_l4_case_validate.py \
   --case-dir evals/product-ui-taste/before-after/generic-review-workbench-local-l4 \
+  --strict >/dev/null
+python3 scripts/design_craft_l4_case_validate.py \
+  --case-dir evals/product-ui-taste/before-after/ops-dashboard-decision-surface-l4 \
   --strict >/dev/null
 if python3 scripts/design_craft_l4_case_validate.py \
   --case-dir evals/fixtures/l4-cases/generic-invalid \
@@ -435,6 +448,8 @@ score_paths = [
     Path("evals/product-ui-taste/material-ops-home/score.json"),
     Path("evals/product-ui-taste/before-after/generic-review-workbench-local-l4/score.before.json"),
     Path("evals/product-ui-taste/before-after/generic-review-workbench-local-l4/score.after.json"),
+    Path("evals/product-ui-taste/before-after/ops-dashboard-decision-surface-l4/score.before.json"),
+    Path("evals/product-ui-taste/before-after/ops-dashboard-decision-surface-l4/score.after.json"),
 ]
 score_paths = [path for path in score_paths if path.is_file()]
 if not score_paths:
@@ -507,6 +522,8 @@ score_json_paths=(
   evals/product-ui-taste/material-ops-home/score.json
   evals/product-ui-taste/before-after/generic-review-workbench-local-l4/score.before.json
   evals/product-ui-taste/before-after/generic-review-workbench-local-l4/score.after.json
+  evals/product-ui-taste/before-after/ops-dashboard-decision-surface-l4/score.before.json
+  evals/product-ui-taste/before-after/ops-dashboard-decision-surface-l4/score.after.json
 )
 for score_json in "${score_json_paths[@]}"; do
   if [[ -e "${score_json}" ]]; then

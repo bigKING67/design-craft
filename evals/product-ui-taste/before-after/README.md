@@ -40,10 +40,20 @@ remain for provenance, but current README examples, validation gates, and score
 checks should point at generic fixtures unless a user explicitly scopes a new
 project case.
 
-Completed generic fixture example:
+Completed project-neutral fixture examples:
 
 ```bash
 python3 scripts/design_craft_l4_case_validate.py \
   --case-dir evals/product-ui-taste/before-after/generic-review-workbench-local-l4 \
   --strict
+
+python3 scripts/design_craft_l4_case_validate.py \
+  --case-dir evals/product-ui-taste/before-after/ops-dashboard-decision-surface-l4 \
+  --strict
 ```
+
+- `generic-review-workbench-local-l4`: generic review workbench layout polish
+  with local fixture screenshots and responsive metadata.
+- `ops-dashboard-decision-surface-l4`: dashboard card-soup to decision-surface
+  move, using a local operations dashboard fixture with before/after viewport
+  evidence.

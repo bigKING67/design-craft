@@ -53,6 +53,8 @@ def active_product_ui_score_paths(root: Path) -> list[Path]:
         "evals/product-ui-taste/material-ops-home/score.json",
         "evals/product-ui-taste/before-after/generic-review-workbench-local-l4/score.before.json",
         "evals/product-ui-taste/before-after/generic-review-workbench-local-l4/score.after.json",
+        "evals/product-ui-taste/before-after/ops-dashboard-decision-surface-l4/score.before.json",
+        "evals/product-ui-taste/before-after/ops-dashboard-decision-surface-l4/score.after.json",
     ]
     return [root / rel_path for rel_path in rel_paths if (root / rel_path).is_file()]
 
@@ -91,12 +93,19 @@ def has_product_ui_l3_case(root: Path) -> bool:
 
 
 def has_product_ui_l4_before_after_case(root: Path) -> bool:
-    case_dir = root / "evals/product-ui-taste/before-after/generic-review-workbench-local-l4"
-    return (
-        (case_dir / "screenshots.json").is_file()
-        and (case_dir / "score.before.json").is_file()
-        and (case_dir / "score.after.json").is_file()
-    )
+    case_ids = [
+        "generic-review-workbench-local-l4",
+        "ops-dashboard-decision-surface-l4",
+    ]
+    for case_id in case_ids:
+        case_dir = root / "evals/product-ui-taste/before-after" / case_id
+        if not (
+            (case_dir / "screenshots.json").is_file()
+            and (case_dir / "score.before.json").is_file()
+            and (case_dir / "score.after.json").is_file()
+        ):
+            return False
+    return True
 
 
 def infer_root(target: Path) -> Path:
@@ -343,7 +352,7 @@ def build_score(root: Path, run_smoke: bool) -> list[Dimension]:
                 (has_product_ui_l2_case(root), "product UI taste L2 browser case exists", "Add at least one product UI taste case with browser screenshot and DOM/style evidence."),
                 (has_product_ui_l3_case(root), "product UI taste L3 resilient case exists", "Add at least one product UI taste case with responsive and state evidence."),
                 (has(root, "evals/product-ui-taste/before-after/README.md"), "L4 before/after eval scaffold exists", "Add L4 before/after eval scaffold."),
-                (has_product_ui_l4_before_after_case(root), "product UI taste L4 before/after case exists", "Add a completed L4 before/after product UI case."),
+                (has_product_ui_l4_before_after_case(root), "project-neutral product UI taste L4 before/after cases exist", "Add completed project-neutral L4 before/after product UI cases."),
                 (has(root, "evals/cross-agent/README.md"), "cross-agent benchmark scaffold exists", "Add cross-agent benchmark scaffold."),
                 (has(root, "scripts/design_craft_cross_agent_validate.py"), "cross-agent benchmark validator exists", "Add a validator for cross-agent benchmark task definitions."),
                 (has(root, "evals/fixtures/css-smells/card-soup.css"), "static scanner fixture exists", "Add scanner fixtures."),

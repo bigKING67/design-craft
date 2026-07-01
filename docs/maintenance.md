@@ -225,6 +225,15 @@ A completed L4 case must include:
 - Validation commands and observed results.
 - Explicit unverified states.
 
+Active project-neutral completed cases:
+
+- `generic-review-workbench-local-l4`
+- `ops-dashboard-decision-surface-l4`
+
+Validate them with `scripts/design_craft_l4_case_validate.py --strict` before
+citing either as completed before/after evidence. Use `--require-existing-files`
+only on the machine that still has the repo-external PNG artifacts.
+
 ## Cross-agent benchmarks
 
 Use `evals/cross-agent/` to compare how Codex, Cursor, Claude, Pi, or another
@@ -264,7 +273,8 @@ Before committing a release:
 3. Route smoke on the fixture (`make route-smoke`) or on at least one real
    project path with its own `DESIGN.md` when route behavior changed.
 4. Upstream absorption report reviewed when upstream commits or detector rules changed.
-5. Product UI taste calibration still passes when taste scoring changed.
+5. Product UI taste calibration and completed L4 case validation still pass
+   when taste scoring changed.
 6. Install parity check:
    `diff -qr skills/design-craft "${DESIGN_CRAFT_SKILL_ROOT:-$HOME/.agents/skills}/design-craft"`
 7. Legacy alias check:
