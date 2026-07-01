@@ -78,6 +78,25 @@ diff -qr skills/design-craft "${DESIGN_CRAFT_SKILL_ROOT:-$HOME/.agents/skills}/d
 `skills/frontend-craft` is a legacy compatibility alias only. New route and
 preflight defaults should use `design-craft`.
 
+## Install as a Pi package
+
+For Pi, prefer package installation over copying into `~/.pi/agent/skills`:
+
+```bash
+pi install git:github.com/bigKING67/design-craft@<tag-or-commit>
+```
+
+For local development, use the checkout path:
+
+```bash
+pi install /Users/gaoqian/Documents/sixseven/codeproject/design-craft
+```
+
+The `package.json` `pi.skills` manifest exposes both `skills/design-craft` and
+the legacy `skills/frontend-craft` alias. This keeps `pi-67` as the Pi
+configuration repo while `design-craft` remains the single source for these
+skills.
+
 ## Agent adapters
 
 Install the same canonical skill into a host-specific location:

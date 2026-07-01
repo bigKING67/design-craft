@@ -1,0 +1,29 @@
+{
+  "name": "design-craft",
+  "version": "0.2.1",
+  "description": "Portable agent skill package for product UI, UX, frontend design quality, visual taste, motion, and design engineering workflows.",
+  "license": "MIT",
+  "keywords": [
+    "pi-package",
+    "agent-skill",
+    "design",
+    "frontend",
+    "ui",
+    "ux",
+    "motion"
+  ],
+  "homepage": "https://github.com/bigKING67/design-craft#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bigKING67/design-craft.git"
+  },
+  "pi": {
+    "skills": [
+      "skills/design-craft",
+      "skills/frontend-craft"
+    ]
+  },
+  "scripts": {
+    "validate": "bash scripts/validate.sh"
+  }
+}

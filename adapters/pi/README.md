@@ -5,7 +5,36 @@ Use the canonical Agent Skill at `skills/design-craft/`.
 Pi installations may load skills from project or user skill directories. This
 adapter keeps `design-craft` portable while avoiding a Pi-only fork.
 
-## User-level install
+## Recommended Pi package install
+
+For Pi, prefer installing this repository as a package instead of copying the
+skill into `~/.pi/agent/skills`. This keeps `~/.pi/agent` free to be an
+in-place `pi-67` checkout while this repository remains the single source for
+`design-craft`.
+
+```bash
+pi install git:github.com/bigKING67/design-craft@<tag-or-commit>
+```
+
+During active local development, install the local checkout as the package
+source:
+
+```bash
+pi install /Users/gaoqian/Documents/sixseven/codeproject/design-craft
+```
+
+The package manifest exposes:
+
+```text
+skills/design-craft
+skills/frontend-craft
+```
+
+## Direct user-level copy install
+
+Use this only when you intentionally want to copy the skill into a host-specific
+skill root. If `~/.pi/agent` is itself a Git checkout, this can dirty that
+checkout and is not the recommended Pi path.
 
 ```bash
 bash scripts/design_craft_init_agent.sh \

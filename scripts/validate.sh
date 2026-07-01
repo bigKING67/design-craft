@@ -21,6 +21,7 @@ required_files=(
   "README.md"
   "CHANGELOG.md"
   "VERSION"
+  "package.json"
   "Makefile"
   ".gitmodules"
   "docs/maintenance.md"
@@ -187,6 +188,28 @@ if ! grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+$' VERSION; then
   echo "VERSION must contain a semantic version such as 0.1.0" >&2
   exit 1
 fi
+
+node <<'NODE'
+const fs = require("fs");
+const pkg = JSON.parse(fs.readFileSync("package.json", "utf8"));
+const version = fs.readFileSync("VERSION", "utf8").trim();
+if (pkg.version !== version) {
+  throw new Error(`package.json version (${pkg.version}) must match VERSION (${version})`);
+}
+if (!Array.isArray(pkg.keywords) || !pkg.keywords.includes("pi-package")) {
+  throw new Error("package.json keywords must include pi-package");
+}
+const expectedSkills = ["skills/design-craft", "skills/frontend-craft"];
+const actualSkills = pkg.pi && Array.isArray(pkg.pi.skills) ? pkg.pi.skills : [];
+for (const skill of expectedSkills) {
+  if (!actualSkills.includes(skill)) {
+    throw new Error(`package.json pi.skills must include ${skill}`);
+  }
+  if (!fs.existsSync(`${skill}/SKILL.md`)) {
+    throw new Error(`missing package skill entrypoint: ${skill}/SKILL.md`);
+  }
+}
+NODE
 
 if ! grep -q "make release-gate" README.md; then
   echo "README.md must document make release-gate" >&2
