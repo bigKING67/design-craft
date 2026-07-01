@@ -88,7 +88,16 @@ Default flow:
 ## Screenshot evidence
 
 Use screenshot evidence when route output sets `browser_screenshot_required` or
-when the visual decision depends on actual rendered style.
+when the visual decision depends on actual rendered style. Do not request
+screenshots for every frontend change. Follow the route screenshot policy:
+
+- `screenshot_evidence_level=none`: no screenshot artifact required, typical
+  for micro copy, font, spacing, or color tweaks.
+- `screenshot_evidence_level=optional`: capture only if rendered ambiguity,
+  visual regression risk, or state coverage remains after code/browser checks.
+- `screenshot_evidence_level=required`: produce screenshot artifact evidence,
+  typical for section/page layout, redesign, new page, reference fidelity,
+  responsive, state-heavy, mobile, or high-motion work.
 
 Preferred flow with TMWD:
 
