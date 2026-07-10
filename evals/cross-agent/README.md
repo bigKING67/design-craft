@@ -25,13 +25,17 @@ The validator checks active `same-prompt-*` task directories, not `_template/`.
 
 Observed benchmark outputs are intentionally host-specific. A host only counts
 as verified after it runs the same prompt and records an output plus score JSON.
-For the `0.3.0` dashboard benchmark, Codex and Pi are verified; Cursor and
-Claude are explicitly unverified because their runnable benchmark outputs were
-not collected in this release.
+For `0.4.0`, Codex and Pi are observed for the dashboard, gesture-motion, and
+native-adaptive benchmarks. Cursor and Claude remain explicitly unverified
+because runnable outputs were not collected in this release.
 
-Validate the recorded dashboard run with:
+Validate the recorded runs with:
 
 ```bash
 python3 scripts/design_craft_cross_agent_validate.py \
   --observed-task evals/cross-agent/same-prompt-dashboard-review
+python3 scripts/design_craft_cross_agent_validate.py \
+  --observed-task evals/cross-agent/same-prompt-motion-review
+python3 scripts/design_craft_cross_agent_validate.py \
+  --observed-task evals/cross-agent/same-prompt-native-adaptive-review
 ```

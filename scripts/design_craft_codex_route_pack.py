@@ -40,6 +40,7 @@ ROUTE_PACK_FILES = [
     PackFile("rules/frontend.md", True, "frontend-rule"),
     PackFile("agents/worker.toml", True, "frontend-agent"),
     PackFile("tools/frontend_route_plan.sh", True, "route-planner"),
+    PackFile("tools/frontend_platform_detect.py", True, "platform-detector"),
     PackFile("tools/frontend_agent_routing.json", True, "route-config"),
     PackFile("tools/frontend_worker_entry.sh", True, "worker-gate"),
     PackFile("tools/frontend_preflight_spec.json", True, "preflight-config"),
@@ -185,6 +186,7 @@ def semantic_validation(source_root: Path) -> dict:
     warnings: list[str] = []
     routing_path = source_root / "tools/frontend_agent_routing.json"
     route_plan_path = source_root / "tools/frontend_route_plan.sh"
+    platform_detect_path = source_root / "tools/frontend_platform_detect.py"
     worker_entry_path = source_root / "tools/frontend_worker_entry.sh"
     worker_agent_path = source_root / "agents/worker.toml"
     config_path = source_root / "config.toml"
@@ -222,6 +224,14 @@ def semantic_validation(source_root: Path) -> dict:
                 issues.append("delegation requires exactly the documented minimum of two independent subtasks")
             if delegation.get("fallback_when_unavailable") != "continue_main_and_report":
                 issues.append("delegation fallback must continue with the main agent")
+        platform_validation = routing.get("quality_governance", {}).get("platform_validation")
+        if not isinstance(platform_validation, dict):
+            issues.append("frontend_agent_routing.json missing quality_governance.platform_validation")
+        else:
+            if platform_validation.get("surface_mobile_is_native_signal") is not False:
+                issues.append("surface=mobile must not be a native platform signal")
+            if platform_validation.get("static_scan_is_runtime_proof") is not False:
+                issues.append("static native scans must not be runtime proof")
         reasoning = routing.get("reasoning_overrides")
         required_reasoning = {"inherit", "low", "medium", "high", "xhigh", "max", "ultra"}
         if not isinstance(reasoning, dict) or not required_reasoning.issubset(reasoning):
@@ -262,12 +272,41 @@ def semantic_validation(source_root: Path) -> dict:
         if explicit_reasoning_vocabulary + "|ultra" in text:
             issues.append(f"{path.name} incorrectly exposes ultra as an explicit frontend override")
         required_fragments = {
-            "frontend_route_plan.sh": ["quality_governance", "delegation_contract", "--orchestration"],
-            "frontend_worker_entry.sh": ["reasoning_targets", "delegation_policies", "runtime_remediation_policies"],
+            "frontend_route_plan.sh": [
+                "quality_governance",
+                "delegation_contract",
+                "--orchestration",
+                "--platform",
+                "--product-context-path",
+                '"design_tier": tier',
+                '"runtime_validation_kind"',
+                '"native_validation_required"',
+            ],
+            "frontend_worker_entry.sh": [
+                "reasoning_targets",
+                "delegation_policies",
+                "runtime_remediation_policies",
+                "--platform",
+                "runtime_validation_kinds",
+                '"design_tier": frontend_tier',
+            ],
         }.get(path.name, [])
         for fragment in required_fragments:
             if fragment not in text:
                 issues.append(f"{path.name} missing V2 routing fragment: {fragment}")
+
+    try:
+        platform_text = platform_detect_path.read_text(encoding="utf-8")
+        for fragment in (
+            "design-craft.platform-scan.v1",
+            "React Native/Expo dependency",
+            "Capacitor/Cordova/WebView shell",
+            "product_context",
+        ):
+            if fragment not in platform_text:
+                issues.append(f"frontend_platform_detect.py missing platform fragment: {fragment}")
+    except OSError as exc:
+        issues.append(f"failed to read frontend_platform_detect.py: {exc}")
 
     try:
         worker = load_toml(worker_agent_path)

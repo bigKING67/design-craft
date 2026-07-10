@@ -1,15 +1,15 @@
 # design-craft
 
-Personal design engineering, product UI, UX, visual taste, motion, and frontend
-quality workflow for Codex.
+Portable product design engineering, UI/UX, visual taste, motion, and
+implementation-quality workflow across web, iOS, Android, and adaptive products.
 
 `design-craft` is the canonical local fusion layer for high-quality product
 experience work on this machine. It supersedes the former `frontend-craft`
-name because the workflow now covers more than frontend code: UI/UX judgment,
-design-system contracts, motion craft, product taste, implementation quality,
-browser evidence, and long-term project structure. It keeps the existing Codex
-route planner, project `DESIGN.md`, and browser-validation workflow as the
-source of truth, then folds in:
+name because the workflow now covers more than frontend code: product context,
+UI/UX judgment, design-system contracts, motion craft, product taste, native
+platform fit, implementation quality, runtime evidence, and long-term project
+structure. It keeps scoped project rules, optional `PRODUCT.md`, project
+`DESIGN.md`, and live runtime evidence above generic guidance, then folds in:
 
 - anti-slop visual judgment, brief inference, and aesthetic pressure absorbed
   into `design-craft`.
@@ -20,6 +20,8 @@ source of truth, then folds in:
 - Emil Kowalski-style motion purpose, frequency, timing/easing, physicality,
   interruptibility, gesture, performance, reduced-motion, and animation
   vocabulary checks.
+- iOS HIG/native-trust, Android Material 3/predictive Back/inset, and adaptive
+  shared-versus-platform-specific implementation checks.
 - Bundled Vercel Geist `design.md` / `design.dark.md` seed templates for new or
   weakly specified developer-product surfaces.
 - Project quality gates for architecture, performance, code elegance, validation,
@@ -30,9 +32,11 @@ reports, and similar business surfaces, scoped project rules, live
 runtime behavior, and project `DESIGN.md` always outrank generic visual rules.
 The canonical package is still portable: agent-specific integration belongs in
 `adapters/`, while `skills/design-craft/` remains the single source skill.
-Release `0.3.0` adds portable/local validation split, cross-agent adapter
-evidence, static UI smell scanners, concrete design moves, and L4 before/after
-eval support without treating fixture evidence as product proof.
+Release `0.4.0` adds `web | ios | android | adaptive` routing, optional
+`PRODUCT.md`, portable bundled runtimes, native/adaptive static fixtures,
+interaction-physics guidance, CI, and separate 100-point source-completeness
+versus operational-maturity scoring. Local maturity is intentionally capped at
+95 until iOS Simulator, Android Emulator, and real-device evidence exist.
 
 ## Layout
 
@@ -41,6 +45,7 @@ design-craft/
 ├── skills/design-craft/        # Installable Codex skill
 ├── adapters/                     # Thin Codex/Cursor/Claude/Pi/generic install adapters
 ├── scripts/                      # Deterministic route/pass/detect/score/review tools
+├── .github/workflows/            # Portable validation and scheduled upstream audit
 ├── evals/                        # Forward-test and live-task evidence
 │   ├── golden-tasks/             # Reproducible real-task evidence cards
 │   └── product-ui-taste/         # Taste-score calibration cases
@@ -55,9 +60,10 @@ design-craft/
 README, the changelog, and maintenance notes belong at the repository root or in
 `docs/`, not inside the installed skill folder.
 
-This repository is not a UI target. It intentionally does not provide a root
-`DESIGN.md`; target projects must provide their own `DESIGN.md` or pass an
-explicit `--style-authority-path` for L1+ route/preflight checks.
+This repository is not a UI target. It intentionally provides neither a root
+`PRODUCT.md` nor `DESIGN.md`; target projects may add `PRODUCT.md` for
+product/platform context and must provide `DESIGN.md` or an explicit
+`--style-authority-path` for L1+ visual route/preflight checks.
 
 ## Install locally
 
@@ -173,6 +179,31 @@ bash scripts/design_craft_seed_design.sh --target /path/to/project
 The helper refuses to overwrite an existing `DESIGN.md` or `DESIGN.dark.md`
 unless `--force` is explicit.
 
+## Product and platform authority
+
+`PRODUCT.md` is optional and owns product facts:
+
+- register, platform, users, purpose, positioning, and accessibility
+
+`DESIGN.md` remains the only visual authority:
+
+- typography, color, spacing, components, themes, iconography, and motion
+
+Platform resolution is deterministic:
+
+```text
+explicit --platform
+> nearest PRODUCT.md ## Platform
+> codebase detection
+> default web
+```
+
+`surface=mobile` is not a native signal. Capacitor, Cordova, and HTML WebView
+shells remain `web`; React Native/Expo, Flutter, KMP, and repositories with
+real iOS plus Android targets resolve to `adaptive`. Missing `PRODUCT.md`
+does not block existing projects; the route reports inferred source,
+confidence, signals, and contradictions.
+
 ## Validate
 
 Portable gate for a fresh clone or another machine:
@@ -193,10 +224,15 @@ Equivalent direct commands:
 bash scripts/validate.sh --portable
 python3 scripts/design_craft_active_scope_validate.py --root .
 python3 scripts/design_craft_score.py --self
+python3 scripts/design_craft_maturity.py --profile portable --min-score 95
+python3 scripts/design_craft_maturity.py --profile local --min-score 95
 bash scripts/design_craft_pass.sh --target . --mode audit --skip-route
 ```
 
 `make release-gate` remains a compatibility alias for the local full gate.
+The source scorer measures deterministic package completeness and must report
+100/100. The maturity scorer measures operational evidence and reports 95/100
+until observed native runtime evidence removes the explicit cap.
 
 ## Common commands
 
@@ -205,10 +241,25 @@ Route a frontend task through the local Codex route planner:
 ```bash
 bash scripts/design_craft_route.sh \
   --target /path/to/project \
-  --surface dashboard \
+  --surface mobile \
   --intent visual-refine \
-  --scope page
+  --scope page \
+  --platform auto \
+  --product-context-path /path/to/project/PRODUCT.md
 ```
+
+Detect platform or run conservative native/adaptive static checks:
+
+```bash
+python3 scripts/design_craft_platform_scan.py \
+  --target /path/to/project \
+  --platform auto \
+  --mode scan \
+  --json
+```
+
+Static platform findings are review evidence only. They do not prove an iOS
+Simulator, Android Emulator, or real-device run.
 
 Run a critique/audit/polish/harden/optimize/structure/architecture pass:
 
@@ -310,6 +361,9 @@ Current project-neutral completed L4 cases are:
   before/after viewport screenshots and responsive metadata.
 - `ops-dashboard-decision-surface-l4`: a local operations dashboard fixture
   that demonstrates the `Dashboard card soup -> decision surface` design move.
+- `evals/fixtures/l4-pages/gesture-sheet-interaction/`: deterministic
+  direct-manipulation fixture with observed browser trace assertions and a
+  repo-external viewport PNG recorded in `validation.json`.
 
 Historical real-project L4 provenance is retained for local verification:
 
@@ -324,11 +378,16 @@ Run the cross-agent dashboard benchmark validators:
 python3 scripts/design_craft_cross_agent_validate.py --root evals/cross-agent
 python3 scripts/design_craft_cross_agent_validate.py \
   --observed-task evals/cross-agent/same-prompt-dashboard-review
+python3 scripts/design_craft_cross_agent_validate.py \
+  --observed-task evals/cross-agent/same-prompt-motion-review
+python3 scripts/design_craft_cross_agent_validate.py \
+  --observed-task evals/cross-agent/same-prompt-native-adaptive-review
 ```
 
-For `0.3.0`, Codex and Pi have recorded same-prompt outputs. Cursor and Claude
-are explicitly unverified and must not be advertised as stable behavior hosts
-until real outputs are collected.
+For `0.4.0`, Codex and Pi have recorded dashboard, gesture-motion, and
+native-adaptive same-prompt outputs. Cursor and Claude are explicitly
+unverified and must not be advertised as stable behavior hosts until real
+outputs are collected.
 
 Run static UI smell scanners. These are review signals, not a replacement for
 design judgment or browser evidence:
@@ -364,10 +423,12 @@ Check remote drift without mutating submodules:
 python3 scripts/upstream_absorption_report.py --remote
 ```
 
-Score this workflow itself:
+Score source completeness and operational maturity separately:
 
 ```bash
 python3 scripts/design_craft_score.py --self --json
+python3 scripts/design_craft_maturity.py --profile portable --min-score 95 --json
+python3 scripts/design_craft_maturity.py --profile local --min-score 95 --json
 ```
 
 ## Upstream policy
@@ -390,13 +451,17 @@ or legacy route sources.
 Refresh upstreams with:
 
 ```bash
-bash scripts/sync_upstreams.sh
+bash scripts/sync_upstreams.sh \
+  --name emilkowalski-skills \
+  --commit <reviewed-40-character-sha>
 ```
 
-Before absorbing upstream changes, run:
+The sync helper advances one explicit submodule and only the compatibility
+`commit` field. It never advances `reviewed_commit`, `absorbed_commit`, or
+the decision metadata. Before absorbing upstream changes, run:
 
 ```bash
-python3 scripts/upstream_absorption_report.py --remote
+python3 scripts/upstream_absorption_report.py --remote --fail-on-unreviewed
 ```
 
 ## Local release gate
@@ -410,11 +475,12 @@ make release-gate-local
 
 `make release-gate` remains a compatibility alias for `make release-gate-local`.
 The gate split is documented in `docs/maintenance.md`. The portable gate checks
-package shape, syntax, validators, static scanners, and project-neutral L4
-fixtures without local Codex or install-state assumptions. The local gate adds
-skill quick validation, Codex route-pack checks, observed cross-agent evidence,
-historical real-project L4 provenance, upstream remote drift, and local install
-parity.
+package shape, syntax, bundled runtime independence, platform fixtures,
+validators, static scanners, project-neutral L4 fixtures, source completeness,
+and portable maturity without local Codex or install-state assumptions. The
+local gate adds skill quick validation, Codex route-pack checks, observed
+cross-agent evidence, historical real-project L4 provenance, reviewed upstream
+remote parity, installed-skill parity, and local maturity.
 
 Route smoke uses a temporary fixture project with its own `DESIGN.md`, because
 `design-craft` itself is a reusable skill system rather than a product UI target:

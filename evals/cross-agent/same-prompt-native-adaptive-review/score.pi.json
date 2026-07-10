@@ -1,0 +1,43 @@
+{
+  "schema": "design-craft.cross-agent-score.v1",
+  "task_id": "same-prompt-native-adaptive-review",
+  "agent": "pi",
+  "verified": true,
+  "agent_version": "pi 0.80.3",
+  "date": "2026-07-10",
+  "prompt_sha256": "56a6cf59d4a5e5e98280481ec5d04b5207714eb69f0fdafcba06c7bedbbdfc4c",
+  "skill_path": "/Users/gaoqian/Documents/sixseven/codeproject/design-craft/skills/design-craft",
+  "command_summary": "pi non-interactive run with no tools and the source design-craft skill explicitly loaded",
+  "output_path": "pi-output.md",
+  "score": 84,
+  "criteria": {
+    "style_authority": {
+      "passed": true,
+      "note": "Recognized adaptive platform intent and semantic DESIGN.md roles."
+    },
+    "reference_selection": {
+      "passed": true,
+      "note": "Covered iOS, Android, accessibility, adaptivity, theming, and motion concerns."
+    },
+    "anti_generic_redesign": {
+      "passed": true,
+      "note": "Focused on platform conformance and did not apply a decorative mobile redesign."
+    },
+    "evidence_level": {
+      "passed": true,
+      "note": "Called out missing source, build, simulator, emulator, and device evidence."
+    },
+    "verified_boundary": {
+      "passed": false,
+      "note": "Mostly careful, but some prompt-given facts were inconsistently described as wholly unverified."
+    },
+    "design_moves": {
+      "passed": true,
+      "note": "Provided platform navigation, type, controls, token, motion, and adaptive layout moves with a parity matrix."
+    },
+    "scope_control": {
+      "passed": true,
+      "note": "Stayed within native UI quality and runtime validation scope."
+    }
+  }
+}

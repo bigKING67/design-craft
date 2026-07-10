@@ -4,6 +4,9 @@ Use this when a task touches animation, transitions, hover/press feedback,
 toasts, popovers, drawers, gestures, page transitions, perceived performance, or
 when the user says motion feels weird, slow, flashy, dizzy, or janky.
 
+For direct manipulation, drag/swipe, interruptible sheets, momentum, or
+rubber-banding, also read `interaction-physics.md`.
+
 This is a local `design-craft` fusion of Emil Kowalski-style design engineering
 motion rules with the existing project-authority workflow. It is not a universal
 animation aesthetic. Live runtime behavior, scoped project rules, product
@@ -81,23 +84,31 @@ more bounce.
 
 Rapidly-triggered UI should retarget smoothly.
 
-- Prefer CSS transitions for dynamic add/remove/toggle UI; transitions can
-  interrupt and retarget.
+- Prefer CSS transitions for dynamic add/remove/toggle UI that users do not
+  physically grab; transitions can retarget simple visual state.
 - Avoid keyframes for toasts, toggles, and anything users can trigger rapidly;
   keyframes tend to restart from zero.
-- Use springs for drag, velocity, gesture reversal, and "alive" decorative
-  motion.
+- Use springs or equivalent native interactive animation for drag, velocity,
+  gesture reversal, and any object that can be grabbed mid-flight.
+- Start an interrupted interaction from the presentation/on-screen value and
+  preserve current velocity. Never jump from the previous logical target.
 - Keep bounce subtle (`0.1-0.3`) and avoid it in serious, data-dense surfaces.
 - Use `@starting-style` for entry animation when browser support allows; use a
   mounted/data attribute fallback only when needed.
 
 ## Gesture craft
 
+- Respond on pointer/touch down and track continuously after the intent
+  threshold.
+- Preserve the grab offset so the object does not snap under the finger.
 - Dismiss by velocity as well as distance; a quick flick should count.
+- Choose snap targets from a projected endpoint, not only the release point.
 - Apply damping or friction beyond natural boundaries instead of hard stops.
 - Capture pointer events once a drag starts.
 - Ignore additional touch points after the initial drag begins.
 - Test gesture motion on a real device when the result depends on touch feel.
+- Treat `8-12px`/pt/dp as a starting hysteresis range, not a universal magic
+  number; tune with the platform and target size.
 
 ## Performance
 
@@ -123,6 +134,8 @@ Rapidly-triggered UI should retarget smoothly.
 - Gate hover motion with `@media (hover: hover) and (pointer: fine)` so touch
   devices do not get sticky hover behavior.
 - Keep focus-visible states clear even when hover/press motion is reduced.
+- On iOS/Android, read the system Reduce Motion/Remove animations setting;
+  Reduced Transparency and increased contrast remain separate requirements.
 
 ## Review format
 

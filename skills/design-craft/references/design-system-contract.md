@@ -4,6 +4,10 @@ Use this when a project has a `DESIGN.md`, design tokens, theme files,
 CSS variables, Tailwind theme values, reusable UI components, light/dark mode,
 or when the task changes visual foundations rather than one isolated style.
 
+If the project also has `PRODUCT.md`, keep its product/platform/user facts
+separate. `DESIGN.md` remains the visual authority; see
+`product-context.md` for the boundary.
+
 This reference is about system discipline, not a specific aesthetic. It should
 help preserve the product's own visual language instead of making every project
 look like one upstream design system.
@@ -28,8 +32,9 @@ overwrite existing `DESIGN.md` or `DESIGN.dark.md` unless `--force` is explicit.
 
 ## Authority
 
-- Live runtime behavior, scoped project rules, and the project `DESIGN.md`
-  outrank this reference.
+- Live runtime behavior and scoped project rules outrank this reference.
+- `PRODUCT.md` governs product intent, platform, users, positioning, and
+  accessibility requirements. `DESIGN.md` governs visual/tokens/components.
 - Implemented tokens and shared components are evidence. If docs and code
   conflict, verify the current runtime before deciding whether docs are stale.
 - Do not create a parallel style authority. Evolve the existing one when the
@@ -43,7 +48,8 @@ overwrite existing `DESIGN.md` or `DESIGN.dark.md` unless `--force` is explicit.
 
 ## Recommended DESIGN.md shape
 
-A strong `DESIGN.md` is both machine-readable and readable by agents:
+A strong `DESIGN.md` is both machine-readable and readable by agents. It does
+not need to repeat the `PRODUCT.md` audience, purpose, or platform contract:
 
 - Front matter or a structured block for tokens:
   - colors
@@ -53,6 +59,8 @@ A strong `DESIGN.md` is both machine-readable and readable by agents:
   - elevation
   - motion
   - component variants
+- Platform-specific token mappings when native platforms intentionally resolve
+  one semantic role differently, such as system materials or elevation.
 - Markdown rationale for:
   - product feel and audience
   - color semantics
@@ -63,9 +71,11 @@ A strong `DESIGN.md` is both machine-readable and readable by agents:
   - voice and content rules
   - do and don't rules
 
-Light and dark themes should use identical token names with different values.
-Components should consume semantic tokens, not branch on theme-specific literal
-colors.
+Light and dark themes should use identical semantic token names with different
+values. Components should consume semantic tokens, not branch on
+theme-specific literal colors. Native implementations may map a shared
+semantic role to iOS system colors/materials or Material color/elevation roles;
+shared names do not require identical platform values.
 
 ## Token layers
 
@@ -141,6 +151,11 @@ typography, icon spacing, and state transitions. Do not leave keyboard focus as
 an afterthought; every interactive element needs a visible `:focus-visible`
 state.
 
+For native components, replace web-only hover/focus language with the actual
+platform state contract: pressed, selected, disabled, loading, invalid,
+VoiceOver/TalkBack value, keyboard/D-pad focus where supported, Dynamic
+Type/font-scale resilience, and minimum `44pt` iOS / `48dp` Android targets.
+
 ## Motion
 
 Motion should clarify state, hierarchy, or causality.
@@ -150,6 +165,8 @@ Motion should clarify state, hierarchy, or causality.
 - Animate transform and opacity before layout properties.
 - Avoid blanket `transition-all` on large surfaces or hot paths.
 - Honor `prefers-reduced-motion` for nonessential motion.
+- On native platforms honor Reduce Motion / Remove animations through the
+  platform accessibility setting and use platform-consistent transitions.
 - Do not hide content until JavaScript-triggered reveal effects run.
 
 ## Voice and content
@@ -179,3 +196,5 @@ When the task touches design-system concerns, check:
   relevant?
 - Does UI copy follow the project voice and avoid generic placeholders?
 - Did the change improve the system rather than create a one-off exception?
+- Did shared semantic roles preserve platform-correct iOS/Android behavior
+  rather than force identical pixels?

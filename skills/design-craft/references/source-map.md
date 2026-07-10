@@ -15,6 +15,10 @@ upstream files directly.
   `06d6028b5c623016c59ce8536f578e5a1127b499`
 - Initial commit note:
   `2026-06-21T00:54:21+02:00 docs(readme): remove sponsor table and tighten logo-to-text spacing`
+- Current reviewed commit:
+  `b17742737e796305d829b3ad39eda3add0d79060`
+- 2026-07-10 decision: `provenance_only`; the reviewed range changes README
+  sponsorship and image assets, with no behavior imported into design-craft.
 - Primary material to inspect:
   - `skills/taste-skill/SKILL.md`
   - `skills/redesign-skill/SKILL.md`
@@ -37,13 +41,18 @@ preflight thinking.
 - Initial commit note:
   `2026-06-22T16:01:16-07:00 Make Copilot built-in note a callout block under the Install header`
 - Current absorbed commit:
-  `c979ac37c361da564dcce100a4f2623d94ef54c8`
+  `da99645a58400ed7acb201e6904f9413efd89c6e`
 - 2026-06-30 absorption note:
   remote updates were reviewed and selectively absorbed for critique method
   provenance, explicit degraded/single-context reporting, `.impeccable`
   ephemeral artifact guidance, harness/subagent capability caveats, and install
   symlink hardening provenance. Dependency bumps and generated provider output
   remain upstream provenance only.
+- 2026-07-10 absorption note:
+  selectively absorbed platform routing, native audit/adapt guidance, iOS and
+  Android quality rules, mechanical pre-scan discipline, and detector/design
+  system corrections. Generated provider bundles, site output, dependencies,
+  and store packaging remain provenance only.
 - Primary material to inspect:
   - `.agents/skills/impeccable/SKILL.md`
   - `site/content/skills/*.md`
@@ -64,6 +73,13 @@ production-readiness flows.
   `a47903a06a05d2e24c483bd8961c85969a51a494`
 - Initial commit note:
   `2026-06-29T15:30:16+02:00 Update README.md`
+- Current absorbed commit:
+  `f76beceb7d3fc8c43309cefad5a095a206103a4e`
+- 2026-07-10 decision: `absorbed`; original design-craft references now cover
+  product-design principles, Apple-style direct manipulation,
+  presentation-value interruption, spring response/damping, velocity handoff,
+  momentum projection, rubber-banding, accessibility variants, and optical
+  typography.
 - Primary material to inspect:
   - `skills/emil-design-eng/SKILL.md`
   - `skills/review-animations/SKILL.md`
@@ -108,6 +124,18 @@ Geist templates as a comparison baseline for missing system pieces.
 
 ## Local calibration artifacts
 
+- `references/product-context.md`: original PRODUCT.md/DESIGN.md authority
+  separation and platform-resolution contract.
+- `references/product-design-principles.md`: curated product-correctness,
+  agency, familiarity, feedback, simplicity, and craft principles.
+- `references/interaction-physics.md`: curated direct-manipulation,
+  interruption, spring, velocity, projection, hysteresis, and rubber-band
+  contract.
+- `references/ios-quality.md`, `references/android-quality.md`, and
+  `references/adaptive-quality.md`: original platform-specific audit and
+  evidence boundaries built from the reviewed upstream principles.
+- `scripts/design_craft_platform_scan.py`: conservative platform inference and
+  native/adaptive static scan wrapper; static results are not runtime proof.
 - `references/product-ui-taste-review.md`: product UI taste rubric, output
   contract, page-type checks, and acceptance criteria.
 - `references/taste-score-calibration.md`: evidence levels, score bands, and
@@ -149,8 +177,11 @@ When updating upstreams:
 
 1. Run `scripts/upstream_absorption_report.py --remote` when you need to know
    whether a remote head changed without mutating submodules.
-2. Run `scripts/sync_upstreams.sh` only after deciding to absorb the remote head.
-3. Run `scripts/upstream_absorption_report.py` to classify changed files as
+2. Run `scripts/sync_upstreams.sh --name <name> --commit <40-char-sha>` only
+   after selecting an explicit commit; the helper never advances review or
+   absorption metadata automatically.
+3. Run `scripts/upstream_absorption_report.py --remote --fail-on-unreviewed`
+   to block unreviewed remote drift, then run the local report to classify files as
    `candidate_absorb`, `provenance_only`, or `manual_review` without fetching or
    editing submodules.
 4. Inspect upstream changelogs and key skill/command files.

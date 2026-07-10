@@ -4,19 +4,34 @@
       "repo": "https://github.com/Leonxlnx/taste-skill.git",
       "path": "upstreams/taste-skill",
       "license": "MIT",
-      "commit": "06d6028b5c623016c59ce8536f578e5a1127b499"
+      "commit": "b17742737e796305d829b3ad39eda3add0d79060",
+      "reviewed_commit": "b17742737e796305d829b3ad39eda3add0d79060",
+      "absorbed_commit": "b17742737e796305d829b3ad39eda3add0d79060",
+      "reviewed_at": "2026-07-10",
+      "decision": "provenance_only",
+      "notes": "The reviewed range changes README sponsorship and image assets only; no design-craft behavior was imported."
     },
     "impeccable": {
       "repo": "https://github.com/pbakaus/impeccable.git",
       "path": "upstreams/impeccable",
       "license": "Apache-2.0",
-      "commit": "c979ac37c361da564dcce100a4f2623d94ef54c8"
+      "commit": "da99645a58400ed7acb201e6904f9413efd89c6e",
+      "reviewed_commit": "da99645a58400ed7acb201e6904f9413efd89c6e",
+      "absorbed_commit": "da99645a58400ed7acb201e6904f9413efd89c6e",
+      "reviewed_at": "2026-07-10",
+      "decision": "partial",
+      "notes": "Selectively absorbed platform routing, native audit/adapt guidance, iOS and Android quality rules, mechanical pre-scan discipline, and detector/design-system fixes; generated provider bundles, site output, dependencies, and store packaging remain provenance only."
     },
     "emilkowalski-skills": {
       "repo": "https://github.com/emilkowalski/skills.git",
       "path": "upstreams/emilkowalski-skills",
       "license": "MIT",
-      "commit": "a47903a06a05d2e24c483bd8961c85969a51a494"
+      "commit": "f76beceb7d3fc8c43309cefad5a095a206103a4e",
+      "reviewed_commit": "f76beceb7d3fc8c43309cefad5a095a206103a4e",
+      "absorbed_commit": "f76beceb7d3fc8c43309cefad5a095a206103a4e",
+      "reviewed_at": "2026-07-10",
+      "decision": "absorbed",
+      "notes": "Absorbed Apple-style direct manipulation, presentation-value interruption, spring response/damping, velocity handoff, momentum projection, rubber-banding, accessibility variants, optical typography, and product design principles into original design-craft references."
     }
   }
 }

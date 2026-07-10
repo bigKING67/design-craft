@@ -1,0 +1,117 @@
+# Interaction physics
+
+Use this for drag, swipe, sheet, drawer, carousel, scrubber, reordering,
+momentum, rubber-band, interruptible transition, or direct-manipulation work.
+For ordinary hover/color transitions, `motion-quality.md` is sufficient.
+
+## Direct response
+
+- Show press feedback on pointer/touch down, not only on click/up.
+- Keep manipulated content attached 1:1 to the pointer after the gesture passes
+  a small intent threshold.
+- Preserve the grab offset; never jump the object center under the finger.
+- Use pointer capture or the native gesture equivalent so tracking continues
+  outside the original bounds.
+- Track a short time/position history so release velocity is measured rather
+  than guessed from one event.
+
+## Presentation-value interruption
+
+Gesture-driven motion must be interruptible:
+
+- never lock input until a transition completes
+- retarget from the current on-screen presentation value, not the previous
+  logical target
+- carry current velocity into the new target instead of restarting at zero
+- decompose independent axes when their velocities differ
+
+CSS transitions are acceptable for simple state changes that do not need to be
+grabbed. A draggable sheet, scrubber, or thrown object needs a spring/animation
+primitive that can read current position and velocity.
+
+## Spring language
+
+Reason in designer-facing parameters:
+
+- **damping ratio**: `1.0` is critically damped with no overshoot; lower values
+  add bounce.
+- **response**: approximate time scale of the spring, not a fixed duration.
+
+Starting points:
+
+| Interaction | Damping | Response |
+| --- | --- | --- |
+| Reposition or settle | `1.0` | `0.4s` |
+| Rotation or momentum response | `0.8` | `0.4s` |
+| Drawer or sheet | `0.8` | `0.3s` |
+
+Default to no bounce. Add subtle overshoot only when the user's gesture carried
+momentum or the product's motion language explicitly calls for it.
+
+## Velocity handoff and projection
+
+The release animation starts at the finger's measured velocity. If an API uses
+relative velocity:
+
+```text
+relativeVelocity = gestureVelocity / (target - current)
+```
+
+Choose a snap target from the projected endpoint, not only the release point:
+
+```text
+projection(v, d) = (v / 1000) * d / (1 - d)
+projectedEndpoint = current + projection(releaseVelocity, 0.998)
+target = nearestSnapPoint(projectedEndpoint)
+```
+
+Use `d` near `0.998` for scroll-like momentum or closer to `0.99` for a
+snappier result. Clamp unsafe projections and keep destructive actions behind a
+clear commitment threshold.
+
+## Soft boundaries and hysteresis
+
+- Require roughly `8-12px`/pt/dp of movement before committing a drag
+  direction so taps remain taps.
+- Use progressive resistance beyond a boundary instead of a hard stop.
+- Allow cancel-by-dragging-away and re-entry for press interactions.
+- Resolve plausible gestures in parallel until intent is clear, then cancel
+  losers without adding an arbitrary delay.
+
+One useful rubber-band function is:
+
+```text
+(overshoot * dimension * constant) /
+(dimension + constant * abs(overshoot))
+```
+
+Start `constant` near `0.55` and tune with real interaction evidence.
+
+## Performance and accessibility
+
+- Drive frame updates with the platform display clock and compositor-friendly
+  properties or native transforms.
+- Keep synchronous work, layout measurement, and allocation out of the gesture
+  hot path.
+- Test on 60 Hz and 120 Hz hardware when interaction feel is release-critical.
+- Reduced Motion removes large travel, parallax, elastic overshoot, and looping
+  motion while preserving causal feedback through short cross-fades, color,
+  scale, or static state change.
+- Reduced Transparency and increased contrast need independent material
+  alternatives; they are not implied by Reduced Motion.
+
+## Verification packet
+
+For a gesture interaction record:
+
+- pointer/touch-down feedback
+- 1:1 tracking and grab-offset preservation
+- interruption without a visual jump
+- release velocity and projected endpoint behavior
+- boundary resistance and cancellation
+- Reduced Motion result
+- runtime tool, device/simulator/browser, refresh rate when known
+- screenshot/video/trace artifact path and hash when captured
+
+Static source checks cannot prove gesture feel. If no suitable runtime is
+available, report the interaction as unverified rather than "correct."

@@ -1,0 +1,43 @@
+{
+  "schema": "design-craft.cross-agent-score.v1",
+  "task_id": "same-prompt-native-adaptive-review",
+  "agent": "codex",
+  "verified": true,
+  "agent_version": "codex-cli 0.144.1",
+  "date": "2026-07-10",
+  "prompt_sha256": "56a6cf59d4a5e5e98280481ec5d04b5207714eb69f0fdafcba06c7bedbbdfc4c",
+  "skill_path": "/Users/gaoqian/Documents/sixseven/codeproject/design-craft/skills/design-craft",
+  "command_summary": "codex exec in a read-only sandbox with the source design-craft skill and output-last-message artifact",
+  "output_path": "codex-output.md",
+  "score": 97,
+  "criteria": {
+    "style_authority": {
+      "passed": true,
+      "note": "Separated PRODUCT.md platform/user/accessibility context from DESIGN.md semantic visual authority."
+    },
+    "reference_selection": {
+      "passed": true,
+      "note": "Applied iOS, Android, adaptive, product, motion, design-system, and validation contracts."
+    },
+    "anti_generic_redesign": {
+      "passed": true,
+      "note": "Focused on native trust, adaptivity, accessibility, and task recovery rather than decoration."
+    },
+    "evidence_level": {
+      "passed": true,
+      "note": "Labeled the review L0 static and did not convert prompt claims into runtime evidence."
+    },
+    "verified_boundary": {
+      "passed": true,
+      "note": "Separated prompt-supported violations from unverified source, build, accessibility tree, and runtime behavior."
+    },
+    "design_moves": {
+      "passed": true,
+      "note": "Provided platform-specific navigation, Back, tokens, type, controls, adaptivity, motion, and a detailed parity matrix."
+    },
+    "scope_control": {
+      "passed": true,
+      "note": "Stayed within adaptive product UI and its source/build/runtime validation boundary."
+    }
+  }
+}

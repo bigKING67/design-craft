@@ -2,63 +2,76 @@
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-cd "${ROOT_DIR}"
+NAME=""
+COMMIT=""
 
-upstreams=(
-  "taste-skill"
-  "impeccable"
-  "emilkowalski-skills"
-)
+usage() {
+  cat <<'EOF'
+Usage:
+  scripts/sync_upstreams.sh --name <taste-skill|impeccable|emilkowalski-skills> --commit <sha>
 
-before_lines=()
-for name in "${upstreams[@]}"; do
-  before_lines+=("${name}:$(git -C "upstreams/${name}" rev-parse HEAD 2>/dev/null || true)")
-done
-
-git submodule update --init --remote \
-  upstreams/taste-skill \
-  upstreams/impeccable \
-  upstreams/emilkowalski-skills
-
-python3 - <<'PY'
-import json
-import subprocess
-from pathlib import Path
-
-upstreams = {
-    "taste-skill": {
-        "repo": "https://github.com/Leonxlnx/taste-skill.git",
-        "path": "upstreams/taste-skill",
-        "license": "MIT",
-    },
-    "impeccable": {
-        "repo": "https://github.com/pbakaus/impeccable.git",
-        "path": "upstreams/impeccable",
-        "license": "Apache-2.0",
-    },
-    "emilkowalski-skills": {
-        "repo": "https://github.com/emilkowalski/skills.git",
-        "path": "upstreams/emilkowalski-skills",
-        "license": "MIT",
-    },
+Fetches and checks out one explicit upstream commit, then updates only the
+compatibility `commit` field in upstreams.lock.json. Review metadata and
+`absorbed_commit` are intentionally never advanced automatically.
+EOF
 }
 
-for meta in upstreams.values():
-    meta["commit"] = subprocess.check_output(
-        ["git", "-C", meta["path"], "rev-parse", "HEAD"],
-        text=True,
-    ).strip()
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --name)
+      NAME="${2:?Missing value for --name}"
+      shift 2
+      ;;
+    --commit)
+      COMMIT="${2:?Missing value for --commit}"
+      shift 2
+      ;;
+    -h|--help)
+      usage
+      exit 0
+      ;;
+    *)
+      echo "Unknown argument: $1" >&2
+      usage >&2
+      exit 2
+      ;;
+  esac
+done
 
-Path("upstreams.lock.json").write_text(
-    json.dumps({"upstreams": upstreams}, indent=2) + "\n",
-    encoding="utf-8",
-)
+case "${NAME}" in
+  taste-skill|impeccable|emilkowalski-skills) ;;
+  *)
+    echo "--name must be taste-skill, impeccable, or emilkowalski-skills" >&2
+    exit 2
+    ;;
+esac
+
+if [[ ! "${COMMIT}" =~ ^[0-9a-fA-F]{40}$ ]]; then
+  echo "--commit must be a full 40-character Git SHA" >&2
+  exit 2
+fi
+
+cd "${ROOT_DIR}"
+path="upstreams/${NAME}"
+before="$(git -C "${path}" rev-parse HEAD 2>/dev/null || true)"
+
+git -C "${path}" fetch origin "${COMMIT}"
+git -C "${path}" checkout --detach "${COMMIT}"
+
+python3 - "${NAME}" "${COMMIT}" <<'PY'
+import json
+import sys
+from pathlib import Path
+
+name, commit = sys.argv[1:]
+path = Path("upstreams.lock.json")
+payload = json.loads(path.read_text(encoding="utf-8"))
+upstreams = payload.get("upstreams", {})
+if name not in upstreams:
+    raise SystemExit(f"upstream missing from lock: {name}")
+upstreams[name]["commit"] = commit
+path.write_text(json.dumps(payload, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
 PY
 
-for line in "${before_lines[@]}"; do
-  name="${line%%:*}"
-  before="${line#*:}"
-  after="$(git -C "upstreams/${name}" rev-parse HEAD)"
-  echo "${name}: ${before:-none} -> ${after}"
-done
-echo "Updated upstreams.lock.json. Review upstream changes before changing skills/design-craft."
+echo "${NAME}: ${before:-none} -> ${COMMIT}"
+echo "Updated only upstreams.lock.json commit. Review and set reviewed/absorbed metadata manually."

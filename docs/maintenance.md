@@ -12,7 +12,9 @@ This document is the local release and maintenance checklist for
   `skills/design-craft/`.
 - Keep project-specific truth above generic visual guidance:
   live runtime behavior, scoped `AGENTS.md`, README/framework conventions, and
-  project `DESIGN.md` outrank the fusion references.
+  optional project `PRODUCT.md` plus project `DESIGN.md` outrank the fusion
+  references. PRODUCT owns product/platform facts; DESIGN remains the only
+  visual/token/component/theme/motion authority.
 - Treat `upstreams/taste-skill`, `upstreams/impeccable`, and
   `upstreams/emilkowalski-skills` as provenance and deliberate absorption inputs
   only. Do not reintroduce automatic upstream skill overwrites or legacy taste
@@ -40,10 +42,11 @@ make validate-portable
 ```
 
 It expands to portable checks only: required files, package/version
-consistency, shell syntax, Python compile, cross-agent task definitions, L4
-case/manifest validators, static scanner fixtures, and source score smoke. It
-does not depend on local Codex quick validators, route-pack state, install
-parity, or remote upstream freshness.
+consistency, shell syntax, Python compile, bundled-runtime independence,
+platform fixtures, observed benchmark artifacts, L4 validators, static
+scanners, 100/100 source completeness, and 95/100 portable maturity. It does
+not depend on local Codex state, installed-skill parity, native SDKs, or remote
+upstream freshness.
 
 Expected result:
 
@@ -53,8 +56,14 @@ Expected result:
 - Static smell scanners and the aggregate static review packet run against
   fixture targets.
 - Cross-agent task definitions validate.
+- Observed dashboard, motion, and native-adaptive Codex/Pi artifacts validate.
+- iOS, Android, and adaptive valid/invalid source fixtures separate correctly.
+- Portable route/detector degraded paths are explicit, and copied installed-skill
+  L4 helpers run without the source repo.
 - Project-neutral L4 fixtures validate in strict mode.
 - Version in `VERSION` matches `package.json`.
+- Source completeness is 100; portable maturity is 95 with the native-runtime
+  cap stated rather than hidden.
 
 ## Local release gate
 
@@ -73,6 +82,7 @@ bash scripts/validate.sh --portable
 python3 "$SKILL_CREATOR_QUICK_VALIDATE" skills/design-craft
 python3 "$SKILL_CREATOR_QUICK_VALIDATE" skills/frontend-craft
 python3 scripts/design_craft_score.py --self
+python3 scripts/design_craft_maturity.py --profile portable --min-score 95
 bash scripts/design_craft_pass.sh --target . --mode audit --skip-route
 bash scripts/design_craft_audit.sh --target . --mode audit --skip-route
 bash scripts/design_craft_audit.sh --target . --mode critique --skip-route
@@ -81,15 +91,17 @@ bash scripts/design_craft_taste_review.sh --target skills/design-craft --context
 tmp_dir="$(mktemp -d -t design-craft-seed-dry-run.XXXXXX)" && trap 'rm -rf "${tmp_dir}"' EXIT && bash scripts/design_craft_seed_design.sh --target "${tmp_dir}" --dry-run
 make route-smoke
 bash scripts/design_craft_doctor.sh --target . --json
+make platform-scan-check
 python3 scripts/design_craft_codex_route_pack.py --strict
 make init-dry-run
 make real-l4-check
 make cross-agent-observed-check
 make smell-smoke
 python3 scripts/upstream_absorption_report.py
-python3 scripts/upstream_absorption_report.py --remote
+python3 scripts/upstream_absorption_report.py --remote --fail-on-unreviewed
 bash scripts/install_local.sh
 diff -qr skills/design-craft "${DESIGN_CRAFT_SKILL_ROOT:-$HOME/.agents/skills}/design-craft"
+python3 scripts/design_craft_maturity.py --profile local --min-score 95
 bash scripts/install_local.sh --dry-run --include-legacy-alias
 ```
 
@@ -125,6 +137,9 @@ Expected result:
   current public examples stay project-neutral.
 - Observed cross-agent evidence validates for the hosts that actually ran the
   same benchmark prompt. Uncollected hosts must remain explicitly unverified.
+- Local maturity reports 95/100. Until native runtime artifacts exist, the
+  release must say `iOS Simulator: unverified locally` and
+  `Android Emulator: unverified locally`.
 - Upstream absorption report runs without fetching or modifying submodules; the
   optional `--remote` check reports remote drift with `git ls-remote`.
 - Upstream lock commits match checked-out submodule commits.
@@ -144,14 +159,20 @@ Expected result:
 2. Check remote drift without mutating submodules:
 
    ```bash
-   python3 scripts/upstream_absorption_report.py --remote
+   python3 scripts/upstream_absorption_report.py --remote --fail-on-unreviewed
    ```
 
-3. Sync upstream submodules only after deciding to absorb the remote head:
+3. Sync exactly one upstream only after choosing the reviewed commit:
 
    ```bash
-   bash scripts/sync_upstreams.sh
+   bash scripts/sync_upstreams.sh \
+     --name <taste-skill|impeccable|emilkowalski-skills> \
+     --commit <40-character-sha>
    ```
+
+   The helper updates only the compatibility `commit` field. Set
+   `reviewed_commit`, `absorbed_commit`, `reviewed_at`, `decision`, and
+   `notes` manually after the absorption review.
 
 4. Generate a local absorption report:
 
@@ -278,13 +299,16 @@ Use `evals/cross-agent/` to compare how Codex, Cursor, Claude, Pi, or another
 Agent Skills-compatible client applies the same `design-craft` prompt.
 
 Do not claim cross-agent stability until real outputs are recorded. Template
-cases define prompts and scorecards only.
+cases define prompts and scorecards only. The 0.4.0 dashboard, gesture-motion,
+and native-adaptive cases have observed Codex/Pi artifacts; Cursor and Claude
+remain explicitly unverified.
 
 ## Codex route-pack portability
 
-The local frontend route planner, route config, frontend rule, preflight
-contract, and route tests live under `~/.codex`. They are runtime policy, not
-skill contents. Use the route-pack helper to make that policy auditable:
+The local frontend route planner, platform detector, route config, frontend
+rule, preflight contract, and route tests live under `~/.codex`. They are
+runtime policy, not skill contents. Use the route-pack helper to make that
+policy auditable:
 
 ```bash
 python3 scripts/design_craft_codex_route_pack.py --strict --json
@@ -309,16 +333,19 @@ Before committing a release:
 1. `git status --short`
 2. `make validate-portable`
 3. `make release-gate-local`
-4. Route smoke on the fixture (`make route-smoke`) or on at least one real
+4. Confirm source completeness 100/100 and portable/local maturity 95/100.
+5. Route smoke on the fixture (`make route-smoke`) or on at least one real
    project path with its own `DESIGN.md` when route behavior changed.
-5. Upstream absorption report reviewed when upstream commits or detector rules changed.
-6. Product UI taste calibration and completed L4 case validation still pass
+6. Upstream absorption report reviewed when upstream commits or detector rules changed.
+7. Product UI taste calibration and completed L4 case validation still pass
    when taste scoring changed.
-7. Install parity check:
+8. Install parity check:
    `diff -qr skills/design-craft "${DESIGN_CRAFT_SKILL_ROOT:-$HOME/.agents/skills}/design-craft"`
-8. Legacy alias source check:
+9. Legacy alias source check:
    `grep -Fq 'renamed to \`design-craft\`' skills/frontend-craft/SKILL.md`
-9. Optional legacy install dry-run:
+10. Optional legacy install dry-run:
    `bash scripts/install_local.sh --dry-run --include-legacy-alias`
-10. Confirm no repo docs were added inside `skills/design-craft/`.
-11. Commit with a scoped message.
+11. Confirm no repo docs were added inside `skills/design-craft/`.
+12. Record `iOS Simulator: unverified locally` and
+    `Android Emulator: unverified locally` until observed artifacts exist.
+13. Commit with a scoped message.

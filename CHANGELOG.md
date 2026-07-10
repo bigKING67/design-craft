@@ -4,6 +4,34 @@ All notable local changes to `design-craft` are recorded here.
 
 ## Unreleased
 
+## 0.4.0 - 2026-07-10
+
+- Expanded the canonical workflow from web/frontend quality into explicit
+  `web | iOS | Android | adaptive` product design engineering, with conservative
+  platform detection, platform-specific references, native/adaptive fixtures,
+  and runtime-validation contracts.
+- Added optional `PRODUCT.md` authority for register, platform, users, purpose,
+  positioning, and accessibility. `DESIGN.md` remains the sole authority for
+  visual direction, tokens, components, themes, and motion.
+- Added portable runtime scripts under `skills/design-craft/scripts/`; repo-root
+  entries now remain compatibility wrappers, and missing Codex/Impeccable
+  integrations emit explicit degraded contracts instead of silent success.
+- Added direct-manipulation and interaction-physics guidance covering
+  presentation-value interruption, spring response/damping, velocity handoff,
+  momentum projection, hysteresis, rubber-banding, and Reduced Motion.
+- Separated deterministic source completeness from operational maturity:
+  `design_craft_score.py` targets 100/100 source completeness, while
+  `design_craft_maturity.py` enforces portable/local maturity gates.
+- Set the 0.4.0 operational maturity boundary to 95/100 because iOS Simulator,
+  Android Emulator, and real-device native runtime evidence remain unverified
+  locally; static scans and fixtures are never presented as runtime proof.
+- Added Ubuntu/macOS CI across Node 22/24 and Python 3.13, scheduled
+  fail-on-unreviewed upstream audits, platform fixture gates, installed-skill
+  runtime checks, and observed Codex/Pi motion plus native-adaptive benchmarks.
+- Reviewed the current upstream heads and recorded explicit provenance
+  decisions: Emil Kowalski's design-engineering interaction principles were
+  absorbed, Impeccable was selectively absorbed, and taste-skill remained
+  provenance-only for this range.
 - Upgraded the local Codex route-pack contract to V2: the main agent owns every
   frontend tier by default, model/reasoning inherit from runtime profiles, and
   delegation is conditional on independent work, bounded write scopes,

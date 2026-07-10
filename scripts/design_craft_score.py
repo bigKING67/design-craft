@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Deterministic design-craft quality scorer."""
+"""Deterministic design-craft source-completeness scorer."""
 
 from __future__ import annotations
 
@@ -40,6 +40,11 @@ def read_text(path: Path) -> str:
 
 def has(root: Path, rel: str) -> bool:
     return (root / rel).exists()
+
+
+def runtime_text(root: Path, name: str) -> str:
+    portable = read_text(root / "skills/design-craft/scripts" / name)
+    return portable or read_text(root / "scripts" / name)
 
 
 def active_product_ui_score_paths(root: Path) -> list[Path]:
@@ -155,7 +160,9 @@ def build_score(root: Path, run_smoke: bool) -> list[Dimension]:
     design_moves = read_text(root / "skills/design-craft/references/design-move-library.md")
     motion_quality = read_text(root / "skills/design-craft/references/motion-quality.md")
     motion_vocabulary = read_text(root / "skills/design-craft/references/motion-vocabulary.md")
-    browser_evidence_helper = read_text(root / "scripts/design_craft_browser_evidence.py")
+    browser_evidence_helper = runtime_text(root, "design_craft_browser_evidence.py")
+    route_helper = runtime_text(root, "design_craft_route.sh")
+    audit_helper = runtime_text(root, "design_craft_audit.sh")
     report = read_text(root / "skills/design-craft/references/report-quality.md")
     surface = read_text(root / "skills/design-craft/references/surface-playbooks.md")
     source_map = read_text(root / "skills/design-craft/references/source-map.md")
@@ -255,7 +262,8 @@ def build_score(root: Path, run_smoke: bool) -> list[Dimension]:
                     "Add a helper for seeding DESIGN.md from the bundled Geist templates.",
                 ),
                 (
-                    "vercel_geist_seed_applicable" in read_text(root / "scripts/design_craft_route.sh"),
+                    "vercel_geist_seed_applicable" in route_helper
+                    or "templates/vercel-geist" in route_helper,
                     "route summary reports Vercel seed applicability",
                     "Make route summaries say when the Geist seed is applicable.",
                 ),
@@ -356,8 +364,8 @@ def build_score(root: Path, run_smoke: bool) -> list[Dimension]:
                 (has(root, "evals/cross-agent/README.md"), "cross-agent benchmark scaffold exists", "Add cross-agent benchmark scaffold."),
                 (has(root, "scripts/design_craft_cross_agent_validate.py"), "cross-agent benchmark validator exists", "Add a validator for cross-agent benchmark task definitions."),
                 (has(root, "evals/fixtures/css-smells/card-soup.css"), "static scanner fixture exists", "Add scanner fixtures."),
-                ("critique" in read_text(root / "scripts/design_craft_audit.sh"), "critique mode present", "Add a lightweight critique mode."),
-                ("motion" in read_text(root / "scripts/design_craft_audit.sh"), "motion mode present", "Add a motion-specific quality pass."),
+                ("critique" in audit_helper, "critique mode present", "Add a lightweight critique mode."),
+                ("motion" in audit_helper, "motion mode present", "Add a motion-specific quality pass."),
                 ("太 AI" in read_text(root / "skills/design-craft/references/intent-map.md"), "subjective intent mapping present", "Map subjective user phrases to workflow modes."),
                 (detector_smoke or not run_smoke, "detector smoke passes", "Fix detector smoke."),
                 (score_smoke or not run_smoke, "score smoke passes", "Fix score script smoke."),
@@ -402,7 +410,7 @@ def maturity_cap(root: Path) -> tuple[int, list[str]]:
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Score design-craft quality out of 100.")
+    parser = argparse.ArgumentParser(description="Score design-craft source completeness out of 100.")
     parser.add_argument("--target", default=None, help="Repo root or skill path to score.")
     parser.add_argument("--self", action="store_true", help="Score the repo containing this script.")
     parser.add_argument("--json", action="store_true", help="Emit JSON.")
@@ -418,13 +426,17 @@ def main() -> int:
 
     dimensions = build_score(root, run_smoke=not args.no_smoke)
     raw_total = sum(item.score for item in dimensions)
-    cap, cap_reasons = maturity_cap(root)
-    total = min(raw_total, cap)
+    # Operational maturity is intentionally scored by design_craft_maturity.py.
+    # Keep the legacy cap fields at 100 for JSON consumers that still read them.
+    cap, cap_reasons = 100, []
+    total = raw_total
 
     if args.json:
         print(
             json.dumps(
                 {
+                    "schema": "design-craft.source-completeness.v1",
+                    "metric": "source_completeness",
                     "root": str(root),
                     "score": total,
                     "raw_score": raw_total,
@@ -448,7 +460,7 @@ def main() -> int:
         )
         return 0 if total >= 80 else 1
 
-    print(f"design-craft quality score: {total}/100")
+    print(f"design-craft source completeness: {total}/100")
     if total != raw_total:
         print(f"raw heuristic score: {raw_total}/100")
         print(f"maturity cap: {cap}/100")
@@ -472,7 +484,7 @@ def main() -> int:
     elif total < 97:
         print("\nStatus: v1 pre-release; run one live implementation task before calling it final v1.")
     else:
-        print("\nStatus: release-quality; keep validating against real UI/UX/frontend tasks.")
+        print("\nStatus: release-quality; keep validating against real cross-platform product design tasks.")
     return 0
 
 

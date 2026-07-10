@@ -48,10 +48,29 @@ Primary job: guide reading and decision-making.
 
 Primary job: complete one task under interruption.
 
-- Touch targets should be at least 44px where practical.
+- Resolve whether the surface is mobile web, iOS, Android, or adaptive before
+  choosing controls. `surface=mobile` alone is not a native signal.
+- Mobile web touch targets should normally be at least 44 CSS px. Native iOS
+  uses at least `44pt`; Android uses at least `48dp`.
 - Prefer simple flows, visible progress, and forgiving errors.
 - Avoid hover-only behavior.
 - Test long labels and keyboard viewport behavior.
+- For iOS, Android, or adaptive targets, read the matching platform reference
+  and verify system navigation, insets, text scaling, screen reader order, and
+  runtime gesture behavior.
+
+## Native phone or tablet app
+
+Primary job: complete the product task while preserving platform trust.
+
+- Read `product-context.md` and resolve the platform before implementation.
+- iOS reads `ios-quality.md`; Android reads `android-quality.md`; adaptive reads
+  both plus `adaptive-quality.md`.
+- Translate brand through system tint/color roles, typography, content, and
+  motion rather than replacing navigation and controls.
+- Restructure for tablets, split-screen, multi-window, orientation, or fold
+  posture; never stretch a phone canvas.
+- Treat simulator/emulator breadth and real-device truth as separate evidence.
 
 ## Forms and settings
 

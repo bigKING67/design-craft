@@ -11,6 +11,8 @@ Pick the smallest command set that covers the change:
 - Build-system or route change: type-check, lint, build.
 - Data behavior: relevant unit/integration tests plus type-check.
 - Visual/report/dashboard work: type/lint/build as relevant plus browser smoke.
+- Native UI work: platform build/static checks plus simulator/emulator or real
+  device validation when the toolchain exists.
 - Performance work: baseline and after measurement when possible.
 
 Prefer project scripts in `package.json`. Do not invent commands when the repo
@@ -19,6 +21,8 @@ has established ones.
 For the `design-craft` source repo itself, use:
 
 - `scripts/design_craft_route.sh --target <repo> --surface <surface> --intent <intent> --scope <scope>`
+- `scripts/design_craft_platform_scan.py --target <repo> --platform auto --json`
+  for platform inference and conservative native source findings.
 - `scripts/design_craft_pass.sh --target <repo> --mode <critique|audit|polish|motion|harden|optimize|structure|architecture>`
   as the preferred neutral pass wrapper.
 - `scripts/design_craft_audit.sh --target <repo> --mode <critique|audit|polish|motion|harden|optimize|structure|architecture>`
@@ -55,6 +59,9 @@ For the `design-craft` source repo itself, use:
   --target <path> --dry-run` before installing the canonical skill into another
   host agent.
 - `scripts/design_craft_score.py --self`
+- `scripts/design_craft_maturity.py --profile <portable|local> --min-score 95`
+  for operational maturity gates. `design_craft_score.py` measures source
+  completeness only.
 - `scripts/upstream_absorption_report.py --remote` when checking whether pinned
   upstreams have newer remote heads before absorption work.
 - `scripts/validate.sh`
@@ -69,6 +76,8 @@ Route planner arguments must use fixed enum values:
   `high-motion`, `brand`, `mobile-flow`, or `reference-only`.
 - `--scope`: `auto`, `micro`, `component`, `section`, `page`, or
   `multi-page`.
+- `--platform`: `auto`, `web`, `ios`, `android`, or `adaptive`.
+- `--product-context-path`: absolute path to optional `PRODUCT.md`.
 
 Do not pass natural-language task descriptions as route argument values. Record
 those notes in the plan or delivery summary instead.
@@ -129,6 +138,31 @@ TMWD-first capture plan, and the non-dry-run Chrome-headless fallback may write
 repo-external PNG artifacts plus `screenshots.json`; neither path verifies
 interaction states unless separate state evidence is captured.
 
+## Native runtime validation
+
+For `ios`, `android`, or `adaptive`, static source scan is a floor rather than a
+runtime verdict.
+
+Report route fields:
+
+- `runtime_validation_required`
+- `runtime_validation_kind`
+- `native_validation_required`
+- `preferred_runtime_tool`
+
+iOS validation should distinguish `xcodebuild` compile/test, Simulator
+(`simctl`) behavior, and real-hardware truth. Android validation should
+distinguish Gradle compile/test, Emulator/`adb` behavior, and real-hardware
+truth. Adaptive validation reports both platforms independently.
+
+If the local machine lacks a simulator/emulator toolchain, run the conservative
+platform fixture/source checks and report exactly:
+
+- `iOS Simulator: unverified locally`, when iOS is in scope.
+- `Android Emulator: unverified locally`, when Android is in scope.
+
+Do not turn a static scan or CI fixture into an observed native runtime claim.
+
 ## Design-system validation
 
 Use design-system validation when:
@@ -164,6 +198,9 @@ Check and report:
 When route planner is used, report:
 
 - `frontend_tier`
+- `design_tier` (must equal `frontend_tier` in 0.4.x)
+- `platform`, `platform_source`, and `platform_confidence`
+- `product_context_path`
 - `candidate_skills`
 - `selected_skills`
 - `execution_mode` and `subagent_required`
@@ -176,6 +213,8 @@ When route planner is used, report:
 - `screenshot_validation_plan`
 - `directory_governance_required`
 - `performance_review_required`
+- `runtime_validation_required`, `runtime_validation_kind`,
+  `native_validation_required`, and `preferred_runtime_tool`
 - `vercel_geist_seed_applicable` and reason
 
 Never say a subagent was enabled unless it actually spawned. Never say browser
@@ -185,10 +224,18 @@ equivalent browser screenshot tool produced artifact path/hash/dimensions.
 
 ## Quality score
 
-Use the score helper as a maintenance signal for this skill project, not as a
-replacement for task-specific judgment. A score below 80 means the skill is
-still seed quality. A score between 80 and 89 is usable v0.x. A score above 90
-requires forward evals and real task evidence, not only file-presence checks.
+`scripts/design_craft_score.py` reports **source completeness**. It answers
+whether the intended source contracts and references exist; it can reach 100
+without proving installation or runtime behavior.
+
+`scripts/design_craft_maturity.py` reports **operational maturity**. It gates
+runtime scripts, source/install parity, reviewed upstreams, CI, observed evals,
+degraded route/detector behavior, and native runtime evidence. A score above 90
+requires forward evals and real task evidence, not only file presence.
+
+For 0.4.0, native simulator/emulator behavior is not locally observed, so the
+honest maturity cap is `95`. Scores `96-100` require observed iOS and Android
+runtime evidence, including at least one real-device validation path.
 
 The 100-point score in `product-ui-taste-review.md` is different: it grades one
 specific UI surface. When reporting both, name them explicitly as

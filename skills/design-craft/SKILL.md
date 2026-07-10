@@ -1,13 +1,14 @@
 ---
 name: design-craft
-description: "Use for product UI/UX and frontend design-quality work: visual taste critique, design-system enforcement, UI polish, motion review, responsive/browser validation, and frontend craft. Do not use for backend-only logic, database-only migrations, pure algorithms, CLI-only tools, or non-visual refactors unless UI quality is affected."
+description: "Use for product UI/UX and design-engineering quality across web, iOS, Android, and adaptive cross-platform products: product-context shaping, visual taste critique, design-system enforcement, UI polish, interaction physics, motion review, responsive/adaptive validation, accessibility, and frontend/native craft. Do not use for backend-only logic, database-only migrations, pure algorithms, CLI-only tools, or non-visual refactors unless product UI quality is affected."
 ---
 
 # Design Craft
 
 Production-grade design engineering work for this machine: product UI, UX,
-visual taste, motion, design systems, frontend implementation, performance,
-architecture, project quality, and directory governance in one workflow.
+visual taste, motion, design systems, web and native implementation,
+performance, architecture, project quality, and directory governance in one
+workflow.
 
 ## When not to use
 
@@ -27,12 +28,13 @@ Use this order when evidence conflicts:
 
 1. Live runtime behavior and browser evidence.
 2. Scoped `AGENTS.md`, README, framework conventions, and current repo state.
-3. Project `DESIGN.md` or equivalent style authority.
-4. Local frontend route planner output.
-5. Bundled Vercel Geist seed templates for new or weak developer-product
+3. Project `PRODUCT.md` for product/platform/user/accessibility context.
+4. Project `DESIGN.md` or equivalent visual style authority.
+5. Local frontend route planner output.
+6. Bundled Vercel Geist seed templates for new or weak web developer-product
    systems.
-6. `design-craft` references.
-7. Upstream generic visual or Impeccable guidance.
+7. `design-craft` references.
+8. Upstream generic visual or Impeccable guidance.
 
 Do not let generic visual rules override a project's product context, design
 system, data density, report grammar, or runtime truth.
@@ -40,11 +42,12 @@ system, data density, report grammar, or runtime truth.
 ## First-pass workflow
 
 1. Inspect the real repo before planning: `git status --short`, relevant
-   `AGENTS.md`, `DESIGN.md`, route files, package scripts, existing components,
-   style tokens, and similar implementations.
+   `AGENTS.md`, optional `PRODUCT.md`, `DESIGN.md`, route files, package/build
+   scripts, existing components, platform targets, style tokens, and similar
+   implementations.
 2. For L1+ frontend implementation tasks, run the local route planner when
    available:
-   `bash ~/.codex/tools/frontend_route_plan.sh --surface <surface> --intent <intent> --scope <scope> [--style-authority-path <abs DESIGN.md>]`.
+   `bash ~/.codex/tools/frontend_route_plan.sh --surface <surface> --intent <intent> --scope <scope> [--platform <auto|web|ios|android|adaptive>] [--product-context-path <abs PRODUCT.md>] [--style-authority-path <abs DESIGN.md>]`.
    Use only route-planner enum values. Do not put free-form task prose into
    `--surface`, `--intent`, or `--scope`; keep notes outside the command.
 3. Treat route `candidate_skills` as candidates, not proof of actual use.
@@ -79,6 +82,8 @@ system, data density, report grammar, or runtime truth.
    `scripts/design_craft_css_smell_scan.py`,
    `scripts/design_craft_focus_audit.py`, and
    `scripts/design_craft_token_audit.py` for static review signals, and
+   `scripts/design_craft_platform_scan.py` for platform inference and
+   conservative iOS/Android/adaptive source checks,
    `scripts/design_craft_codex_route_pack.py` for auditing or exporting the
    local Codex frontend route-pack manifest, and
    `scripts/design_craft_score.py` for self-audits. When maintaining this skill
@@ -105,6 +110,12 @@ Read only the references needed for the current task:
 - Design-system contracts, `DESIGN.md` shape, token naming, light/dark parity,
   component state coverage, focus rules, motion policy, and UI copy rules:
   `references/design-system-contract.md`.
+- Product context, `PRODUCT.md`, platform discovery, users, purpose,
+  positioning, and accessibility requirements:
+  `references/product-context.md`.
+- Product correctness, agency, responsibility, familiarity, flexibility,
+  simplicity, craft, delight, wayfinding, and feedback:
+  `references/product-design-principles.md`.
 - New or weakly specified developer-product, SaaS, dashboard, admin, infra,
   docs, or tooling surfaces without a stronger style authority:
   `templates/vercel-geist/design.md` and
@@ -127,6 +138,9 @@ Read only the references needed for the current task:
   popovers, drawers, gestures, perceived animation performance, or reduced
   motion:
   `references/motion-quality.md`.
+- Gesture-driven motion, direct manipulation, interruption, springs, velocity
+  handoff, projection, hysteresis, and rubber-banding:
+  `references/interaction-physics.md`.
 - Animation naming or reverse lookup, such as "这个弹出来的动画叫什么" or a
   vague motion description the user wants to prompt with:
   `references/motion-vocabulary.md`.
@@ -138,8 +152,12 @@ Read only the references needed for the current task:
   `references/architecture-quality.md`.
 - New files/directories or structure cleanup:
   `references/project-structure.md`.
-- Surface-specific rules for landing, dashboard, data-viz, reports, mobile:
+- Surface-specific rules for landing, dashboard, data-viz, reports, and mobile:
   `references/surface-playbooks.md`.
+- Native iOS/iPadOS quality: `references/ios-quality.md`.
+- Native Android quality: `references/android-quality.md`.
+- Cross-platform native adaptation and parity:
+  `references/adaptive-quality.md`.
 - Dashboard exports, static reports, special reports, formal business-review
   pages, and evidence-heavy report surfaces:
   `references/report-quality.md`.
@@ -154,6 +172,11 @@ For broad "make this frontend excellent" tasks, read:
 `impeccable-workflow.md`, `engineering-quality.md`, `performance-quality.md`,
 `project-structure.md`, `report-quality.md` when reports/dashboards are in
 scope, `intent-map.md` when the brief is subjective, and
+`validation-contract.md`.
+
+For native or cross-platform tasks, also read `product-context.md`,
+`product-design-principles.md`, the matching platform reference(s),
+`interaction-physics.md` when gestures are involved, and
 `validation-contract.md`.
 
 ## Design read
@@ -178,6 +201,9 @@ unverified:
   quality are covered when relevant.
 - Product: solves the user's job, preserves information architecture, handles
   empty/loading/error/long-data states when relevant.
+- Platform: native navigation, controls, insets, gestures, accessibility, and
+  adaptive structure match the resolved platform; mobile web is not mislabeled
+  as native.
 - Engineering: clear component boundaries, no needless abstraction, observable
   errors, dependency checks before imports.
 - Performance: measured or reasoned hot paths, no layout thrashing, no unbounded
@@ -186,22 +212,25 @@ unverified:
   compatibility risks are named.
 - Structure: new files follow existing project conventions; shared abstractions
   have real repeated callers.
-- Validation: targeted type/lint/test/build plus browser validation where UI is
-  user-visible; screenshot artifacts are required when route output asks for
-  `browser_screenshot_required`.
+- Validation: targeted type/lint/test/build plus browser or native runtime
+  validation where UI is user-visible; screenshot artifacts are required when
+  route output asks for `browser_screenshot_required`.
 
 ## Delivery contract
 
 For frontend implementation work, summarize:
 
-- `frontend_tier` and route command used, when applicable.
+- `frontend_tier`/`design_tier` and route command used, when applicable.
+- `platform`, source, confidence, `product_context_path`, and whether product
+  context was explicit or inferred.
 - `candidate_skills` versus `selected_skills`.
 - `style_authority_path` and whether it was enforced or intentionally evolved.
 - `design_system_contract`: enforced existing tokens, evolved tokens, inferred
   temporary system, or not applicable.
 - Files changed and structure impact.
 - Validation commands and observed results.
-- Browser validation target and result, or why it was skipped.
+- Browser/native runtime validation kind, target, and result, or why it was
+  skipped.
 - Screenshot validation tool, target, artifact path/hash/dimensions, or why it
   was skipped.
 - Performance impact and remaining risks.

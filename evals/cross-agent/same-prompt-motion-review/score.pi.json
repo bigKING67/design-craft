@@ -1,0 +1,43 @@
+{
+  "schema": "design-craft.cross-agent-score.v1",
+  "task_id": "same-prompt-motion-review",
+  "agent": "pi",
+  "verified": true,
+  "agent_version": "pi 0.80.3",
+  "date": "2026-07-10",
+  "prompt_sha256": "0b1a5b271c01e7570cd15d02d15893b208e5178f493da12b51e904cda4aa519e",
+  "skill_path": "/Users/gaoqian/Documents/sixseven/codeproject/design-craft/skills/design-craft",
+  "command_summary": "pi non-interactive run with no tools and the source design-craft skill explicitly loaded",
+  "output_path": "pi-output.md",
+  "score": 86,
+  "criteria": {
+    "style_authority": {
+      "passed": true,
+      "note": "Recognized the calm utility context and the causal purpose of sheet motion."
+    },
+    "reference_selection": {
+      "passed": true,
+      "note": "Applied direct-manipulation, interruption, velocity, boundary, and Reduced Motion concepts."
+    },
+    "anti_generic_redesign": {
+      "passed": true,
+      "note": "Removed broad transition behavior instead of adding decorative animation."
+    },
+    "evidence_level": {
+      "passed": true,
+      "note": "Clearly labeled the evidence as static and runtime behavior as unverified."
+    },
+    "verified_boundary": {
+      "passed": true,
+      "note": "Did not claim measured frame rate, touch response, or browser state."
+    },
+    "design_moves": {
+      "passed": false,
+      "note": "Useful direction, but some suggestions still retained top-based transitions and imprecise interruption state handling."
+    },
+    "scope_control": {
+      "passed": true,
+      "note": "Stayed scoped to the sheet motion interaction and validation."
+    }
+  }
+}

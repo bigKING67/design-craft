@@ -1,0 +1,43 @@
+{
+  "schema": "design-craft.cross-agent-score.v1",
+  "task_id": "same-prompt-motion-review",
+  "agent": "codex",
+  "verified": true,
+  "agent_version": "codex-cli 0.144.1",
+  "date": "2026-07-10",
+  "prompt_sha256": "0b1a5b271c01e7570cd15d02d15893b208e5178f493da12b51e904cda4aa519e",
+  "skill_path": "/Users/gaoqian/Documents/sixseven/codeproject/design-craft/skills/design-craft",
+  "command_summary": "codex exec in a read-only sandbox with the source design-craft skill and output-last-message artifact",
+  "output_path": "codex-output.md",
+  "score": 97,
+  "criteria": {
+    "style_authority": {
+      "passed": true,
+      "note": "Kept the high-frequency calm operations context and removed decorative whole-sheet motion."
+    },
+    "reference_selection": {
+      "passed": true,
+      "note": "Used motion quality, interaction physics, design moves, and validation evidence boundaries."
+    },
+    "anti_generic_redesign": {
+      "passed": true,
+      "note": "Questioned each motion and preserved only causal direct-manipulation feedback."
+    },
+    "evidence_level": {
+      "passed": true,
+      "note": "Labeled the run L0 static-source only and did not claim runtime smoothness."
+    },
+    "verified_boundary": {
+      "passed": true,
+      "note": "Separated code-visible defects from unverified frame cost, touch feel, and device behavior."
+    },
+    "design_moves": {
+      "passed": true,
+      "note": "Specified pointer capture, grab offset, transform tracking, interruption, velocity handoff, projection, resistance, and Reduced Motion."
+    },
+    "scope_control": {
+      "passed": true,
+      "note": "Stayed within the sheet interaction and its browser/device validation plan."
+    }
+  }
+}

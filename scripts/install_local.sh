@@ -59,6 +59,19 @@ install_one() {
   fi
 
   cp -R "${source}" "${target}"
+  python3 - "${target}" <<'PY'
+import shutil
+import sys
+from pathlib import Path
+
+target = Path(sys.argv[1])
+for cache_dir in target.rglob("__pycache__"):
+    if cache_dir.is_dir():
+        shutil.rmtree(cache_dir)
+for bytecode in target.rglob("*.py[co]"):
+    if bytecode.is_file():
+        bytecode.unlink()
+PY
   echo "Installed ${name} skill to: ${target}"
 }
 

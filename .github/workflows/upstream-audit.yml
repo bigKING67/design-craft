@@ -1,0 +1,22 @@
+name: Upstream audit
+
+on:
+  schedule:
+    - cron: "17 3 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - name: Fail on unreviewed upstream drift
+        run: python3 scripts/upstream_absorption_report.py --remote --fail-on-unreviewed

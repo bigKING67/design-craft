@@ -28,6 +28,11 @@ class UpstreamReport:
     path: str
     license: str
     locked_commit: str
+    reviewed_commit: str
+    absorbed_commit: str
+    reviewed_at: str
+    decision: str
+    decision_notes: str
     current_commit: str | None
     remote_commit: str | None
     remote_ref: str | None
@@ -37,6 +42,7 @@ class UpstreamReport:
     drift: bool
     remote_drift: bool | None
     locked_remote_drift: bool | None
+    reviewed_remote_drift: bool | None
     dirty: bool
     status: list[str]
     changed_files: list[ChangedFile]
@@ -169,6 +175,11 @@ def build_report(root: Path, check_remote: bool = False) -> list[UpstreamReport]
         rel_path = meta.get("path", "")
         upstream_path = root / rel_path
         locked = meta.get("commit", "")
+        reviewed = meta.get("reviewed_commit", "")
+        absorbed = meta.get("absorbed_commit", "")
+        reviewed_at = meta.get("reviewed_at", "")
+        decision = meta.get("decision", "")
+        decision_notes = meta.get("notes", "")
         notes: list[str] = []
         status_lines: list[str] = []
         changed_files: list[ChangedFile] = []
@@ -183,6 +194,14 @@ def build_report(root: Path, check_remote: bool = False) -> list[UpstreamReport]
         remote_ref: str | None = None
         remote_drift: bool | None = None
         locked_remote_drift: bool | None = None
+        reviewed_remote_drift: bool | None = None
+
+        if decision not in {"absorbed", "partial", "provenance_only", "deferred"}:
+            notes.append("lock decision must be absorbed, partial, provenance_only, or deferred")
+        if not reviewed or not reviewed_at:
+            notes.append("review metadata is incomplete")
+        if decision != "deferred" and not absorbed:
+            notes.append("non-deferred decisions require absorbed_commit")
 
         if check_remote:
             remote_commit, remote_ref, remote_error = remote_head(meta.get("repo", ""))
@@ -216,10 +235,13 @@ def build_report(root: Path, check_remote: bool = False) -> list[UpstreamReport]
                 if remote_commit:
                     remote_drift = remote_commit != current
                     locked_remote_drift = remote_commit != locked
+                    reviewed_remote_drift = remote_commit != reviewed
                     if remote_drift:
                         notes.append("remote head differs from current checkout")
                     else:
                         notes.append("remote head matches current checkout")
+                    if reviewed_remote_drift:
+                        notes.append("remote head has not been reviewed")
 
         reports.append(
             UpstreamReport(
@@ -228,6 +250,11 @@ def build_report(root: Path, check_remote: bool = False) -> list[UpstreamReport]
                 path=rel_path,
                 license=meta.get("license", ""),
                 locked_commit=locked,
+                reviewed_commit=reviewed,
+                absorbed_commit=absorbed,
+                reviewed_at=reviewed_at,
+                decision=decision,
+                decision_notes=decision_notes,
                 current_commit=current,
                 remote_commit=remote_commit,
                 remote_ref=remote_ref,
@@ -237,6 +264,7 @@ def build_report(root: Path, check_remote: bool = False) -> list[UpstreamReport]
                 drift=drift,
                 remote_drift=remote_drift,
                 locked_remote_drift=locked_remote_drift,
+                reviewed_remote_drift=reviewed_remote_drift,
                 dirty=dirty,
                 status=status_lines,
                 changed_files=changed_files,
@@ -256,6 +284,12 @@ def print_text(reports: list[UpstreamReport]) -> None:
         print(f"  path: {report.path}")
         print(f"  license: {report.license}")
         print(f"  locked_commit: {report.locked_commit}")
+        print(f"  reviewed_commit: {report.reviewed_commit or 'unavailable'}")
+        print(f"  absorbed_commit: {report.absorbed_commit or 'unavailable'}")
+        print(f"  reviewed_at: {report.reviewed_at or 'unavailable'}")
+        print(f"  decision: {report.decision or 'unavailable'}")
+        if report.decision_notes:
+            print(f"  decision_notes: {report.decision_notes}")
         print(f"  current_commit: {report.current_commit or 'unavailable'}")
         if report.remote_commit:
             print(f"  remote_ref: {report.remote_ref}")
@@ -264,6 +298,7 @@ def print_text(reports: list[UpstreamReport]) -> None:
         if report.remote_drift is not None:
             print(f"  remote_drift: {str(report.remote_drift).lower()}")
             print(f"  locked_remote_drift: {str(report.locked_remote_drift).lower()}")
+            print(f"  reviewed_remote_drift: {str(report.reviewed_remote_drift).lower()}")
         print(f"  dirty: {str(report.dirty).lower()}")
         for note in report.notes:
             print(f"  note: {note}")
@@ -293,6 +328,11 @@ def main() -> int:
     parser.add_argument("--root", default=str(ROOT), help="design-craft repo root")
     parser.add_argument("--json", action="store_true", help="Emit JSON")
     parser.add_argument("--remote", action="store_true", help="Also check remote HEAD/main/master with git ls-remote")
+    parser.add_argument(
+        "--fail-on-unreviewed",
+        action="store_true",
+        help="Exit non-zero when remote HEAD differs from reviewed_commit or lock review metadata is incomplete",
+    )
     args = parser.parse_args()
 
     root = Path(args.root).expanduser().resolve()
@@ -306,6 +346,19 @@ def main() -> int:
         print(json.dumps([asdict(report) for report in reports], ensure_ascii=False, indent=2))
     else:
         print_text(reports)
+    if args.fail_on_unreviewed:
+        invalid = [
+            report.name
+            for report in reports
+            if not report.reviewed_commit
+            or not report.reviewed_at
+            or report.decision not in {"absorbed", "partial", "provenance_only", "deferred"}
+            or (report.decision != "deferred" and not report.absorbed_commit)
+            or report.reviewed_remote_drift is True
+        ]
+        if invalid:
+            print("unreviewed upstream state: " + ", ".join(invalid), file=sys.stderr)
+            return 2
     return 0
 
 
