@@ -50,6 +50,7 @@ required_files=(
   "CHANGELOG.md"
   "VERSION"
   "package.json"
+  "package-lock.json"
   "Makefile"
   ".github/workflows/validate.yml"
   ".github/workflows/upstream-audit.yml"
@@ -306,9 +307,16 @@ fi
 node <<'NODE'
 const fs = require("fs");
 const pkg = JSON.parse(fs.readFileSync("package.json", "utf8"));
+const lock = JSON.parse(fs.readFileSync("package-lock.json", "utf8"));
 const version = fs.readFileSync("VERSION", "utf8").trim();
 if (pkg.version !== version) {
   throw new Error(`package.json version (${pkg.version}) must match VERSION (${version})`);
+}
+if (lock.name !== pkg.name || lock.version !== version) {
+  throw new Error("package-lock.json root name/version must match package.json and VERSION");
+}
+if (!lock.packages || !lock.packages[""] || lock.packages[""].version !== version) {
+  throw new Error("package-lock.json packages root version must match VERSION");
 }
 if (!Array.isArray(pkg.keywords) || !pkg.keywords.includes("pi-package")) {
   throw new Error("package.json keywords must include pi-package");

@@ -28,6 +28,8 @@ All notable local changes to `design-craft` are recorded here.
 - Added Ubuntu/macOS CI across Node 22/24 and Python 3.13, scheduled
   fail-on-unreviewed upstream audits, platform fixture gates, installed-skill
   runtime checks, and observed Codex/Pi motion plus native-adaptive benchmarks.
+- Preserved the remotely added npm lockfile, aligned it to 0.4.0, and made
+  `VERSION`, `package.json`, and `package-lock.json` parity a release gate.
 - Reviewed the current upstream heads and recorded explicit provenance
   decisions: Emil Kowalski's design-engineering interaction principles were
   absorbed, Impeccable was selectively absorbed, and taste-skill remained
