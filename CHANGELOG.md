@@ -2,6 +2,22 @@
 
 All notable local changes to `design-craft` are recorded here.
 
+## Unreleased
+
+- Upgraded the local Codex route-pack contract to V2: the main agent owns every
+  frontend tier by default, model/reasoning inherit from runtime profiles, and
+  delegation is conditional on independent work, bounded write scopes,
+  authorization, and net coordination benefit.
+- Added semantic route-pack validation for stale model pins, worker inheritance,
+  V2 route invariants, and redacted runtime model/reasoning compatibility against
+  `codex debug models --bundled`.
+- Added `agents/worker.toml` and `tools/frontend_preflight_run.sh` to the required
+  portable route pack so the executable route contract can no longer drift
+  outside structural audits.
+- Aligned GPT-5.6 reasoning semantics: explicit frontend overrides now cover
+  `low` through `max`, while `ultra` remains runtime-profile-only because the
+  bundled model catalog defines it as automatic task delegation.
+
 ## 0.3.0 - 2026-07-01
 
 - Added a Codex frontend route-pack audit/export helper plus adapter docs, so

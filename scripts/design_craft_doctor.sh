@@ -67,11 +67,13 @@ codex_home = Path(os.environ.get("CODEX_HOME", str(home / ".codex")))
 route_pack_required = [
     "AGENTS.md",
     "rules/frontend.md",
+    "agents/worker.toml",
     "tools/frontend_route_plan.sh",
     "tools/frontend_agent_routing.json",
     "tools/frontend_worker_entry.sh",
     "tools/frontend_preflight_spec.json",
     "tools/frontend_preflight.py",
+    "tools/frontend_preflight_run.sh",
     "tools/frontend_preflight_verify.sh",
     "tools/agents_quality_verify.sh",
     "tools/tests/test_frontend_route_plan.sh",

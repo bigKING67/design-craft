@@ -134,7 +134,12 @@ bash scripts/design_craft_doctor.sh --target . --json
 
 Audit or export the local Codex frontend route tools as a whitelisted migration
 bundle. This does not copy arbitrary `~/.codex` state; it records only the
-route planner, frontend rules, preflight contract, and related tests:
+route planner, inherited frontend worker, frontend rules, preflight contract,
+and related tests. The strict audit also validates V2 delegation semantics and
+checks redacted runtime model/reasoning profiles against the bundled Codex model
+catalog. GPT-5.6 `ultra` is treated as runtime-profile-only because it includes
+automatic task delegation; explicit main-owned frontend overrides stop at
+`max`:
 
 ```bash
 python3 scripts/design_craft_codex_route_pack.py --strict

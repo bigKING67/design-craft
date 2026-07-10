@@ -16,14 +16,16 @@ import json
 import os
 import shutil
 import stat
+import subprocess
 import sys
 import tempfile
+import tomllib
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
 
 
-SCHEMA = "design-craft.codex-route-pack.v1"
+SCHEMA = "design-craft.codex-route-pack.v2"
 
 
 @dataclass(frozen=True)
@@ -36,11 +38,13 @@ class PackFile:
 ROUTE_PACK_FILES = [
     PackFile("AGENTS.md", True, "global-rule"),
     PackFile("rules/frontend.md", True, "frontend-rule"),
+    PackFile("agents/worker.toml", True, "frontend-agent"),
     PackFile("tools/frontend_route_plan.sh", True, "route-planner"),
     PackFile("tools/frontend_agent_routing.json", True, "route-config"),
     PackFile("tools/frontend_worker_entry.sh", True, "worker-gate"),
     PackFile("tools/frontend_preflight_spec.json", True, "preflight-config"),
     PackFile("tools/frontend_preflight.py", True, "preflight-runner"),
+    PackFile("tools/frontend_preflight_run.sh", True, "preflight-entry"),
     PackFile("tools/frontend_preflight_verify.sh", True, "preflight-validator"),
     PackFile("tools/agents_quality_verify.sh", True, "global-validator"),
     PackFile("tools/tests/test_frontend_route_plan.sh", True, "route-test"),
@@ -52,7 +56,6 @@ ROUTE_PACK_FILES = [
     PackFile("tools/frontend_preflight_policy.json", False, "preflight-policy"),
     PackFile("tools/frontend_preflight_policy_run.sh", False, "preflight-policy"),
     PackFile("tools/frontend_preflight_report.sh", False, "preflight-report"),
-    PackFile("tools/frontend_preflight_run.sh", False, "preflight-compat"),
     PackFile("tools/frontend_preflight_log_summary.sh", False, "preflight-logs"),
     PackFile("tools/frontend_preflight_log_rotate.sh", False, "preflight-logs"),
     PackFile("tools/frontend_preflight_log_maintenance.sh", False, "preflight-logs"),
@@ -106,17 +109,247 @@ def file_entry(source_root: Path, spec: PackFile) -> dict:
     return entry
 
 
-def build_manifest(source_root: Path) -> dict:
+def load_json(path: Path) -> dict:
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    if not isinstance(payload, dict):
+        raise ValueError(f"expected JSON object: {path}")
+    return payload
+
+
+def load_toml(path: Path) -> dict:
+    payload = tomllib.loads(path.read_text(encoding="utf-8"))
+    if not isinstance(payload, dict):
+        raise ValueError(f"expected TOML table: {path}")
+    return payload
+
+
+def bundled_model_catalog() -> tuple[dict[str, dict], str | None]:
+    codex = shutil.which("codex")
+    if not codex:
+        return {}, "codex executable is unavailable; runtime model compatibility was not checked"
+    try:
+        completed = subprocess.run(
+            [codex, "debug", "models", "--bundled"],
+            check=False,
+            capture_output=True,
+            text=True,
+            timeout=20,
+        )
+    except (OSError, subprocess.TimeoutExpired) as exc:
+        return {}, f"failed to load bundled model catalog: {exc}"
+    if completed.returncode != 0:
+        detail = (completed.stderr or completed.stdout).strip()
+        return {}, f"codex debug models --bundled failed: {detail[:240]}"
+    try:
+        payload = json.loads(completed.stdout)
+    except json.JSONDecodeError as exc:
+        return {}, f"bundled model catalog is not valid JSON: {exc}"
+    models = payload.get("models") if isinstance(payload, dict) else None
+    if not isinstance(models, list):
+        return {}, "bundled model catalog does not contain a models list"
+    catalog = {
+        str(item.get("slug")): item
+        for item in models
+        if isinstance(item, dict) and str(item.get("slug", "")).strip()
+    }
+    return catalog, None
+
+
+def runtime_profiles(config: dict) -> list[dict[str, str]]:
+    profiles: list[dict[str, str]] = []
+
+    def add(role: str, model: object, reasoning: object = "") -> None:
+        model_name = str(model or "").strip()
+        if not model_name:
+            return
+        profiles.append(
+            {
+                "role": role,
+                "model": model_name,
+                "reasoning": str(reasoning or "").strip(),
+            }
+        )
+
+    add("main", config.get("model"), config.get("model_reasoning_effort"))
+    add("review_model", config.get("review_model"))
+    agents = config.get("agents")
+    if isinstance(agents, dict):
+        for role, raw in agents.items():
+            if isinstance(raw, dict):
+                add(f"agent:{role}", raw.get("model"), raw.get("model_reasoning_effort"))
+    return profiles
+
+
+def semantic_validation(source_root: Path) -> dict:
+    issues: list[str] = []
+    warnings: list[str] = []
+    routing_path = source_root / "tools/frontend_agent_routing.json"
+    route_plan_path = source_root / "tools/frontend_route_plan.sh"
+    worker_entry_path = source_root / "tools/frontend_worker_entry.sh"
+    worker_agent_path = source_root / "agents/worker.toml"
+    config_path = source_root / "config.toml"
+    profiles: list[dict[str, str]] = []
+    model_catalog_source = "not-run"
+
+    try:
+        routing = load_json(routing_path)
+        if routing.get("version") != 2:
+            issues.append("frontend_agent_routing.json must use version 2")
+        if routing.get("policy_name") != "frontend-route-v2":
+            issues.append("frontend_agent_routing.json missing frontend-route-v2 policy name")
+        tier_defaults = routing.get("tier_defaults")
+        if not isinstance(tier_defaults, dict):
+            issues.append("frontend_agent_routing.json missing tier_defaults")
+        else:
+            for tier in ["L0", "L1-F", "L1-V", "L2"]:
+                route = tier_defaults.get(tier)
+                if not isinstance(route, dict):
+                    issues.append(f"missing tier route: {tier}")
+                    continue
+                if route.get("agent_route") != "main_inherit":
+                    issues.append(f"{tier} must use agent_route=main_inherit")
+                if route.get("agent_model") != "inherit":
+                    issues.append(f"{tier} must inherit the runtime model")
+                if route.get("execution_mode") != "main_serial":
+                    issues.append(f"{tier} default execution_mode must be main_serial")
+                if route.get("subagent_required") is not False:
+                    issues.append(f"{tier} must not require a subagent by tier")
+        delegation = routing.get("delegation_contract")
+        if not isinstance(delegation, dict):
+            issues.append("frontend_agent_routing.json missing delegation_contract")
+        else:
+            if delegation.get("minimum_independent_subtasks") != 2:
+                issues.append("delegation requires exactly the documented minimum of two independent subtasks")
+            if delegation.get("fallback_when_unavailable") != "continue_main_and_report":
+                issues.append("delegation fallback must continue with the main agent")
+        reasoning = routing.get("reasoning_overrides")
+        required_reasoning = {"inherit", "low", "medium", "high", "xhigh", "max", "ultra"}
+        if not isinstance(reasoning, dict) or not required_reasoning.issubset(reasoning):
+            issues.append("routing reasoning vocabulary must cover inherit/low/medium/high/xhigh/max/ultra")
+        elif not isinstance(reasoning.get("ultra"), dict):
+            issues.append("routing ultra reasoning policy must be an object")
+        else:
+            ultra = reasoning["ultra"]
+            if ultra.get("explicit_override_allowed") is not False:
+                issues.append("ultra must remain runtime-profile-only for controlled frontend delegation")
+            if ultra.get("runtime_auto_delegation") is not True:
+                issues.append("ultra must disclose GPT-5.6 runtime automatic delegation")
+            if ultra.get("fallback_reasoning_target") != "max":
+                issues.append("ultra must identify max as the explicit main-owned fallback")
+        orchestration = routing.get("orchestration_overrides")
+        if not isinstance(orchestration, dict) or not {"main", "parallel", "review"}.issubset(orchestration):
+            issues.append("routing orchestration overrides must cover main/parallel/review")
+        if "gpt-5.5" in json.dumps(routing, ensure_ascii=False):
+            issues.append("routing config still pins gpt-5.5")
+    except (OSError, ValueError, json.JSONDecodeError) as exc:
+        issues.append(f"failed to validate routing config: {exc}")
+
+    for path, forbidden in [
+        (route_plan_path, ["gpt-5.5", "default_high", "worker_xhigh", "route_defaults ="]),
+        (worker_entry_path, ["gpt-5.5", "default_high", "worker_xhigh"]),
+    ]:
+        try:
+            text = path.read_text(encoding="utf-8")
+        except OSError as exc:
+            issues.append(f"failed to read {path.name}: {exc}")
+            continue
+        for fragment in forbidden:
+            if fragment in text:
+                issues.append(f"{path.name} contains stale routing fragment: {fragment}")
+        explicit_reasoning_vocabulary = "auto|inherit|low|medium|high|xhigh|max"
+        if explicit_reasoning_vocabulary not in text:
+            issues.append(f"{path.name} missing explicit reasoning vocabulary: {explicit_reasoning_vocabulary}")
+        if explicit_reasoning_vocabulary + "|ultra" in text:
+            issues.append(f"{path.name} incorrectly exposes ultra as an explicit frontend override")
+        required_fragments = {
+            "frontend_route_plan.sh": ["quality_governance", "delegation_contract", "--orchestration"],
+            "frontend_worker_entry.sh": ["reasoning_targets", "delegation_policies", "runtime_remediation_policies"],
+        }.get(path.name, [])
+        for fragment in required_fragments:
+            if fragment not in text:
+                issues.append(f"{path.name} missing V2 routing fragment: {fragment}")
+
+    try:
+        worker = load_toml(worker_agent_path)
+        for required in ["name", "description", "developer_instructions"]:
+            if not str(worker.get(required, "")).strip():
+                issues.append(f"worker.toml missing required field: {required}")
+        if "model" in worker or "model_reasoning_effort" in worker:
+            issues.append("worker.toml must inherit model and reasoning from the parent/runtime profile")
+    except (OSError, ValueError, tomllib.TOMLDecodeError) as exc:
+        issues.append(f"failed to validate worker.toml: {exc}")
+
+    if config_path.is_file():
+        try:
+            config = load_toml(config_path)
+            profiles = runtime_profiles(config)
+            catalog, catalog_warning = bundled_model_catalog()
+            if catalog_warning:
+                warnings.append(catalog_warning)
+            if catalog:
+                model_catalog_source = "codex debug models --bundled"
+                for profile in profiles:
+                    model = catalog.get(profile["model"])
+                    if not model:
+                        issues.append(f"runtime profile {profile['role']} references unknown model {profile['model']}")
+                        continue
+                    reasoning = profile["reasoning"]
+                    if reasoning:
+                        supported = {
+                            str(item.get("effort", ""))
+                            for item in model.get("supported_reasoning_levels", [])
+                            if isinstance(item, dict)
+                        }
+                        if reasoning not in supported:
+                            issues.append(
+                                f"runtime profile {profile['role']} uses unsupported reasoning {reasoning} for {profile['model']}"
+                            )
+        except (OSError, ValueError, tomllib.TOMLDecodeError) as exc:
+            issues.append(f"failed to validate config.toml model profiles: {exc}")
+    else:
+        warnings.append("config.toml not present in route pack source; runtime profiles were not checked")
+
+    return {
+        "status": "error" if issues else "warning" if warnings else "ok",
+        "issues": issues,
+        "warnings": warnings,
+        "runtime_profiles": profiles,
+        "model_catalog_source": model_catalog_source,
+    }
+
+
+def build_manifest(source_root: Path, *, include_semantic: bool = True) -> dict:
     files = [file_entry(source_root, spec) for spec in ROUTE_PACK_FILES]
     missing_required = [
         item["path"] for item in files if item["required"] and not item["exists"]
     ]
     existing_files = [item for item in files if item["exists"]]
+    if include_semantic and not missing_required:
+        semantic = semantic_validation(source_root)
+    else:
+        reason = (
+            "semantic validation skipped because required route-pack files are missing"
+            if missing_required
+            else "semantic validation disabled for structural self-check"
+        )
+        semantic = {
+            "status": "skipped",
+            "issues": [],
+            "warnings": [reason],
+            "runtime_profiles": [],
+            "model_catalog_source": "unavailable",
+        }
+    if missing_required:
+        status = "missing-required"
+    elif semantic["status"] == "error":
+        status = "semantic-error"
+    else:
+        status = "ok"
     return {
         "schema": SCHEMA,
         "generated_at": utc_now(),
         "source_root": str(source_root),
-        "status": "ok" if not missing_required else "missing-required",
+        "status": status,
         "summary": {
             "tracked_files": len(files),
             "existing_files": len(existing_files),
@@ -124,6 +357,7 @@ def build_manifest(source_root: Path) -> dict:
             "missing_required": missing_required,
         },
         "files": files,
+        "semantic_validation": semantic,
         "validation": {
             "suggested_commands": SUGGESTED_VALIDATION_COMMANDS,
             "screenshot_policy": "Route planner decides screenshot_evidence_level=none|optional|required.",
@@ -170,6 +404,13 @@ def emit_human(payload: dict, copied: list[str], manifest_path: Path | None, dry
         print("missing_required:")
         for rel_path in summary["missing_required"]:
             print(f"- {rel_path}")
+    semantic = payload.get("semantic_validation", {})
+    if semantic:
+        print(f"semantic_validation: {semantic.get('status', 'unknown')}")
+        for issue in semantic.get("issues", []):
+            print(f"- semantic_error: {issue}")
+        for warning in semantic.get("warnings", []):
+            print(f"- semantic_warning: {warning}")
     if copied:
         action = "would_copy" if dry_run else "copied"
         print(f"{action}: {len(copied)} files")
@@ -193,7 +434,7 @@ def self_check() -> int:
             if spec.path.endswith(".sh"):
                 path.chmod(0o755)
 
-        payload = build_manifest(root)
+        payload = build_manifest(root, include_semantic=False)
         if payload["status"] != "ok":
             print("self-check fixture unexpectedly failed", file=sys.stderr)
             print(json.dumps(payload, indent=2), file=sys.stderr)
@@ -212,7 +453,7 @@ def self_check() -> int:
 
         missing = root / "tools/frontend_route_plan.sh"
         missing.unlink()
-        failed = build_manifest(root)
+        failed = build_manifest(root, include_semantic=False)
         if failed["status"] != "missing-required":
             print("self-check missing-required fixture unexpectedly passed", file=sys.stderr)
             return 1
