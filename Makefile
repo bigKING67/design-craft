@@ -1,8 +1,9 @@
 DESIGN_CRAFT_SKILL_ROOT ?= $(HOME)/.agents/skills
 SKILL_CREATOR_QUICK_VALIDATE ?= $(HOME)/.codex/skills/.system/skill-creator/scripts/quick_validate.py
+INSTALL_ARGS ?=
 export PYTHONDONTWRITEBYTECODE := 1
 
-.PHONY: validate validate-portable skill-quick-validate score maturity-portable maturity-local pass audit critique motion taste-review seed-dry-run route-smoke doctor platform-scan-check codex-route-pack-check init-dry-run active-scope-check cross-agent-check cross-agent-observed-check cross-agent-motion-observed-check cross-agent-native-observed-check l4-capture-check real-l4-check smell-smoke static-review-smoke upstream-report upstream-remote-report install install-with-legacy legacy-alias-smoke release-gate-local release-gate
+.PHONY: validate validate-portable skill-quick-validate score maturity-portable maturity-local pass audit critique motion taste-review seed-dry-run route-smoke doctor platform-scan-check native-runtime-probe native-runtime-check codex-route-pack-check init-dry-run active-scope-check cross-agent-check cross-agent-observed-check cross-agent-four-host-check cross-agent-motion-observed-check cross-agent-native-observed-check l4-capture-check real-l4-check smell-smoke static-review-smoke upstream-report upstream-freshness-audit upstream-remote-report install install-with-legacy install-verify legacy-alias-smoke release-gate-source publish-local release-gate-local release-gate release-readiness
 
 validate:
 	bash scripts/validate.sh
@@ -20,7 +21,7 @@ score:
 maturity-portable:
 	python3 scripts/design_craft_maturity.py --profile portable --min-score 95
 
-maturity-local: install
+maturity-local:
 	python3 scripts/design_craft_maturity.py --profile local --min-score 95
 
 pass:
@@ -67,6 +68,12 @@ doctor:
 platform-scan-check:
 	@set -e; for platform in ios android adaptive; do python3 scripts/design_craft_platform_scan.py --target "evals/fixtures/platforms/$$platform/valid" --json --strict >/dev/null; if python3 scripts/design_craft_platform_scan.py --target "evals/fixtures/platforms/$$platform/invalid" --json --strict >/dev/null 2>&1; then echo "$$platform invalid platform fixture unexpectedly passed" >&2; exit 1; fi; done
 
+native-runtime-probe:
+	python3 scripts/design_craft_native_runtime_validate.py --write-probe evals/native-runtime/environment-probe.json --json
+
+native-runtime-check:
+	python3 scripts/design_craft_native_runtime_validate.py --validate --require ios --require android --require-real-device --json
+
 codex-route-pack-check:
 	python3 scripts/design_craft_codex_route_pack.py --check >/dev/null
 	python3 scripts/design_craft_codex_route_pack.py --strict >/dev/null
@@ -90,6 +97,9 @@ cross-agent-observed-check:
 	python3 scripts/design_craft_cross_agent_validate.py --observed-task evals/cross-agent/same-prompt-dashboard-review >/dev/null
 	python3 scripts/design_craft_cross_agent_validate.py --observed-task evals/cross-agent/same-prompt-motion-review >/dev/null
 	python3 scripts/design_craft_cross_agent_validate.py --observed-task evals/cross-agent/same-prompt-native-adaptive-review >/dev/null
+
+cross-agent-four-host-check:
+	@for task in same-prompt-dashboard-review same-prompt-motion-review same-prompt-native-adaptive-review; do python3 scripts/design_craft_cross_agent_validate.py --observed-task "evals/cross-agent/$$task" --require-host codex --require-host pi --require-host cursor --require-host claude; done
 
 cross-agent-motion-observed-check:
 	python3 scripts/design_craft_cross_agent_validate.py --observed-task evals/cross-agent/same-prompt-motion-review >/dev/null
@@ -116,20 +126,35 @@ static-review-smoke:
 upstream-report:
 	python3 scripts/upstream_absorption_report.py
 
-upstream-remote-report:
-	python3 scripts/upstream_absorption_report.py --remote --fail-on-unreviewed
+upstream-freshness-audit:
+	python3 scripts/upstream_absorption_report.py --remote-details --fail-on-unreviewed
+
+upstream-remote-report: upstream-freshness-audit
 
 install:
-	bash scripts/install_local.sh
+	bash scripts/install_local.sh $(INSTALL_ARGS)
 
 install-with-legacy:
-	bash scripts/install_local.sh --include-legacy-alias
+	bash scripts/install_local.sh --include-legacy-alias $(INSTALL_ARGS)
+
+install-verify:
+	python3 scripts/design_craft_install_verify.py --source skills/design-craft --installed "$(DESIGN_CRAFT_SKILL_ROOT)/design-craft" --expected-name design-craft --expected-version "$$(cat VERSION)" --require-metadata
+	@if [ -d "$(DESIGN_CRAFT_SKILL_ROOT)/frontend-craft" ]; then python3 scripts/design_craft_install_verify.py --source skills/frontend-craft --installed "$(DESIGN_CRAFT_SKILL_ROOT)/frontend-craft" --expected-name frontend-craft --expected-version "$$(cat VERSION)" --require-metadata; fi
 
 legacy-alias-smoke:
 	bash scripts/frontend_craft_pass.sh --target skills/design-craft --mode motion --skip-route --skip-score >/dev/null
 	grep -Fq 'renamed to `design-craft`' skills/frontend-craft/SKILL.md
 
-release-gate-local: validate-portable skill-quick-validate score maturity-portable pass audit critique motion taste-review seed-dry-run route-smoke doctor platform-scan-check codex-route-pack-check init-dry-run active-scope-check cross-agent-check cross-agent-observed-check l4-capture-check real-l4-check smell-smoke upstream-report upstream-remote-report maturity-local legacy-alias-smoke
-	diff -qr skills/design-craft "$(DESIGN_CRAFT_SKILL_ROOT)/design-craft"
+release-gate-source: validate-portable skill-quick-validate score maturity-portable pass audit critique motion taste-review seed-dry-run route-smoke doctor platform-scan-check codex-route-pack-check init-dry-run active-scope-check cross-agent-check cross-agent-observed-check l4-capture-check real-l4-check smell-smoke upstream-report legacy-alias-smoke
+
+publish-local: release-gate-source
+	bash scripts/install_local.sh $(INSTALL_ARGS)
+	python3 scripts/design_craft_maturity.py --profile local --min-score 95
+	$(MAKE) install-verify
+
+release-gate-local: publish-local
 
 release-gate: release-gate-local
+
+release-readiness: release-gate
+	python3 scripts/upstream_absorption_report.py --remote-details --fail-on-unreviewed

@@ -11,14 +11,14 @@ permissions:
 
 jobs:
   portable:
-    name: ${{ matrix.os }} / Node ${{ matrix.node }}
+    name: ${{ matrix.os }} / Node ${{ matrix.node }} / Python ${{ matrix.python }}
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, macos-latest]
         node: ["22", "24"]
-        python: ["3.13"]
+        python: ["3.11", "3.12", "3.13"]
     steps:
       - uses: actions/checkout@v4
         with:

@@ -2,5 +2,7 @@
 
 Status: unverified.
 
-Reason: Claude did not run this exact native-adaptive prompt against the 0.4.0
-source skill, so no output or score is recorded.
+Reason: Claude Code `2.1.116` reported a logged-in account, but its configured
+custom API base was unreachable and this benchmark failed before inference. A
+command-scoped official-endpoint override connected but returned HTTP 401 for
+the existing bearer on 2026-07-11. No benchmark output or score is recorded.

@@ -3,63 +3,178 @@ set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 INSTALL_ROOT="${DESIGN_CRAFT_SKILL_ROOT:-${FRONTEND_CRAFT_SKILL_ROOT:-${HOME}/.agents/skills}}"
-BACKUP_BASE="${HOME}/.agents/backups"
+BACKUP_BASE="${DESIGN_CRAFT_BACKUP_ROOT:-${HOME}/.agents/backups}"
+KEEP_BACKUPS="${DESIGN_CRAFT_BACKUP_KEEP:-10}"
+LOCK_TIMEOUT="${DESIGN_CRAFT_INSTALL_LOCK_TIMEOUT:-30}"
+VERIFY_SCRIPT="${ROOT_DIR}/scripts/design_craft_install_verify.py"
 DRY_RUN=0
 INCLUDE_LEGACY_ALIAS=0
+PRUNE_BACKUPS=1
+LOCK_DIR="${INSTALL_ROOT}/.design-craft-install.lock"
+LOCK_HELD=0
+STAGING_PATHS=()
+
+usage() {
+  cat <<'EOF'
+Usage:
+  scripts/install_local.sh [--dry-run] [--include-legacy-alias]
+                           [--keep-backups <count>] [--no-prune-backups]
+                           [--lock-timeout <seconds>]
+
+Installs through a same-filesystem staging directory, validates the staged
+copy, atomically replaces the target, and restores the previous target if
+post-install verification fails. An existing legacy frontend-craft alias is
+refreshed even when --include-legacy-alias is omitted.
+EOF
+}
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --dry-run)
       DRY_RUN=1
+      shift
       ;;
     --include-legacy-alias)
       INCLUDE_LEGACY_ALIAS=1
+      shift
+      ;;
+    --keep-backups)
+      KEEP_BACKUPS="${2:?Missing value for --keep-backups}"
+      shift 2
+      ;;
+    --no-prune-backups)
+      PRUNE_BACKUPS=0
+      shift
+      ;;
+    --lock-timeout)
+      LOCK_TIMEOUT="${2:?Missing value for --lock-timeout}"
+      shift 2
+      ;;
+    -h|--help)
+      usage
+      exit 0
       ;;
     *)
       echo "Unknown argument: $1" >&2
-      echo "Usage: $0 [--dry-run] [--include-legacy-alias]" >&2
+      usage >&2
       exit 2
       ;;
   esac
-  shift
 done
 
-install_one() {
-  local name="$1"
-  local source="${ROOT_DIR}/skills/${name}"
-  local target="${INSTALL_ROOT}/${name}"
-  local backup_root="${BACKUP_BASE}/${name}"
+if [[ ! "${KEEP_BACKUPS}" =~ ^[0-9]+$ ]]; then
+  echo "--keep-backups must be a non-negative integer" >&2
+  exit 2
+fi
+if [[ ! "${LOCK_TIMEOUT}" =~ ^[0-9]+$ ]]; then
+  echo "--lock-timeout must be a non-negative integer" >&2
+  exit 2
+fi
+if [[ ! -x "${VERIFY_SCRIPT}" ]]; then
+  echo "Missing executable install verifier: ${VERIFY_SCRIPT}" >&2
+  exit 1
+fi
 
-  if [[ ! -f "${source}/SKILL.md" ]]; then
-    echo "Missing skill source: ${source}/SKILL.md" >&2
-    exit 1
-  fi
-
-  echo "Source: ${source}"
-  echo "Target: ${target}"
-
-  if [[ "${DRY_RUN}" == "1" ]]; then
-    if [[ -e "${target}" ]]; then
-      echo "Would backup existing ${name} target under: ${backup_root}"
+cleanup() {
+  local path
+  for path in "${STAGING_PATHS[@]:-}"; do
+    if [[ -n "${path}" && -d "${path}" ]]; then
+      rm -rf "${path}"
     fi
-    echo "Would install ${name} skill."
-    return
+  done
+  if [[ "${LOCK_HELD}" == "1" && -d "${LOCK_DIR}" ]]; then
+    rm -rf "${LOCK_DIR}"
   fi
+}
+trap cleanup EXIT INT TERM
 
+acquire_lock() {
   mkdir -p "${INSTALL_ROOT}"
+  local waited=0
+  while ! mkdir "${LOCK_DIR}" 2>/dev/null; do
+    local owner=""
+    if [[ -f "${LOCK_DIR}/pid" ]]; then
+      owner="$(sed -n '1p' "${LOCK_DIR}/pid" 2>/dev/null || true)"
+    fi
+    if [[ "${owner}" =~ ^[0-9]+$ ]] && ! kill -0 "${owner}" 2>/dev/null; then
+      rm -rf "${LOCK_DIR}"
+      continue
+    fi
+    if (( waited >= LOCK_TIMEOUT )); then
+      echo "Timed out waiting for install lock: ${LOCK_DIR}" >&2
+      exit 1
+    fi
+    sleep 1
+    waited=$((waited + 1))
+  done
+  printf '%s\n' "$$" > "${LOCK_DIR}/pid"
+  LOCK_HELD=1
+}
 
-  if [[ -e "${target}" ]]; then
-    local stamp
-    local backup
-    stamp="$(date -u +%Y%m%dT%H%M%SZ)"
-    backup="${backup_root}/${stamp}"
-    mkdir -p "${backup_root}"
-    mv "${target}" "${backup}"
-    echo "Backed up existing ${name} skill to: ${backup}"
+write_metadata() {
+  local target="$1"
+  local name="$2"
+  local version="$3"
+  local commit="unavailable"
+  local repo="unavailable"
+  local dirty="true"
+
+  commit="$(git -C "${ROOT_DIR}" rev-parse HEAD 2>/dev/null || printf '%s' 'unavailable')"
+  repo="$(git -C "${ROOT_DIR}" remote get-url origin 2>/dev/null || printf '%s' 'unavailable')"
+  if [[ "${commit}" != "unavailable" ]]; then
+    if [[ -z "$(git -C "${ROOT_DIR}" status --porcelain 2>/dev/null || true)" ]]; then
+      dirty="false"
+    fi
   fi
 
-  cp -R "${source}" "${target}"
-  python3 - "${target}" <<'PY'
+  python3 - "${target}" "${name}" "${version}" "${ROOT_DIR}" "${commit}" "${repo}" "${dirty}" <<'PY'
+import json
+import hashlib
+import sys
+from datetime import datetime, timezone
+from pathlib import Path
+from urllib.parse import urlsplit, urlunsplit
+
+target, name, version, source_root, commit, repo, dirty = sys.argv[1:]
+if "://" in repo:
+    parsed = urlsplit(repo)
+    host = parsed.hostname or ""
+    if parsed.port:
+        host = f"{host}:{parsed.port}"
+    repo = urlunsplit((parsed.scheme, host, parsed.path, "", ""))
+target_path = Path(target)
+tree = hashlib.sha256()
+for path in sorted(target_path.rglob("*")):
+    if not path.is_file() or "__pycache__" in path.parts or path.name in {".DS_Store", ".design-craft-install.json"} or path.suffix in {".pyc", ".pyo"}:
+        continue
+    relative = str(path.relative_to(target_path))
+    file_digest = hashlib.sha256(path.read_bytes()).hexdigest()
+    tree.update(relative.encode("utf-8"))
+    tree.update(b"\0")
+    tree.update(file_digest.encode("ascii"))
+    tree.update(b"\n")
+payload = {
+    "schema": "design-craft.install.v1",
+    "installer_version": 2,
+    "skill_name": name,
+    "version": version,
+    "source_root": source_root,
+    "source_path": str(Path(source_root) / "skills" / name),
+    "source_repo": repo,
+    "source_commit": commit,
+    "source_dirty": dirty == "true",
+    "source_tree_sha256": tree.hexdigest(),
+    "installed_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+}
+target_path.joinpath(".design-craft-install.json").write_text(
+    json.dumps(payload, indent=2, ensure_ascii=False) + "\n",
+    encoding="utf-8",
+)
+PY
+}
+
+clean_runtime_artifacts() {
+  python3 - "$1" <<'PY'
 import shutil
 import sys
 from pathlib import Path
@@ -71,15 +186,132 @@ for cache_dir in target.rglob("__pycache__"):
 for bytecode in target.rglob("*.py[co]"):
     if bytecode.is_file():
         bytecode.unlink()
+for ds_store in target.rglob(".DS_Store"):
+    if ds_store.is_file():
+        ds_store.unlink()
 PY
+}
+
+prune_backups() {
+  local backup_root="$1"
+  if [[ "${PRUNE_BACKUPS}" != "1" || ! -d "${backup_root}" ]]; then
+    return
+  fi
+  python3 - "${backup_root}" "${KEEP_BACKUPS}" <<'PY'
+import re
+import shutil
+import sys
+from pathlib import Path
+
+root = Path(sys.argv[1])
+keep = int(sys.argv[2])
+pattern = re.compile(r"^(?:failed-)?(\d{8}T\d{6}Z(?:-\d+-\d+)?)$")
+candidates = []
+for path in root.iterdir():
+    match = pattern.fullmatch(path.name) if path.is_dir() else None
+    if match:
+        candidates.append((match.group(1), path))
+candidates.sort(key=lambda item: item[0], reverse=True)
+for _, path in candidates[keep:]:
+    shutil.rmtree(path)
+PY
+}
+
+verify_install() {
+  local source="$1"
+  local target="$2"
+  local name="$3"
+  local version="$4"
+  python3 "${VERIFY_SCRIPT}" \
+    --source "${source}" \
+    --installed "${target}" \
+    --expected-name "${name}" \
+    --expected-version "${version}" \
+    --require-metadata
+}
+
+install_one() {
+  local name="$1"
+  local source="${ROOT_DIR}/skills/${name}"
+  local target="${INSTALL_ROOT}/${name}"
+  local backup_root="${BACKUP_BASE}/${name}"
+  local version
+  version="$(tr -d '[:space:]' < "${ROOT_DIR}/VERSION")"
+
+  if [[ ! -f "${source}/SKILL.md" ]]; then
+    echo "Missing skill source: ${source}/SKILL.md" >&2
+    exit 1
+  fi
+
+  echo "Source: ${source}"
+  echo "Target: ${target}"
+
+  if [[ "${DRY_RUN}" == "1" ]]; then
+    if [[ -e "${target}" || -L "${target}" ]]; then
+      echo "Would backup existing ${name} target under: ${backup_root}"
+    fi
+    echo "Would stage, verify, and atomically install ${name}."
+    return
+  fi
+
+  local stage
+  stage="$(mktemp -d "${INSTALL_ROOT}/.${name}.staging.XXXXXX")"
+  STAGING_PATHS+=("${stage}")
+  cp -R "${source}/." "${stage}/"
+  clean_runtime_artifacts "${stage}"
+  write_metadata "${stage}" "${name}" "${version}"
+  verify_install "${source}" "${stage}" "${name}" "${version}" >/dev/null
+
+  local backup=""
+  local stamp
+  stamp="$(date -u +%Y%m%dT%H%M%SZ)-$$-${RANDOM}"
+  if [[ -e "${target}" || -L "${target}" ]]; then
+    mkdir -p "${backup_root}"
+    backup="${backup_root}/${stamp}"
+    mv "${target}" "${backup}"
+    echo "Backed up existing ${name} skill to: ${backup}"
+  fi
+
+  if [[ "${DESIGN_CRAFT_INSTALL_TEST_FAIL_AFTER_BACKUP:-0}" == "1" ]]; then
+    if [[ -n "${backup}" && -e "${backup}" ]]; then
+      mv "${backup}" "${target}"
+    fi
+    echo "Injected test failure after backup; previous ${name} target was restored." >&2
+    exit 97
+  fi
+
+  if ! mv "${stage}" "${target}"; then
+    if [[ -n "${backup}" && -e "${backup}" ]]; then
+      mv "${backup}" "${target}"
+    fi
+    echo "Atomic install failed; previous ${name} target was restored." >&2
+    exit 1
+  fi
+
+  if [[ "${DESIGN_CRAFT_INSTALL_TEST_FAIL_AFTER_SWITCH:-0}" == "1" ]] || ! verify_install "${source}" "${target}" "${name}" "${version}" >/dev/null; then
+    mkdir -p "${backup_root}"
+    mv "${target}" "${backup_root}/failed-${stamp}"
+    if [[ -n "${backup}" && -e "${backup}" ]]; then
+      mv "${backup}" "${target}"
+    fi
+    prune_backups "${backup_root}"
+    echo "Post-install verification failed; previous ${name} target was restored." >&2
+    exit 1
+  fi
+
+  prune_backups "${backup_root}"
   echo "Installed ${name} skill to: ${target}"
 }
 
+if [[ "${DRY_RUN}" != "1" ]]; then
+  acquire_lock
+fi
+
 install_one "design-craft"
-if [[ "${INCLUDE_LEGACY_ALIAS}" == "1" ]]; then
+if [[ "${INCLUDE_LEGACY_ALIAS}" == "1" || -e "${INSTALL_ROOT}/frontend-craft" || -L "${INSTALL_ROOT}/frontend-craft" ]]; then
   install_one "frontend-craft"
-else
-  echo "Skipped legacy frontend-craft alias. Pass --include-legacy-alias to install it."
+elif [[ "${INCLUDE_LEGACY_ALIAS}" != "1" ]]; then
+  echo "Skipped absent legacy frontend-craft alias. Pass --include-legacy-alias to install it."
 fi
 
 if [[ "${DRY_RUN}" == "1" ]]; then

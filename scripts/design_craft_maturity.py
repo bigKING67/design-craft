@@ -282,14 +282,24 @@ def text_gate(gate_id: str, path: str, needles: list[str], evidence: str, gap: s
 
 
 def observed_eval_gate(gate_id: str, directory: str) -> Gate:
-    root = ROOT / directory
-    required = [root / "codex-output.md", root / "pi-output.md", root / "score.codex.json", root / "score.pi.json"]
-    passed = all(path.is_file() and path.stat().st_size > 20 for path in required)
+    result = run(
+        [
+            sys.executable,
+            "scripts/design_craft_cross_agent_validate.py",
+            "--observed-task",
+            directory,
+            "--require-host",
+            "codex",
+            "--require-host",
+            "pi",
+        ]
+    )
+    passed = result.returncode == 0
     return make_gate(
         gate_id,
         passed,
-        f"observed Codex and Pi artifacts exist in {directory}",
-        f"missing observed Codex/Pi artifacts in {directory}",
+        f"schema-valid Codex/Pi artifacts and explicit remaining-host boundaries exist in {directory}",
+        result.stderr.strip() or f"observed cross-agent evidence is invalid in {directory}",
     )
 
 
@@ -334,53 +344,119 @@ def install_gate(profile: str) -> Gate:
     source = ROOT / "skills/design-craft"
     if profile == "local":
         install_root = Path(os.environ.get("DESIGN_CRAFT_SKILL_ROOT", Path.home() / ".agents/skills")).expanduser()
-        passed, detail = trees_equal(source, install_root / "design-craft")
+        version = read(ROOT / "VERSION").strip()
+        result = run(
+            [
+                sys.executable,
+                "scripts/design_craft_install_verify.py",
+                "--source",
+                str(source),
+                "--installed",
+                str(install_root / "design-craft"),
+                "--expected-name",
+                "design-craft",
+                "--expected-version",
+                version,
+                "--require-metadata",
+                "--json",
+            ]
+        )
+        try:
+            payload = json.loads(result.stdout)
+        except Exception:
+            payload = {}
+        passed = result.returncode == 0 and payload.get("ok") is True
+        detail = "; ".join(payload.get("errors", [])) or result.stderr.strip()
         return make_gate(
             "install_parity",
             passed,
-            "installed ~/.agents design-craft tree matches source",
+            "installed ~/.agents design-craft tree and provenance metadata match source",
             "source/install parity failed: " + detail,
         )
 
     installer = read(ROOT / "scripts/install_local.sh")
-    passed = "cp -R" in installer and (source / "scripts/design_craft_route.sh").is_file()
+    passed = all(
+        needle in installer
+        for needle in (
+            "mktemp -d",
+            ".design-craft-install.lock",
+            "Atomic install failed",
+            "Post-install verification failed",
+            "DESIGN_CRAFT_BACKUP_KEEP",
+            ".design-craft-install.json",
+        )
+    ) and (ROOT / "scripts/design_craft_install_verify.py").is_file()
     return make_gate(
         "install_parity",
         passed,
-        "portable install image includes runtime scripts and installer copies the full skill tree",
-        "portable install image or installer contract is incomplete",
+        "portable installer stages, locks, atomically switches, rolls back, retains backups, and records provenance",
+        "atomic portable installer or provenance verifier contract is incomplete",
     )
 
 
 def route_pack_gate(profile: str) -> Gate:
+    try:
+        compatibility = json.loads(read(ROOT / "skills/design-craft/COMPATIBILITY.json"))
+    except Exception:
+        compatibility = {}
+    expected_schema = compatibility.get("codex_route_pack", {}).get("schema")
+    expected_manifest_schema = compatibility.get("codex_route_pack", {}).get("manifest_schema")
     if profile == "local":
         result = run([sys.executable, "scripts/design_craft_codex_route_pack.py", "--strict", "--json"], timeout=90)
         try:
             payload = json.loads(result.stdout)
         except Exception:
             payload = {}
-        passed = result.returncode == 0 and payload.get("schema") == "design-craft.codex-route-pack.v2"
+        passed = (
+            result.returncode == 0
+            and expected_schema == "design-craft.codex-route-pack.v2"
+            and expected_manifest_schema == "codex.frontend-route-pack.manifest.v1"
+            and payload.get("schema") == expected_schema
+            and payload.get("route_pack_manifest", {}).get("schema")
+            == expected_manifest_schema
+        )
     else:
         content = read(ROOT / "scripts/design_craft_codex_route_pack.py")
-        passed = 'SCHEMA = "design-craft.codex-route-pack.v2"' in content
+        passed = (
+            expected_schema == "design-craft.codex-route-pack.v2"
+            and expected_manifest_schema == "codex.frontend-route-pack.manifest.v1"
+            and f'SCHEMA = "{expected_schema}"' in content
+            and f'ROUTE_PACK_MANIFEST_SCHEMA = "{expected_manifest_schema}"' in content
+        )
     return make_gate(
         "route_pack_v2",
         passed,
-        "Codex route pack remains on the validated v2 ownership/delegation contract",
-        "Codex route-pack v2 contract is missing or invalid",
+        "installed compatibility contract matches the route-pack v2 and single-manifest schemas",
+        "Codex route-pack compatibility contract is missing, invalid, or mismatched",
         hard=False,
     )
 
 
 def native_runtime_gate() -> Gate:
-    ios = ROOT / "evals/native-runtime/ios-observed.json"
-    android = ROOT / "evals/native-runtime/android-observed.json"
-    passed = ios.is_file() and android.is_file()
+    result = run(
+        [
+            sys.executable,
+            "scripts/design_craft_native_runtime_validate.py",
+            "--validate",
+            "--require",
+            "ios",
+            "--require",
+            "android",
+            "--require-real-device",
+            "--json",
+        ]
+    )
+    try:
+        payload = json.loads(result.stdout)
+    except Exception:
+        payload = {}
+    passed = result.returncode == 0 and payload.get("ok") is True
+    detail = "; ".join(payload.get("errors", []))
     return make_gate(
         "native_runtime_observed",
         passed,
-        "observed iOS and Android runtime evidence exists",
-        "iOS Simulator and Android Emulator are unverified locally; maturity is capped at 95",
+        "schema-validated observed iOS and Android runtime evidence exists",
+        detail or "iOS Simulator, Android Emulator, and real-device evidence are unverified; maturity is capped at 95",
         hard=False,
     )
 
@@ -414,15 +490,15 @@ def build_gates(profile: str) -> list[Gate]:
         text_gate(
             "portable_ci",
             ".github/workflows/validate.yml",
-            ["ubuntu-latest", "macos-latest", '"22"', '"24"', '"3.13"', "submodules: recursive", "--profile portable", "--min-score 95"],
-            "portable CI covers Ubuntu/macOS, Node 22/24, Python 3.13, recursive submodules, and maturity 95",
+            ["ubuntu-latest", "macos-latest", '"22"', '"24"', '"3.11"', '"3.12"', '"3.13"', "submodules: recursive", "--profile portable", "--min-score 95"],
+            "portable CI covers Ubuntu/macOS, Node 22/24, Python 3.11/3.12/3.13, recursive submodules, and maturity 95",
             "portable CI matrix is incomplete",
         ),
         text_gate(
             "upstream_audit_ci",
             ".github/workflows/upstream-audit.yml",
-            ["schedule:", "--remote", "--fail-on-unreviewed"],
-            "scheduled upstream audit fails on unreviewed remote drift",
+            ["17 3 * * *", "--remote-details", "--fail-on-unreviewed", "issues: write", "Open or update review issue"],
+            "daily actionable upstream audit reports changed paths and opens a review issue",
             "upstream audit workflow is incomplete",
         ),
         observed_eval_gate("observed_dashboard_eval", "evals/cross-agent/same-prompt-dashboard-review"),
@@ -474,6 +550,7 @@ def main() -> int:
         "native_runtime": {
             "ios_simulator": "observed" if native_runtime_observed else "unverified locally",
             "android_emulator": "observed" if native_runtime_observed else "unverified locally",
+            "real_device": "observed" if native_runtime_observed else "unverified locally",
         },
     }
 

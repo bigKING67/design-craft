@@ -22,10 +22,12 @@ import tempfile
 import tomllib
 from dataclasses import dataclass
 from datetime import datetime, timezone
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 
 
 SCHEMA = "design-craft.codex-route-pack.v2"
+ROUTE_PACK_MANIFEST_SCHEMA = "codex.frontend-route-pack.manifest.v1"
+ROUTE_PACK_MANIFEST_PATH = "tools/frontend_route_pack_manifest.json"
 
 
 @dataclass(frozen=True)
@@ -33,34 +35,6 @@ class PackFile:
     path: str
     required: bool
     kind: str
-
-
-ROUTE_PACK_FILES = [
-    PackFile("AGENTS.md", True, "global-rule"),
-    PackFile("rules/frontend.md", True, "frontend-rule"),
-    PackFile("agents/worker.toml", True, "frontend-agent"),
-    PackFile("tools/frontend_route_plan.sh", True, "route-planner"),
-    PackFile("tools/frontend_platform_detect.py", True, "platform-detector"),
-    PackFile("tools/frontend_agent_routing.json", True, "route-config"),
-    PackFile("tools/frontend_worker_entry.sh", True, "worker-gate"),
-    PackFile("tools/frontend_preflight_spec.json", True, "preflight-config"),
-    PackFile("tools/frontend_preflight.py", True, "preflight-runner"),
-    PackFile("tools/frontend_preflight_run.sh", True, "preflight-entry"),
-    PackFile("tools/frontend_preflight_verify.sh", True, "preflight-validator"),
-    PackFile("tools/agents_quality_verify.sh", True, "global-validator"),
-    PackFile("tools/tests/test_frontend_route_plan.sh", True, "route-test"),
-    PackFile("tools/tests/test_frontend_route_contract.sh", True, "route-test"),
-    PackFile("tools/tests/test_frontend_delivery_contract.sh", True, "route-test"),
-    PackFile("tools/tests/test_frontend_preflight.sh", True, "preflight-test"),
-    PackFile("tools/tests/test_frontend_preflight_spec_sync.sh", True, "preflight-test"),
-    PackFile("tools/frontend_authority_init.sh", False, "style-authority-helper"),
-    PackFile("tools/frontend_preflight_policy.json", False, "preflight-policy"),
-    PackFile("tools/frontend_preflight_policy_run.sh", False, "preflight-policy"),
-    PackFile("tools/frontend_preflight_report.sh", False, "preflight-report"),
-    PackFile("tools/frontend_preflight_log_summary.sh", False, "preflight-logs"),
-    PackFile("tools/frontend_preflight_log_rotate.sh", False, "preflight-logs"),
-    PackFile("tools/frontend_preflight_log_maintenance.sh", False, "preflight-logs"),
-]
 
 
 SUGGESTED_VALIDATION_COMMANDS = [
@@ -115,6 +89,114 @@ def load_json(path: Path) -> dict:
     if not isinstance(payload, dict):
         raise ValueError(f"expected JSON object: {path}")
     return payload
+
+
+def normalize_manifest_path(raw_path: object) -> str:
+    if not isinstance(raw_path, str) or not raw_path.strip():
+        raise ValueError("route-pack manifest file path must be a non-empty string")
+    path = raw_path.strip()
+    posix_path = PurePosixPath(path)
+    if posix_path.is_absolute() or "\\" in path or any(part in {"", ".", ".."} for part in posix_path.parts):
+        raise ValueError(f"route-pack manifest file path must be a safe relative POSIX path: {path!r}")
+    return posix_path.as_posix()
+
+
+def load_route_pack_files(source_root: Path) -> tuple[list[PackFile], dict]:
+    manifest_path = source_root / ROUTE_PACK_MANIFEST_PATH
+    manifest = load_json(manifest_path)
+    errors: list[str] = []
+
+    if manifest.get("schema") != ROUTE_PACK_MANIFEST_SCHEMA:
+        errors.append(
+            "route-pack manifest schema must be "
+            f"{ROUTE_PACK_MANIFEST_SCHEMA}, got {manifest.get('schema')!r}"
+        )
+    if manifest.get("version") != 1:
+        errors.append("route-pack manifest version must be 1")
+
+    raw_files = manifest.get("files")
+    if not isinstance(raw_files, list) or not raw_files:
+        errors.append("route-pack manifest files must be a non-empty array")
+        raw_files = []
+
+    seen: set[str] = set()
+    route_pack_files: list[PackFile] = []
+    snapshot_paths: set[str] = set()
+    route_pack_metadata: dict[str, dict] = {}
+    for index, raw in enumerate(raw_files):
+        prefix = f"route-pack manifest files[{index}]"
+        if not isinstance(raw, dict):
+            errors.append(f"{prefix} must be an object")
+            continue
+        try:
+            rel_path = normalize_manifest_path(raw.get("path"))
+        except ValueError as exc:
+            errors.append(f"{prefix}: {exc}")
+            continue
+        if rel_path in seen:
+            errors.append(f"route-pack manifest contains duplicate path: {rel_path}")
+            continue
+        seen.add(rel_path)
+
+        required = raw.get("required")
+        route_pack = raw.get("route_pack")
+        snapshot = raw.get("snapshot")
+        kind = raw.get("kind")
+        if not isinstance(required, bool):
+            errors.append(f"{prefix}.required must be boolean")
+        if not isinstance(route_pack, bool):
+            errors.append(f"{prefix}.route_pack must be boolean")
+        if not isinstance(snapshot, bool):
+            errors.append(f"{prefix}.snapshot must be boolean")
+        if not isinstance(kind, str) or not kind.strip():
+            errors.append(f"{prefix}.kind must be a non-empty string")
+        if not all(
+            [
+                isinstance(required, bool),
+                isinstance(route_pack, bool),
+                isinstance(snapshot, bool),
+                isinstance(kind, str) and bool(kind.strip()),
+            ]
+        ):
+            continue
+
+        if snapshot:
+            snapshot_paths.add(rel_path)
+        if route_pack:
+            route_pack_files.append(PackFile(rel_path, required, kind.strip()))
+            route_pack_metadata[rel_path] = raw
+
+    manifest_entry = route_pack_metadata.get(ROUTE_PACK_MANIFEST_PATH)
+    if not manifest_entry or manifest_entry.get("required") is not True:
+        errors.append(
+            f"{ROUTE_PACK_MANIFEST_PATH} must include itself as required route_pack=true"
+        )
+    required_without_snapshot = sorted(
+        spec.path
+        for spec in route_pack_files
+        if spec.required and spec.path not in snapshot_paths
+    )
+    if required_without_snapshot:
+        errors.append(
+            "required route-pack files must also be snapshot=true: "
+            + ", ".join(required_without_snapshot)
+        )
+    if not route_pack_files:
+        errors.append("route-pack manifest selects no route_pack=true files")
+    if errors:
+        raise ValueError("; ".join(errors))
+
+    return route_pack_files, {
+        "schema": manifest["schema"],
+        "version": manifest["version"],
+        "path": ROUTE_PACK_MANIFEST_PATH,
+        "sha256": sha256_file(manifest_path),
+        "declared_files": len(raw_files),
+        "selected_files": len(route_pack_files),
+        "required_files": sum(1 for spec in route_pack_files if spec.required),
+        "snapshot_files": len(snapshot_paths),
+        "required_snapshot_covered": not required_without_snapshot,
+    }
 
 
 def load_toml(path: Path) -> dict:
@@ -181,17 +263,90 @@ def runtime_profiles(config: dict) -> list[dict[str, str]]:
     return profiles
 
 
+def run_route_probe(
+    source_root: Path,
+    arguments: list[str],
+    *,
+    runtime_model: str | None = None,
+    runtime_reasoning: str | None = None,
+) -> tuple[int, dict, str]:
+    route_plan = source_root / "tools/frontend_route_plan.sh"
+    env = os.environ.copy()
+    env.update(
+        {
+            "CODEX_HOME": str(source_root),
+            "FRONTEND_WORKSPACE_ROOT": str(source_root),
+            "FRONTEND_PREFLIGHT_LOG_ENABLED": "0",
+        }
+    )
+    env.pop("CODEX_EFFECTIVE_MODEL", None)
+    env.pop("CODEX_EFFECTIVE_REASONING", None)
+    if runtime_model is not None:
+        env["CODEX_EFFECTIVE_MODEL"] = runtime_model
+    if runtime_reasoning is not None:
+        env["CODEX_EFFECTIVE_REASONING"] = runtime_reasoning
+    try:
+        completed = subprocess.run(
+            ["bash", str(route_plan), *arguments],
+            cwd=source_root,
+            env=env,
+            check=False,
+            capture_output=True,
+            text=True,
+            timeout=30,
+        )
+    except (OSError, subprocess.TimeoutExpired) as exc:
+        return 127, {}, str(exc)
+    try:
+        payload = json.loads(completed.stdout)
+    except json.JSONDecodeError as exc:
+        detail = (completed.stderr or completed.stdout).strip()
+        return completed.returncode, {}, f"invalid route JSON: {exc}; {detail[:240]}"
+    return completed.returncode, payload, (completed.stderr or "").strip()
+
+
 def semantic_validation(source_root: Path) -> dict:
     issues: list[str] = []
     warnings: list[str] = []
+    runtime_probes: list[dict] = []
     routing_path = source_root / "tools/frontend_agent_routing.json"
+    routing_schema_path = source_root / "tools/frontend_agent_routing.schema.json"
+    routing_schema_validator_path = source_root / "tools/frontend_route_schema_validate.py"
     route_plan_path = source_root / "tools/frontend_route_plan.sh"
+    route_core_path = source_root / "tools/frontend_route_core.py"
     platform_detect_path = source_root / "tools/frontend_platform_detect.py"
     worker_entry_path = source_root / "tools/frontend_worker_entry.sh"
+    worker_route_core_path = source_root / "tools/frontend_worker_route_core.py"
+    worker_payload_core_path = source_root / "tools/frontend_worker_payload_core.py"
     worker_agent_path = source_root / "agents/worker.toml"
     config_path = source_root / "config.toml"
     profiles: list[dict[str, str]] = []
     model_catalog_source = "not-run"
+
+    try:
+        schema_completed = subprocess.run(
+            [
+                sys.executable,
+                str(routing_schema_validator_path),
+                "--schema",
+                str(routing_schema_path),
+                "--instance",
+                str(routing_path),
+                "--json",
+            ],
+            cwd=source_root,
+            check=False,
+            capture_output=True,
+            text=True,
+            timeout=20,
+        )
+        schema_payload = json.loads(schema_completed.stdout)
+        if schema_completed.returncode != 0 or schema_payload.get("ok") is not True:
+            schema_errors = schema_payload.get("errors")
+            detail = "; ".join(schema_errors) if isinstance(schema_errors, list) else schema_completed.stderr.strip()
+            issues.append(f"frontend routing JSON Schema validation failed: {detail[:500]}")
+    except (OSError, subprocess.TimeoutExpired, json.JSONDecodeError) as exc:
+        issues.append(f"failed to run frontend routing JSON Schema validation: {exc}")
 
     try:
         routing = load_json(routing_path)
@@ -254,46 +409,75 @@ def semantic_validation(source_root: Path) -> dict:
     except (OSError, ValueError, json.JSONDecodeError) as exc:
         issues.append(f"failed to validate routing config: {exc}")
 
-    for path, forbidden in [
-        (route_plan_path, ["gpt-5.5", "default_high", "worker_xhigh", "route_defaults ="]),
-        (worker_entry_path, ["gpt-5.5", "default_high", "worker_xhigh"]),
-    ]:
+    route_files = [
+        route_plan_path,
+        route_core_path,
+        worker_entry_path,
+        worker_route_core_path,
+        worker_payload_core_path,
+    ]
+    required_fragments = {
+        "frontend_route_plan.sh": [
+            "frontend_route_core.py",
+            "--orchestration",
+            "--platform",
+            "--product-context-path",
+            "--browser-context",
+            "--delegation-authorization",
+            "--visual-contract",
+        ],
+        "frontend_route_core.py": [
+            "quality_governance",
+            "delegation_contract",
+            "runtime_profile_verified",
+            "delegation_authorization_missing",
+            '"design_tier": tier',
+            '"preferred_browser_tool": preferred_browser_tool',
+            '"runtime_validation_kind": runtime_validation_kind',
+            '"native_validation_required": native_validation_required',
+        ],
+        "frontend_worker_entry.sh": [
+            "frontend_worker_route_core.py",
+            "frontend_worker_payload_core.py",
+            "--platform",
+            "--runtime-validation-kind",
+            "--preferred-runtime-tool",
+        ],
+        "frontend_worker_route_core.py": [
+            "reasoning_targets",
+            "delegation_policies",
+            "runtime_remediation_policies",
+            "validate_document",
+        ],
+        "frontend_worker_payload_core.py": [
+            "runtime_validation_kinds",
+            '"design_tier": frontend_tier',
+            '"preferred_runtime_tool": preferred_runtime_tool',
+        ],
+    }
+    for path in route_files:
         try:
             text = path.read_text(encoding="utf-8")
         except OSError as exc:
             issues.append(f"failed to read {path.name}: {exc}")
             continue
-        for fragment in forbidden:
+        for fragment in ["gpt-5.5", "default_high", "worker_xhigh", "route_defaults ="]:
             if fragment in text:
                 issues.append(f"{path.name} contains stale routing fragment: {fragment}")
-        explicit_reasoning_vocabulary = "auto|inherit|low|medium|high|xhigh|max"
+        for fragment in required_fragments.get(path.name, []):
+            if fragment not in text:
+                issues.append(f"{path.name} missing V2 routing fragment: {fragment}")
+
+    explicit_reasoning_vocabulary = "auto|inherit|low|medium|high|xhigh|max"
+    for path in [route_plan_path, worker_entry_path]:
+        try:
+            text = path.read_text(encoding="utf-8")
+        except OSError:
+            continue
         if explicit_reasoning_vocabulary not in text:
             issues.append(f"{path.name} missing explicit reasoning vocabulary: {explicit_reasoning_vocabulary}")
         if explicit_reasoning_vocabulary + "|ultra" in text:
             issues.append(f"{path.name} incorrectly exposes ultra as an explicit frontend override")
-        required_fragments = {
-            "frontend_route_plan.sh": [
-                "quality_governance",
-                "delegation_contract",
-                "--orchestration",
-                "--platform",
-                "--product-context-path",
-                '"design_tier": tier',
-                '"runtime_validation_kind"',
-                '"native_validation_required"',
-            ],
-            "frontend_worker_entry.sh": [
-                "reasoning_targets",
-                "delegation_policies",
-                "runtime_remediation_policies",
-                "--platform",
-                "runtime_validation_kinds",
-                '"design_tier": frontend_tier',
-            ],
-        }.get(path.name, [])
-        for fragment in required_fragments:
-            if fragment not in text:
-                issues.append(f"{path.name} missing V2 routing fragment: {fragment}")
 
     try:
         platform_text = platform_detect_path.read_text(encoding="utf-8")
@@ -317,6 +501,75 @@ def semantic_validation(source_root: Path) -> dict:
             issues.append("worker.toml must inherit model and reasoning from the parent/runtime profile")
     except (OSError, ValueError, tomllib.TOMLDecodeError) as exc:
         issues.append(f"failed to validate worker.toml: {exc}")
+
+    probe_base = [
+        "--surface",
+        "dashboard",
+        "--intent",
+        "functional",
+        "--scope",
+        "component",
+        "--visual-contract",
+        "not-applicable",
+        "--output",
+        "json",
+    ]
+    for browser_context, expected_tool in [
+        ("external", "tmwd_browser"),
+        ("local", "in_app_browser"),
+    ]:
+        returncode, payload, detail = run_route_probe(
+            source_root,
+            [*probe_base, "--browser-context", browser_context],
+        )
+        probe_ok = (
+            returncode == 0
+            and payload.get("preferred_browser_tool") == expected_tool
+            and payload.get("preferred_runtime_tool") == expected_tool
+            and payload.get("style_authority_applicability") == "not_applicable"
+            and payload.get("visual_contract_required") is False
+        )
+        runtime_probes.append(
+            {
+                "name": f"browser_context_{browser_context}",
+                "ok": probe_ok,
+                "returncode": returncode,
+                "preferred_browser_tool": payload.get("preferred_browser_tool"),
+                "preferred_runtime_tool": payload.get("preferred_runtime_tool"),
+            }
+        )
+        if not probe_ok:
+            issues.append(
+                f"browser context {browser_context} route probe failed: "
+                f"expected browser/runtime tool {expected_tool}; {detail[:240]}"
+            )
+
+    returncode, payload, detail = run_route_probe(
+        source_root,
+        [*probe_base, "--browser-context", "local"],
+        runtime_model="gpt-5.6-sol",
+        runtime_reasoning="ultra",
+    )
+    ultra_probe_ok = (
+        returncode == 2
+        and payload.get("route_status") == "error"
+        and payload.get("route_error_code") == "RUNTIME_PROFILE_CONFLICT"
+        and payload.get("gate_decision") == "deny"
+        and payload.get("runtime_profile_verified") is True
+        and payload.get("runtime_remediation_policy")
+        == "downgrade_to_max_or_authorize_delegation"
+    )
+    runtime_probes.append(
+        {
+            "name": "unauthorized_ultra_runtime_conflict",
+            "ok": ultra_probe_ok,
+            "returncode": returncode,
+            "route_error_code": payload.get("route_error_code"),
+            "gate_decision": payload.get("gate_decision"),
+        }
+    )
+    if not ultra_probe_ok:
+        issues.append(f"unauthorized ultra runtime route probe failed: {detail[:240]}")
 
     if config_path.is_file():
         try:
@@ -352,22 +605,50 @@ def semantic_validation(source_root: Path) -> dict:
         "status": "error" if issues else "warning" if warnings else "ok",
         "issues": issues,
         "warnings": warnings,
+        "runtime_probes": runtime_probes,
         "runtime_profiles": profiles,
         "model_catalog_source": model_catalog_source,
     }
 
 
 def build_manifest(source_root: Path, *, include_semantic: bool = True) -> dict:
-    files = [file_entry(source_root, spec) for spec in ROUTE_PACK_FILES]
+    manifest_error = ""
+    try:
+        route_pack_files, route_pack_manifest = load_route_pack_files(source_root)
+        route_pack_manifest["status"] = "ok"
+        route_pack_manifest["errors"] = []
+    except (OSError, ValueError, json.JSONDecodeError) as exc:
+        manifest_error = str(exc)
+        route_pack_files = [
+            PackFile(ROUTE_PACK_MANIFEST_PATH, True, "route-manifest")
+        ]
+        manifest_path = source_root / ROUTE_PACK_MANIFEST_PATH
+        route_pack_manifest = {
+            "schema": "unknown",
+            "version": None,
+            "path": ROUTE_PACK_MANIFEST_PATH,
+            "sha256": sha256_file(manifest_path) if manifest_path.is_file() else "",
+            "declared_files": 0,
+            "selected_files": 0,
+            "required_files": 1,
+            "snapshot_files": 0,
+            "required_snapshot_covered": False,
+            "status": "error",
+            "errors": [manifest_error],
+        }
+
+    files = [file_entry(source_root, spec) for spec in route_pack_files]
     missing_required = [
         item["path"] for item in files if item["required"] and not item["exists"]
     ]
     existing_files = [item for item in files if item["exists"]]
-    if include_semantic and not missing_required:
+    if include_semantic and not missing_required and not manifest_error:
         semantic = semantic_validation(source_root)
     else:
         reason = (
-            "semantic validation skipped because required route-pack files are missing"
+            "semantic validation skipped because the route-pack manifest is invalid"
+            if manifest_error
+            else "semantic validation skipped because required route-pack files are missing"
             if missing_required
             else "semantic validation disabled for structural self-check"
         )
@@ -375,10 +656,13 @@ def build_manifest(source_root: Path, *, include_semantic: bool = True) -> dict:
             "status": "skipped",
             "issues": [],
             "warnings": [reason],
+            "runtime_probes": [],
             "runtime_profiles": [],
             "model_catalog_source": "unavailable",
         }
-    if missing_required:
+    if manifest_error:
+        status = "manifest-error"
+    elif missing_required:
         status = "missing-required"
     elif semantic["status"] == "error":
         status = "semantic-error"
@@ -389,6 +673,7 @@ def build_manifest(source_root: Path, *, include_semantic: bool = True) -> dict:
         "generated_at": utc_now(),
         "source_root": str(source_root),
         "status": status,
+        "route_pack_manifest": route_pack_manifest,
         "summary": {
             "tracked_files": len(files),
             "existing_files": len(existing_files),
@@ -404,14 +689,14 @@ def build_manifest(source_root: Path, *, include_semantic: bool = True) -> dict:
     }
 
 
-def copy_pack(source_root: Path, export_dir: Path, dry_run: bool) -> list[str]:
+def copy_pack(source_root: Path, export_dir: Path, files: list[dict], dry_run: bool) -> list[str]:
     copied: list[str] = []
-    for spec in ROUTE_PACK_FILES:
-        source = source_root / spec.path
+    for item in files:
+        source = source_root / item["path"]
         if not source.is_file():
             continue
-        destination = export_dir / spec.path
-        copied.append(spec.path)
+        destination = export_dir / item["path"]
+        copied.append(item["path"])
         if dry_run:
             continue
         destination.parent.mkdir(parents=True, exist_ok=True)
@@ -434,6 +719,14 @@ def emit_human(payload: dict, copied: list[str], manifest_path: Path | None, dry
     print(f"schema: {payload['schema']}")
     print(f"source_root: {payload['source_root']}")
     print(f"status: {payload['status']}")
+    route_pack_manifest = payload.get("route_pack_manifest", {})
+    print(
+        "route_pack_manifest: "
+        f"{route_pack_manifest.get('status', 'unknown')} "
+        f"({route_pack_manifest.get('path', ROUTE_PACK_MANIFEST_PATH)})"
+    )
+    for error in route_pack_manifest.get("errors", []):
+        print(f"- manifest_error: {error}")
     print(
         "files: "
         f"{summary['existing_files']}/{summary['tracked_files']} existing, "
@@ -461,16 +754,50 @@ def emit_human(payload: dict, copied: list[str], manifest_path: Path | None, dry
 def self_check() -> int:
     with tempfile.TemporaryDirectory(prefix="design-craft-route-pack.") as tmp:
         root = Path(tmp) / "codex-home"
-        for spec in ROUTE_PACK_FILES:
-            if not spec.required:
+        fixture_files = [
+            {
+                "path": ROUTE_PACK_MANIFEST_PATH,
+                "required": True,
+                "kind": "route-manifest",
+                "route_pack": True,
+                "snapshot": True,
+            },
+            {
+                "path": "tools/frontend_route_plan.sh",
+                "required": True,
+                "kind": "route-planner",
+                "route_pack": True,
+                "snapshot": True,
+            },
+            {
+                "path": "tools/frontend_authority_init.sh",
+                "required": False,
+                "kind": "style-authority-helper",
+                "route_pack": True,
+                "snapshot": True,
+            },
+        ]
+        manifest_path = root / ROUTE_PACK_MANIFEST_PATH
+        manifest_path.parent.mkdir(parents=True, exist_ok=True)
+        manifest_path.write_text(
+            json.dumps(
+                {
+                    "schema": ROUTE_PACK_MANIFEST_SCHEMA,
+                    "version": 1,
+                    "files": fixture_files,
+                },
+                indent=2,
+            )
+            + "\n",
+            encoding="utf-8",
+        )
+        for raw in fixture_files:
+            if not raw["required"] or raw["path"] == ROUTE_PACK_MANIFEST_PATH:
                 continue
-            path = root / spec.path
+            path = root / raw["path"]
             path.parent.mkdir(parents=True, exist_ok=True)
-            if spec.path.endswith(".json"):
-                path.write_text("{}\n", encoding="utf-8")
-            else:
-                path.write_text("# fixture\n", encoding="utf-8")
-            if spec.path.endswith(".sh"):
+            path.write_text("# fixture\n", encoding="utf-8")
+            if raw["path"].endswith(".sh"):
                 path.chmod(0o755)
 
         payload = build_manifest(root, include_semantic=False)
@@ -480,13 +807,13 @@ def self_check() -> int:
             return 1
 
         export_dir = Path(tmp) / "export"
-        copied = copy_pack(root, export_dir, dry_run=False)
-        if len(copied) != len([item for item in ROUTE_PACK_FILES if item.required]):
+        copied = copy_pack(root, export_dir, payload["files"], dry_run=False)
+        if copied != [ROUTE_PACK_MANIFEST_PATH, "tools/frontend_route_plan.sh"]:
             print("self-check copied an unexpected file count", file=sys.stderr)
             return 1
-        manifest_path = export_dir / "codex-route-pack.manifest.json"
-        write_manifest(payload, manifest_path, dry_run=False)
-        if not manifest_path.is_file():
+        export_manifest_path = export_dir / "codex-route-pack.manifest.json"
+        write_manifest(payload, export_manifest_path, dry_run=False)
+        if not export_manifest_path.is_file():
             print("self-check did not write manifest", file=sys.stderr)
             return 1
 
@@ -495,6 +822,24 @@ def self_check() -> int:
         failed = build_manifest(root, include_semantic=False)
         if failed["status"] != "missing-required":
             print("self-check missing-required fixture unexpectedly passed", file=sys.stderr)
+            return 1
+
+        fixture_files[1]["snapshot"] = False
+        manifest_path.write_text(
+            json.dumps(
+                {
+                    "schema": ROUTE_PACK_MANIFEST_SCHEMA,
+                    "version": 1,
+                    "files": fixture_files,
+                },
+                indent=2,
+            )
+            + "\n",
+            encoding="utf-8",
+        )
+        invalid_manifest = build_manifest(root, include_semantic=False)
+        if invalid_manifest["status"] != "manifest-error":
+            print("self-check invalid manifest unexpectedly passed", file=sys.stderr)
             return 1
 
     return 0
@@ -508,7 +853,11 @@ def main() -> int:
     parser.add_argument("--export-dir", default=None, help="Optional directory to receive a whitelisted copy.")
     parser.add_argument("--manifest", default=None, help="Optional manifest output path.")
     parser.add_argument("--json", action="store_true", help="Print the manifest JSON to stdout.")
-    parser.add_argument("--strict", action="store_true", help="Exit non-zero when required files are missing.")
+    parser.add_argument(
+        "--strict",
+        action="store_true",
+        help="Exit non-zero for manifest, required-file, or semantic validation failures.",
+    )
     parser.add_argument("--dry-run", action="store_true", help="Show what would be written without copying files.")
     parser.add_argument("--check", action="store_true", help="Run built-in self-check fixtures.")
     args = parser.parse_args()
@@ -531,7 +880,10 @@ def main() -> int:
         if export_dir == source_root or source_root in export_dir.parents:
             print("Refusing to export the route pack inside the source Codex home.", file=sys.stderr)
             return 2
-        copied = copy_pack(source_root, export_dir, dry_run=args.dry_run)
+        if payload.get("route_pack_manifest", {}).get("status") != "ok":
+            print("Refusing to export from an invalid route-pack manifest.", file=sys.stderr)
+            return 2
+        copied = copy_pack(source_root, export_dir, payload["files"], dry_run=args.dry_run)
         if manifest_path is None:
             manifest_path = export_dir / "codex-route-pack.manifest.json"
 

@@ -48,3 +48,7 @@ bash scripts/design_craft_init_agent.sh \
   the system.
 - Do not use design-craft for backend-only, database-only, pure algorithm, or
   non-visual refactor tasks.
+- Distinguish the `cursor` IDE launcher from the headless `cursor-agent`
+  executable. The launcher existing is not observed Agent Skills evidence.
+- Before a benchmark, run `cursor-agent status`; record the host as unverified
+  when it is not authenticated instead of fabricating an output.

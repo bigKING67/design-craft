@@ -4,6 +4,35 @@ All notable local changes to `design-craft` are recorded here.
 
 ## Unreleased
 
+- Split the deterministic local release gate from mutable upstream freshness;
+  `make release-readiness` now adds the remote review requirement explicitly.
+- Changed the scheduled upstream audit from weekly to daily, added GitHub
+  compare details, path classification, workflow summaries, retained artifacts,
+  and an automatically maintained review-required issue.
+- Reviewed the latest Impeccable repository-operations-only commit and Emil
+  Kowalski README-only commit without importing unrelated behavior.
+- Rebuilt local installation around a lock, same-filesystem staging, atomic
+  replacement, rollback, bounded backups, generated provenance metadata, and a
+  dedicated source/install verifier.
+- Added installed `VERSION` and Codex route-pack compatibility contracts,
+  refreshed existing legacy aliases by default, and exposed install/route
+  compatibility through doctor and maturity checks.
+- Replaced duplicate Codex route-pack file lists with the global route-pack
+  manifest, added required snapshot-coverage enforcement, included the split
+  route/worker cores and routing schema, and moved strict semantic validation to
+  the real Python cores plus browser-tool and unauthorized-`ultra` probes.
+- Expanded portable CI from a single Python 3.13 lane to a Python
+  3.11/3.12/3.13 matrix across both Ubuntu/macOS and Node 22/24.
+- Added strict native-runtime evidence schemas, environment probing, and
+  self-checks; evidence now requires a present, non-empty, directory-contained
+  artifact with matching byte count and SHA-256, so placeholder JSON cannot
+  satisfy the maturity gate.
+- Added minimal UIKit and Android framework fixtures plus a manual/tag-triggered
+  Simulator/Emulator workflow that builds, launches, interacts where supported,
+  hashes artifacts, records evidence JSON, and validates it before upload.
+- Generalized cross-agent evidence validation so Cursor and Claude can move
+  independently from explicit unverified notes to real output/score artifacts.
+
 ## 0.4.0 - 2026-07-10
 
 - Expanded the canonical workflow from web/frontend quality into explicit

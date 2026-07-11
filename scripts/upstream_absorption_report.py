@@ -5,10 +5,15 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
+import re
 import subprocess
 import sys
 from dataclasses import dataclass, asdict
 from pathlib import Path
+from urllib.error import HTTPError, URLError
+from urllib.parse import quote
+from urllib.request import Request, urlopen
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -19,6 +24,14 @@ class ChangedFile:
     status: str
     path: str
     category: str
+
+
+@dataclass
+class RemoteCommit:
+    sha: str
+    date: str
+    title: str
+    url: str
 
 
 @dataclass
@@ -43,6 +56,13 @@ class UpstreamReport:
     remote_drift: bool | None
     locked_remote_drift: bool | None
     reviewed_remote_drift: bool | None
+    remote_compare_status: str | None
+    remote_ahead_by: int | None
+    remote_compare_url: str | None
+    remote_recommendation: str | None
+    remote_commits: list[RemoteCommit]
+    remote_changed_files: list[ChangedFile]
+    remote_detail_error: str | None
     dirty: bool
     status: list[str]
     changed_files: list[ChangedFile]
@@ -94,9 +114,109 @@ def remote_head(repo: str) -> tuple[str | None, str | None, str | None]:
     return None, None, "remote did not return HEAD, main, or master"
 
 
+def github_repo_slug(repo: str) -> str | None:
+    patterns = (
+        r"^https?://github\.com/([^/]+/[^/]+?)(?:\.git)?/?$",
+        r"^git@github\.com:([^/]+/[^/]+?)(?:\.git)?$",
+        r"^ssh://git@github\.com/([^/]+/[^/]+?)(?:\.git)?/?$",
+    )
+    for pattern in patterns:
+        match = re.match(pattern, repo.strip())
+        if match:
+            return match.group(1)
+    return None
+
+
+def github_compare(
+    repo: str,
+    base: str,
+    head: str,
+    upstream_name: str,
+) -> tuple[str | None, int | None, str | None, list[RemoteCommit], list[ChangedFile], str | None]:
+    slug = github_repo_slug(repo)
+    if not slug:
+        return None, None, None, [], [], "remote details currently support GitHub repositories only"
+
+    api_url = f"https://api.github.com/repos/{slug}/compare/{quote(base, safe='')}...{quote(head, safe='')}"
+    headers = {
+        "Accept": "application/vnd.github+json",
+        "User-Agent": "design-craft-upstream-audit",
+        "X-GitHub-Api-Version": "2022-11-28",
+    }
+    token = os.environ.get("GITHUB_TOKEN") or os.environ.get("GH_TOKEN")
+    if token:
+        headers["Authorization"] = f"Bearer {token}"
+
+    try:
+        request = Request(api_url, headers=headers)
+        with urlopen(request, timeout=30) as response:
+            raw = response.read(4 * 1024 * 1024 + 1)
+    except HTTPError as exc:
+        return None, None, api_url, [], [], f"GitHub compare returned HTTP {exc.code}"
+    except (URLError, TimeoutError, OSError) as exc:
+        return None, None, api_url, [], [], f"GitHub compare failed: {exc}"
+
+    if len(raw) > 4 * 1024 * 1024:
+        return None, None, api_url, [], [], "GitHub compare payload exceeded 4 MiB"
+    try:
+        payload = json.loads(raw.decode("utf-8"))
+    except (UnicodeDecodeError, json.JSONDecodeError) as exc:
+        return None, None, api_url, [], [], f"GitHub compare returned invalid JSON: {exc}"
+
+    commits: list[RemoteCommit] = []
+    for item in payload.get("commits", [])[:100]:
+        commit = item.get("commit", {}) if isinstance(item, dict) else {}
+        committer = commit.get("committer", {}) if isinstance(commit, dict) else {}
+        message = commit.get("message", "") if isinstance(commit, dict) else ""
+        commits.append(
+            RemoteCommit(
+                sha=str(item.get("sha", "")),
+                date=str(committer.get("date", "")),
+                title=str(message).splitlines()[0] if message else "",
+                url=str(item.get("html_url", "")),
+            )
+        )
+
+    status_map = {
+        "added": "A",
+        "modified": "M",
+        "removed": "D",
+        "renamed": "R",
+        "copied": "C",
+        "changed": "M",
+    }
+    files: list[ChangedFile] = []
+    for item in payload.get("files", [])[:300]:
+        if not isinstance(item, dict):
+            continue
+        path = str(item.get("filename", ""))
+        if not path:
+            continue
+        status = status_map.get(str(item.get("status", "")), "?")
+        files.append(ChangedFile(status=status, path=path, category=categorize_changed_file(upstream_name, path)))
+
+    return (
+        str(payload.get("status", "")) or None,
+        payload.get("ahead_by") if isinstance(payload.get("ahead_by"), int) else None,
+        str(payload.get("html_url", "")) or api_url,
+        commits,
+        files,
+        None,
+    )
+
+
 def categorize_changed_file(upstream_name: str, file_path: str) -> str:
     normalized = file_path.lower()
     parts = set(normalized.split("/"))
+
+    repository_operations_prefixes = (
+        ".github/",
+        "scripts/github/",
+        "tests/github-",
+        "tests/github/",
+    )
+    if normalized.startswith(repository_operations_prefixes):
+        return "repository_operations_only"
 
     candidate_keywords = {
         "skill",
@@ -147,6 +267,17 @@ def categorize_changed_file(upstream_name: str, file_path: str) -> str:
     return "manual_review"
 
 
+def recommend_remote_decision(files: list[ChangedFile]) -> str:
+    if not files:
+        return "manual_review"
+    categories = {item.category for item in files}
+    if "candidate_absorb" in categories:
+        return "absorption_review"
+    if "manual_review" in categories:
+        return "manual_review"
+    return "provenance_only"
+
+
 def parse_name_status(text: str, upstream_name: str) -> list[ChangedFile]:
     files: list[ChangedFile] = []
     for line in text.splitlines():
@@ -166,7 +297,11 @@ def parse_name_status(text: str, upstream_name: str) -> list[ChangedFile]:
     return files
 
 
-def build_report(root: Path, check_remote: bool = False) -> list[UpstreamReport]:
+def build_report(
+    root: Path,
+    check_remote: bool = False,
+    fetch_remote_details: bool = False,
+) -> list[UpstreamReport]:
     lock_path = root / "upstreams.lock.json"
     payload = json.loads(lock_path.read_text(encoding="utf-8"))
     reports: list[UpstreamReport] = []
@@ -195,6 +330,13 @@ def build_report(root: Path, check_remote: bool = False) -> list[UpstreamReport]
         remote_drift: bool | None = None
         locked_remote_drift: bool | None = None
         reviewed_remote_drift: bool | None = None
+        remote_compare_status: str | None = None
+        remote_ahead_by: int | None = None
+        remote_compare_url: str | None = None
+        remote_recommendation: str | None = None
+        remote_commits: list[RemoteCommit] = []
+        remote_changed_files: list[ChangedFile] = []
+        remote_detail_error: str | None = None
 
         if decision not in {"absorbed", "partial", "provenance_only", "deferred"}:
             notes.append("lock decision must be absorbed, partial, provenance_only, or deferred")
@@ -242,6 +384,19 @@ def build_report(root: Path, check_remote: bool = False) -> list[UpstreamReport]
                         notes.append("remote head matches current checkout")
                     if reviewed_remote_drift:
                         notes.append("remote head has not been reviewed")
+                        if fetch_remote_details and reviewed:
+                            (
+                                remote_compare_status,
+                                remote_ahead_by,
+                                remote_compare_url,
+                                remote_commits,
+                                remote_changed_files,
+                                remote_detail_error,
+                            ) = github_compare(meta.get("repo", ""), reviewed, remote_commit, name)
+                            if remote_detail_error:
+                                notes.append(remote_detail_error)
+                            else:
+                                remote_recommendation = recommend_remote_decision(remote_changed_files)
 
         reports.append(
             UpstreamReport(
@@ -265,6 +420,13 @@ def build_report(root: Path, check_remote: bool = False) -> list[UpstreamReport]
                 remote_drift=remote_drift,
                 locked_remote_drift=locked_remote_drift,
                 reviewed_remote_drift=reviewed_remote_drift,
+                remote_compare_status=remote_compare_status,
+                remote_ahead_by=remote_ahead_by,
+                remote_compare_url=remote_compare_url,
+                remote_recommendation=remote_recommendation,
+                remote_commits=remote_commits,
+                remote_changed_files=remote_changed_files,
+                remote_detail_error=remote_detail_error,
                 dirty=dirty,
                 status=status_lines,
                 changed_files=changed_files,
@@ -299,6 +461,11 @@ def print_text(reports: list[UpstreamReport]) -> None:
             print(f"  remote_drift: {str(report.remote_drift).lower()}")
             print(f"  locked_remote_drift: {str(report.locked_remote_drift).lower()}")
             print(f"  reviewed_remote_drift: {str(report.reviewed_remote_drift).lower()}")
+        if report.remote_compare_status:
+            print(f"  remote_compare_status: {report.remote_compare_status}")
+            print(f"  remote_ahead_by: {report.remote_ahead_by}")
+            print(f"  remote_recommendation: {report.remote_recommendation}")
+            print(f"  remote_compare_url: {report.remote_compare_url}")
         print(f"  dirty: {str(report.dirty).lower()}")
         for note in report.notes:
             print(f"  note: {note}")
@@ -313,21 +480,98 @@ def print_text(reports: list[UpstreamReport]) -> None:
             for changed in report.changed_files:
                 counts[changed.category] = counts.get(changed.category, 0) + 1
             print("  changed_file_counts:")
-            for category in ("candidate_absorb", "manual_review", "provenance_only"):
+            for category in ("candidate_absorb", "manual_review", "repository_operations_only", "provenance_only"):
                 if category in counts:
                     print(f"    {category}: {counts[category]}")
             print("  changed_files:")
             for changed in report.changed_files:
                 print(f"    {changed.status}\t{changed.category}\t{changed.path}")
 
+        if report.remote_commits:
+            print("  remote_commits:")
+            for commit in report.remote_commits:
+                print(f"    {commit.sha[:12]}\t{commit.date}\t{commit.title}")
+        if report.remote_changed_files:
+            print("  remote_changed_files:")
+            for changed in report.remote_changed_files:
+                print(f"    {changed.status}\t{changed.category}\t{changed.path}")
+
+
+def render_markdown_summary(reports: list[UpstreamReport]) -> str:
+    lines = [
+        "# design-craft upstream audit",
+        "",
+        "| Upstream | Reviewed | Remote | State | Recommendation |",
+        "|---|---|---|---|---|",
+    ]
+    for report in reports:
+        state = "current"
+        if report.reviewed_remote_drift is True:
+            state = "review required"
+        elif report.remote_commit is None:
+            state = "remote unavailable"
+        lines.append(
+            "| {name} | `{reviewed}` | `{remote}` | {state} | {recommendation} |".format(
+                name=report.name,
+                reviewed=(report.reviewed_commit or "unavailable")[:12],
+                remote=(report.remote_commit or "unavailable")[:12],
+                state=state,
+                recommendation=report.remote_recommendation or "none",
+            )
+        )
+
+    for report in reports:
+        if report.reviewed_remote_drift is not True:
+            continue
+        lines.extend(["", f"## {report.name}"])
+        if report.remote_compare_url:
+            lines.append(f"- Compare: {report.remote_compare_url}")
+        if report.remote_detail_error:
+            lines.append(f"- Detail error: {report.remote_detail_error}")
+        if report.remote_commits:
+            lines.append("- Commits:")
+            for commit in report.remote_commits:
+                lines.append(f"  - `{commit.sha[:12]}` {commit.title}")
+        if report.remote_changed_files:
+            lines.append("- Changed files:")
+            for changed in report.remote_changed_files:
+                lines.append(f"  - `{changed.status}` `{changed.category}` `{changed.path}`")
+    return "\n".join(lines) + "\n"
+
+
+def run_self_check() -> list[str]:
+    errors: list[str] = []
+    if github_repo_slug("https://github.com/emilkowalski/skills.git") != "emilkowalski/skills":
+        errors.append("failed to parse HTTPS GitHub repository")
+    if github_repo_slug("git@github.com:pbakaus/impeccable.git") != "pbakaus/impeccable":
+        errors.append("failed to parse SSH GitHub repository")
+    cases = {
+        "README.md": "provenance_only",
+        "scripts/github/sheriff.mjs": "repository_operations_only",
+        "tests/github-sheriff.test.mjs": "repository_operations_only",
+        "skills/apple-design/SKILL.md": "candidate_absorb",
+    }
+    for path, expected in cases.items():
+        observed = categorize_changed_file("emilkowalski-skills", path)
+        if observed != expected:
+            errors.append(f"{path}: expected {expected}, got {observed}")
+    return errors
+
 
 def main() -> int:
     parser = argparse.ArgumentParser(
-        description="Report pinned upstream drift and candidate absorption files without fetching or modifying submodules."
+        description="Report pinned upstream drift and optional GitHub compare details without modifying submodule checkouts."
     )
     parser.add_argument("--root", default=str(ROOT), help="design-craft repo root")
     parser.add_argument("--json", action="store_true", help="Emit JSON")
     parser.add_argument("--remote", action="store_true", help="Also check remote HEAD/main/master with git ls-remote")
+    parser.add_argument(
+        "--remote-details",
+        action="store_true",
+        help="For unreviewed GitHub ranges, include commit titles and changed paths from the compare API",
+    )
+    parser.add_argument("--summary-file", help="Write a concise Markdown audit summary to this path")
+    parser.add_argument("--check", action="store_true", help="Run offline parser/classification self-checks")
     parser.add_argument(
         "--fail-on-unreviewed",
         action="store_true",
@@ -336,8 +580,18 @@ def main() -> int:
     args = parser.parse_args()
 
     root = Path(args.root).expanduser().resolve()
+    if args.check:
+        errors = run_self_check()
+        if errors:
+            print("\n".join(errors), file=sys.stderr)
+            return 1
+        return 0
     try:
-        reports = build_report(root, check_remote=args.remote)
+        reports = build_report(
+            root,
+            check_remote=args.remote or args.remote_details,
+            fetch_remote_details=args.remote_details,
+        )
     except Exception as exc:
         print(f"failed to build upstream absorption report: {exc}", file=sys.stderr)
         return 1
@@ -346,6 +600,10 @@ def main() -> int:
         print(json.dumps([asdict(report) for report in reports], ensure_ascii=False, indent=2))
     else:
         print_text(reports)
+    if args.summary_file:
+        summary_path = Path(args.summary_file).expanduser()
+        summary_path.parent.mkdir(parents=True, exist_ok=True)
+        summary_path.write_text(render_markdown_summary(reports), encoding="utf-8")
     if args.fail_on_unreviewed:
         invalid = [
             report.name

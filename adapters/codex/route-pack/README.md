@@ -9,18 +9,36 @@ skill candidates, and browser/native evidence policy. The source files still
 live in the Codex home directory; this adapter provides a safe manifest/export
 workflow for migration or backup.
 
-## Whitelisted files
+## Manifest authority
 
-The route pack tracks only frontend-routing files:
+The only file-list authority is:
+
+```text
+~/.codex/tools/frontend_route_pack_manifest.json
+```
+
+The route-pack helper selects entries with `route_pack=true`; the global
+snapshot selects entries with `snapshot=true`. Every required route-pack file
+must also be snapshot-covered. The helper rejects an unknown manifest schema,
+duplicate or unsafe paths, invalid field types, and a manifest that does not
+include itself as a required route-pack file.
+
+The current required route-pack core includes:
 
 ```text
 AGENTS.md
 rules/frontend.md
 agents/worker.toml
+tools/frontend_route_pack_manifest.json
 tools/frontend_route_plan.sh
+tools/frontend_route_core.py
 tools/frontend_platform_detect.py
 tools/frontend_agent_routing.json
+tools/frontend_agent_routing.schema.json
+tools/frontend_route_schema_validate.py
 tools/frontend_worker_entry.sh
+tools/frontend_worker_route_core.py
+tools/frontend_worker_payload_core.py
 tools/frontend_preflight_spec.json
 tools/frontend_preflight.py
 tools/frontend_preflight_run.sh
@@ -33,8 +51,8 @@ tools/tests/test_frontend_preflight.sh
 tools/tests/test_frontend_preflight_spec_sync.sh
 ```
 
-Optional helpers, such as preflight policy/report/log scripts, are included in
-the manifest and export when present.
+Optional helpers, such as preflight policy/report/log scripts, are included
+when their manifest entries use `route_pack=true` and the files are present.
 
 The pack intentionally excludes credentials, browser profiles, MCP state,
 session logs, caches, and unrelated Codex configuration.
@@ -51,7 +69,10 @@ This prints:
 - source root
 - required-file status
 - missing required files, if any
-- V2 routing semantics and stale-model checks
+- manifest schema, selected/required counts, and required snapshot coverage
+- routing JSON Schema validation plus V2 semantics and stale-model checks
+- browser/runtime tool parity probes for external and local contexts
+- an unauthorized GPT-5.6 `ultra` runtime-conflict denial probe
 - PRODUCT.md/codebase platform detection and native-runtime evidence boundaries
 - redacted runtime model/profile compatibility from `config.toml`
 - bundled model-catalog compatibility for configured reasoning levels
@@ -84,6 +105,12 @@ The export writes:
 ├── AGENTS.md
 ├── agents/worker.toml
 ├── rules/frontend.md
+├── tools/frontend_route_pack_manifest.json
+├── tools/frontend_route_core.py
+├── tools/frontend_worker_route_core.py
+├── tools/frontend_worker_payload_core.py
+├── tools/frontend_agent_routing.schema.json
+├── tools/frontend_route_schema_validate.py
 ├── tools/...
 └── codex-route-pack.manifest.json
 ```

@@ -71,25 +71,40 @@ product/platform context and must provide `DESIGN.md` or an explicit
 bash scripts/install_local.sh
 ```
 
-The installer syncs:
+The installer stages and validates the complete skill, takes an install lock,
+atomically replaces the active copy, restores the previous target on failure,
+records `.design-craft-install.json` version/commit/dirty-state/tree-digest
+provenance, and retains the newest ten backups by default. It syncs:
 
 ```text
 skills/design-craft -> ${DESIGN_CRAFT_SKILL_ROOT:-$HOME/.agents/skills}/design-craft
 ```
 
-Verify the installed copy when needed:
+Verify source parity and install provenance:
 
 ```bash
-diff -qr skills/design-craft "${DESIGN_CRAFT_SKILL_ROOT:-$HOME/.agents/skills}/design-craft"
+python3 scripts/design_craft_install_verify.py \
+  --source skills/design-craft \
+  --installed "${DESIGN_CRAFT_SKILL_ROOT:-$HOME/.agents/skills}/design-craft" \
+  --expected-name design-craft \
+  --expected-version "$(cat VERSION)" \
+  --require-metadata
 ```
 
 `skills/frontend-craft` is a legacy compatibility alias only. New route and
-preflight defaults should use `design-craft`. It is not installed by default;
-install it only for old clients that still route to the former name:
+preflight defaults should use `design-craft`. A fresh install does not create
+the alias, but an already-installed alias is refreshed so it cannot silently
+drift. Create it explicitly only for old clients that still use the former
+name:
 
 ```bash
 bash scripts/install_local.sh --include-legacy-alias
 ```
+
+Override retention with `--keep-backups <count>` or
+`DESIGN_CRAFT_BACKUP_KEEP`; use `--no-prune-backups` for an explicitly
+non-destructive maintenance run. `make release-gate` forwards optional
+installer flags through `INSTALL_ARGS`.
 
 ## Install as a Pi package
 
@@ -141,11 +156,14 @@ bash scripts/design_craft_doctor.sh --target . --json
 Audit or export the local Codex frontend route tools as a whitelisted migration
 bundle. This does not copy arbitrary `~/.codex` state; it records only the
 route planner, inherited frontend worker, frontend rules, preflight contract,
-and related tests. The strict audit also validates V2 delegation semantics and
-checks redacted runtime model/reasoning profiles against the bundled Codex model
-catalog. GPT-5.6 `ultra` is treated as runtime-profile-only because it includes
-automatic task delegation; explicit main-owned frontend overrides stop at
-`max`:
+and related tests selected by the single
+`~/.codex/tools/frontend_route_pack_manifest.json` authority. The strict audit
+also validates manifest/snapshot coverage, the routing JSON Schema, split
+route/worker Python cores, browser/runtime tool parity, V2 delegation semantics,
+and redacted runtime model/reasoning profiles against the bundled Codex model
+catalog. GPT-5.6 `ultra` is actively probed as a denied unapproved runtime
+conflict because it includes automatic task delegation; explicit main-owned
+frontend overrides stop at `max`:
 
 ```bash
 python3 scripts/design_craft_codex_route_pack.py --strict
@@ -212,7 +230,7 @@ Portable gate for a fresh clone or another machine:
 make validate-portable
 ```
 
-Local full gate for this machine:
+Deterministic source gate, followed by an atomic local publish:
 
 ```bash
 make release-gate-local
@@ -230,9 +248,14 @@ bash scripts/design_craft_pass.sh --target . --mode audit --skip-route
 ```
 
 `make release-gate` remains a compatibility alias for the local full gate.
-The source scorer measures deterministic package completeness and must report
-100/100. The maturity scorer measures operational evidence and reports 95/100
-until observed native runtime evidence removes the explicit cap.
+Remote upstream freshness is intentionally separate because a moving remote
+`HEAD` must not make an unchanged commit's deterministic gate change over time.
+Before a new release, run `make release-readiness`; it runs the local gate and
+then the actionable remote audit. The source scorer must report 100/100. The
+maturity scorer reports 95/100 until schema-valid observed native runtime
+evidence removes the explicit cap. Portable CI exercises Ubuntu and macOS with
+Node 22/24 and Python 3.11/3.12/3.13 rather than treating one Python runtime as
+cross-version proof.
 
 ## Common commands
 
@@ -417,10 +440,11 @@ Review pinned upstream drift and absorption candidates without fetching:
 make upstream-report
 ```
 
-Check remote drift without mutating submodules:
+Check remote drift with commit titles, changed paths, and an absorption
+recommendation without changing submodule checkouts:
 
 ```bash
-python3 scripts/upstream_absorption_report.py --remote
+python3 scripts/upstream_absorption_report.py --remote-details
 ```
 
 Score source completeness and operational maturity separately:
@@ -461,12 +485,12 @@ The sync helper advances one explicit submodule and only the compatibility
 the decision metadata. Before absorbing upstream changes, run:
 
 ```bash
-python3 scripts/upstream_absorption_report.py --remote --fail-on-unreviewed
+python3 scripts/upstream_absorption_report.py --remote-details --fail-on-unreviewed
 ```
 
 ## Local release gate
 
-Before tagging or treating a version as stable, run:
+Before treating the current source and local install as stable, run:
 
 ```bash
 make validate-portable
@@ -474,13 +498,36 @@ make release-gate-local
 ```
 
 `make release-gate` remains a compatibility alias for `make release-gate-local`.
+Before tagging a new release, additionally run:
+
+```bash
+make release-readiness
+```
+
 The gate split is documented in `docs/maintenance.md`. The portable gate checks
 package shape, syntax, bundled runtime independence, platform fixtures,
 validators, static scanners, project-neutral L4 fixtures, source completeness,
 and portable maturity without local Codex or install-state assumptions. The
 local gate adds skill quick validation, Codex route-pack checks, observed
-cross-agent evidence, historical real-project L4 provenance, reviewed upstream
-remote parity, installed-skill parity, and local maturity.
+cross-agent evidence, historical real-project L4 provenance, atomic install,
+installed-skill provenance/parity, and local maturity. `release-readiness`
+adds mutable remote-upstream freshness only after the deterministic gate passes.
+
+Probe native SDK/runtime availability and validate real evidence separately:
+
+```bash
+python3 scripts/design_craft_native_runtime_validate.py --probe --json
+python3 scripts/design_craft_native_runtime_validate.py --validate --require ios --require android --require-real-device --json
+```
+
+`.github/workflows/native-runtime.yml` runs a real iOS Simulator fixture and a
+real Android Emulator fixture on manual dispatch and release tags. It builds,
+installs, launches, captures runtime artifacts, exercises the Android control,
+hashes the evidence, and validates the generated JSON before upload. Downloaded
+artifacts must still be reviewed before `ios-observed.json` and
+`android-observed.json` are admitted as durable evidence. A separate physical
+device run must provide `real-device-observed.json`; workflow existence is not
+itself runtime proof.
 
 Route smoke uses a temporary fixture project with its own `DESIGN.md`, because
 `design-craft` itself is a reusable skill system rather than a product UI target:

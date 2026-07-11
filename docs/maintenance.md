@@ -21,6 +21,8 @@ This document is the local release and maintenance checklist for
   routing.
 - Keep helper scripts deterministic and cheap enough to run before real
   UI/UX/design/frontend work.
+- Keep the deterministic release gate independent of mutable upstream remote
+  heads. Remote freshness is a separate release-readiness and scheduled audit.
 - Keep agent-specific install behavior in `adapters/` and scripts. Do not fork
   the canonical `skills/design-craft/` content per agent.
 - Keep the Codex frontend route layer portable through the route-pack manifest
@@ -64,6 +66,10 @@ Expected result:
 - Version in `VERSION` matches `package.json`.
 - Source completeness is 100; portable maturity is 95 with the native-runtime
   cap stated rather than hidden.
+- CI covers Python 3.11, 3.12, and 3.13 across Ubuntu/macOS and Node 22/24.
+- Native runtime CI definitions and minimal fixtures validate structurally, but
+  only a completed workflow run and reviewed artifact JSON count as observed
+  Simulator/Emulator evidence.
 
 ## Local release gate
 
@@ -73,7 +79,8 @@ Run this before a version bump, initial commit, or route-policy change:
 make release-gate-local
 ```
 
-`make release-gate` remains a compatibility alias for the local full gate.
+`make release-gate` remains a compatibility alias for the local full gate. It
+does not query mutable upstream remote heads.
 
 It expands to:
 
@@ -98,9 +105,8 @@ make real-l4-check
 make cross-agent-observed-check
 make smell-smoke
 python3 scripts/upstream_absorption_report.py
-python3 scripts/upstream_absorption_report.py --remote --fail-on-unreviewed
 bash scripts/install_local.sh
-diff -qr skills/design-craft "${DESIGN_CRAFT_SKILL_ROOT:-$HOME/.agents/skills}/design-craft"
+python3 scripts/design_craft_install_verify.py --source skills/design-craft --installed "${DESIGN_CRAFT_SKILL_ROOT:-$HOME/.agents/skills}/design-craft" --expected-name design-craft --expected-version "$(cat VERSION)" --require-metadata
 python3 scripts/design_craft_maturity.py --profile local --min-score 95
 bash scripts/install_local.sh --dry-run --include-legacy-alias
 ```
@@ -139,13 +145,25 @@ Expected result:
   same benchmark prompt. Uncollected hosts must remain explicitly unverified.
 - Local maturity reports 95/100. Until native runtime artifacts exist, the
   release must say `iOS Simulator: unverified locally` and
-  `Android Emulator: unverified locally`.
+  `Android Emulator: unverified locally`, with real-device evidence also
+  unverified.
 - Upstream absorption report runs without fetching or modifying submodules; the
   optional `--remote` check reports remote drift with `git ls-remote`.
 - Upstream lock commits match checked-out submodule commits.
-- Installed canonical skill matches the source skill. The `frontend-craft`
-  legacy alias remains source-validated and is installed only when explicitly
-  requested.
+- Installed canonical skill matches the source and carries valid version,
+  source commit, dirty-state, exact tree digest, install-time, and source-repo
+  provenance.
+- The installer uses staging, an install lock, atomic replacement, rollback,
+  and bounded backup retention. The `frontend-craft` alias is not created by
+  default, but an existing alias is refreshed and verified.
+- Use `INSTALL_ARGS=--no-prune-backups` when a maintenance run must preserve
+  every historical backup; default installs retain the newest ten per skill.
+
+Run the mutable remote check only for release readiness or upstream review:
+
+```bash
+make release-readiness
+```
 
 ## Upstream sync procedure
 
@@ -159,7 +177,7 @@ Expected result:
 2. Check remote drift without mutating submodules:
 
    ```bash
-   python3 scripts/upstream_absorption_report.py --remote --fail-on-unreviewed
+   python3 scripts/upstream_absorption_report.py --remote-details --fail-on-unreviewed
    ```
 
 3. Sync exactly one upstream only after choosing the reviewed commit:
@@ -181,8 +199,9 @@ Expected result:
    ```
 
    Treat `candidate_absorb` files as review inputs, not automatic changes.
-   `provenance_only` usually means notices or source-map updates; `manual_review`
-   requires human judgment before changing the fusion layer.
+   `provenance_only` usually means notices/readmes,
+   `repository_operations_only` means upstream CI or repository automation,
+   and `manual_review` requires human judgment before changing the fusion layer.
 
 5. Review upstream licenses and attribution if upstream content changed:
 
@@ -192,10 +211,11 @@ Expected result:
 
 6. Update the fusion layer only under `skills/design-craft/`.
 
-7. Run the release gate:
+7. Run the deterministic release gate, then release readiness:
 
    ```bash
    make release-gate
+   make release-readiness
    ```
 
 ## Version policy
@@ -308,7 +328,10 @@ remain explicitly unverified.
 The local frontend route planner, platform detector, route config, frontend
 rule, preflight contract, and route tests live under `~/.codex`. They are
 runtime policy, not skill contents. Use the route-pack helper to make that
-policy auditable:
+policy auditable. The file-list authority is
+`~/.codex/tools/frontend_route_pack_manifest.json`; the helper and global
+snapshot must derive their scopes from that manifest rather than maintaining
+parallel lists:
 
 ```bash
 python3 scripts/design_craft_codex_route_pack.py --strict --json
@@ -324,7 +347,9 @@ python3 scripts/design_craft_codex_route_pack.py \
 
 After restoring to another Codex home, run the validation commands listed in
 `adapters/codex/route-pack/README.md`. Do not treat the manifest alone as proof
-that the restored route planner works.
+that the restored route planner works. A strict audit must also pass routing
+JSON Schema validation, browser/runtime tool-parity probes, and the unapproved
+GPT-5.6 `ultra` runtime-conflict denial probe.
 
 ## Release checklist
 
@@ -333,19 +358,26 @@ Before committing a release:
 1. `git status --short`
 2. `make validate-portable`
 3. `make release-gate-local`
-4. Confirm source completeness 100/100 and portable/local maturity 95/100.
-5. Route smoke on the fixture (`make route-smoke`) or on at least one real
+4. `make release-readiness`
+5. Confirm source completeness 100/100 and portable/local maturity 95/100.
+6. Route smoke on the fixture (`make route-smoke`) or on at least one real
    project path with its own `DESIGN.md` when route behavior changed.
-6. Upstream absorption report reviewed when upstream commits or detector rules changed.
-7. Product UI taste calibration and completed L4 case validation still pass
+7. Upstream absorption report reviewed when upstream commits or detector rules changed.
+8. Product UI taste calibration and completed L4 case validation still pass
    when taste scoring changed.
-8. Install parity check:
-   `diff -qr skills/design-craft "${DESIGN_CRAFT_SKILL_ROOT:-$HOME/.agents/skills}/design-craft"`
-9. Legacy alias source check:
+9. Install parity/provenance check:
+   `make install-verify`
+10. Legacy alias source check:
    `grep -Fq 'renamed to \`design-craft\`' skills/frontend-craft/SKILL.md`
-10. Optional legacy install dry-run:
+11. Optional legacy install dry-run:
    `bash scripts/install_local.sh --dry-run --include-legacy-alias`
-11. Confirm no repo docs were added inside `skills/design-craft/`.
-12. Record `iOS Simulator: unverified locally` and
-    `Android Emulator: unverified locally` until observed artifacts exist.
-13. Commit with a scoped message.
+12. Confirm no repo docs were added inside `skills/design-craft/` except the
+    machine-readable `VERSION` and `COMPATIBILITY.json` contracts.
+13. Record `iOS Simulator: unverified locally` and
+    `Android Emulator: unverified locally`, plus real-device status, until all
+    observed artifacts exist.
+14. For a release claiming native runtime evidence, dispatch
+    `.github/workflows/native-runtime.yml`, download both artifacts, verify their
+    hashes and assertions, and then validate the admitted JSON with
+    `make native-runtime-check`.
+15. Commit with a scoped message.

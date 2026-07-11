@@ -54,11 +54,15 @@ required_files=(
   "Makefile"
   ".github/workflows/validate.yml"
   ".github/workflows/upstream-audit.yml"
+  ".github/workflows/native-runtime.yml"
+  ".github/scripts/upstream_review_issue.cjs"
   ".gitmodules"
   "docs/maintenance.md"
   "THIRD_PARTY_NOTICES.md"
   "upstreams.lock.json"
   "skills/design-craft/SKILL.md"
+  "skills/design-craft/VERSION"
+  "skills/design-craft/COMPATIBILITY.json"
   "skills/design-craft/agents/openai.yaml"
   "skills/design-craft/references/source-map.md"
   "skills/design-craft/references/product-context.md"
@@ -172,6 +176,15 @@ required_files=(
   "evals/cross-agent/same-prompt-native-adaptive-review/comparison.md"
   "evals/cross-agent/same-prompt-native-adaptive-review/cursor-unverified.md"
   "evals/cross-agent/same-prompt-native-adaptive-review/claude-unverified.md"
+  "evals/native-runtime/README.md"
+  "evals/native-runtime/environment-probe.json"
+  "evals/native-runtime/fixtures/ios/App.swift"
+  "evals/native-runtime/fixtures/ios/Info.plist"
+  "evals/native-runtime/fixtures/android/settings.gradle.kts"
+  "evals/native-runtime/fixtures/android/build.gradle.kts"
+  "evals/native-runtime/fixtures/android/app/build.gradle.kts"
+  "evals/native-runtime/fixtures/android/app/src/main/AndroidManifest.xml"
+  "evals/native-runtime/fixtures/android/app/src/main/java/dev/designcraft/runtimeevidence/MainActivity.java"
   "evals/fixtures/css-smells/card-soup.css"
   "evals/fixtures/focus-smells/Button.tsx"
   "evals/fixtures/l4-pages/generic-review-workbench/index.html"
@@ -224,6 +237,8 @@ required_files=(
   "scripts/design_craft_l4_eval_case.sh"
   "scripts/design_craft_l4_evidence_manifest.py"
   "scripts/design_craft_maturity.py"
+  "scripts/design_craft_native_runtime_validate.py"
+  "scripts/design_craft_native_runtime_record.py"
   "scripts/design_craft_platform_scan.py"
   "scripts/design_craft_browser_evidence.py"
   "scripts/design_craft_codex_route_pack.py"
@@ -237,6 +252,9 @@ required_files=(
   "scripts/design_craft_seed_design.sh"
   "scripts/design_craft_taste_review.sh"
   "scripts/design_craft_score.py"
+  "scripts/design_craft_install_verify.py"
+  "scripts/native_runtime_ci_ios.sh"
+  "scripts/native_runtime_ci_android.sh"
   "scripts/frontend_craft_audit.sh"
   "scripts/frontend_craft_detect.sh"
   "scripts/frontend_craft_browser_evidence.py"
@@ -304,6 +322,11 @@ if ! grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+$' VERSION; then
   exit 1
 fi
 
+if ! cmp -s VERSION skills/design-craft/VERSION; then
+  echo "skills/design-craft/VERSION must match root VERSION" >&2
+  exit 1
+fi
+
 node <<'NODE'
 const fs = require("fs");
 const pkg = JSON.parse(fs.readFileSync("package.json", "utf8"));
@@ -334,6 +357,60 @@ for (const skill of expectedSkills) {
 if (actualSkills.includes("skills/frontend-craft")) {
   throw new Error("package.json pi.skills must not expose the legacy frontend-craft alias by default");
 }
+const compatibility = JSON.parse(fs.readFileSync("skills/design-craft/COMPATIBILITY.json", "utf8"));
+if (
+  compatibility.schema !== "design-craft.compatibility.v1" ||
+  !compatibility.codex_route_pack ||
+  compatibility.codex_route_pack.schema !== "design-craft.codex-route-pack.v2" ||
+  compatibility.codex_route_pack.manifest_schema !== "codex.frontend-route-pack.manifest.v1" ||
+  compatibility.codex_route_pack.snapshot_schema !== "codex.global_agents.snapshot.v2" ||
+  compatibility.codex_route_pack.routing_version !== 2
+) {
+  throw new Error("skills/design-craft/COMPATIBILITY.json must pin the Codex route-pack v2 contract");
+}
+NODE
+node --check .github/scripts/upstream_review_issue.cjs
+node <<'NODE'
+const assert = require("assert");
+const maintainIssue = require("./.github/scripts/upstream_review_issue.cjs");
+
+function mockGithub(issues) {
+  const calls = [];
+  return {
+    calls,
+    rest: {
+      issues: {
+        listForRepo: async () => ({ data: issues }),
+        create: async (args) => calls.push(["create", args]),
+        update: async (args) => calls.push(["update", args]),
+        createComment: async (args) => calls.push(["comment", args]),
+      },
+    },
+  };
+}
+
+(async () => {
+  process.env.GITHUB_SERVER_URL = "https://github.com";
+  process.env.GITHUB_REPOSITORY = "example/design-craft";
+  process.env.GITHUB_RUN_ID = "1";
+  const context = { repo: { owner: "example", repo: "design-craft" } };
+
+  const createGithub = mockGithub([]);
+  await maintainIssue({ github: createGithub, context, mode: "drift", reportPath: "README.md" });
+  assert.equal(createGithub.calls[0][0], "create");
+
+  const issue = { number: 7, title: "[design-craft] Upstream review required" };
+  const updateGithub = mockGithub([issue]);
+  await maintainIssue({ github: updateGithub, context, mode: "drift", reportPath: "README.md" });
+  assert.equal(updateGithub.calls[0][0], "update");
+
+  const resolveGithub = mockGithub([issue]);
+  await maintainIssue({ github: resolveGithub, context, mode: "resolved" });
+  assert.deepEqual(resolveGithub.calls.map((call) => call[0]), ["comment", "update"]);
+})().catch((error) => {
+  console.error(error);
+  process.exit(1);
+});
 NODE
 
 if ! grep -q "make release-gate" README.md; then
@@ -345,6 +422,27 @@ if ! grep -q "make release-gate" docs/maintenance.md; then
   echo "docs/maintenance.md must document make release-gate" >&2
   exit 1
 fi
+
+if ! grep -q "make release-readiness" README.md || ! grep -q "make release-readiness" docs/maintenance.md; then
+  echo "README.md and docs/maintenance.md must document make release-readiness" >&2
+  exit 1
+fi
+
+python3 - <<'PY'
+from pathlib import Path
+
+makefile = Path("Makefile").read_text(encoding="utf-8")
+source_line = next(line for line in makefile.splitlines() if line.startswith("release-gate-source:"))
+if "upstream-freshness" in source_line or "upstream-remote" in source_line:
+    raise SystemExit("release-gate-source must not depend on mutable upstream freshness")
+if "release-readiness: release-gate" not in makefile or "--remote-details --fail-on-unreviewed" not in makefile:
+    raise SystemExit("release-readiness must add the actionable remote freshness audit")
+
+workflow = Path(".github/workflows/upstream-audit.yml").read_text(encoding="utf-8")
+for needle in ("17 3 * * *", "--remote-details", "issues: write", "Open or update review issue"):
+    if needle not in workflow:
+        raise SystemExit(f"upstream audit workflow missing {needle!r}")
+PY
 
 if ! grep -Fq 'renamed to `design-craft`' skills/frontend-craft/SKILL.md; then
   echo "legacy frontend-craft alias must point users to design-craft" >&2
@@ -381,7 +479,9 @@ for path in \
   "scripts/design_craft_l4_case_validate.py" \
   "scripts/design_craft_l4_eval_case.sh" \
   "scripts/design_craft_l4_evidence_manifest.py" \
-  "scripts/design_craft_maturity.py" \
+	"scripts/design_craft_maturity.py" \
+	"scripts/design_craft_native_runtime_validate.py" \
+	"scripts/design_craft_native_runtime_record.py" \
   "scripts/design_craft_platform_scan.py" \
   "scripts/design_craft_browser_evidence.py" \
   "scripts/design_craft_codex_route_pack.py" \
@@ -394,7 +494,10 @@ for path in \
   "scripts/design_craft_route.sh" \
   "scripts/design_craft_seed_design.sh" \
   "scripts/design_craft_taste_review.sh" \
-  "scripts/design_craft_score.py" \
+	"scripts/design_craft_score.py" \
+	"scripts/design_craft_install_verify.py" \
+	"scripts/native_runtime_ci_ios.sh" \
+	"scripts/native_runtime_ci_android.sh" \
   "skills/design-craft/scripts/design_craft_audit.sh" \
   "skills/design-craft/scripts/design_craft_browser_evidence.py" \
   "skills/design-craft/scripts/design_craft_css_smell_scan.py" \
@@ -444,6 +547,8 @@ for path in \
   scripts/design_craft_route.sh \
   scripts/design_craft_seed_design.sh \
   scripts/design_craft_taste_review.sh \
+  scripts/native_runtime_ci_ios.sh \
+  scripts/native_runtime_ci_android.sh \
   skills/design-craft/scripts/design_craft_audit.sh \
   skills/design-craft/scripts/design_craft_detect.sh \
   skills/design-craft/scripts/design_craft_l4_eval_case.sh \
@@ -462,6 +567,7 @@ done
 
 make -n validate >/dev/null
 make -n release-gate >/dev/null
+make -n release-readiness >/dev/null
 
 for path in \
   scripts/design_craft_score.py \
@@ -472,12 +578,15 @@ for path in \
   scripts/design_craft_l4_capture.py \
   scripts/design_craft_l4_case_validate.py \
   scripts/design_craft_l4_evidence_manifest.py \
-  scripts/design_craft_maturity.py \
+	scripts/design_craft_maturity.py \
+	scripts/design_craft_native_runtime_validate.py \
+	scripts/design_craft_native_runtime_record.py \
   scripts/design_craft_platform_scan.py \
   scripts/design_craft_css_smell_scan.py \
   scripts/design_craft_focus_audit.py \
   scripts/design_craft_static_review.py \
-  scripts/design_craft_token_audit.py \
+	scripts/design_craft_token_audit.py \
+	scripts/design_craft_install_verify.py \
   scripts/frontend_craft_score.py \
   scripts/frontend_craft_browser_evidence.py \
   scripts/upstream_absorption_report.py \
@@ -492,6 +601,103 @@ for path in \
   skills/design-craft/scripts/design_craft_token_audit.py; do
   python_syntax_check "${path}"
 done
+
+python3 scripts/upstream_absorption_report.py --check
+python3 scripts/design_craft_native_runtime_validate.py --check
+python3 - <<'PY'
+import json
+import plistlib
+import xml.etree.ElementTree as ET
+from pathlib import Path
+
+payload = json.loads(Path("evals/native-runtime/environment-probe.json").read_text(encoding="utf-8"))
+assert payload.get("schema") == "design-craft.native-runtime-probe.v1"
+assert isinstance(payload.get("ios", {}).get("ready"), bool)
+assert isinstance(payload.get("android", {}).get("ready"), bool)
+plist = plistlib.loads(Path("evals/native-runtime/fixtures/ios/Info.plist").read_bytes())
+assert plist.get("CFBundleIdentifier") == "dev.designcraft.runtime-evidence"
+ET.parse("evals/native-runtime/fixtures/android/app/src/main/AndroidManifest.xml")
+
+workflow = Path(".github/workflows/native-runtime.yml").read_text(encoding="utf-8")
+for needle in ("native_runtime_ci_ios.sh", "android-emulator-runner@v2", "native_runtime_ci_android.sh"):
+    assert needle in workflow
+ios_runner = Path("scripts/native_runtime_ci_ios.sh").read_text(encoding="utf-8")
+android_runner = Path("scripts/native_runtime_ci_android.sh").read_text(encoding="utf-8")
+assert "xcrun simctl" in ios_runner and "design_craft_native_runtime_record.py" in ios_runner
+assert "uiautomator" in android_runner and "design_craft_native_runtime_record.py" in android_runner
+PY
+
+(
+  tmp_native_dir="$(mktemp -d -t design-craft-native-record.XXXXXX)"
+  trap 'rm -rf "${tmp_native_dir}"' EXIT
+  printf '%s\n' runtime > "${tmp_native_dir}/artifact.txt"
+  python3 scripts/design_craft_native_runtime_record.py \
+    --platform ios \
+    --runtime-kind ios_simulator \
+    --runtime-id fixture-simulator \
+    --tool fixture \
+    --command "fixture build" \
+    --assertion build=true \
+    --assertion launch=true \
+    --assertion screenshot=true \
+    --artifact "${tmp_native_dir}/artifact.txt" \
+    --output "${tmp_native_dir}/ios-observed.json" >/dev/null
+  python3 scripts/design_craft_native_runtime_validate.py \
+    --validate \
+    --root "${tmp_native_dir}" \
+    --require ios >/dev/null
+)
+
+(
+  tmp_install_dir="$(mktemp -d -t design-craft-install-validation.XXXXXX)"
+  trap 'rm -rf "${tmp_install_dir}"' EXIT
+  export DESIGN_CRAFT_SKILL_ROOT="${tmp_install_dir}/skills"
+  export DESIGN_CRAFT_BACKUP_ROOT="${tmp_install_dir}/backups"
+  bash scripts/install_local.sh --keep-backups 2 >/dev/null
+  test ! -e "${DESIGN_CRAFT_SKILL_ROOT}/frontend-craft"
+  python3 scripts/design_craft_install_verify.py \
+    --source skills/design-craft \
+    --installed "${DESIGN_CRAFT_SKILL_ROOT}/design-craft" \
+    --expected-name design-craft \
+    --expected-version "$(cat VERSION)" \
+    --require-metadata >/dev/null
+  if DESIGN_CRAFT_INSTALL_TEST_FAIL_AFTER_BACKUP=1 bash scripts/install_local.sh --keep-backups 2 >/dev/null 2>&1; then
+    echo "Installer after-backup failpoint unexpectedly passed" >&2
+    exit 1
+  fi
+  python3 scripts/design_craft_install_verify.py \
+    --source skills/design-craft \
+    --installed "${DESIGN_CRAFT_SKILL_ROOT}/design-craft" \
+    --expected-name design-craft \
+    --expected-version "$(cat VERSION)" \
+    --require-metadata >/dev/null
+  if DESIGN_CRAFT_INSTALL_TEST_FAIL_AFTER_SWITCH=1 bash scripts/install_local.sh --keep-backups 2 >/dev/null 2>&1; then
+    echo "Installer after-switch failpoint unexpectedly passed" >&2
+    exit 1
+  fi
+  python3 scripts/design_craft_install_verify.py \
+    --source skills/design-craft \
+    --installed "${DESIGN_CRAFT_SKILL_ROOT}/design-craft" \
+    --expected-name design-craft \
+    --expected-version "$(cat VERSION)" \
+    --require-metadata >/dev/null
+  mkdir -p "${DESIGN_CRAFT_SKILL_ROOT}/frontend-craft"
+  printf '%s\n' stale > "${DESIGN_CRAFT_SKILL_ROOT}/frontend-craft/stale.txt"
+  for _ in 1 2 3; do
+    bash scripts/install_local.sh --keep-backups 2 >/dev/null
+  done
+  python3 scripts/design_craft_install_verify.py \
+    --source skills/frontend-craft \
+    --installed "${DESIGN_CRAFT_SKILL_ROOT}/frontend-craft" \
+    --expected-name frontend-craft \
+    --expected-version "$(cat VERSION)" \
+    --require-metadata >/dev/null
+  backup_count="$(find "${DESIGN_CRAFT_BACKUP_ROOT}/design-craft" -mindepth 1 -maxdepth 1 -type d | wc -l | tr -d '[:space:]')"
+  if (( backup_count > 2 )); then
+    echo "Installer backup retention failed: ${backup_count} backups remain" >&2
+    exit 1
+  fi
+)
 
 python3 - <<'PY'
 import json

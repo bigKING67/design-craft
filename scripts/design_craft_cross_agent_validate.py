@@ -27,8 +27,7 @@ REQUIRED_CRITERIA = {
     "scope control": ("unrelated", "scope"),
 }
 OBSERVED_SCHEMA = "design-craft.cross-agent-score.v1"
-OBSERVED_HOSTS = ("codex", "pi")
-UNVERIFIED_HOSTS = ("cursor", "claude")
+HOSTS = ("codex", "pi", "cursor", "claude")
 OBSERVED_REQUIRED_CRITERIA = (
     "style_authority",
     "reference_selection",
@@ -199,7 +198,30 @@ def validate_observed_score(task_dir: Path, host: str, prompt_hash: str) -> list
     return errors
 
 
-def validate_observed_task(task_dir: Path) -> list[str]:
+def validate_output(task_dir: Path, host: str) -> list[str]:
+    errors: list[str] = []
+    output = task_dir / f"{host}-output.md"
+    if not output.is_file():
+        return [f"{output}: missing observed output"]
+    text = read_text(output)
+    if len(text.strip()) < 400:
+        errors.append(f"{output}: observed output is too sparse")
+    lowered = text.lower()
+    for term in ("evidence", "unverified", "design move"):
+        if term not in lowered:
+            errors.append(f"{output}: output should mention {term!r}")
+    return errors
+
+
+def observed_hosts(task_dir: Path) -> set[str]:
+    return {
+        host
+        for host in HOSTS
+        if (task_dir / f"{host}-output.md").is_file() and (task_dir / f"score.{host}.json").is_file()
+    }
+
+
+def validate_observed_task(task_dir: Path, required_hosts: tuple[str, ...] = ()) -> list[str]:
     errors = validate_task_dir(task_dir)
     if errors:
         return errors
@@ -207,38 +229,35 @@ def validate_observed_task(task_dir: Path) -> list[str]:
     prompt_path = task_dir / "prompt.md"
     prompt_hash = sha256_text(read_text(prompt_path))
 
-    for host in OBSERVED_HOSTS:
-        output = task_dir / f"{host}-output.md"
-        if not output.is_file():
-            errors.append(f"{output}: missing observed output")
-        else:
-            text = read_text(output)
-            if len(text.strip()) < 400:
-                errors.append(f"{output}: observed output is too sparse")
-            lowered = text.lower()
-            for term in ("evidence", "unverified", "design move"):
-                if term not in lowered:
-                    errors.append(f"{output}: output should mention {term!r}")
-        errors.extend(validate_observed_score(task_dir, host, prompt_hash))
-
-    for host in UNVERIFIED_HOSTS:
-        unverified_path = task_dir / f"{host}-unverified.md"
-        if not unverified_path.is_file():
-            errors.append(f"{unverified_path}: missing explicit {host} unverified note")
-        else:
-            text = read_text(unverified_path).lower()
-            if "unverified" not in text or "reason" not in text:
-                errors.append(f"{unverified_path}: must record {host} as unverified with a reason")
+    observed = observed_hosts(task_dir)
+    for host in HOSTS:
+        output_path = task_dir / f"{host}-output.md"
         score_path = task_dir / f"score.{host}.json"
-        if score_path.exists():
-            errors.append(f"{score_path}: do not record a {host} score until {host} really runs")
+        unverified_path = task_dir / f"{host}-unverified.md"
+        has_any_observed = output_path.exists() or score_path.exists()
+        if has_any_observed:
+            errors.extend(validate_output(task_dir, host))
+            errors.extend(validate_observed_score(task_dir, host, prompt_hash))
+            if unverified_path.exists():
+                errors.append(f"{unverified_path}: remove stale unverified note after recording an observed run")
+        else:
+            if not unverified_path.is_file():
+                errors.append(f"{unverified_path}: missing explicit {host} unverified note")
+            else:
+                text = read_text(unverified_path).lower()
+                if "unverified" not in text or "reason" not in text:
+                    errors.append(f"{unverified_path}: must record {host} as unverified with a reason")
+
+    for host in required_hosts:
+        if host not in observed:
+            errors.append(f"{task_dir}: required observed host is missing: {host}")
 
     comparison_path = task_dir / "comparison.md"
     if not comparison_path.is_file():
         errors.append(f"{comparison_path}: missing comparison summary")
     else:
         comparison = read_text(comparison_path).lower()
-        for term in ("codex", "pi", "claude", "cursor", "unverified"):
+        for term in HOSTS:
             if term not in comparison:
                 errors.append(f"{comparison_path}: comparison must mention {term}")
     return errors
@@ -284,6 +303,22 @@ def run_self_check() -> list[str]:
         invalid_errors = validate_task_dir(invalid)
         if not any("placeholder" in error or "table" in error for error in invalid_errors):
             errors.append("self-check failed to reject placeholder scorecard")
+
+        task = temp_root / "same-prompt-generic"
+        for host in HOSTS:
+            (task / f"{host}-unverified.md").write_text(
+                f"# {host} unverified\n\nStatus: unverified.\n\nReason: fixture host did not run.\n",
+                encoding="utf-8",
+            )
+        (task / "comparison.md").write_text(
+            "# Comparison\n\nCodex, Pi, Cursor, and Claude remain unverified in this fixture.\n",
+            encoding="utf-8",
+        )
+        errors.extend(validate_observed_task(task))
+        (task / "cursor-output.md").write_text("Evidence and unverified design moves. " * 20, encoding="utf-8")
+        partial_errors = validate_observed_task(task)
+        if not any("score.cursor.json" in error for error in partial_errors):
+            errors.append("self-check failed to reject a partial observed-host artifact pair")
         return errors
     finally:
         shutil.rmtree(temp_root, ignore_errors=True)
@@ -294,13 +329,20 @@ def main() -> int:
     parser.add_argument("--check", action="store_true", help="Run built-in self-checks.")
     parser.add_argument("--root", default="evals/cross-agent", help="Cross-agent benchmark root.")
     parser.add_argument("--observed-task", help="Validate one task directory with recorded agent outputs.")
+    parser.add_argument(
+        "--require-host",
+        action="append",
+        choices=HOSTS,
+        default=[],
+        help="Require this host to have a real output and score in --observed-task",
+    )
     args = parser.parse_args()
 
     errors: list[str] = []
     if args.check:
         errors.extend(run_self_check())
     elif args.observed_task:
-        errors.extend(validate_observed_task(Path(args.observed_task)))
+        errors.extend(validate_observed_task(Path(args.observed_task), tuple(args.require_host)))
     else:
         errors.extend(validate_root(Path(args.root)))
 

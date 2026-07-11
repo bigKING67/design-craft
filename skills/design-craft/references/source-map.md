@@ -42,6 +42,8 @@ preflight thinking.
   `2026-06-22T16:01:16-07:00 Make Copilot built-in note a callout block under the Install header`
 - Current absorbed commit:
   `da99645a58400ed7acb201e6904f9413efd89c6e`
+- Current reviewed commit:
+  `630fc2682a5bd39b25a8e61f74b6b3f14f2b1e21`
 - 2026-06-30 absorption note:
   remote updates were reviewed and selectively absorbed for critique method
   provenance, explicit degraded/single-context reporting, `.impeccable`
@@ -53,6 +55,9 @@ preflight thinking.
   Android quality rules, mechanical pre-scan discipline, and detector/design
   system corrections. Generated provider bundles, site output, dependencies,
   and store packaging remain provenance only.
+- 2026-07-11 review note:
+  the new range changes only GitHub sheriff automation and its tests. It is
+  repository-operations provenance and adds no design-craft behavior.
 - Primary material to inspect:
   - `.agents/skills/impeccable/SKILL.md`
   - `site/content/skills/*.md`
@@ -75,11 +80,15 @@ production-readiness flows.
   `2026-06-29T15:30:16+02:00 Update README.md`
 - Current absorbed commit:
   `f76beceb7d3fc8c43309cefad5a095a206103a4e`
+- Current reviewed commit:
+  `220e8607c90b17337d210125777b7b695f26c221`
 - 2026-07-10 decision: `absorbed`; original design-craft references now cover
   product-design principles, Apple-style direct manipulation,
   presentation-value interruption, spring response/damping, velocity handoff,
   momentum projection, rubber-banding, accessibility variants, and optical
   typography.
+- 2026-07-11 review note: the new range changes one README apostrophe only;
+  no additional design or motion guidance was imported.
 - Primary material to inspect:
   - `skills/emil-design-eng/SKILL.md`
   - `skills/review-animations/SKILL.md`

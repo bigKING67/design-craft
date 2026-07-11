@@ -44,3 +44,6 @@ This installs to:
   unavailable, fall back to reference-driven review and report skipped
   automation.
 - Keep browser/screenshot claims evidence-backed.
+- Run `claude auth status` and a minimal headless control prompt before a
+  benchmark. A configured custom API base, proxy failure, or rejected bearer is
+  a host preflight failure, not a design-craft observed output.

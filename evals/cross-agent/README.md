@@ -26,8 +26,15 @@ The validator checks active `same-prompt-*` task directories, not `_template/`.
 Observed benchmark outputs are intentionally host-specific. A host only counts
 as verified after it runs the same prompt and records an output plus score JSON.
 For `0.4.0`, Codex and Pi are observed for the dashboard, gesture-motion, and
-native-adaptive benchmarks. Cursor and Claude remain explicitly unverified
-because runnable outputs were not collected in this release.
+native-adaptive benchmarks. The validator now treats each of Codex, Pi, Cursor,
+and Claude independently: a host must provide both a real output and score JSON,
+or retain an explicit unverified note. A partial pair is rejected, and a stale
+unverified note is rejected after evidence is recorded.
+
+As of 2026-07-11, Cursor Agent is installed but not logged in. Claude Code's
+configured custom API base is unreachable; a command-scoped official-endpoint
+override connects but rejects the existing bearer with HTTP 401. Those host
+preflights are evidence of the current blockers, not observed benchmark output.
 
 Validate the recorded runs with:
 
@@ -38,4 +45,15 @@ python3 scripts/design_craft_cross_agent_validate.py \
   --observed-task evals/cross-agent/same-prompt-motion-review
 python3 scripts/design_craft_cross_agent_validate.py \
   --observed-task evals/cross-agent/same-prompt-native-adaptive-review
+```
+
+Require specific hosts when collecting a release-evidence tranche:
+
+```bash
+python3 scripts/design_craft_cross_agent_validate.py \
+  --observed-task evals/cross-agent/same-prompt-native-adaptive-review \
+  --require-host codex \
+  --require-host pi \
+  --require-host cursor \
+  --require-host claude
 ```

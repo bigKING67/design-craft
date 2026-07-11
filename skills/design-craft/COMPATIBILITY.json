@@ -1,0 +1,9 @@
+{
+  "schema": "design-craft.compatibility.v1",
+  "codex_route_pack": {
+    "schema": "design-craft.codex-route-pack.v2",
+    "manifest_schema": "codex.frontend-route-pack.manifest.v1",
+    "snapshot_schema": "codex.global_agents.snapshot.v2",
+    "routing_version": 2
+  }
+}

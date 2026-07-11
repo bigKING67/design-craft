@@ -45,7 +45,9 @@ This installs to:
 
 The local frontend route planner is machine-level Codex configuration under
 `~/.codex`, not part of the installable skill. Keep it auditable with the route
-pack helper:
+pack helper. Its single file-list authority is
+`~/.codex/tools/frontend_route_pack_manifest.json`; do not maintain a second
+hard-coded route-pack list in adapter code or documentation:
 
 ```bash
 python3 scripts/design_craft_codex_route_pack.py --strict
