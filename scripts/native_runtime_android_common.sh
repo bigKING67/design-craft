@@ -1,9 +1,34 @@
 #!/usr/bin/env bash
 
+design_craft_dismiss_blocking_dialog() {
+  local xml_path="$1"
+  local coordinates
+  coordinates="$(python3 - "${xml_path}" <<'PY'
+import re
+import sys
+import xml.etree.ElementTree as ET
+
+root = ET.parse(sys.argv[1]).getroot()
+for node in root.iter("node"):
+    if node.attrib.get("resource-id") != "android:id/aerr_close":
+        continue
+    match = re.fullmatch(r"\[(\d+),(\d+)\]\[(\d+),(\d+)\]", node.attrib.get("bounds", ""))
+    if match:
+        left, top, right, bottom = map(int, match.groups())
+        print((left + right) // 2, (top + bottom) // 2)
+        raise SystemExit(0)
+raise SystemExit(1)
+PY
+)" || return 1
+  read -r tap_x tap_y <<< "${coordinates}"
+  adb shell input tap "${tap_x}" "${tap_y}"
+}
+
 design_craft_dump_ui() {
   local evidence_dir="$1"
   local output="$2"
   local expected_text="${3:-}"
+  local relaunch_component="${4:-}"
   local label
   label="$(basename "${output}" .xml)"
   local remote_path="/data/local/tmp/design-craft-${label}.xml"
@@ -27,6 +52,13 @@ PY
     then
       adb shell rm -f "${remote_path}" >/dev/null 2>&1 || true
       if [[ -n "${expected_text}" ]] && ! grep -q -- "${expected_text}" "${temporary}"; then
+        if design_craft_dismiss_blocking_dialog "${temporary}"; then
+          printf '%s\n' 'dismissed blocking system dialog' >> "${dump_log}"
+          if [[ -n "${relaunch_component}" ]]; then
+            adb shell am start -W -n "${relaunch_component}" \
+              >> "${evidence_dir}/relaunch.txt" 2>&1 || true
+          fi
+        fi
         sleep 3
         continue
       fi
@@ -90,4 +122,10 @@ design_craft_assert_physical_device() {
     return 1
   fi
   adb -s "${serial}" get-state | grep -qx "device"
+}
+
+design_craft_prepare_device_ui() {
+  adb shell input keyevent KEYCODE_WAKEUP >/dev/null 2>&1 || true
+  adb shell wm dismiss-keyguard >/dev/null 2>&1 || true
+  adb shell am wait-for-broadcast-idle >/dev/null 2>&1 || true
 }

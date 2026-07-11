@@ -54,11 +54,16 @@ gradle -p "${PROJECT_DIR}" :app:assembleDebug --no-daemon
 apk="${PROJECT_DIR}/app/build/outputs/apk/debug/app-debug.apk"
 
 adb wait-for-device
+design_craft_prepare_device_ui
 adb install -r "${apk}"
 adb shell am force-stop dev.designcraft.runtimeevidence
 adb shell am start -W -n dev.designcraft.runtimeevidence/.MainActivity > "${EVIDENCE_DIR}/launch.txt"
 sleep 3
-design_craft_dump_ui "${EVIDENCE_DIR}" "${EVIDENCE_DIR}/window-before.xml" "Native runtime evidence title"
+design_craft_dump_ui \
+  "${EVIDENCE_DIR}" \
+  "${EVIDENCE_DIR}/window-before.xml" \
+  "Native runtime evidence title" \
+  "dev.designcraft.runtimeevidence/.MainActivity"
 
 read -r tap_x tap_y < <(python3 - "${EVIDENCE_DIR}/window-before.xml" <<'PY'
 import re
@@ -78,7 +83,11 @@ raise SystemExit("Confirm runtime button not found")
 PY
 )
 adb shell input tap "${tap_x}" "${tap_y}"
-design_craft_dump_ui "${EVIDENCE_DIR}" "${EVIDENCE_DIR}/window-after.xml" "Runtime interaction confirmed"
+design_craft_dump_ui \
+  "${EVIDENCE_DIR}" \
+  "${EVIDENCE_DIR}/window-after.xml" \
+  "Runtime interaction confirmed" \
+  "dev.designcraft.runtimeevidence/.MainActivity"
 adb exec-out screencap -p > "${EVIDENCE_DIR}/android-device.png"
 
 python3 scripts/design_craft_native_runtime_record.py \
