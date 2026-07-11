@@ -13,7 +13,9 @@ All notable local changes to `design-craft` are recorded here.
   `--confirm-runtime` Simulator relaunch, strengthened Android activity/UI
   readiness diagnostics and bounded retries, preserved the already verified
   current-source Android Emulator evidence, and upgraded GitHub Actions pins
-  to their current Node 24 runtime releases.
+  to their current Node 24 runtime releases. GitHub run `29147028779` then
+  produced reviewed current-source iOS Simulator and Android Emulator evidence
+  with no Node 20 deprecation annotations.
 - Split installation provenance into `skill_source_dirty` and `repo_dirty`.
   Install parity now remains valid across unrelated ancestor commits and
   repo-level benchmark WIP when the installed skill tree is unchanged, while
