@@ -46,7 +46,11 @@ data_container="$(xcrun simctl get_app_container "${udid}" dev.designcraft.runti
 interaction_marker="${data_container}/Documents/runtime-interaction.txt"
 rm -f "${interaction_marker}"
 xcrun simctl terminate "${udid}" dev.designcraft.runtime-evidence
-xcrun simctl openurl "${udid}" "designcraft-evidence://confirm" > "${EVIDENCE_DIR}/openurl.txt"
+xcrun simctl launch \
+  "${udid}" \
+  dev.designcraft.runtime-evidence \
+  --confirm-runtime \
+  > "${EVIDENCE_DIR}/interaction-launch.txt"
 interaction_observed=0
 for _ in {1..20}; do
   if [[ -f "${interaction_marker}" ]] \
@@ -60,7 +64,7 @@ if [[ "${interaction_observed}" != "1" ]]; then
   xcrun simctl spawn "${udid}" log show --last 2m \
     --predicate 'process == "DesignCraftEvidence"' \
     > "${EVIDENCE_DIR}/interaction-diagnostics.log" 2>&1 || true
-  echo "iOS runtime URL interaction did not produce the marker" >&2
+  echo "iOS runtime confirmation launch did not produce the marker" >&2
   exit 1
 fi
 cp "${interaction_marker}" "${EVIDENCE_DIR}/runtime-interaction.txt"
@@ -73,7 +77,7 @@ python3 scripts/design_craft_native_runtime_record.py \
   --tool "xcodebuild/xcrun simctl" \
   --command "xcrun swiftc iOS fixture" \
   --command "xcrun simctl boot/install/launch" \
-  --command "xcrun simctl openurl interaction and marker assertion" \
+  --command "xcrun simctl relaunch with --confirm-runtime and marker assertion" \
   --command "xcrun simctl io before/after screenshots" \
   --assertion build_succeeded=true \
   --assertion install_and_launch_succeeded=true \

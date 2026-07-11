@@ -79,6 +79,10 @@ final class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         self.window = window
         print("DESIGN_CRAFT_RUNTIME_LAUNCHED")
 
+        if ProcessInfo.processInfo.arguments.contains("--confirm-runtime") {
+            _ = confirmRuntimeInteraction()
+        }
+
         if let url = connectionOptions.urlContexts.first?.url {
             _ = handleRuntimeURL(url)
         }

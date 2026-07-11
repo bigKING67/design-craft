@@ -47,7 +47,9 @@ system, data density, report grammar, or runtime truth.
    implementations.
 2. For L1+ frontend implementation tasks, run the local route planner when
    available:
-   `bash ~/.codex/tools/frontend_route_plan.sh --surface <surface> --intent <intent> --scope <scope> [--platform <auto|web|ios|android|adaptive>] [--product-context-path <abs PRODUCT.md>] [--style-authority-path <abs DESIGN.md>]`.
+   `bash ~/.codex/tools/frontend_route_plan.sh --surface <surface> --intent <intent> --scope <scope> [--platform <auto|web|ios|android|adaptive>] [--product-context-path <abs PRODUCT.md>] [--style-authority-path <abs DESIGN.md>] --output compact-json`.
+   Use full `--output json` only when auditing the complete static delivery
+   contract, or `--output human` for concise interactive inspection.
    Use only route-planner enum values. Do not put free-form task prose into
    `--surface`, `--intent`, or `--scope`; keep notes outside the command.
 3. Treat route `candidate_skills` as candidates, not proof of actual use.

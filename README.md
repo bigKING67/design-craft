@@ -574,7 +574,7 @@ python3 scripts/design_craft_native_runtime_validate.py --validate --require ios
 `.github/workflows/native-runtime.yml` runs a real iOS Simulator fixture and a
 real Android Emulator fixture on manual dispatch and release tags. It builds,
 installs, launches, captures runtime artifacts, exercises the Android control
-and an iOS deep-link-driven runtime state transition,
+and a deterministic iOS `--confirm-runtime` relaunch state transition,
 hashes the evidence, and validates the generated JSON before upload. Downloaded
 artifacts must still be reviewed before `ios-observed.json` and
 `android-observed.json` are admitted as durable evidence. A separate physical

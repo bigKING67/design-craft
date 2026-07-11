@@ -6,6 +6,36 @@ cd "${ROOT_DIR}"
 
 EVIDENCE_DIR="${DESIGN_CRAFT_NATIVE_EVIDENCE_DIR:-${RUNNER_TEMP:-${TMPDIR:-/tmp}}/native-runtime-android}"
 mkdir -p "${EVIDENCE_DIR}"
+PACKAGE="dev.designcraft.runtimeevidence"
+COMPONENT="${PACKAGE}/.MainActivity"
+
+capture_android_diagnostics() {
+  adb shell dumpsys activity activities > "${EVIDENCE_DIR}/activity-diagnostics.txt" 2>&1 || true
+  adb shell dumpsys window windows > "${EVIDENCE_DIR}/window-diagnostics.txt" 2>&1 || true
+}
+
+wait_for_activity() {
+  local attempt
+  local activity_state
+  local resumed_state
+
+  for attempt in {1..20}; do
+    activity_state="$(adb shell dumpsys activity activities 2>/dev/null || true)"
+    resumed_state="$(grep -E 'mResumedActivity|topResumedActivity|ResumedActivity' <<< "${activity_state}" || true)"
+    if grep -q "${PACKAGE}" <<< "${resumed_state}" \
+      && grep -q "MainActivity" <<< "${resumed_state}"; then
+      return 0
+    fi
+    if [[ "${attempt}" == "10" ]]; then
+      adb shell am start -W -n "${COMPONENT}" >> "${EVIDENCE_DIR}/launch.txt" 2>&1 || true
+    fi
+    sleep 2
+  done
+
+  capture_android_diagnostics
+  echo "Android evidence activity did not become resumed: ${COMPONENT}" >&2
+  return 1
+}
 
 dump_ui() {
   local output="$1"
@@ -14,7 +44,7 @@ dump_ui() {
   local temporary="${output}.tmp"
   local attempt
 
-  for attempt in {1..10}; do
+  for attempt in {1..20}; do
     rm -f "${temporary}"
     if adb shell rm -f "${remote_path}" >/dev/null 2>&1 \
       && adb shell uiautomator dump "${remote_path}" >/dev/null 2>&1 \
@@ -30,10 +60,14 @@ dump_ui() {
       mv "${temporary}" "${output}"
       return 0
     fi
+    if [[ "${attempt}" == "10" ]]; then
+      adb shell am start -W -n "${COMPONENT}" >> "${EVIDENCE_DIR}/launch.txt" 2>&1 || true
+      wait_for_activity
+    fi
     sleep 3
   done
 
-  adb shell dumpsys window windows > "${EVIDENCE_DIR}/window-diagnostics.txt" 2>&1 || true
+  capture_android_diagnostics
   echo "Unable to capture a stable UIAutomator tree containing: ${expected_text}" >&2
   return 1
 }
@@ -45,9 +79,12 @@ gradle -p "${PROJECT_DIR}" :app:assembleDebug --no-daemon
 apk="${PROJECT_DIR}/app/build/outputs/apk/debug/app-debug.apk"
 adb install -r "${apk}"
 adb wait-for-device
-adb shell am force-stop dev.designcraft.runtimeevidence
-adb shell am start -W -n dev.designcraft.runtimeevidence/.MainActivity > "${EVIDENCE_DIR}/launch.txt"
-sleep 3
+adb shell input keyevent KEYCODE_WAKEUP || true
+adb shell wm dismiss-keyguard || true
+adb shell settings put system screen_off_timeout 2147483647 || true
+adb shell am force-stop "${PACKAGE}"
+adb shell am start -W -n "${COMPONENT}" > "${EVIDENCE_DIR}/launch.txt"
+wait_for_activity
 dump_ui "${EVIDENCE_DIR}/window-before.xml" "Native runtime evidence title"
 
 read -r tap_x tap_y < <(python3 - "${EVIDENCE_DIR}/window-before.xml" <<'PY'
