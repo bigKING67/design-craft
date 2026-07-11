@@ -800,6 +800,103 @@ if [[ "${PORTABLE}" == "0" ]]; then
   python3 scripts/design_craft_codex_route_pack.py --strict >/dev/null
 fi
 python3 scripts/design_craft_cross_agent_validate.py --check >/dev/null
+python3 - <<'PY'
+import json
+import shutil
+import subprocess
+import sys
+import tempfile
+from pathlib import Path
+
+sys.path.insert(0, str(Path("scripts").resolve()))
+
+from design_craft_cross_agent_validate import scorecard_weights
+from design_craft_evidence_common import tree_sha256
+
+source = Path("skills/design-craft").resolve()
+task_source = Path("evals/cross-agent/same-prompt-motion-review").resolve()
+head = subprocess.check_output(["git", "rev-parse", "HEAD"], text=True).strip()
+
+with tempfile.TemporaryDirectory(prefix="design-craft-cross-agent-record-") as tmp_value:
+    tmp = Path(tmp_value)
+    observed_skill = tmp / "observed-skill"
+    provenance_skill = tmp / "provenance-skill"
+    task = tmp / task_source.name
+    shutil.copytree(source, observed_skill)
+    shutil.copytree(source, provenance_skill)
+    task.mkdir()
+    for name in ("prompt.md", "scorecard.md", "codex-output.md"):
+        shutil.copy2(task_source / name, task / name)
+
+    metadata = {
+        "schema": "design-craft.install.v1",
+        "version": (source / "VERSION").read_text(encoding="utf-8").strip(),
+        "source_commit": head,
+        "source_dirty": False,
+        "source_tree_sha256": tree_sha256(provenance_skill),
+    }
+    (provenance_skill / ".design-craft-install.json").write_text(
+        json.dumps(metadata, indent=2) + "\n",
+        encoding="utf-8",
+    )
+    criteria = {
+        name: {
+            "passed": True,
+            "earned": weight,
+            "note": "Recorder provenance separation self-check passed.",
+        }
+        for name, weight in scorecard_weights(task / "scorecard.md").items()
+    }
+    criteria_path = tmp / "criteria.json"
+    criteria_path.write_text(json.dumps(criteria, indent=2) + "\n", encoding="utf-8")
+    score_path = task / "score.custom.json"
+    command = [
+        sys.executable,
+        "scripts/design_craft_cross_agent_record.py",
+        "--task-dir",
+        str(task),
+        "--agent",
+        "codex",
+        "--agent-version",
+        "test-runner",
+        "--model",
+        "test-model",
+        "--reasoning-profile",
+        "test-profile",
+        "--runner-os",
+        "portable-test",
+        "--skill-root",
+        str(observed_skill),
+        "--provenance-skill-root",
+        str(provenance_skill),
+        "--canonical-skill-root",
+        str(source),
+        "--command-summary",
+        "deterministic recorder provenance separation self-check",
+        "--criteria-json",
+        str(criteria_path),
+        "--score-output",
+        str(score_path),
+    ]
+    result = subprocess.run(command, text=True, capture_output=True, check=False)
+    if result.returncode != 0:
+        raise SystemExit("cross-agent recorder self-check failed: " + result.stderr.strip())
+    payload = json.loads(score_path.read_text(encoding="utf-8"))
+    if payload.get("skill_path") != str(observed_skill.resolve()) or payload.get("score") != 100:
+        raise SystemExit("cross-agent recorder did not preserve the observed host path or computed score")
+
+    with (observed_skill / "SKILL.md").open("a", encoding="utf-8") as handle:
+        handle.write("\nTree mismatch fixture.\n")
+    mismatch_path = task / "score.mismatch.json"
+    mismatch = subprocess.run(
+        [*command[:-1], str(mismatch_path)],
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+    if mismatch.returncode == 0 or "does not match" not in mismatch.stderr:
+        raise SystemExit("cross-agent recorder unexpectedly accepted a mismatched observed skill tree")
+PY
 python3 scripts/design_craft_cross_agent_validate.py --root evals/cross-agent >/dev/null
 python3 scripts/design_craft_cross_agent_validate.py \
   --observed-task evals/cross-agent/same-prompt-dashboard-review >/dev/null
@@ -809,6 +906,27 @@ python3 scripts/design_craft_cross_agent_validate.py \
   --observed-task evals/cross-agent/same-prompt-native-adaptive-review >/dev/null
 python3 scripts/design_craft_l4_capture.py --check >/dev/null
 python3 scripts/design_craft_l4_evidence_manifest.py --check >/dev/null
+python3 - <<'PY'
+import subprocess
+import sys
+from concurrent.futures import ThreadPoolExecutor
+
+
+def run_self_check(_: int) -> subprocess.CompletedProcess[str]:
+    return subprocess.run(
+        [sys.executable, "scripts/design_craft_l4_evidence_manifest.py", "--check"],
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+
+
+with ThreadPoolExecutor(max_workers=4) as pool:
+    results = list(pool.map(run_self_check, range(8)))
+failures = [result.stderr.strip() for result in results if result.returncode != 0]
+if failures:
+    raise SystemExit("concurrent L4 manifest self-check failed: " + "; ".join(failures))
+PY
 python3 scripts/design_craft_l4_evidence_manifest.py \
   --validate-screenshots-json evals/product-ui-taste/before-after/_template/screenshots.json >/dev/null
 python3 scripts/design_craft_l4_evidence_manifest.py \

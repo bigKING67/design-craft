@@ -7,6 +7,7 @@ import argparse
 import json
 import re
 import sys
+import tempfile
 from pathlib import Path
 from typing import Any
 
@@ -248,49 +249,53 @@ def run_self_check() -> list[str]:
         },
         "layout_delta": {},
     }
-    tmp = Path("/tmp/design-craft-l4-manifest-self-check.json")
-    tmp.write_text(json.dumps(valid_payload), encoding="utf-8")
-    errors = validate_manifest(tmp, strict=True, require_existing_files=False)
-    invalid_payload = dict(valid_payload)
-    invalid_payload["artifacts"] = {
-        "before": {"desktop": {**valid_payload["artifacts"]["before"]["desktop"], "sha256": "bad"}},
-        "after": valid_payload["artifacts"]["after"],
-    }
-    tmp.write_text(json.dumps(invalid_payload), encoding="utf-8")
-    invalid_errors = validate_manifest(tmp, strict=True, require_existing_files=False)
-    if not any("sha256" in error for error in invalid_errors):
-        errors.append("self-check failed to reject invalid sha256")
-    invalid_payload["artifacts"] = {
-        "before": {
-            "desktop": {
-                **valid_payload["artifacts"]["before"]["desktop"],
-                "path": "data:image/png;base64,AAAA",
-                "sha256": "a" * 64,
-                "dimensions": [0, 800],
-                "viewport": {"width": 1200, "height": 800, "dpr": 0},
-                "layout_metrics": {"horizontal_overflow": "false"},
-            }
-        },
-        "after": valid_payload["artifacts"]["after"],
-    }
-    tmp.write_text(json.dumps(invalid_payload), encoding="utf-8")
-    invalid_errors = validate_manifest(tmp, strict=True, require_existing_files=False)
-    expected_markers = ("base64", "dimensions", "viewport.dpr", "horizontal_overflow")
-    for marker in expected_markers:
-        if not any(marker in error for error in invalid_errors):
-            errors.append(f"self-check failed to reject invalid {marker}")
-    invalid_payload["artifacts"] = {
-        "before": valid_payload["artifacts"]["before"],
-        "after": {"mobile": valid_payload["artifacts"]["after"]["desktop"]},
-    }
-    tmp.write_text(json.dumps(invalid_payload), encoding="utf-8")
-    invalid_errors = validate_manifest(tmp, strict=True, require_existing_files=False)
-    if not any("shared before/after artifact key" in error for error in invalid_errors):
-        errors.append("self-check failed to reject non-matching before/after keys")
+    with tempfile.NamedTemporaryFile(
+        prefix="design-craft-l4-manifest-self-check-",
+        suffix=".json",
+        delete=False,
+    ) as handle:
+        tmp = Path(handle.name)
     try:
-        tmp.unlink()
-    except OSError:
-        pass
+        tmp.write_text(json.dumps(valid_payload), encoding="utf-8")
+        errors = validate_manifest(tmp, strict=True, require_existing_files=False)
+        invalid_payload = dict(valid_payload)
+        invalid_payload["artifacts"] = {
+            "before": {"desktop": {**valid_payload["artifacts"]["before"]["desktop"], "sha256": "bad"}},
+            "after": valid_payload["artifacts"]["after"],
+        }
+        tmp.write_text(json.dumps(invalid_payload), encoding="utf-8")
+        invalid_errors = validate_manifest(tmp, strict=True, require_existing_files=False)
+        if not any("sha256" in error for error in invalid_errors):
+            errors.append("self-check failed to reject invalid sha256")
+        invalid_payload["artifacts"] = {
+            "before": {
+                "desktop": {
+                    **valid_payload["artifacts"]["before"]["desktop"],
+                    "path": "data:image/png;base64,AAAA",
+                    "sha256": "a" * 64,
+                    "dimensions": [0, 800],
+                    "viewport": {"width": 1200, "height": 800, "dpr": 0},
+                    "layout_metrics": {"horizontal_overflow": "false"},
+                }
+            },
+            "after": valid_payload["artifacts"]["after"],
+        }
+        tmp.write_text(json.dumps(invalid_payload), encoding="utf-8")
+        invalid_errors = validate_manifest(tmp, strict=True, require_existing_files=False)
+        expected_markers = ("base64", "dimensions", "viewport.dpr", "horizontal_overflow")
+        for marker in expected_markers:
+            if not any(marker in error for error in invalid_errors):
+                errors.append(f"self-check failed to reject invalid {marker}")
+        invalid_payload["artifacts"] = {
+            "before": valid_payload["artifacts"]["before"],
+            "after": {"mobile": valid_payload["artifacts"]["after"]["desktop"]},
+        }
+        tmp.write_text(json.dumps(invalid_payload), encoding="utf-8")
+        invalid_errors = validate_manifest(tmp, strict=True, require_existing_files=False)
+        if not any("shared before/after artifact key" in error for error in invalid_errors):
+            errors.append("self-check failed to reject non-matching before/after keys")
+    finally:
+        tmp.unlink(missing_ok=True)
     return errors
 
 

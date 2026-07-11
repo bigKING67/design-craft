@@ -25,6 +25,9 @@ All notable local changes to `design-craft` are recorded here.
   source commit, skill-tree, prompt, scorecard, and output hashes; v2 scores are
   recomputed from per-criterion earned points instead of accepting arbitrary
   headline integers.
+- Allowed host-specific Claude/Cursor skill copies to use separate clean
+  provenance only when their complete skill trees match, and made custom score
+  output paths validate the artifact that was actually written.
 - Bound native evidence to the current `web | iOS | Android | adaptive` release
   skill and fixture trees, required a clean source for certification, and added
   a real iOS runtime interaction with before/after artifacts.

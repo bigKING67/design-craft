@@ -205,11 +205,12 @@ def validate_observed_score(
     prompt_hash: str,
     *,
     skill_root: Path,
+    score_path: Path | None = None,
     require_schema_v2: bool = False,
     require_current_source: bool = False,
 ) -> list[str]:
     errors: list[str] = []
-    path = task_dir / f"score.{host}.json"
+    path = score_path or task_dir / f"score.{host}.json"
     if not path.is_file():
         return [f"{path}: missing observed score file"]
     try:
@@ -348,9 +349,14 @@ def validate_output(task_dir: Path, host: str) -> list[str]:
     if len(text.strip()) < 400:
         errors.append(f"{output}: observed output is too sparse")
     lowered = text.lower()
-    for term in ("evidence", "unverified", "design move"):
-        if term not in lowered:
-            errors.append(f"{output}: output should mention {term!r}")
+    required_concepts = {
+        "evidence": ("evidence", "证据"),
+        "unverified": ("unverified", "未验证"),
+        "design move": ("design move", "设计动作", "设计建议"),
+    }
+    for label, variants in required_concepts.items():
+        if not any(variant in lowered for variant in variants):
+            errors.append(f"{output}: output should cover the {label!r} concept")
     return errors
 
 

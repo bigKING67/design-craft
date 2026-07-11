@@ -18,7 +18,7 @@ from design_craft_cross_agent_validate import (
     validate_output,
     validate_observed_score,
 )
-from design_craft_evidence_common import sha256_file, skill_provenance
+from design_craft_evidence_common import sha256_file, skill_provenance, tree_sha256
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -32,7 +32,18 @@ def main() -> int:
     parser.add_argument("--model", required=True)
     parser.add_argument("--reasoning-profile", required=True)
     parser.add_argument("--runner-os", default=platform.platform())
-    parser.add_argument("--skill-root", required=True)
+    parser.add_argument(
+        "--skill-root",
+        required=True,
+        help="Exact skill directory read by the observed host.",
+    )
+    parser.add_argument(
+        "--provenance-skill-root",
+        help=(
+            "Optional clean installed skill carrying provenance metadata. Its tree must "
+            "exactly match --skill-root; defaults to --skill-root."
+        ),
+    )
     parser.add_argument(
         "--canonical-skill-root",
         default=str(ROOT / "skills/design-craft"),
@@ -52,6 +63,11 @@ def main() -> int:
 
     task_dir = Path(args.task_dir).expanduser().resolve()
     skill_root = Path(args.skill_root).expanduser().resolve()
+    provenance_skill_root = (
+        Path(args.provenance_skill_root).expanduser().resolve()
+        if args.provenance_skill_root
+        else skill_root
+    )
     canonical_skill_root = Path(args.canonical_skill_root).expanduser().resolve()
     output = Path(args.output).expanduser().resolve() if args.output else task_dir / f"{args.agent}-output.md"
     score_output = (
@@ -70,7 +86,18 @@ def main() -> int:
         if not path.is_file():
             parser.error(f"{label} does not exist: {path}")
 
-    provenance = skill_provenance(skill_root)
+    if not skill_root.is_dir():
+        parser.error(f"observed host skill root does not exist: {skill_root}")
+    if not provenance_skill_root.is_dir():
+        parser.error(f"provenance skill root does not exist: {provenance_skill_root}")
+
+    provenance = skill_provenance(provenance_skill_root)
+    observed_tree = tree_sha256(skill_root)
+    if provenance.get("skill_tree_sha256") != observed_tree:
+        parser.error(
+            "observed host skill tree does not match the clean provenance skill tree"
+        )
+    provenance["skill_path"] = str(skill_root)
     if provenance.get("skill_source_dirty") is not False and not args.allow_dirty_source:
         parser.error("refusing to record certified evidence from a dirty skill source")
 
@@ -141,6 +168,7 @@ def main() -> int:
         args.agent,
         payload["prompt_sha256"],
         skill_root=canonical_skill_root,
+        score_path=score_output,
         require_schema_v2=True,
         require_current_source=not args.allow_dirty_source,
     ))

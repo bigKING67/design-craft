@@ -441,6 +441,10 @@ python3 scripts/design_craft_cross_agent_record.py \
 
 The recorder computes the headline score from criterion-earned points and binds
 the output, prompt, scorecard, version, source commit, and skill tree hashes.
+For a host-specific copy such as `~/.claude/skills/design-craft` or a project
+`.cursor/skills/design-craft`, pass that exact directory as `--skill-root` and
+use `--provenance-skill-root ~/.agents/skills/design-craft` for clean install
+metadata. Recording fails unless both trees are byte-for-byte equivalent.
 
 Run static UI smell scanners. These are review signals, not a replacement for
 design judgment or browser evidence:
