@@ -5,5 +5,11 @@
     "manifest_schema": "codex.frontend-route-pack.manifest.v1",
     "snapshot_schema": "codex.global_agents.snapshot.v2",
     "routing_version": 2
+  },
+  "evidence_contracts": {
+    "cross_agent": "design-craft.cross-agent-score.v2",
+    "native_runtime": "design-craft.native-runtime-evidence.v2",
+    "release_verification": "design-craft.release-verification.v1",
+    "github_checks": "design-craft.github-checks.v1"
   }
 }

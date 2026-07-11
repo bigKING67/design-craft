@@ -23,6 +23,9 @@ This document is the local release and maintenance checklist for
   UI/UX/design/frontend work.
 - Keep the deterministic release gate independent of mutable upstream remote
   heads. Remote freshness is a separate release-readiness and scheduled audit.
+- Keep 95/100 operational readiness distinct from certified 100/100. The latter
+  requires current-source v2 four-host and native runtime evidence and must not
+  be inferred from legacy artifacts or workflow definitions.
 - Keep agent-specific install behavior in `adapters/` and scripts. Do not fork
   the canonical `skills/design-craft/` content per agent.
 - Keep the Codex frontend route layer portable through the route-pack manifest
@@ -65,7 +68,7 @@ Expected result:
 - Project-neutral L4 fixtures validate in strict mode.
 - Version in `VERSION` matches `package.json`.
 - Source completeness is 100; portable maturity is 95 with the native-runtime
-  cap stated rather than hidden.
+  and four-host certification caps stated rather than hidden.
 - CI covers Python 3.11, 3.12, and 3.13 across Ubuntu/macOS and Node 22/24.
 - Native runtime CI definitions and minimal fixtures validate structurally, but
   only a completed workflow run and reviewed artifact JSON count as observed
@@ -164,6 +167,26 @@ Run the mutable remote check only for release readiness or upstream review:
 ```bash
 make release-readiness
 ```
+
+Check whether the canonical skill copy or separate Codex route-pack has drifted:
+
+```bash
+make sync-status
+make sync-status-remote
+```
+
+For a release that claims certified 100/100, run:
+
+```bash
+make release-certify
+```
+
+This additionally requires all four current-source v2 cross-agent runs,
+current-source iOS Simulator, Android Emulator, and physical-device evidence,
+a dated release section, clean worktree, maturity 100/100, and exact installed
+provenance. After the normal push and `v<VERSION>` tag, run
+`make release-tag-verify` to require tag/HEAD/upstream parity plus successful
+GitHub `Validate` and `Native runtime evidence` runs for that exact HEAD.
 
 ## Upstream sync procedure
 
@@ -319,9 +342,11 @@ Use `evals/cross-agent/` to compare how Codex, Cursor, Claude, Pi, or another
 Agent Skills-compatible client applies the same `design-craft` prompt.
 
 Do not claim cross-agent stability until real outputs are recorded. Template
-cases define prompts and scorecards only. The 0.4.0 dashboard, gesture-motion,
+cases define prompts and scorecards only. Legacy v1 dashboard, gesture-motion,
 and native-adaptive cases have observed Codex/Pi artifacts; Cursor and Claude
-remain explicitly unverified.
+remain explicitly unverified. Certified 0.5.0 evidence must use v2 records that
+bind the current skill tree, prompt, scorecard, and exact output, with the score
+recomputed from criterion-earned points.
 
 ## Codex route-pack portability
 
@@ -380,4 +405,7 @@ Before committing a release:
     `.github/workflows/native-runtime.yml`, download both artifacts, verify their
     hashes and assertions, and then validate the admitted JSON with
     `make native-runtime-check`.
-15. Commit with a scoped message.
+15. For a release claiming certified 100/100, run `make release-certify`; do
+    not substitute the normal 95/100 release-readiness gate.
+16. Commit with a scoped message.
+17. After push/tag, run `make release-tag-verify`.

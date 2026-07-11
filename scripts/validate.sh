@@ -150,6 +150,7 @@ required_files=(
   "evals/cross-agent/_template/prompt.md"
   "evals/cross-agent/_template/expected-findings.md"
   "evals/cross-agent/_template/scorecard.md"
+  "evals/cross-agent/_template/criteria.json"
   "evals/cross-agent/same-prompt-dashboard-review/prompt.md"
   "evals/cross-agent/same-prompt-dashboard-review/expected-findings.md"
   "evals/cross-agent/same-prompt-dashboard-review/scorecard.md"
@@ -243,8 +244,11 @@ required_files=(
   "scripts/design_craft_browser_evidence.py"
   "scripts/design_craft_codex_route_pack.py"
   "scripts/design_craft_cross_agent_validate.py"
+  "scripts/design_craft_cross_agent_record.py"
+  "scripts/design_craft_evidence_common.py"
   "scripts/design_craft_css_smell_scan.py"
   "scripts/design_craft_focus_audit.py"
+  "scripts/design_craft_github_checks.py"
   "scripts/design_craft_static_review.py"
   "scripts/design_craft_token_audit.py"
   "scripts/design_craft_pass.sh"
@@ -253,6 +257,8 @@ required_files=(
   "scripts/design_craft_taste_review.sh"
   "scripts/design_craft_score.py"
   "scripts/design_craft_install_verify.py"
+  "scripts/design_craft_release_verify.py"
+  "scripts/design_craft_sync_status.py"
   "scripts/native_runtime_ci_ios.sh"
   "scripts/native_runtime_ci_android.sh"
   "scripts/frontend_craft_audit.sh"
@@ -364,9 +370,14 @@ if (
   compatibility.codex_route_pack.schema !== "design-craft.codex-route-pack.v2" ||
   compatibility.codex_route_pack.manifest_schema !== "codex.frontend-route-pack.manifest.v1" ||
   compatibility.codex_route_pack.snapshot_schema !== "codex.global_agents.snapshot.v2" ||
-  compatibility.codex_route_pack.routing_version !== 2
+  compatibility.codex_route_pack.routing_version !== 2 ||
+  !compatibility.evidence_contracts ||
+  compatibility.evidence_contracts.cross_agent !== "design-craft.cross-agent-score.v2" ||
+  compatibility.evidence_contracts.native_runtime !== "design-craft.native-runtime-evidence.v2" ||
+  compatibility.evidence_contracts.release_verification !== "design-craft.release-verification.v1" ||
+  compatibility.evidence_contracts.github_checks !== "design-craft.github-checks.v1"
 ) {
-  throw new Error("skills/design-craft/COMPATIBILITY.json must pin the Codex route-pack v2 contract");
+  throw new Error("skills/design-craft/COMPATIBILITY.json must pin route-pack and evidence contracts");
 }
 NODE
 node --check .github/scripts/upstream_review_issue.cjs
@@ -496,6 +507,11 @@ for path in \
   "scripts/design_craft_taste_review.sh" \
 	"scripts/design_craft_score.py" \
 	"scripts/design_craft_install_verify.py" \
+	"scripts/design_craft_release_verify.py" \
+	"scripts/design_craft_sync_status.py" \
+	"scripts/design_craft_cross_agent_record.py" \
+	"scripts/design_craft_evidence_common.py" \
+	"scripts/design_craft_github_checks.py" \
 	"scripts/native_runtime_ci_ios.sh" \
 	"scripts/native_runtime_ci_android.sh" \
   "skills/design-craft/scripts/design_craft_audit.sh" \
@@ -568,6 +584,23 @@ done
 make -n validate >/dev/null
 make -n release-gate >/dev/null
 make -n release-readiness >/dev/null
+make -n release-certify >/dev/null
+make -n release-tag-verify >/dev/null
+make -n sync-status >/dev/null
+
+python3 - <<'PY'
+from pathlib import Path
+
+makefile = Path("Makefile").read_text(encoding="utf-8")
+four_host_recipe = makefile.split("cross-agent-four-host-check:", 1)[1].split("\n\n", 1)[0]
+for needle in ("set -e", "--require-schema-v2", "--require-current-source"):
+    if needle not in four_host_recipe:
+        raise SystemExit(f"cross-agent-four-host-check missing {needle!r}")
+certify_recipe = makefile.split("release-certify:", 1)[1].split("\n\n", 1)[0]
+for needle in ("cross-agent-four-host-check", "native-runtime-check", "--min-score 100"):
+    if needle not in certify_recipe:
+        raise SystemExit(f"release-certify missing {needle!r}")
+PY
 
 for path in \
   scripts/design_craft_score.py \
@@ -575,6 +608,9 @@ for path in \
   scripts/design_craft_browser_evidence.py \
   scripts/design_craft_codex_route_pack.py \
   scripts/design_craft_cross_agent_validate.py \
+  scripts/design_craft_cross_agent_record.py \
+	scripts/design_craft_evidence_common.py \
+	scripts/design_craft_github_checks.py \
   scripts/design_craft_l4_capture.py \
   scripts/design_craft_l4_case_validate.py \
   scripts/design_craft_l4_evidence_manifest.py \
@@ -587,6 +623,8 @@ for path in \
   scripts/design_craft_static_review.py \
 	scripts/design_craft_token_audit.py \
 	scripts/design_craft_install_verify.py \
+	scripts/design_craft_release_verify.py \
+	scripts/design_craft_sync_status.py \
   scripts/frontend_craft_score.py \
   scripts/frontend_craft_browser_evidence.py \
   scripts/upstream_absorption_report.py \
@@ -603,6 +641,7 @@ for path in \
 done
 
 python3 scripts/upstream_absorption_report.py --check
+python3 scripts/design_craft_maturity.py --check
 python3 scripts/design_craft_native_runtime_validate.py --check
 python3 - <<'PY'
 import json
@@ -619,12 +658,24 @@ assert plist.get("CFBundleIdentifier") == "dev.designcraft.runtime-evidence"
 ET.parse("evals/native-runtime/fixtures/android/app/src/main/AndroidManifest.xml")
 
 workflow = Path(".github/workflows/native-runtime.yml").read_text(encoding="utf-8")
-for needle in ("native_runtime_ci_ios.sh", "android-emulator-runner@v2", "native_runtime_ci_android.sh"):
+for needle in ("native_runtime_ci_ios.sh", "reactivecircus/android-emulator-runner@", "native_runtime_ci_android.sh"):
     assert needle in workflow
 ios_runner = Path("scripts/native_runtime_ci_ios.sh").read_text(encoding="utf-8")
 android_runner = Path("scripts/native_runtime_ci_android.sh").read_text(encoding="utf-8")
 assert "xcrun simctl" in ios_runner and "design_craft_native_runtime_record.py" in ios_runner
+assert "simctl openurl" in ios_runner and "runtime-interaction.txt" in ios_runner
 assert "uiautomator" in android_runner and "design_craft_native_runtime_record.py" in android_runner
+PY
+
+python3 - <<'PY'
+import re
+from pathlib import Path
+
+for workflow in Path(".github/workflows").glob("*.yml"):
+    for line_number, line in enumerate(workflow.read_text(encoding="utf-8").splitlines(), start=1):
+        match = re.search(r"\buses:\s*[^@\s]+@([^\s#]+)", line)
+        if match and not re.fullmatch(r"[0-9a-f]{40}", match.group(1)):
+            raise SystemExit(f"{workflow}:{line_number}: action must be pinned to a full SHA")
 PY
 
 (
@@ -641,6 +692,7 @@ PY
     --assertion launch=true \
     --assertion screenshot=true \
     --artifact "${tmp_native_dir}/artifact.txt" \
+    --fixture-root evals/native-runtime/fixtures/ios \
     --output "${tmp_native_dir}/ios-observed.json" >/dev/null
   python3 scripts/design_craft_native_runtime_validate.py \
     --validate \

@@ -6,8 +6,11 @@ cd "${ROOT_DIR}"
 
 EVIDENCE_DIR="${DESIGN_CRAFT_NATIVE_EVIDENCE_DIR:-${RUNNER_TEMP:-${TMPDIR:-/tmp}}/native-runtime-android}"
 mkdir -p "${EVIDENCE_DIR}"
-gradle -p evals/native-runtime/fixtures/android :app:assembleDebug --no-daemon
-apk="evals/native-runtime/fixtures/android/app/build/outputs/apk/debug/app-debug.apk"
+PROJECT_DIR="${EVIDENCE_DIR}/android-project"
+rm -rf "${PROJECT_DIR}"
+cp -R evals/native-runtime/fixtures/android "${PROJECT_DIR}"
+gradle -p "${PROJECT_DIR}" :app:assembleDebug --no-daemon
+apk="${PROJECT_DIR}/app/build/outputs/apk/debug/app-debug.apk"
 adb install -r "${apk}"
 adb shell am force-stop dev.designcraft.runtimeevidence
 adb shell am start -W -n dev.designcraft.runtimeevidence/.MainActivity > "${EVIDENCE_DIR}/launch.txt"
@@ -53,9 +56,11 @@ python3 scripts/design_craft_native_runtime_record.py \
   --assertion interaction_observed=true \
   --assertion screenshot_captured=true \
   --artifact "${EVIDENCE_DIR}/android-emulator.png" \
+  --fixture-root evals/native-runtime/fixtures/android \
   --output "${EVIDENCE_DIR}/android-observed.json"
 python3 scripts/design_craft_native_runtime_validate.py \
   --validate \
   --root "${EVIDENCE_DIR}" \
   --require android \
+  --require-current-source \
   --json

@@ -39,7 +39,14 @@ xcrun simctl bootstatus "${udid}" -b
 xcrun simctl install "${udid}" "${APP_DIR}"
 xcrun simctl launch "${udid}" dev.designcraft.runtime-evidence > "${EVIDENCE_DIR}/launch.txt"
 sleep 2
-xcrun simctl io "${udid}" screenshot "${EVIDENCE_DIR}/ios-simulator.png"
+xcrun simctl io "${udid}" screenshot "${EVIDENCE_DIR}/ios-before-interaction.png"
+xcrun simctl openurl "${udid}" "designcraft-evidence://confirm"
+sleep 1
+data_container="$(xcrun simctl get_app_container "${udid}" dev.designcraft.runtime-evidence data)"
+interaction_marker="${data_container}/Documents/runtime-interaction.txt"
+grep -q "Runtime interaction confirmed" "${interaction_marker}"
+cp "${interaction_marker}" "${EVIDENCE_DIR}/runtime-interaction.txt"
+xcrun simctl io "${udid}" screenshot "${EVIDENCE_DIR}/ios-after-interaction.png"
 
 python3 scripts/design_craft_native_runtime_record.py \
   --platform ios \
@@ -48,14 +55,20 @@ python3 scripts/design_craft_native_runtime_record.py \
   --tool "xcodebuild/xcrun simctl" \
   --command "xcrun swiftc iOS fixture" \
   --command "xcrun simctl boot/install/launch" \
-  --command "xcrun simctl io screenshot" \
+  --command "xcrun simctl openurl interaction and marker assertion" \
+  --command "xcrun simctl io before/after screenshots" \
   --assertion build_succeeded=true \
   --assertion install_and_launch_succeeded=true \
-  --assertion screenshot_captured=true \
-  --artifact "${EVIDENCE_DIR}/ios-simulator.png" \
+  --assertion runtime_interaction_observed=true \
+  --assertion before_and_after_screenshots_captured=true \
+  --artifact "${EVIDENCE_DIR}/ios-before-interaction.png" \
+  --artifact "${EVIDENCE_DIR}/ios-after-interaction.png" \
+  --artifact "${EVIDENCE_DIR}/runtime-interaction.txt" \
+  --fixture-root evals/native-runtime/fixtures/ios \
   --output "${EVIDENCE_DIR}/ios-observed.json"
 python3 scripts/design_craft_native_runtime_validate.py \
   --validate \
   --root "${EVIDENCE_DIR}" \
   --require ios \
+  --require-current-source \
   --json

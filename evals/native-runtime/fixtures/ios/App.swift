@@ -3,6 +3,7 @@ import UIKit
 @main
 final class AppDelegate: UIResponder, UIApplicationDelegate {
     var window: UIWindow?
+    private weak var statusLabel: UILabel?
 
     func application(
         _ application: UIApplication,
@@ -22,15 +23,15 @@ final class AppDelegate: UIResponder, UIApplicationDelegate {
         status.font = .preferredFont(forTextStyle: .body)
         status.adjustsFontForContentSizeCategory = true
         status.accessibilityIdentifier = "evidence-status"
+        statusLabel = status
 
         let button = UIButton(type: .system)
         button.setTitle("Confirm runtime", for: .normal)
         button.titleLabel?.font = .preferredFont(forTextStyle: .headline)
         button.accessibilityIdentifier = "evidence-action"
         button.heightAnchor.constraint(greaterThanOrEqualToConstant: 44).isActive = true
-        button.addAction(UIAction { _ in
-            status.text = "Runtime interaction confirmed"
-            print("DESIGN_CRAFT_RUNTIME_INTERACTION_CONFIRMED")
+        button.addAction(UIAction { [weak self] _ in
+            _ = self?.confirmRuntimeInteraction()
         }, for: .touchUpInside)
 
         let stack = UIStackView(arrangedSubviews: [title, status, button])
@@ -50,5 +51,39 @@ final class AppDelegate: UIResponder, UIApplicationDelegate {
         self.window = window
         print("DESIGN_CRAFT_RUNTIME_LAUNCHED")
         return true
+    }
+
+    func application(
+        _ app: UIApplication,
+        open url: URL,
+        options: [UIApplication.OpenURLOptionsKey: Any] = [:]
+    ) -> Bool {
+        guard url.scheme == "designcraft-evidence", url.host == "confirm" else {
+            return false
+        }
+        return confirmRuntimeInteraction()
+    }
+
+    private func confirmRuntimeInteraction() -> Bool {
+        statusLabel?.text = "Runtime interaction confirmed"
+        guard let documents = FileManager.default.urls(
+            for: .documentDirectory,
+            in: .userDomainMask
+        ).first else {
+            print("DESIGN_CRAFT_RUNTIME_INTERACTION_FAILED:no-documents-directory")
+            return false
+        }
+        do {
+            try "Runtime interaction confirmed\n".write(
+                to: documents.appendingPathComponent("runtime-interaction.txt"),
+                atomically: true,
+                encoding: .utf8
+            )
+            print("DESIGN_CRAFT_RUNTIME_INTERACTION_CONFIRMED")
+            return true
+        } catch {
+            print("DESIGN_CRAFT_RUNTIME_INTERACTION_FAILED:\(error)")
+            return false
+        }
     }
 }

@@ -2,7 +2,22 @@
 
 All notable local changes to `design-craft` are recorded here.
 
-## Unreleased
+## 0.5.0 - Unreleased
+
+- Defined two honest maturity levels: the normal portable/local release path
+  remains usable at 95/100, while certified 100/100 now additionally requires
+  current-source v2 evidence from Codex, Pi, Cursor, and Claude plus observed
+  iOS Simulator, Android Emulator, and real-device runtime evidence.
+- Added cryptographically bound cross-agent evidence with skill version,
+  source commit, skill-tree, prompt, scorecard, and output hashes; v2 scores are
+  recomputed from per-criterion earned points instead of accepting arbitrary
+  headline integers.
+- Bound native evidence to the current `web | iOS | Android | adaptive` release
+  skill and fixture trees, required a clean source for certification, and added
+  a real iOS runtime interaction with before/after artifacts.
+- Added `make release-certify`, release metadata verification, and source/install
+  plus Codex route-pack `sync-status` reporting. These contracts prevent the
+  95/100 operational release gate from being mistaken for certified 100/100.
 
 - Split the deterministic local release gate from mutable upstream freshness;
   `make release-readiness` now adds the remote review requirement explicitly.

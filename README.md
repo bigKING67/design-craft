@@ -32,11 +32,11 @@ reports, and similar business surfaces, scoped project rules, live
 runtime behavior, and project `DESIGN.md` always outrank generic visual rules.
 The canonical package is still portable: agent-specific integration belongs in
 `adapters/`, while `skills/design-craft/` remains the single source skill.
-Release `0.4.0` adds `web | ios | android | adaptive` routing, optional
-`PRODUCT.md`, portable bundled runtimes, native/adaptive static fixtures,
-interaction-physics guidance, CI, and separate 100-point source-completeness
-versus operational-maturity scoring. Local maturity is intentionally capped at
-95 until iOS Simulator, Android Emulator, and real-device evidence exist.
+The `0.5.0` development contract keeps ordinary portable/local operation at
+95/100 while reserving certified 100/100 for current-source v2 evidence from
+Codex, Pi, Cursor, and Claude plus observed iOS Simulator, Android Emulator,
+and real-device evidence. Evidence hashes bind the skill tree, fixtures,
+prompt, scorecard, and agent output instead of treating file presence as proof.
 
 ## Layout
 
@@ -89,6 +89,14 @@ python3 scripts/design_craft_install_verify.py \
   --expected-name design-craft \
   --expected-version "$(cat VERSION)" \
   --require-metadata
+```
+
+Check the source/install copy and the separate Codex route-pack authority
+without changing either one:
+
+```bash
+make sync-status
+make sync-status-remote # also checks mutable upstream heads
 ```
 
 `skills/frontend-craft` is a legacy compatibility alias only. New route and
@@ -407,10 +415,28 @@ python3 scripts/design_craft_cross_agent_validate.py \
   --observed-task evals/cross-agent/same-prompt-native-adaptive-review
 ```
 
-For `0.4.0`, Codex and Pi have recorded dashboard, gesture-motion, and
-native-adaptive same-prompt outputs. Cursor and Claude are explicitly
-unverified and must not be advertised as stable behavior hosts until real
-outputs are collected.
+Legacy v1 Codex/Pi dashboard, gesture-motion, and native-adaptive outputs remain
+valid as the 95/100 baseline. Certified `0.5.0` evidence must be regenerated as
+v2 against the current skill tree for all four hosts; Cursor and Claude remain
+explicitly unverified until those real runs exist.
+
+Record a v2 score only after preserving the exact host output and filling a
+criteria JSON copied from `evals/cross-agent/_template/criteria.json`:
+
+```bash
+python3 scripts/design_craft_cross_agent_record.py \
+  --task-dir evals/cross-agent/same-prompt-motion-review \
+  --agent codex \
+  --agent-version "codex-cli <version>" \
+  --model "<observed-model>" \
+  --reasoning-profile "<observed-profile>" \
+  --skill-root skills/design-craft \
+  --command-summary "<redacted runner summary>" \
+  --criteria-json /path/to/criteria.json
+```
+
+The recorder computes the headline score from criterion-earned points and binds
+the output, prompt, scorecard, version, source commit, and skill tree hashes.
 
 Run static UI smell scanners. These are review signals, not a replacement for
 design judgment or browser evidence:
@@ -504,6 +530,19 @@ Before tagging a new release, additionally run:
 make release-readiness
 ```
 
+`release-readiness` is the normal 95/100 release boundary. A release claiming
+certified 100/100 must instead pass the stricter non-bypassable contract:
+
+```bash
+make release-certify
+```
+
+It requires all four current-source v2 host runs, current-source Simulator,
+Emulator, and physical-device evidence, a dated release section, a clean
+worktree, local maturity 100/100, and install provenance parity. After pushing
+and tagging, verify tag/HEAD/upstream parity plus successful `Validate` and
+`Native runtime evidence` workflow runs with `make release-tag-verify`.
+
 The gate split is documented in `docs/maintenance.md`. The portable gate checks
 package shape, syntax, bundled runtime independence, platform fixtures,
 validators, static scanners, project-neutral L4 fixtures, source completeness,
@@ -517,12 +556,13 @@ Probe native SDK/runtime availability and validate real evidence separately:
 
 ```bash
 python3 scripts/design_craft_native_runtime_validate.py --probe --json
-python3 scripts/design_craft_native_runtime_validate.py --validate --require ios --require android --require-real-device --json
+python3 scripts/design_craft_native_runtime_validate.py --validate --require ios --require android --require-real-device --require-current-source --json
 ```
 
 `.github/workflows/native-runtime.yml` runs a real iOS Simulator fixture and a
 real Android Emulator fixture on manual dispatch and release tags. It builds,
-installs, launches, captures runtime artifacts, exercises the Android control,
+installs, launches, captures runtime artifacts, exercises the Android control
+and an iOS deep-link-driven runtime state transition,
 hashes the evidence, and validates the generated JSON before upload. Downloaded
 artifacts must still be reviewed before `ios-observed.json` and
 `android-observed.json` are admitted as durable evidence. A separate physical

@@ -303,6 +303,38 @@ def observed_eval_gate(gate_id: str, directory: str) -> Gate:
     )
 
 
+def certified_four_host_status() -> tuple[bool, list[str]]:
+    errors: list[str] = []
+    for task in (
+        "same-prompt-dashboard-review",
+        "same-prompt-motion-review",
+        "same-prompt-native-adaptive-review",
+    ):
+        result = run(
+            [
+                sys.executable,
+                "scripts/design_craft_cross_agent_validate.py",
+                "--observed-task",
+                f"evals/cross-agent/{task}",
+                "--require-host",
+                "codex",
+                "--require-host",
+                "pi",
+                "--require-host",
+                "cursor",
+                "--require-host",
+                "claude",
+                "--require-schema-v2",
+                "--require-current-source",
+            ],
+            timeout=90,
+        )
+        if result.returncode != 0:
+            detail = result.stderr.strip() or result.stdout.strip() or "validation failed"
+            errors.append(f"{task}: {detail}")
+    return not errors, errors
+
+
 def l4_gate() -> Gate:
     cases = [
         ROOT / "evals/product-ui-taste/before-after/generic-review-workbench-local-l4",
@@ -443,6 +475,7 @@ def native_runtime_gate() -> Gate:
             "--require",
             "android",
             "--require-real-device",
+            "--require-current-source",
             "--json",
         ]
     )
@@ -457,6 +490,27 @@ def native_runtime_gate() -> Gate:
         passed,
         "schema-validated observed iOS and Android runtime evidence exists",
         detail or "iOS Simulator, Android Emulator, and real-device evidence are unverified; maturity is capped at 95",
+        hard=False,
+    )
+
+
+def release_metadata_gate() -> Gate:
+    version = read(ROOT / "VERSION").strip()
+    content = read(ROOT / "CHANGELOG.md")
+    marker = f"## {version} - "
+    start = content.find(marker)
+    if start < 0:
+        section = ""
+    else:
+        next_header = content.find("\n## ", start + len(marker))
+        section = content[start:] if next_header < 0 else content[start:next_header]
+    required = ("web", "iOS", "Android", "adaptive", "95", "100")
+    passed = bool(version) and bool(section) and all(needle in section for needle in required)
+    return make_gate(
+        "release_metadata",
+        passed,
+        f"{version} release metadata names platform scope and 95/100 certification boundaries",
+        f"{version} release metadata must name web/iOS/Android/adaptive and both 95/100 boundaries",
         hard=False,
     )
 
@@ -506,17 +560,23 @@ def build_gates(profile: str) -> list[Gate]:
         observed_eval_gate("observed_native_eval", "evals/cross-agent/same-prompt-native-adaptive-review"),
         l4_gate(),
         route_pack_gate(profile),
-        text_gate(
-            "release_metadata",
-            "CHANGELOG.md",
-            ["0.4.0", "web", "iOS", "Android", "adaptive", "95"],
-            "0.4.0 release metadata names platform scope and maturity boundary",
-            "0.4.0 release metadata is incomplete",
-            hard=False,
-        ),
+        release_metadata_gate(),
         install_gate(profile),
         native_runtime_gate(),
     ]
+
+
+def certification_cap(native_runtime_observed: bool, four_host_certified: bool) -> tuple[int, list[str]]:
+    reasons: list[str] = []
+    if not native_runtime_observed:
+        reasons.append(
+            "iOS Simulator, Android Emulator, and current-source real-device evidence are incomplete"
+        )
+    if not four_host_certified:
+        reasons.append(
+            "current-source v2 Codex/Pi/Cursor/Claude evidence is incomplete"
+        )
+    return (100 if not reasons else 95), reasons
 
 
 def main() -> int:
@@ -524,12 +584,31 @@ def main() -> int:
     parser.add_argument("--profile", choices=["portable", "local"], default="portable")
     parser.add_argument("--min-score", type=int, default=0)
     parser.add_argument("--json", action="store_true")
+    parser.add_argument("--check", action="store_true", help="Run offline maturity-cap invariants.")
     args = parser.parse_args()
+
+    if args.check:
+        expected = {
+            (False, False): 95,
+            (False, True): 95,
+            (True, False): 95,
+            (True, True): 100,
+        }
+        for inputs, cap in expected.items():
+            observed, _ = certification_cap(*inputs)
+            if observed != cap:
+                print(f"certification cap invariant failed for {inputs}: {observed}", file=sys.stderr)
+                return 1
+        return 0
 
     gates = build_gates(args.profile)
     raw_score = sum(gate.points for gate in gates)
     native_runtime_observed = next(gate.passed for gate in gates if gate.gate_id == "native_runtime_observed")
-    maturity_cap = 100 if native_runtime_observed else 95
+    four_host_certified, four_host_errors = certified_four_host_status()
+    maturity_cap, maturity_cap_reasons = certification_cap(
+        native_runtime_observed,
+        four_host_certified,
+    )
     score = min(raw_score, maturity_cap)
     hard_failures = [gate.gate_id for gate in gates if gate.hard and not gate.passed]
     ok = score >= args.min_score and not hard_failures
@@ -541,9 +620,7 @@ def main() -> int:
         "raw_score": raw_score,
         "max_score": 100,
         "maturity_cap": maturity_cap,
-        "maturity_cap_reasons": [] if native_runtime_observed else [
-            "iOS Simulator and Android Emulator are unverified locally; observed real-device evidence is also absent"
-        ],
+        "maturity_cap_reasons": maturity_cap_reasons,
         "hard_failures": hard_failures,
         "ok": ok,
         "gates": [asdict(gate) for gate in gates],
@@ -552,6 +629,10 @@ def main() -> int:
             "android_emulator": "observed" if native_runtime_observed else "unverified locally",
             "real_device": "observed" if native_runtime_observed else "unverified locally",
         },
+        "cross_agent_certification": {
+            "four_host_current_source": four_host_certified,
+            "errors": four_host_errors,
+        },
     }
 
     if args.json:
@@ -559,6 +640,8 @@ def main() -> int:
     else:
         print(f"design-craft operational maturity ({args.profile}): {score}/100")
         print(f"maturity cap: {maturity_cap}/100")
+        for reason in maturity_cap_reasons:
+            print(f"cap reason: {reason}")
         for gate in gates:
             marker = "+" if gate.passed else "-"
             detail = gate.evidence if gate.passed else gate.gap

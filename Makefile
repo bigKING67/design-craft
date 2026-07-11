@@ -3,7 +3,7 @@ SKILL_CREATOR_QUICK_VALIDATE ?= $(HOME)/.codex/skills/.system/skill-creator/scri
 INSTALL_ARGS ?=
 export PYTHONDONTWRITEBYTECODE := 1
 
-.PHONY: validate validate-portable skill-quick-validate score maturity-portable maturity-local pass audit critique motion taste-review seed-dry-run route-smoke doctor platform-scan-check native-runtime-probe native-runtime-check codex-route-pack-check init-dry-run active-scope-check cross-agent-check cross-agent-observed-check cross-agent-four-host-check cross-agent-motion-observed-check cross-agent-native-observed-check l4-capture-check real-l4-check smell-smoke static-review-smoke upstream-report upstream-freshness-audit upstream-remote-report install install-with-legacy install-verify legacy-alias-smoke release-gate-source publish-local release-gate-local release-gate release-readiness
+.PHONY: validate validate-portable skill-quick-validate score maturity-portable maturity-local pass audit critique motion taste-review seed-dry-run route-smoke doctor platform-scan-check native-runtime-probe native-runtime-check codex-route-pack-check init-dry-run active-scope-check cross-agent-check cross-agent-observed-check cross-agent-four-host-check cross-agent-motion-observed-check cross-agent-native-observed-check l4-capture-check real-l4-check smell-smoke static-review-smoke upstream-report upstream-freshness-audit upstream-remote-report sync-status sync-status-remote install install-with-legacy install-verify legacy-alias-smoke release-contract-check github-release-check release-gate-source publish-local release-gate-local release-gate release-readiness release-certify release-tag-verify
 
 validate:
 	bash scripts/validate.sh
@@ -72,7 +72,7 @@ native-runtime-probe:
 	python3 scripts/design_craft_native_runtime_validate.py --write-probe evals/native-runtime/environment-probe.json --json
 
 native-runtime-check:
-	python3 scripts/design_craft_native_runtime_validate.py --validate --require ios --require android --require-real-device --json
+	python3 scripts/design_craft_native_runtime_validate.py --validate --require ios --require android --require-real-device --require-current-source --json
 
 codex-route-pack-check:
 	python3 scripts/design_craft_codex_route_pack.py --check >/dev/null
@@ -99,7 +99,7 @@ cross-agent-observed-check:
 	python3 scripts/design_craft_cross_agent_validate.py --observed-task evals/cross-agent/same-prompt-native-adaptive-review >/dev/null
 
 cross-agent-four-host-check:
-	@for task in same-prompt-dashboard-review same-prompt-motion-review same-prompt-native-adaptive-review; do python3 scripts/design_craft_cross_agent_validate.py --observed-task "evals/cross-agent/$$task" --require-host codex --require-host pi --require-host cursor --require-host claude; done
+	@set -e; for task in same-prompt-dashboard-review same-prompt-motion-review same-prompt-native-adaptive-review; do python3 scripts/design_craft_cross_agent_validate.py --observed-task "evals/cross-agent/$$task" --require-host codex --require-host pi --require-host cursor --require-host claude --require-schema-v2 --require-current-source; done
 
 cross-agent-motion-observed-check:
 	python3 scripts/design_craft_cross_agent_validate.py --observed-task evals/cross-agent/same-prompt-motion-review >/dev/null
@@ -131,6 +131,12 @@ upstream-freshness-audit:
 
 upstream-remote-report: upstream-freshness-audit
 
+sync-status:
+	python3 scripts/design_craft_sync_status.py
+
+sync-status-remote:
+	python3 scripts/design_craft_sync_status.py --remote
+
 install:
 	bash scripts/install_local.sh $(INSTALL_ARGS)
 
@@ -145,7 +151,10 @@ legacy-alias-smoke:
 	bash scripts/frontend_craft_pass.sh --target skills/design-craft --mode motion --skip-route --skip-score >/dev/null
 	grep -Fq 'renamed to `design-craft`' skills/frontend-craft/SKILL.md
 
-release-gate-source: validate-portable skill-quick-validate score maturity-portable pass audit critique motion taste-review seed-dry-run route-smoke doctor platform-scan-check codex-route-pack-check init-dry-run active-scope-check cross-agent-check cross-agent-observed-check l4-capture-check real-l4-check smell-smoke upstream-report legacy-alias-smoke
+release-contract-check:
+	python3 scripts/design_craft_release_verify.py
+
+release-gate-source: validate-portable skill-quick-validate score maturity-portable pass audit critique motion taste-review seed-dry-run route-smoke doctor platform-scan-check codex-route-pack-check init-dry-run active-scope-check cross-agent-check cross-agent-observed-check l4-capture-check real-l4-check smell-smoke upstream-report legacy-alias-smoke release-contract-check
 
 publish-local: release-gate-source
 	bash scripts/install_local.sh $(INSTALL_ARGS)
@@ -158,3 +167,18 @@ release-gate: release-gate-local
 
 release-readiness: release-gate
 	python3 scripts/upstream_absorption_report.py --remote-details --fail-on-unreviewed
+
+release-certify:
+	python3 scripts/design_craft_release_verify.py --certify
+	$(MAKE) release-readiness
+	$(MAKE) cross-agent-four-host-check
+	$(MAKE) native-runtime-check
+	python3 scripts/design_craft_maturity.py --profile local --min-score 100
+	$(MAKE) install-verify
+
+github-release-check:
+	python3 scripts/design_craft_github_checks.py
+
+release-tag-verify: release-certify
+	python3 scripts/design_craft_release_verify.py --certify --require-tag --require-remote
+	$(MAKE) github-release-check

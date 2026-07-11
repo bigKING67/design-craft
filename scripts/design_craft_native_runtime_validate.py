@@ -15,10 +15,20 @@ import tempfile
 from datetime import datetime, timezone
 from pathlib import Path
 
+from design_craft_evidence_common import (
+    git_is_ancestor,
+    git_root,
+    read_version,
+    tree_sha256,
+)
+
 
 PROBE_SCHEMA = "design-craft.native-runtime-probe.v1"
-EVIDENCE_SCHEMA = "design-craft.native-runtime-evidence.v1"
+EVIDENCE_SCHEMA = "design-craft.native-runtime-evidence.v2"
 VALIDATION_SCHEMA = "design-craft.native-runtime-validation.v1"
+ROOT = Path(__file__).resolve().parents[1]
+DEFAULT_SKILL_ROOT = ROOT / "skills/design-craft"
+DEFAULT_FIXTURE_ROOT = ROOT / "evals/native-runtime/fixtures"
 PLATFORM_FILES = {
     "ios": "ios-observed.json",
     "android": "android-observed.json",
@@ -116,6 +126,10 @@ def validate_evidence(
     path: Path,
     expected_platform: str,
     expected_runtime_kind: str | None = None,
+    *,
+    require_current_source: bool = False,
+    skill_root: Path = DEFAULT_SKILL_ROOT,
+    fixture_root: Path = DEFAULT_FIXTURE_ROOT,
 ) -> tuple[dict, list[str]]:
     if not path.is_file():
         return {}, [f"missing observed evidence: {path}"]
@@ -149,6 +163,11 @@ def validate_evidence(
         errors.append(f"{path}: source_commit must be a full lowercase Git SHA")
     if not isinstance(payload.get("source_dirty"), bool):
         errors.append(f"{path}: source_dirty must be boolean")
+    if not isinstance(payload.get("skill_version"), str) or not payload["skill_version"].strip():
+        errors.append(f"{path}: skill_version is required")
+    for key in ("skill_tree_sha256", "fixture_tree_sha256"):
+        if not re.fullmatch(r"[0-9a-f]{64}", str(payload.get(key, ""))):
+            errors.append(f"{path}: {key} must be 64 lowercase hex characters")
     if not isinstance(payload.get("capture_context"), str) or not payload["capture_context"].strip():
         errors.append(f"{path}: capture_context is required")
     commands = payload.get("commands")
@@ -198,10 +217,44 @@ def validate_evidence(
             observed_sha = hashlib.sha256(artifact_path.read_bytes()).hexdigest()
             if observed_sha != sha:
                 errors.append(f"{path}: artifact {index} hash does not match {artifact_path}")
+
+    if require_current_source:
+        source_commit = str(payload.get("source_commit", ""))
+        expected_skill_tree = tree_sha256(skill_root)
+        expected_fixture_tree = tree_sha256(
+            fixture_root / expected_platform,
+            ignored_dirs={"build", ".gradle"},
+        )
+        if payload.get("source_dirty") is not False:
+            errors.append(f"{path}: certified native evidence must record source_dirty=false")
+        if payload.get("skill_version") != read_version(skill_root):
+            errors.append(f"{path}: skill_version must match the current skill version")
+        if payload.get("skill_tree_sha256") != expected_skill_tree:
+            errors.append(f"{path}: skill_tree_sha256 must match the current skill tree")
+        if payload.get("fixture_tree_sha256") != expected_fixture_tree:
+            errors.append(
+                f"{path}: fixture_tree_sha256 must match the current {expected_platform} fixture tree"
+            )
+        if re.fullmatch(r"[0-9a-f]{40}", source_commit):
+            try:
+                repository = git_root(skill_root)
+            except (OSError, RuntimeError, ValueError, subprocess.CalledProcessError):
+                errors.append(f"{path}: current skill source is not in a Git repository")
+            else:
+                if not git_is_ancestor(repository, source_commit):
+                    errors.append(f"{path}: source_commit must be an ancestor of current HEAD")
     return payload, errors
 
 
-def validate_root(root: Path, required: list[str], require_real_device: bool = False) -> dict:
+def validate_root(
+    root: Path,
+    required: list[str],
+    require_real_device: bool = False,
+    *,
+    require_current_source: bool = False,
+    skill_root: Path = DEFAULT_SKILL_ROOT,
+    fixture_root: Path = DEFAULT_FIXTURE_ROOT,
+) -> dict:
     evidence: dict[str, dict] = {}
     errors: list[str] = []
     for name in required:
@@ -209,6 +262,9 @@ def validate_root(root: Path, required: list[str], require_real_device: bool = F
             root / PLATFORM_FILES[name],
             name,
             PLATFORM_RUNTIME_KIND[name],
+            require_current_source=require_current_source,
+            skill_root=skill_root,
+            fixture_root=fixture_root,
         )
         if payload:
             evidence[name] = payload
@@ -228,6 +284,9 @@ def validate_root(root: Path, required: list[str], require_real_device: bool = F
                     device_path,
                     device_platform,
                     f"{device_platform}_device",
+                    require_current_source=require_current_source,
+                    skill_root=skill_root,
+                    fixture_root=fixture_root,
                 )
                 if payload:
                     evidence["real_device"] = payload
@@ -237,6 +296,7 @@ def validate_root(root: Path, required: list[str], require_real_device: bool = F
         "root": str(root),
         "required_platforms": required,
         "require_real_device": require_real_device,
+        "require_current_source": require_current_source,
         "ok": not errors,
         "evidence": evidence,
         "errors": errors,
@@ -260,6 +320,9 @@ def run_self_check() -> list[str]:
             "tool": "fixture",
             "source_commit": "a" * 40,
             "source_dirty": False,
+            "skill_version": "0.0.0",
+            "skill_tree_sha256": "b" * 64,
+            "fixture_tree_sha256": "c" * 64,
             "capture_context": "fixture",
             "commands": ["xcrun simctl boot fixture"],
             "assertions": {"build": True, "launch": True, "interaction": True},
@@ -286,6 +349,30 @@ def run_self_check() -> list[str]:
         _, missing_artifact_errors = validate_evidence(path, "ios")
         if not any("file is missing" in item for item in missing_artifact_errors):
             errors.append("self-check failed to reject missing runtime artifacts")
+
+        valid["artifacts"][0]["path"] = artifact_path.name
+        valid["skill_version"] = read_version(DEFAULT_SKILL_ROOT)
+        valid["skill_tree_sha256"] = tree_sha256(DEFAULT_SKILL_ROOT)
+        valid["fixture_tree_sha256"] = tree_sha256(
+            DEFAULT_FIXTURE_ROOT / "ios",
+            ignored_dirs={"build", ".gradle"},
+        )
+        try:
+            valid["source_commit"] = subprocess.check_output(
+                ["git", "rev-parse", "HEAD"],
+                cwd=ROOT,
+                text=True,
+            ).strip()
+        except subprocess.CalledProcessError:
+            valid["source_commit"] = "a" * 40
+        path.write_text(json.dumps(valid), encoding="utf-8")
+        _, current_errors = validate_evidence(path, "ios", require_current_source=True)
+        errors.extend(current_errors)
+        valid["fixture_tree_sha256"] = "d" * 64
+        path.write_text(json.dumps(valid), encoding="utf-8")
+        _, stale_errors = validate_evidence(path, "ios", require_current_source=True)
+        if not any("fixture_tree_sha256" in item for item in stale_errors):
+            errors.append("self-check failed to reject stale fixture-bound evidence")
     return errors
 
 
@@ -297,6 +384,13 @@ def main() -> int:
     parser.add_argument("--root", default="evals/native-runtime")
     parser.add_argument("--require", action="append", choices=sorted(PLATFORM_FILES), default=[])
     parser.add_argument("--require-real-device", action="store_true")
+    parser.add_argument(
+        "--require-current-source",
+        action="store_true",
+        help="Require clean evidence bound to the current skill and fixture trees.",
+    )
+    parser.add_argument("--skill-root", default=str(DEFAULT_SKILL_ROOT))
+    parser.add_argument("--fixture-root", default=str(DEFAULT_FIXTURE_ROOT))
     parser.add_argument("--check", action="store_true", help="Run offline validation self-checks")
     parser.add_argument("--json", action="store_true")
     args = parser.parse_args()
@@ -324,6 +418,9 @@ def main() -> int:
             Path(args.root).expanduser().resolve(),
             required,
             require_real_device=args.require_real_device,
+            require_current_source=args.require_current_source,
+            skill_root=Path(args.skill_root).expanduser().resolve(),
+            fixture_root=Path(args.fixture_root).expanduser().resolve(),
         )
         if args.json:
             print(json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True))

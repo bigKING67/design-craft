@@ -25,8 +25,9 @@ The validator checks active `same-prompt-*` task directories, not `_template/`.
 
 Observed benchmark outputs are intentionally host-specific. A host only counts
 as verified after it runs the same prompt and records an output plus score JSON.
-For `0.4.0`, Codex and Pi are observed for the dashboard, gesture-motion, and
-native-adaptive benchmarks. The validator now treats each of Codex, Pi, Cursor,
+Legacy v1 Codex and Pi artifacts remain the documented 95/100 baseline for the
+dashboard, gesture-motion, and native-adaptive benchmarks. The validator treats
+each of Codex, Pi, Cursor,
 and Claude independently: a host must provide both a real output and score JSON,
 or retain an explicit unverified note. A partial pair is rejected, and a stale
 unverified note is rejected after evidence is recorded.
@@ -57,3 +58,25 @@ python3 scripts/design_craft_cross_agent_validate.py \
   --require-host cursor \
   --require-host claude
 ```
+
+Certified 100/100 evidence additionally requires schema v2 and a current skill
+version/tree. `make cross-agent-four-host-check` applies this contract to every
+active observed task and stops on the first failure:
+
+```bash
+python3 scripts/design_craft_cross_agent_validate.py \
+  --observed-task evals/cross-agent/same-prompt-native-adaptive-review \
+  --require-host codex \
+  --require-host pi \
+  --require-host cursor \
+  --require-host claude \
+  --require-schema-v2 \
+  --require-current-source
+```
+
+Create v2 score JSON with `scripts/design_craft_cross_agent_record.py`. Copy
+`_template/criteria.json`, assign each criterion an earned value within its
+scorecard weight, and preserve the exact `<host>-output.md`. The recorder
+computes the score and records hashes for the prompt, scorecard, output, and
+skill tree plus the source commit, version, model, reasoning profile, host
+version, and runner OS. Do not backfill those fields onto an older run.
