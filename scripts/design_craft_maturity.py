@@ -464,7 +464,31 @@ def route_pack_gate(profile: str) -> Gate:
     )
 
 
-def native_runtime_gate() -> Gate:
+def native_runtime_status(payload: dict) -> dict[str, str]:
+    evidence = payload.get("evidence", {}) if isinstance(payload, dict) else {}
+    errors = payload.get("errors", []) if isinstance(payload, dict) else []
+    if not isinstance(evidence, dict):
+        evidence = {}
+    if not isinstance(errors, list):
+        errors = []
+
+    def status(key: str, filename: str) -> str:
+        item = evidence.get(key)
+        related_errors = [error for error in errors if isinstance(error, str) and filename in error]
+        if isinstance(item, dict) and item.get("verified") is True and not related_errors:
+            return "observed_current_source"
+        if isinstance(item, dict):
+            return "invalid_current_source"
+        return "missing"
+
+    return {
+        "ios_simulator": status("ios", "ios-observed.json"),
+        "android_emulator": status("android", "android-observed.json"),
+        "real_device": status("real_device", "real-device-observed.json"),
+    }
+
+
+def native_runtime_gate() -> tuple[Gate, dict[str, str]]:
     result = run(
         [
             sys.executable,
@@ -485,12 +509,16 @@ def native_runtime_gate() -> Gate:
         payload = {}
     passed = result.returncode == 0 and payload.get("ok") is True
     detail = "; ".join(payload.get("errors", []))
-    return make_gate(
-        "native_runtime_observed",
-        passed,
-        "schema-validated observed iOS and Android runtime evidence exists",
-        detail or "iOS Simulator, Android Emulator, and real-device evidence are unverified; maturity is capped at 95",
-        hard=False,
+    return (
+        make_gate(
+            "native_runtime_observed",
+            passed,
+            "schema-validated observed iOS, Android, and real-device runtime evidence exists",
+            detail
+            or "current-source iOS Simulator, Android Emulator, or real-device evidence is incomplete; maturity is capped at 95",
+            hard=False,
+        ),
+        native_runtime_status(payload),
     )
 
 
@@ -515,7 +543,7 @@ def release_metadata_gate() -> Gate:
     )
 
 
-def build_gates(profile: str) -> list[Gate]:
+def build_gates(profile: str, native_gate: Gate) -> list[Gate]:
     return [
         source_completeness_gate(),
         runtime_payload_gate(),
@@ -562,15 +590,29 @@ def build_gates(profile: str) -> list[Gate]:
         route_pack_gate(profile),
         release_metadata_gate(),
         install_gate(profile),
-        native_runtime_gate(),
+        native_gate,
     ]
 
 
-def certification_cap(native_runtime_observed: bool, four_host_certified: bool) -> tuple[int, list[str]]:
+def certification_cap(
+    native_runtime_observed: bool,
+    four_host_certified: bool,
+    native_status: dict[str, str] | None = None,
+) -> tuple[int, list[str]]:
     reasons: list[str] = []
     if not native_runtime_observed:
+        labels = {
+            "ios_simulator": "iOS Simulator",
+            "android_emulator": "Android Emulator",
+            "real_device": "real device",
+        }
+        incomplete = [
+            label
+            for key, label in labels.items()
+            if not native_status or native_status.get(key) != "observed_current_source"
+        ]
         reasons.append(
-            "iOS Simulator, Android Emulator, and current-source real-device evidence are incomplete"
+            "current-source native runtime evidence is incomplete: " + ", ".join(incomplete)
         )
     if not four_host_certified:
         reasons.append(
@@ -599,15 +641,33 @@ def main() -> int:
             if observed != cap:
                 print(f"certification cap invariant failed for {inputs}: {observed}", file=sys.stderr)
                 return 1
+        partial_status = native_runtime_status(
+            {
+                "evidence": {
+                    "ios": {"verified": True},
+                    "android": {"verified": True},
+                },
+                "errors": ["missing real-device-observed.json"],
+            }
+        )
+        if partial_status != {
+            "ios_simulator": "observed_current_source",
+            "android_emulator": "observed_current_source",
+            "real_device": "missing",
+        }:
+            print(f"native runtime status invariant failed: {partial_status}", file=sys.stderr)
+            return 1
         return 0
 
-    gates = build_gates(args.profile)
+    native_gate, native_status = native_runtime_gate()
+    gates = build_gates(args.profile, native_gate)
     raw_score = sum(gate.points for gate in gates)
     native_runtime_observed = next(gate.passed for gate in gates if gate.gate_id == "native_runtime_observed")
     four_host_certified, four_host_errors = certified_four_host_status()
     maturity_cap, maturity_cap_reasons = certification_cap(
         native_runtime_observed,
         four_host_certified,
+        native_status,
     )
     score = min(raw_score, maturity_cap)
     hard_failures = [gate.gate_id for gate in gates if gate.hard and not gate.passed]
@@ -624,11 +684,7 @@ def main() -> int:
         "hard_failures": hard_failures,
         "ok": ok,
         "gates": [asdict(gate) for gate in gates],
-        "native_runtime": {
-            "ios_simulator": "observed" if native_runtime_observed else "unverified locally",
-            "android_emulator": "observed" if native_runtime_observed else "unverified locally",
-            "real_device": "observed" if native_runtime_observed else "unverified locally",
-        },
+        "native_runtime": native_status,
         "cross_agent_certification": {
             "four_host_current_source": four_host_certified,
             "errors": four_host_errors,

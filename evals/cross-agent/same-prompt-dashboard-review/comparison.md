@@ -3,13 +3,13 @@
 ## Summary
 
 Observed on 2026-07-11 against clean `design-craft 0.5.0` source commit
-`e3a6bc6` and skill tree `ebbd7a36...`. Codex and Pi have current-source v2
+`487e45d` and skill tree `2f460d2c...`. Codex and Pi have current-source v2
 records; Cursor and Claude remain explicitly unverified.
 
 | Host | Status | Score | Notes |
 |---|---:|---:|---|
-| Codex | verified | 97 | `codex-cli 0.144.1`, `gpt-5.6-sol`, high reasoning; strongest on decision hierarchy, operational state, and validation boundaries. |
-| Pi | verified | 96 | `pi 0.80.3`, `deepseek/deepseek-v4-pro`, high thinking; concise exception-first redesign with a few inferred table details. |
+| Codex | verified | 96 | `codex-cli 0.144.1`, `gpt-5.6-sol`, max reasoning; strongest on decision hierarchy and verification boundaries, with a material scope-control deduction. |
+| Pi | verified | 93 | `pi 0.80.3`, `deepseek/deepseek-v4-pro`, high thinking; strong exception-first redesign, but its exact L0 score and a few omission-based claims were overconfident. |
 | Cursor | unverified | N/A | `cursor-agent` is installed but not logged in; no current-source output exists. |
 | Claude | unverified | N/A | CLI reports OAuth state, but a usable inference response has not been verified; no current-source output exists. |
 
@@ -24,6 +24,10 @@ records; Cursor and Claude remain explicitly unverified.
   table, diagnostic chart, contextual rail, and semantic state color.
 - Both avoided claiming browser, responsive, focus, loading, empty, or error
   behavior as verified.
+- Codex used the stronger score-band and prompt-attested/unverified split, but
+  expanded to 491 lines. Pi was shorter, while its exact `35/100` score from
+  prose-only evidence and several absent-versus-undescribed claims reduced its
+  evidence and verification scores.
 
 ## Boundary
 

@@ -11,49 +11,50 @@
   "prompt_sha256": "b622939ec19d093fc5bee6bc06d93f29f1016f47db66505642bd8752e74f584b",
   "scorecard_sha256": "bb7c6d619794a0bf8b483f5d297d67aaf6767d4ac7c14a3a96e8b48a60d7571e",
   "skill_version": "0.5.0",
-  "skill_source_commit": "e3a6bc61204387a79f241b3c2a5377ca9094b756",
+  "skill_source_commit": "487e45d780f51c00d954e9f29ded8dd4a138498d",
   "skill_source_dirty": false,
-  "skill_tree_sha256": "ebbd7a3671a5058ec9ea822a2e40251ced0966eaa74873af2964233a6f310f8c",
-  "skill_path": "/Users/gaoqian/.agents/skills/design-craft",
-  "command_summary": "pi 0.80.3 isolated with --no-extensions --no-context-files, read-only tools, deepseek/deepseek-v4-pro, high thinking, explicit installed design-craft 0.5.0, and the exact benchmark prompt; final response normalized only for trailing whitespace",
+  "repo_dirty": true,
+  "skill_tree_sha256": "2f460d2c23e797f38aa08f7cf193b13cd539462571d621bcdb1f69cb42c7e761",
+  "skill_path": "/Users/gaoqian/Documents/sixseven/codeproject/design-craft/skills/design-craft",
+  "command_summary": "pi 0.80.3 --no-session --no-extensions --no-context-files with read-only tools, deepseek/deepseek-v4-pro, high thinking, explicit canonical design-craft 0.5.0, and the exact benchmark prompt; final Markdown normalized only for trailing whitespace",
   "output_path": "pi-output.md",
-  "output_sha256": "5605194c399c9cb7b775ad0549e34be5d361a9f6c32a7cec00ee69c50f0f8746",
-  "score": 96,
+  "output_sha256": "373c1c45b133beafe261d8a0475001b54dd9341d15bc79168d7f9f297b41ac4e",
+  "score": 93,
   "criteria": {
     "style_authority": {
       "passed": true,
       "earned": 15,
-      "note": "Preserved the calm enterprise console, token authority, and operator triage job."
+      "note": "Keeps the calm token-backed enterprise-console direction and optimizes around the operator's immediate triage job."
     },
     "reference_selection": {
       "passed": true,
       "earned": 14,
-      "note": "Used relevant dashboard, taste, design-move, surface, and validation guidance."
+      "note": "Uses the relevant dashboard, taste, design-move, foundational, and validation references, with modest audit-detail overhead."
     },
     "anti_generic_redesign": {
       "passed": true,
       "earned": 15,
-      "note": "Replaced card soup, decoration, and generic tips with an operations decision surface."
+      "note": "Rejects card soup, decorative charting, and generic tips in favor of a lead-risk and exception-driven decision surface."
     },
     "evidence_level": {
       "passed": true,
-      "earned": 15,
-      "note": "Labeled L0 prose evidence and applied an explicit anti-inflation score boundary."
+      "earned": 13,
+      "note": "Correctly labels L0 static evidence, but presents an exact 35/100 score from prose-only evidence where a wider score band would be more defensible."
     },
     "verified_boundary": {
       "passed": true,
-      "earned": 15,
-      "note": "Clearly separated prompt facts from unverified token, table, state, responsive, and accessibility behavior."
+      "earned": 14,
+      "note": "Clearly lists unverified states and runtime behavior, although a few omissions are phrased too strongly as absent or impossible rather than merely undescribed."
     },
     "design_moves": {
       "passed": true,
       "earned": 14,
-      "note": "Delivered lead metric, compact strip, exception queue, diagnostic chart, task-first table, and state moves, with a few inferred details."
+      "note": "Delivers the expected lead metric, support strip, exception queue, task-first table, and contextual help, with a few speculative fixed structures and metrics."
     },
     "scope_control": {
       "passed": true,
       "earned": 8,
-      "note": "Stayed read-only and dashboard-focused, though it introduced some speculative table structure and remained longer than necessary."
+      "note": "Remains read-only and dashboard-specific, but includes more scoring detail, invented examples, and multi-phase procedure than the prompt needs."
     }
   }
 }

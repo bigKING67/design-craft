@@ -4,6 +4,13 @@ All notable local changes to `design-craft` are recorded here.
 
 ## 0.5.0 - Unreleased
 
+- Regenerated all three Codex/Pi current-source v2 benchmarks against
+  `gpt-5.6-sol` max and `deepseek-v4-pro` high, rescored each criterion without
+  carrying forward stale headline scores, and expanded multilingual output
+  validation to recognize concrete Chinese design-correction headings. Native
+  maturity reporting now preserves per-runtime truth: current-source iOS
+  Simulator and Android Emulator evidence remain observed while a missing or
+  invalid physical-device artifact is reported independently.
 - Added compact JSON and human-readable frontend route outputs so normal agent
   handoffs do not need to ingest the full static delivery contract. Moved
   architecture-intent and performance-surface triggers into the routing JSON

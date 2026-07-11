@@ -5,55 +5,56 @@
   "verified": true,
   "agent_version": "codex-cli 0.144.1",
   "model": "gpt-5.6-sol",
-  "reasoning_profile": "high",
+  "reasoning_profile": "max",
   "runner_os": "macOS arm64",
   "date": "2026-07-11",
   "prompt_sha256": "b622939ec19d093fc5bee6bc06d93f29f1016f47db66505642bd8752e74f584b",
   "scorecard_sha256": "bb7c6d619794a0bf8b483f5d297d67aaf6767d4ac7c14a3a96e8b48a60d7571e",
   "skill_version": "0.5.0",
-  "skill_source_commit": "e3a6bc61204387a79f241b3c2a5377ca9094b756",
+  "skill_source_commit": "487e45d780f51c00d954e9f29ded8dd4a138498d",
   "skill_source_dirty": false,
-  "skill_tree_sha256": "ebbd7a3671a5058ec9ea822a2e40251ced0966eaa74873af2964233a6f310f8c",
-  "skill_path": "/Users/gaoqian/.agents/skills/design-craft",
-  "command_summary": "codex exec 0.144.1 --ephemeral --sandbox read-only in an isolated empty workspace with gpt-5.6-sol, high reasoning, installed design-craft 0.5.0, and the exact benchmark prompt; final response normalized only for trailing whitespace",
+  "repo_dirty": true,
+  "skill_tree_sha256": "2f460d2c23e797f38aa08f7cf193b13cd539462571d621bcdb1f69cb42c7e761",
+  "skill_path": "/Users/gaoqian/Documents/sixseven/codeproject/design-craft/skills/design-craft",
+  "command_summary": "codex exec 0.144.1 --ephemeral --sandbox read-only --ignore-rules in the canonical repository with gpt-5.6-sol, max reasoning, canonical design-craft 0.5.0, and the exact benchmark prompt; final Markdown normalized only for trailing whitespace",
   "output_path": "codex-output.md",
-  "output_sha256": "fc8a1f8ea188e579737e70145fe7dcb7db37d781927e91e293ad113d501fe9a0",
-  "score": 97,
+  "output_sha256": "7d0a268641be2e05daeff95d2264613b53a14b589050fbc58258065090397fdd",
+  "score": 96,
   "criteria": {
     "style_authority": {
       "passed": true,
       "earned": 15,
-      "note": "Preserved the restrained enterprise console and next-hour operator decision context."
+      "note": "Preserves the restrained enterprise-console authority and the operator's next-hour triage job instead of imposing a stock visual style."
     },
     "reference_selection": {
       "passed": true,
       "earned": 14,
-      "note": "Used focused taste, dashboard, design-move, product, and validation guidance with minor reference overhead."
+      "note": "Applies dashboard, taste, design-move, product, design-system, and validation guidance correctly, with some reference and acceptance-detail overhead."
     },
     "anti_generic_redesign": {
       "passed": true,
       "earned": 15,
-      "note": "Rejected equal KPI card soup and decorative modules in favor of an exception-first decision surface."
+      "note": "Diagnoses equal KPI card soup and replaces decorative overview chrome with an exception-first operational decision surface."
     },
     "evidence_level": {
       "passed": true,
       "earned": 15,
-      "note": "Labeled the review L0 prompt-only and bounded the score to concept-level evidence."
+      "note": "Labels the review L0 static, uses a bounded score band, and explicitly rejects screenshot, DOM, responsive, and runtime proof."
     },
     "verified_boundary": {
       "passed": true,
       "earned": 15,
-      "note": "Separated prompt-supported structure from unverified rendering, states, responsiveness, accessibility, and performance."
+      "note": "Separates prompt-attested structure and concept deductions from unverified rendering, interactions, states, accessibility, responsiveness, and performance."
     },
     "design_moves": {
       "passed": true,
       "earned": 15,
-      "note": "Specified lead risk, supporting strip, exception queue, diagnostic chart, task-first table, and contextual inspector moves."
+      "note": "Provides a lead risk object, compact support strip, exception queue, diagnostic chart, task-first table, contextual inspector, and concrete acceptance gates."
     },
     "scope_control": {
       "passed": true,
-      "earned": 8,
-      "note": "Stayed read-only and dashboard-focused, but the response was materially longer than the benchmark required."
+      "earned": 7,
+      "note": "Stays read-only and dashboard-focused, but the 491-line response is substantially longer and more procedural than this benchmark requires."
     }
   }
 }
