@@ -700,6 +700,8 @@ PY
     --require ios >/dev/null
 )
 
+python3 scripts/design_craft_install_verify.py --check >/dev/null
+
 (
   tmp_install_dir="$(mktemp -d -t design-craft-install-validation.XXXXXX)"
   trap 'rm -rf "${tmp_install_dir}"' EXIT
@@ -829,10 +831,13 @@ with tempfile.TemporaryDirectory(prefix="design-craft-cross-agent-record-") as t
         shutil.copy2(task_source / name, task / name)
 
     metadata = {
-        "schema": "design-craft.install.v1",
+        "schema": "design-craft.install.v2",
+        "installer_version": 3,
         "version": (source / "VERSION").read_text(encoding="utf-8").strip(),
         "source_commit": head,
         "source_dirty": False,
+        "skill_source_dirty": False,
+        "repo_dirty": False,
         "source_tree_sha256": tree_sha256(provenance_skill),
     }
     (provenance_skill / ".design-craft-install.json").write_text(

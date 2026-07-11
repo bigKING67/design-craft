@@ -91,6 +91,8 @@ def main() -> int:
         "tool": args.tool,
         "source_commit": source_commit,
         "source_dirty": provenance.get("skill_source_dirty"),
+        "skill_source_dirty": provenance.get("skill_source_dirty"),
+        "repo_dirty": provenance.get("repo_dirty"),
         "skill_version": provenance.get("skill_version"),
         "skill_tree_sha256": provenance.get("skill_tree_sha256"),
         "fixture_tree_sha256": tree_sha256(

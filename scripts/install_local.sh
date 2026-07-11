@@ -117,17 +117,21 @@ write_metadata() {
   local version="$3"
   local commit="unavailable"
   local repo="unavailable"
-  local dirty="true"
+  local repo_dirty="true"
+  local skill_source_dirty="true"
 
   commit="$(git -C "${ROOT_DIR}" rev-parse HEAD 2>/dev/null || printf '%s' 'unavailable')"
   repo="$(git -C "${ROOT_DIR}" remote get-url origin 2>/dev/null || printf '%s' 'unavailable')"
   if [[ "${commit}" != "unavailable" ]]; then
-    if [[ -z "$(git -C "${ROOT_DIR}" status --porcelain 2>/dev/null || true)" ]]; then
-      dirty="false"
+    if [[ -z "$(git -C "${ROOT_DIR}" status --porcelain=v1 --untracked-files=all 2>/dev/null || true)" ]]; then
+      repo_dirty="false"
+    fi
+    if [[ -z "$(git -C "${ROOT_DIR}" status --porcelain=v1 --untracked-files=all -- "skills/${name}" 2>/dev/null || true)" ]]; then
+      skill_source_dirty="false"
     fi
   fi
 
-  python3 - "${target}" "${name}" "${version}" "${ROOT_DIR}" "${commit}" "${repo}" "${dirty}" <<'PY'
+  python3 - "${target}" "${name}" "${version}" "${ROOT_DIR}" "${commit}" "${repo}" "${repo_dirty}" "${skill_source_dirty}" <<'PY'
 import json
 import hashlib
 import sys
@@ -135,7 +139,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from urllib.parse import urlsplit, urlunsplit
 
-target, name, version, source_root, commit, repo, dirty = sys.argv[1:]
+target, name, version, source_root, commit, repo, repo_dirty, skill_source_dirty = sys.argv[1:]
 if "://" in repo:
     parsed = urlsplit(repo)
     host = parsed.hostname or ""
@@ -154,15 +158,17 @@ for path in sorted(target_path.rglob("*")):
     tree.update(file_digest.encode("ascii"))
     tree.update(b"\n")
 payload = {
-    "schema": "design-craft.install.v1",
-    "installer_version": 2,
+    "schema": "design-craft.install.v2",
+    "installer_version": 3,
     "skill_name": name,
     "version": version,
     "source_root": source_root,
     "source_path": str(Path(source_root) / "skills" / name),
     "source_repo": repo,
     "source_commit": commit,
-    "source_dirty": dirty == "true",
+    "source_dirty": skill_source_dirty == "true",
+    "skill_source_dirty": skill_source_dirty == "true",
+    "repo_dirty": repo_dirty == "true",
     "source_tree_sha256": tree.hexdigest(),
     "installed_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
 }

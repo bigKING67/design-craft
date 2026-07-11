@@ -419,6 +419,9 @@ Before committing a release:
    when taste scoring changed.
 9. Install parity/provenance check:
    `make install-verify`
+   This checks the installed skill tree and skill-scoped dirty state. Separate
+   `repo_dirty` provenance remains visible for audit, while the release
+   certification gate independently requires the whole worktree to be clean.
 10. Legacy alias source check:
    `grep -Fq 'renamed to \`design-craft\`' skills/frontend-craft/SKILL.md`
 11. Optional legacy install dry-run:

@@ -161,8 +161,17 @@ def validate_evidence(
         errors.append(f"{path}: tool is required")
     if not re.fullmatch(r"[0-9a-f]{40}", str(payload.get("source_commit", ""))):
         errors.append(f"{path}: source_commit must be a full lowercase Git SHA")
-    if not isinstance(payload.get("source_dirty"), bool):
+    source_dirty = payload.get("source_dirty")
+    skill_source_dirty = payload.get("skill_source_dirty")
+    if not isinstance(source_dirty, bool):
         errors.append(f"{path}: source_dirty must be boolean")
+    if not isinstance(skill_source_dirty, bool):
+        errors.append(f"{path}: skill_source_dirty must be boolean")
+    if isinstance(source_dirty, bool) and isinstance(skill_source_dirty, bool):
+        if source_dirty is not skill_source_dirty:
+            errors.append(f"{path}: source_dirty must alias skill_source_dirty")
+    if not isinstance(payload.get("repo_dirty"), bool):
+        errors.append(f"{path}: repo_dirty must be boolean")
     if not isinstance(payload.get("skill_version"), str) or not payload["skill_version"].strip():
         errors.append(f"{path}: skill_version is required")
     for key in ("skill_tree_sha256", "fixture_tree_sha256"):
@@ -225,8 +234,10 @@ def validate_evidence(
             fixture_root / expected_platform,
             ignored_dirs={"build", ".gradle"},
         )
-        if payload.get("source_dirty") is not False:
-            errors.append(f"{path}: certified native evidence must record source_dirty=false")
+        if skill_source_dirty is not False:
+            errors.append(
+                f"{path}: certified native evidence must record skill_source_dirty=false"
+            )
         if payload.get("skill_version") != read_version(skill_root):
             errors.append(f"{path}: skill_version must match the current skill version")
         if payload.get("skill_tree_sha256") != expected_skill_tree:
@@ -320,6 +331,8 @@ def run_self_check() -> list[str]:
             "tool": "fixture",
             "source_commit": "a" * 40,
             "source_dirty": False,
+            "skill_source_dirty": False,
+            "repo_dirty": False,
             "skill_version": "0.0.0",
             "skill_tree_sha256": "b" * 64,
             "fixture_tree_sha256": "c" * 64,

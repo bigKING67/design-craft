@@ -251,6 +251,8 @@ def validate_observed_score(
         source_dirty = payload.get("skill_source_dirty")
         if not isinstance(source_dirty, bool):
             errors.append(f"{path}: skill_source_dirty must be boolean")
+        if "repo_dirty" in payload and not isinstance(payload.get("repo_dirty"), bool):
+            errors.append(f"{path}: repo_dirty must be boolean when present")
         for key in ("skill_tree_sha256", "output_sha256", "scorecard_sha256"):
             if not re.fullmatch(r"[0-9a-f]{64}", str(payload.get(key, ""))):
                 errors.append(f"{path}: {key} must be 64 lowercase hex characters")

@@ -7,13 +7,25 @@ import argparse
 import hashlib
 import json
 import re
+import shutil
 import subprocess
 import sys
+import tempfile
+from datetime import datetime, timezone
 from pathlib import Path
+
+from design_craft_evidence_common import (
+    git_dirty,
+    git_head,
+    git_is_ancestor,
+    git_root,
+    skill_provenance,
+)
 
 
 SCHEMA = "design-craft.install-verification.v1"
-METADATA_SCHEMA = "design-craft.install.v1"
+METADATA_SCHEMA_V1 = "design-craft.install.v1"
+METADATA_SCHEMA_V2 = "design-craft.install.v2"
 METADATA_NAME = ".design-craft-install.json"
 
 
@@ -47,31 +59,18 @@ def tree_digest(values: dict[str, str]) -> str:
     return digest.hexdigest()
 
 
-def source_provenance(source: Path) -> tuple[Path, str, bool]:
+def source_provenance(source: Path) -> tuple[Path, str, bool, bool]:
     fallback_root = source.parent.parent if source.parent.name == "skills" else source
     try:
-        repo_root_result = subprocess.run(
-            ["git", "-C", str(source), "rev-parse", "--show-toplevel"],
-            check=True,
-            capture_output=True,
-            text=True,
+        repo_root = git_root(source)
+        return (
+            repo_root,
+            git_head(repo_root),
+            git_dirty(repo_root),
+            git_dirty(repo_root, source),
         )
-        repo_root = Path(repo_root_result.stdout.strip()).resolve()
-        commit_result = subprocess.run(
-            ["git", "-C", str(repo_root), "rev-parse", "HEAD"],
-            check=True,
-            capture_output=True,
-            text=True,
-        )
-        dirty_result = subprocess.run(
-            ["git", "-C", str(repo_root), "status", "--porcelain"],
-            check=True,
-            capture_output=True,
-            text=True,
-        )
-        return repo_root, commit_result.stdout.strip(), bool(dirty_result.stdout.strip())
-    except (OSError, subprocess.CalledProcessError):
-        return fallback_root.resolve(), "unavailable", True
+    except (OSError, RuntimeError, ValueError, subprocess.CalledProcessError):
+        return fallback_root.resolve(), "unavailable", True, True
 
 
 def validate_metadata(
@@ -83,7 +82,7 @@ def validate_metadata(
     expected_source_root: Path,
     expected_source_path: Path,
     expected_source_commit: str,
-    expected_source_dirty: bool,
+    expected_skill_source_dirty: bool,
 ) -> tuple[dict, list[str]]:
     path = installed / METADATA_NAME
     if not path.is_file():
@@ -94,8 +93,11 @@ def validate_metadata(
         return {}, [f"invalid installation metadata: {exc}"]
 
     errors: list[str] = []
-    if payload.get("schema") != METADATA_SCHEMA:
-        errors.append(f"metadata schema must be {METADATA_SCHEMA}")
+    metadata_schema = payload.get("schema")
+    if metadata_schema not in {METADATA_SCHEMA_V1, METADATA_SCHEMA_V2}:
+        errors.append(
+            f"metadata schema must be {METADATA_SCHEMA_V1} or {METADATA_SCHEMA_V2}"
+        )
     if expected_name and payload.get("skill_name") != expected_name:
         errors.append(f"metadata skill_name must be {expected_name}")
     if expected_version and payload.get("version") != expected_version:
@@ -105,21 +107,46 @@ def validate_metadata(
     source_commit = str(payload.get("source_commit", ""))
     if source_commit != "unavailable" and not re.fullmatch(r"[0-9a-f]{40}", source_commit):
         errors.append("metadata source_commit must be a full lowercase Git SHA or unavailable")
-    elif source_commit != expected_source_commit:
+    elif expected_source_commit == "unavailable":
+        if source_commit != "unavailable":
+            errors.append("metadata source_commit must be unavailable outside a Git source")
+    elif source_commit == "unavailable":
+        errors.append("metadata source_commit must identify the installed Git source")
+    elif not git_is_ancestor(expected_source_root, source_commit, expected_source_commit):
         errors.append(
-            f"metadata source_commit must match current source HEAD {expected_source_commit}"
+            "metadata source_commit must be an ancestor of the current source HEAD "
+            f"{expected_source_commit}"
         )
+
     source_dirty = payload.get("source_dirty")
     if not isinstance(source_dirty, bool):
         errors.append("metadata source_dirty must be boolean")
-    elif source_dirty is not expected_source_dirty:
+    elif source_dirty is not expected_skill_source_dirty:
         errors.append(
-            f"metadata source_dirty must match current source dirty state {expected_source_dirty}"
+            "metadata source_dirty must match current skill source dirty state "
+            f"{expected_skill_source_dirty}"
         )
+
+    if metadata_schema == METADATA_SCHEMA_V2:
+        skill_source_dirty = payload.get("skill_source_dirty")
+        if not isinstance(skill_source_dirty, bool):
+            errors.append("metadata skill_source_dirty must be boolean")
+        elif skill_source_dirty is not expected_skill_source_dirty:
+            errors.append(
+                "metadata skill_source_dirty must match current skill source dirty state "
+                f"{expected_skill_source_dirty}"
+            )
+        if isinstance(source_dirty, bool) and isinstance(skill_source_dirty, bool):
+            if source_dirty is not skill_source_dirty:
+                errors.append("metadata source_dirty must alias skill_source_dirty")
+        if not isinstance(payload.get("repo_dirty"), bool):
+            errors.append("metadata repo_dirty must be boolean")
+
     if not isinstance(payload.get("installed_at"), str) or not payload["installed_at"].endswith("Z"):
         errors.append("metadata installed_at must be a UTC timestamp ending in Z")
-    if payload.get("installer_version") != 2:
-        errors.append("metadata installer_version must be 2")
+    expected_installer_version = 3 if metadata_schema == METADATA_SCHEMA_V2 else 2
+    if payload.get("installer_version") != expected_installer_version:
+        errors.append(f"metadata installer_version must be {expected_installer_version}")
     for field in ("source_root", "source_path", "source_repo"):
         if not isinstance(payload.get(field), str) or not payload[field].strip():
             errors.append(f"metadata {field} must be a non-empty string")
@@ -129,6 +156,7 @@ def validate_metadata(
     if isinstance(payload.get("source_path"), str) and payload["source_path"].strip():
         if Path(payload["source_path"]).expanduser().resolve() != expected_source_path:
             errors.append(f"metadata source_path must match current source path {expected_source_path}")
+
     return payload, errors
 
 
@@ -142,7 +170,7 @@ def verify(
 ) -> dict:
     source_files = snapshot(source)
     installed_files = snapshot(installed)
-    source_root, source_commit, source_dirty = source_provenance(source)
+    source_root, source_commit, repo_dirty, skill_source_dirty = source_provenance(source)
     missing = sorted(set(source_files) - set(installed_files))
     extra = sorted(set(installed_files) - set(source_files))
     changed = sorted(
@@ -162,7 +190,7 @@ def verify(
             expected_source_root=source_root,
             expected_source_path=source.resolve(),
             expected_source_commit=source_commit,
-            expected_source_dirty=source_dirty,
+            expected_skill_source_dirty=skill_source_dirty,
         )
 
     errors: list[str] = []
@@ -192,22 +220,134 @@ def verify(
             "root": str(source_root),
             "path": str(source.resolve()),
             "commit": source_commit,
-            "dirty": source_dirty,
+            "dirty": skill_source_dirty,
+            "skill_source_dirty": skill_source_dirty,
+            "repo_dirty": repo_dirty,
         },
         "metadata": metadata,
         "errors": errors,
     }
 
 
+def run_self_check() -> None:
+    with tempfile.TemporaryDirectory(prefix="design-craft-install-verify-") as tmp_value:
+        tmp = Path(tmp_value)
+        repo = tmp / "source-repo"
+        source = repo / "skills/design-craft"
+        installed = tmp / "installed/design-craft"
+        source.mkdir(parents=True)
+        (source / "SKILL.md").write_text("# Fixture skill\n", encoding="utf-8")
+        (source / "VERSION").write_text("0.0.0\n", encoding="utf-8")
+        (repo / "unrelated.txt").write_text("initial\n", encoding="utf-8")
+
+        for command in (
+            ("git", "init", "-q"),
+            ("git", "config", "user.email", "fixture@example.invalid"),
+            ("git", "config", "user.name", "Fixture"),
+            ("git", "add", "."),
+            ("git", "commit", "-qm", "initial fixture"),
+        ):
+            subprocess.run(command, cwd=repo, check=True)
+
+        shutil.copytree(source, installed)
+        source_commit = git_head(repo)
+        metadata = {
+            "schema": METADATA_SCHEMA_V2,
+            "installer_version": 3,
+            "skill_name": "design-craft",
+            "version": "0.0.0",
+            "source_root": str(repo.resolve()),
+            "source_path": str(source.resolve()),
+            "source_repo": "https://example.invalid/design-craft",
+            "source_commit": source_commit,
+            "source_dirty": False,
+            "skill_source_dirty": False,
+            "repo_dirty": False,
+            "source_tree_sha256": tree_digest(snapshot(source)),
+            "installed_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+        }
+        (installed / METADATA_NAME).write_text(
+            json.dumps(metadata, indent=2) + "\n", encoding="utf-8"
+        )
+
+        initial = verify(
+            source,
+            installed,
+            expected_name="design-craft",
+            expected_version="0.0.0",
+            require_metadata=True,
+        )
+        if not initial["ok"]:
+            raise RuntimeError("clean install fixture failed: " + "; ".join(initial["errors"]))
+
+        (repo / "unrelated.txt").write_text("committed later\n", encoding="utf-8")
+        subprocess.run(("git", "add", "unrelated.txt"), cwd=repo, check=True)
+        subprocess.run(("git", "commit", "-qm", "unrelated change"), cwd=repo, check=True)
+        ancestor = verify(
+            source,
+            installed,
+            expected_name="design-craft",
+            expected_version="0.0.0",
+            require_metadata=True,
+        )
+        if not ancestor["ok"]:
+            raise RuntimeError(
+                "unchanged skill at an ancestor commit failed: " + "; ".join(ancestor["errors"])
+            )
+
+        (repo / "unrelated.txt").write_text("uncommitted unrelated work\n", encoding="utf-8")
+        unrelated = verify(
+            source,
+            installed,
+            expected_name="design-craft",
+            expected_version="0.0.0",
+            require_metadata=True,
+        )
+        if not unrelated["ok"]:
+            raise RuntimeError(
+                "unrelated repo work invalidated skill parity: " + "; ".join(unrelated["errors"])
+            )
+        if unrelated["expected_source"]["repo_dirty"] is not True:
+            raise RuntimeError("unrelated dirty work was not reported at repo scope")
+        if unrelated["expected_source"]["skill_source_dirty"] is not False:
+            raise RuntimeError("unrelated dirty work leaked into skill scope")
+        provenance = skill_provenance(source)
+        if provenance.get("repo_dirty") is not True:
+            raise RuntimeError("evidence provenance did not report repo_dirty=true")
+        if provenance.get("skill_source_dirty") is not False:
+            raise RuntimeError("evidence provenance did not preserve a clean skill scope")
+
+        (source / "SKILL.md").write_text("# Changed fixture skill\n", encoding="utf-8")
+        changed = verify(
+            source,
+            installed,
+            expected_name="design-craft",
+            expected_version="0.0.0",
+            require_metadata=True,
+        )
+        if changed["ok"]:
+            raise RuntimeError("changed skill source unexpectedly passed install parity")
+        if changed["expected_source"]["skill_source_dirty"] is not True:
+            raise RuntimeError("changed skill source was not reported dirty")
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--source", required=True)
-    parser.add_argument("--installed", required=True)
+    parser.add_argument("--source")
+    parser.add_argument("--installed")
     parser.add_argument("--expected-name")
     parser.add_argument("--expected-version")
     parser.add_argument("--require-metadata", action="store_true")
     parser.add_argument("--json", action="store_true")
+    parser.add_argument("--check", action="store_true")
     args = parser.parse_args()
+
+    if args.check:
+        run_self_check()
+        print("install_verifier_self_check=ok")
+        return 0
+    if not args.source or not args.installed:
+        parser.error("--source and --installed are required unless --check is used")
 
     payload = verify(
         Path(args.source).expanduser().resolve(),

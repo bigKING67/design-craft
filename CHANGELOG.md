@@ -4,6 +4,10 @@ All notable local changes to `design-craft` are recorded here.
 
 ## 0.5.0 - Unreleased
 
+- Split installation provenance into `skill_source_dirty` and `repo_dirty`.
+  Install parity now remains valid across unrelated ancestor commits and
+  repo-level benchmark WIP when the installed skill tree is unchanged, while
+  release certification continues to require a completely clean worktree.
 - Split the Codex frontend route core into dedicated authority, browser,
   delivery, runtime, and telemetry modules and made all five required by the
   route-pack/snapshot manifest and strict semantic audit.
@@ -44,8 +48,9 @@ All notable local changes to `design-craft` are recorded here.
   Kowalski README-only commit without importing unrelated behavior.
 - Rebuilt local installation around a lock, same-filesystem staging, atomic
   replacement, rollback, bounded backups, generated provenance metadata, and a
-  dedicated source/install verifier that now rejects stale source commit,
-  dirty-state, source-root, and source-path metadata even when tree hashes match.
+  dedicated source/install verifier that rejects non-ancestor source commits,
+  skill-scoped dirty-state, source-root, and source-path mismatches even when
+  tree hashes match.
 - Added installed `VERSION` and Codex route-pack compatibility contracts,
   refreshed existing legacy aliases by default, and exposed install/route
   compatibility through doctor and maturity checks.

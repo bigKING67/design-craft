@@ -80,8 +80,17 @@ def git_head(root: Path) -> str:
     return git_output(root, "rev-parse", "HEAD")
 
 
-def git_dirty(root: Path) -> bool:
-    return bool(git_output(root, "status", "--porcelain=v1", "--untracked-files=all"))
+def git_dirty(root: Path, path: Path | None = None) -> bool:
+    args = ["status", "--porcelain=v1", "--untracked-files=all"]
+    if path is not None:
+        resolved_root = root.expanduser().resolve()
+        resolved_path = path.expanduser().resolve()
+        try:
+            relative = resolved_path.relative_to(resolved_root)
+        except ValueError as exc:
+            raise ValueError(f"Git dirty path must stay inside {resolved_root}: {resolved_path}") from exc
+        args.extend(("--", relative.as_posix()))
+    return bool(git_output(root, *args))
 
 
 def git_is_ancestor(root: Path, ancestor: str, descendant: str = "HEAD") -> bool:
@@ -105,16 +114,28 @@ def skill_provenance(skill_root: Path) -> dict[str, object]:
     metadata_path = skill_root / INSTALL_METADATA
     if metadata_path.is_file():
         payload = json.loads(metadata_path.read_text(encoding="utf-8"))
+        schema = payload.get("schema")
+        if schema not in {"design-craft.install.v1", "design-craft.install.v2"}:
+            raise ValueError(f"unsupported installation metadata schema in {metadata_path}")
         recorded_digest = payload.get("source_tree_sha256")
         if recorded_digest != digest:
             raise ValueError(
                 f"installed skill tree hash does not match {metadata_path}: "
                 f"expected {recorded_digest}, observed {digest}"
             )
+        skill_source_dirty = payload.get(
+            "skill_source_dirty", payload.get("source_dirty")
+        )
+        if not isinstance(skill_source_dirty, bool):
+            raise ValueError(f"installation metadata has invalid skill dirty state: {metadata_path}")
+        repo_dirty = payload.get("repo_dirty")
+        if schema == "design-craft.install.v2" and not isinstance(repo_dirty, bool):
+            raise ValueError(f"installation metadata has invalid repo dirty state: {metadata_path}")
         return {
             "skill_version": str(payload.get("version", "")),
             "skill_source_commit": str(payload.get("source_commit", "")),
-            "skill_source_dirty": payload.get("source_dirty"),
+            "skill_source_dirty": skill_source_dirty,
+            "repo_dirty": repo_dirty,
             "skill_tree_sha256": digest,
             "skill_path": str(skill_root),
         }
@@ -123,7 +144,8 @@ def skill_provenance(skill_root: Path) -> dict[str, object]:
     return {
         "skill_version": read_version(skill_root),
         "skill_source_commit": git_head(root),
-        "skill_source_dirty": git_dirty(root),
+        "skill_source_dirty": git_dirty(root, skill_root),
+        "repo_dirty": git_dirty(root),
         "skill_tree_sha256": digest,
         "skill_path": str(skill_root),
     }
