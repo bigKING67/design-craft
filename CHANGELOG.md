@@ -4,6 +4,12 @@ All notable local changes to `design-craft` are recorded here.
 
 ## 0.5.0 - Unreleased
 
+- Added a root MIT license, preserved upstream Apache/MIT license and notice
+  text, and documented the separate Vercel snapshot redistribution boundary.
+- Restricted the Pi/npm payload to the canonical skill plus required legal
+  metadata. A deterministic package gate now rejects repository-only paths,
+  user-home strings, payloads above 1 MB compressed or 2 MB unpacked, and more
+  than 100 files.
 - Split installation provenance into `skill_source_dirty` and `repo_dirty`.
   Install parity now remains valid across unrelated ancestor commits and
   repo-level benchmark WIP when the installed skill tree is unchanged, while

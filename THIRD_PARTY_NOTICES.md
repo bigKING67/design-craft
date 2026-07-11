@@ -8,6 +8,7 @@ are kept as pristine submodules under `upstreams/`.
 
 - Repository: https://github.com/Leonxlnx/taste-skill
 - License: MIT
+- Copyright: 2026 Leonxlnx
 - Local path: `upstreams/taste-skill`
 - Initial pinned commit:
   `06d6028b5c623016c59ce8536f578e5a1127b499`
@@ -20,8 +21,8 @@ motion discipline, and final preflight review.
 The reviewed 2026-07-10 range changed sponsorship/readme assets only, so it is
 retained as provenance and did not change design-craft behavior.
 
-The full upstream license is available at:
-`upstreams/taste-skill/LICENSE`.
+The preserved distribution license is available at:
+`LICENSES/MIT-upstreams.txt`.
 
 ## pbakaus/impeccable
 
@@ -45,8 +46,8 @@ provenance only.
 The 2026-07-11 reviewed range changes only GitHub sheriff automation and tests;
 no additional fusion-layer behavior was imported.
 
-The full upstream license is available at:
-`upstreams/impeccable/LICENSE`.
+The preserved distribution license and notice are available at:
+`LICENSES/Apache-2.0.txt` and `LICENSES/NOTICE-impeccable.md`.
 
 ## Vercel Geist design references
 
@@ -57,11 +58,15 @@ The full upstream license is available at:
 
 The fusion layer vendors these public design-system references as complete seed
 templates for new or weakly specified developer-product design systems.
+The snapshots remain attributable to Vercel and are not relicensed by the
+design-craft MIT license. See `LICENSES/VERCEL-DESIGN-NOTICE.md` for the exact
+scope and unresolved redistribution boundary.
 
 ## emilkowalski/skills
 
 - Repository: https://github.com/emilkowalski/skills
 - License: MIT
+- Copyright: 2026 Emil Kowalski
 - Local path: `upstreams/emilkowalski-skills`
 - Initial pinned commit:
   `a47903a06a05d2e24c483bd8961c85969a51a494`
@@ -81,8 +86,8 @@ into original design-craft references.
 The 2026-07-11 reviewed range changes one README apostrophe only and required no
 additional absorption.
 
-The full upstream license is available at:
-`upstreams/emilkowalski-skills/LICENSE`.
+The preserved distribution license is available at:
+`LICENSES/MIT-upstreams.txt`.
 
 ## Fusion-layer policy
 

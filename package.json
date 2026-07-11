@@ -20,6 +20,14 @@
     "type": "git",
     "url": "git+https://github.com/bigKING67/design-craft.git"
   },
+  "files": [
+    "skills/design-craft",
+    "LICENSE",
+    "LICENSES",
+    "README.md",
+    "THIRD_PARTY_NOTICES.md",
+    "VERSION"
+  ],
   "pi": {
     "skills": [
       "skills/design-craft"

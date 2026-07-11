@@ -336,6 +336,14 @@ def build_score(root: Path, run_smoke: bool) -> list[Dimension]:
                 (has(root, "scripts/install_local.sh"), "installer exists", "Add local installer."),
                 (has(root, "scripts/design_craft_install_verify.py"), "install parity/provenance verifier exists", "Add an install verifier."),
                 (".design-craft-install.lock" in read_text(root / "scripts/install_local.sh") and "Atomic install failed" in read_text(root / "scripts/install_local.sh"), "installer is locked and atomic", "Use staging, locking, rollback, and atomic replacement."),
+                (has(root, "LICENSE") and has(root, "LICENSES/Apache-2.0.txt"), "root and upstream licenses are preserved", "Add the root license and preserved upstream license texts."),
+                (has(root, "scripts/design_craft_package_validate.py"), "publishable package boundary validator exists", "Add a Pi/npm package size and path validator."),
+                (
+                    set(json.loads(read_text(root / "package.json")).get("files", []))
+                    == {"skills/design-craft", "LICENSE", "LICENSES", "README.md", "THIRD_PARTY_NOTICES.md", "VERSION"},
+                    "package allowlist excludes repository-only content",
+                    "Restrict package.json files to the canonical skill and legal metadata.",
+                ),
             ],
         ),
         score_dimension(

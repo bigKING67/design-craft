@@ -140,6 +140,18 @@ The `package.json` `pi.skills` manifest exposes only the canonical
 `skills/design-craft` skill. This keeps `pi-67` as the Pi configuration repo
 while `design-craft` remains the single source skill.
 
+The npm package boundary is also explicit: `package.json.files` includes only
+the canonical skill, root version/readme metadata, and required license/notice
+files. It excludes upstream checkouts, evals, workflows, and repository-only
+maintenance scripts. Verify the packed payload and size budget with:
+
+```bash
+make package-check
+```
+
+The gate caps the package at 1 MB compressed, 2 MB unpacked, and 100 files,
+rejects repository-only paths, and scans packed text for user-home paths.
+
 ## Agent adapters
 
 Install the same canonical skill into a host-specific location:
@@ -528,6 +540,15 @@ the decision metadata. Before absorbing upstream changes, run:
 ```bash
 python3 scripts/upstream_absorption_report.py --remote-details --fail-on-unreviewed
 ```
+
+## Licensing
+
+Original design-craft code and documentation are distributed under the MIT
+License in `LICENSE`. Required upstream license and notice text is preserved in
+`LICENSES/` and summarized in `THIRD_PARTY_NOTICES.md`. The Vercel design
+snapshots remain attributable to Vercel and are not relicensed by the
+design-craft MIT license; see `LICENSES/VERCEL-DESIGN-NOTICE.md` before
+redistributing those files outside this package.
 
 ## Local release gate
 

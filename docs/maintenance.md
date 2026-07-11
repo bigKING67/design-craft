@@ -10,6 +10,13 @@ This document is the local release and maintenance checklist for
 - Keep the installable skill lean. `README.md`, `CHANGELOG.md`, release notes,
   and maintenance docs belong at the repo root or under `docs/`, not inside
   `skills/design-craft/`.
+- Keep the published Pi/npm payload narrower than the repository. The package
+  may contain only `skills/design-craft`, required root metadata, and preserved
+  license/notice files; never publish `upstreams/`, `evals/`, workflows, or
+  repository-only scripts.
+- Preserve the root MIT license plus upstream license and notice text in
+  `LICENSES/`. Do not treat the design-craft MIT license as relicensing the
+  Vercel design snapshots.
 - Keep project-specific truth above generic visual guidance:
   live runtime behavior, scoped `AGENTS.md`, README/framework conventions, and
   optional project `PRODUCT.md` plus project `DESIGN.md` outrank the fusion
@@ -47,7 +54,8 @@ make validate-portable
 ```
 
 It expands to portable checks only: required files, package/version
-consistency, shell syntax, Python compile, bundled-runtime independence,
+consistency, npm pack size/path hygiene, shell syntax, Python compile,
+bundled-runtime independence,
 platform fixtures, observed benchmark artifacts, L4 validators, static
 scanners, 100/100 source completeness, and 95/100 portable maturity. It does
 not depend on local Codex state, installed-skill parity, native SDKs, or remote
@@ -67,6 +75,9 @@ Expected result:
   L4 helpers run without the source repo.
 - Project-neutral L4 fixtures validate in strict mode.
 - Version in `VERSION` matches `package.json`.
+- `npm pack --dry-run` remains within 1 MB compressed, 2 MB unpacked, and 100
+  files, contains the canonical skill and required legal metadata, and excludes
+  repository-only paths and user-home strings.
 - Source completeness is 100; portable maturity is 95 with the native-runtime
   and four-host certification caps stated rather than hidden.
 - CI covers Python 3.11, 3.12, and 3.13 across Ubuntu/macOS and Node 22/24.
@@ -89,6 +100,7 @@ It expands to:
 
 ```bash
 bash scripts/validate.sh --portable
+python3 scripts/design_craft_package_validate.py --check --validate
 python3 "$SKILL_CREATOR_QUICK_VALIDATE" skills/design-craft
 python3 "$SKILL_CREATOR_QUICK_VALIDATE" skills/frontend-craft
 python3 scripts/design_craft_score.py --self

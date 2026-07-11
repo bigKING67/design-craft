@@ -48,6 +48,11 @@ fi
 required_files=(
   "README.md"
   "CHANGELOG.md"
+  "LICENSE"
+  "LICENSES/Apache-2.0.txt"
+  "LICENSES/MIT-upstreams.txt"
+  "LICENSES/NOTICE-impeccable.md"
+  "LICENSES/VERCEL-DESIGN-NOTICE.md"
   "VERSION"
   "package.json"
   "package-lock.json"
@@ -238,6 +243,7 @@ required_files=(
   "scripts/design_craft_l4_eval_case.sh"
   "scripts/design_craft_l4_evidence_manifest.py"
   "scripts/design_craft_maturity.py"
+  "scripts/design_craft_package_validate.py"
   "scripts/design_craft_native_runtime_validate.py"
   "scripts/design_craft_native_runtime_record.py"
   "scripts/design_craft_platform_scan.py"
@@ -383,6 +389,7 @@ if (
   throw new Error("skills/design-craft/COMPATIBILITY.json must pin route-pack and evidence contracts");
 }
 NODE
+python3 scripts/design_craft_package_validate.py --check --validate >/dev/null
 node --check .github/scripts/upstream_review_issue.cjs
 node <<'NODE'
 const assert = require("assert");
