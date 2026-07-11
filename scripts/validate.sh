@@ -664,7 +664,8 @@ ios_runner = Path("scripts/native_runtime_ci_ios.sh").read_text(encoding="utf-8"
 android_runner = Path("scripts/native_runtime_ci_android.sh").read_text(encoding="utf-8")
 assert "xcrun simctl" in ios_runner and "design_craft_native_runtime_record.py" in ios_runner
 assert "-parse-as-library" in ios_runner
-assert "simctl openurl" in ios_runner and "runtime-interaction.txt" in ios_runner
+assert "simctl terminate" in ios_runner and "simctl openurl" in ios_runner
+assert "interaction_observed" in ios_runner and "runtime-interaction.txt" in ios_runner
 assert "uiautomator" in android_runner and "design_craft_native_runtime_record.py" in android_runner
 assert "/data/local/tmp/design-craft-window.xml" in android_runner and "adb exec-out cat" in android_runner
 assert "Enable KVM access" in workflow and "-no-metrics" in workflow

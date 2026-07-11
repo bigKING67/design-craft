@@ -50,6 +50,11 @@ final class AppDelegate: UIResponder, UIApplicationDelegate {
         window.makeKeyAndVisible()
         self.window = window
         print("DESIGN_CRAFT_RUNTIME_LAUNCHED")
+        if let url = launchOptions?[.url] as? URL {
+            DispatchQueue.main.async { [weak self] in
+                _ = self?.handleRuntimeURL(url)
+            }
+        }
         return true
     }
 
@@ -58,6 +63,10 @@ final class AppDelegate: UIResponder, UIApplicationDelegate {
         open url: URL,
         options: [UIApplication.OpenURLOptionsKey: Any] = [:]
     ) -> Bool {
+        handleRuntimeURL(url)
+    }
+
+    private func handleRuntimeURL(_ url: URL) -> Bool {
         guard url.scheme == "designcraft-evidence", url.host == "confirm" else {
             return false
         }

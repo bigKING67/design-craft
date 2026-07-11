@@ -11,7 +11,9 @@ All notable local changes to `design-craft` are recorded here.
 - Fixed the native-runtime workflow by compiling the UIKit fixture as a
   library-style `@main` module, enabling KVM access for the Android runner, and
   replacing fragile `/sdcard` UIAutomator pulls with retried
-  `/data/local/tmp` capture and `adb exec-out` reads.
+  `/data/local/tmp` capture and `adb exec-out` reads. The iOS deep-link
+  interaction now handles cold-launch URL options and waits for a bounded,
+  filesystem-backed confirmation marker.
 - Split the Codex frontend route core into dedicated authority, browser,
   delivery, runtime, and telemetry modules and made all five required by the
   route-pack/snapshot manifest and strict semantic audit.

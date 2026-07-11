@@ -41,11 +41,27 @@ xcrun simctl install "${udid}" "${APP_DIR}"
 xcrun simctl launch "${udid}" dev.designcraft.runtime-evidence > "${EVIDENCE_DIR}/launch.txt"
 sleep 2
 xcrun simctl io "${udid}" screenshot "${EVIDENCE_DIR}/ios-before-interaction.png"
-xcrun simctl openurl "${udid}" "designcraft-evidence://confirm"
-sleep 1
 data_container="$(xcrun simctl get_app_container "${udid}" dev.designcraft.runtime-evidence data)"
 interaction_marker="${data_container}/Documents/runtime-interaction.txt"
-grep -q "Runtime interaction confirmed" "${interaction_marker}"
+rm -f "${interaction_marker}"
+xcrun simctl terminate "${udid}" dev.designcraft.runtime-evidence
+xcrun simctl openurl "${udid}" "designcraft-evidence://confirm" > "${EVIDENCE_DIR}/openurl.txt"
+interaction_observed=0
+for _ in {1..20}; do
+  if [[ -f "${interaction_marker}" ]] \
+    && grep -q "Runtime interaction confirmed" "${interaction_marker}"; then
+    interaction_observed=1
+    break
+  fi
+  sleep 2
+done
+if [[ "${interaction_observed}" != "1" ]]; then
+  xcrun simctl spawn "${udid}" log show --last 2m \
+    --predicate 'process == "DesignCraftEvidence"' \
+    > "${EVIDENCE_DIR}/interaction-diagnostics.log" 2>&1 || true
+  echo "iOS runtime URL interaction did not produce the marker" >&2
+  exit 1
+fi
 cp "${interaction_marker}" "${EVIDENCE_DIR}/runtime-interaction.txt"
 xcrun simctl io "${udid}" screenshot "${EVIDENCE_DIR}/ios-after-interaction.png"
 
