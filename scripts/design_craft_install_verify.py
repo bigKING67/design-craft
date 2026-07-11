@@ -7,6 +7,7 @@ import argparse
 import hashlib
 import json
 import re
+import subprocess
 import sys
 from pathlib import Path
 
@@ -46,12 +47,43 @@ def tree_digest(values: dict[str, str]) -> str:
     return digest.hexdigest()
 
 
+def source_provenance(source: Path) -> tuple[Path, str, bool]:
+    fallback_root = source.parent.parent if source.parent.name == "skills" else source
+    try:
+        repo_root_result = subprocess.run(
+            ["git", "-C", str(source), "rev-parse", "--show-toplevel"],
+            check=True,
+            capture_output=True,
+            text=True,
+        )
+        repo_root = Path(repo_root_result.stdout.strip()).resolve()
+        commit_result = subprocess.run(
+            ["git", "-C", str(repo_root), "rev-parse", "HEAD"],
+            check=True,
+            capture_output=True,
+            text=True,
+        )
+        dirty_result = subprocess.run(
+            ["git", "-C", str(repo_root), "status", "--porcelain"],
+            check=True,
+            capture_output=True,
+            text=True,
+        )
+        return repo_root, commit_result.stdout.strip(), bool(dirty_result.stdout.strip())
+    except (OSError, subprocess.CalledProcessError):
+        return fallback_root.resolve(), "unavailable", True
+
+
 def validate_metadata(
     installed: Path,
     *,
     expected_name: str | None,
     expected_version: str | None,
     expected_tree_digest: str,
+    expected_source_root: Path,
+    expected_source_path: Path,
+    expected_source_commit: str,
+    expected_source_dirty: bool,
 ) -> tuple[dict, list[str]]:
     path = installed / METADATA_NAME
     if not path.is_file():
@@ -73,8 +105,17 @@ def validate_metadata(
     source_commit = str(payload.get("source_commit", ""))
     if source_commit != "unavailable" and not re.fullmatch(r"[0-9a-f]{40}", source_commit):
         errors.append("metadata source_commit must be a full lowercase Git SHA or unavailable")
-    if not isinstance(payload.get("source_dirty"), bool):
+    elif source_commit != expected_source_commit:
+        errors.append(
+            f"metadata source_commit must match current source HEAD {expected_source_commit}"
+        )
+    source_dirty = payload.get("source_dirty")
+    if not isinstance(source_dirty, bool):
         errors.append("metadata source_dirty must be boolean")
+    elif source_dirty is not expected_source_dirty:
+        errors.append(
+            f"metadata source_dirty must match current source dirty state {expected_source_dirty}"
+        )
     if not isinstance(payload.get("installed_at"), str) or not payload["installed_at"].endswith("Z"):
         errors.append("metadata installed_at must be a UTC timestamp ending in Z")
     if payload.get("installer_version") != 2:
@@ -82,6 +123,12 @@ def validate_metadata(
     for field in ("source_root", "source_path", "source_repo"):
         if not isinstance(payload.get(field), str) or not payload[field].strip():
             errors.append(f"metadata {field} must be a non-empty string")
+    if isinstance(payload.get("source_root"), str) and payload["source_root"].strip():
+        if Path(payload["source_root"]).expanduser().resolve() != expected_source_root:
+            errors.append(f"metadata source_root must match current source root {expected_source_root}")
+    if isinstance(payload.get("source_path"), str) and payload["source_path"].strip():
+        if Path(payload["source_path"]).expanduser().resolve() != expected_source_path:
+            errors.append(f"metadata source_path must match current source path {expected_source_path}")
     return payload, errors
 
 
@@ -95,6 +142,7 @@ def verify(
 ) -> dict:
     source_files = snapshot(source)
     installed_files = snapshot(installed)
+    source_root, source_commit, source_dirty = source_provenance(source)
     missing = sorted(set(source_files) - set(installed_files))
     extra = sorted(set(installed_files) - set(source_files))
     changed = sorted(
@@ -111,6 +159,10 @@ def verify(
             expected_name=expected_name,
             expected_version=expected_version,
             expected_tree_digest=tree_digest(source_files),
+            expected_source_root=source_root,
+            expected_source_path=source.resolve(),
+            expected_source_commit=source_commit,
+            expected_source_dirty=source_dirty,
         )
 
     errors: list[str] = []
@@ -136,6 +188,12 @@ def verify(
         "missing": missing,
         "extra": extra,
         "changed": changed,
+        "expected_source": {
+            "root": str(source_root),
+            "path": str(source.resolve()),
+            "commit": source_commit,
+            "dirty": source_dirty,
+        },
         "metadata": metadata,
         "errors": errors,
     }

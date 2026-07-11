@@ -661,6 +661,26 @@ PY
     --expected-name design-craft \
     --expected-version "$(cat VERSION)" \
     --require-metadata >/dev/null
+  python3 - "${DESIGN_CRAFT_SKILL_ROOT}/design-craft/.design-craft-install.json" <<'PY'
+import json
+import sys
+from pathlib import Path
+
+path = Path(sys.argv[1])
+payload = json.loads(path.read_text(encoding="utf-8"))
+payload["source_commit"] = "0" * 40
+path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
+PY
+  if python3 scripts/design_craft_install_verify.py \
+    --source skills/design-craft \
+    --installed "${DESIGN_CRAFT_SKILL_ROOT}/design-craft" \
+    --expected-name design-craft \
+    --expected-version "$(cat VERSION)" \
+    --require-metadata >/dev/null 2>&1; then
+    echo "Stale install source_commit unexpectedly passed provenance validation" >&2
+    exit 1
+  fi
+  bash scripts/install_local.sh --keep-backups 2 >/dev/null
   if DESIGN_CRAFT_INSTALL_TEST_FAIL_AFTER_BACKUP=1 bash scripts/install_local.sh --keep-backups 2 >/dev/null 2>&1; then
     echo "Installer after-backup failpoint unexpectedly passed" >&2
     exit 1

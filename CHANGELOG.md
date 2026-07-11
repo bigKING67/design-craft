@@ -13,7 +13,8 @@ All notable local changes to `design-craft` are recorded here.
   Kowalski README-only commit without importing unrelated behavior.
 - Rebuilt local installation around a lock, same-filesystem staging, atomic
   replacement, rollback, bounded backups, generated provenance metadata, and a
-  dedicated source/install verifier.
+  dedicated source/install verifier that now rejects stale source commit,
+  dirty-state, source-root, and source-path metadata even when tree hashes match.
 - Added installed `VERSION` and Codex route-pack compatibility contracts,
   refreshed existing legacy aliases by default, and exposed install/route
   compatibility through doctor and maturity checks.
