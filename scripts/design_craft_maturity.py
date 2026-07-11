@@ -349,7 +349,7 @@ def l4_gate(profile: str) -> Gate:
             str(case.relative_to(ROOT)),
             "--strict",
         ]
-        if profile == "local":
+        if profile in {"local", "desktop"}:
             command.append("--require-existing-files")
         result = run(command)
         if result.returncode != 0:
@@ -357,7 +357,7 @@ def l4_gate(profile: str) -> Gate:
     passed = not failures
     evidence = (
         "project-neutral L4 before/after artifacts exist and match their manifests"
-        if profile == "local"
+        if profile in {"local", "desktop"}
         else "project-neutral L4 before/after manifests validate without claiming local artifact availability"
     )
     return make_gate(
@@ -393,7 +393,7 @@ def trees_equal(source: Path, installed: Path) -> tuple[bool, str]:
 
 def install_gate(profile: str) -> Gate:
     source = ROOT / "skills/design-craft"
-    if profile == "local":
+    if profile in {"local", "desktop"}:
         install_root = Path(os.environ.get("DESIGN_CRAFT_SKILL_ROOT", Path.home() / ".agents/skills")).expanduser()
         version = read(ROOT / "VERSION").strip()
         result = run(
@@ -452,7 +452,7 @@ def route_pack_gate(profile: str) -> Gate:
         compatibility = {}
     expected_schema = compatibility.get("codex_route_pack", {}).get("schema")
     expected_manifest_schema = compatibility.get("codex_route_pack", {}).get("manifest_schema")
-    if profile == "local":
+    if profile in {"local", "desktop"}:
         result = run([sys.executable, "scripts/design_craft_codex_route_pack.py", "--strict", "--json"], timeout=90)
         try:
             payload = json.loads(result.stdout)
@@ -563,7 +563,7 @@ def release_metadata_gate() -> Gate:
 
 
 def build_gates(profile: str, native_gate: Gate) -> list[Gate]:
-    return [
+    gates = [
         source_completeness_gate(),
         runtime_payload_gate(),
         wrapper_gate(),
@@ -609,8 +609,16 @@ def build_gates(profile: str, native_gate: Gate) -> list[Gate]:
         route_pack_gate(profile),
         release_metadata_gate(),
         install_gate(profile),
-        native_gate,
     ]
+    if profile != "desktop":
+        gates.append(native_gate)
+    return gates
+
+
+def normalized_score(points: int, max_points: int) -> int:
+    if max_points <= 0:
+        return 0
+    return round((points / max_points) * 100)
 
 
 def certification_cap(
@@ -642,7 +650,16 @@ def certification_cap(
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--profile", choices=["portable", "local"], default="portable")
+    parser.add_argument(
+        "--profile",
+        choices=["portable", "local", "desktop"],
+        default="portable",
+        help=(
+            "portable/local retain the release-certification cap; desktop scores the "
+            "installed computer-based frontend workflow without optional four-host or "
+            "physical-device certification"
+        ),
+    )
     parser.add_argument("--min-score", type=int, default=0)
     parser.add_argument("--json", action="store_true")
     parser.add_argument("--check", action="store_true", help="Run offline maturity-cap invariants.")
@@ -676,30 +693,51 @@ def main() -> int:
         }:
             print(f"native runtime status invariant failed: {partial_status}", file=sys.stderr)
             return 1
+        if normalized_score(95, 95) != 100 or normalized_score(95, 100) != 95:
+            print("normalized maturity score invariant failed", file=sys.stderr)
+            return 1
         return 0
 
     native_gate, native_status = native_runtime_gate()
     gates = build_gates(args.profile, native_gate)
     raw_score = sum(gate.points for gate in gates)
-    native_runtime_observed = next(gate.passed for gate in gates if gate.gate_id == "native_runtime_observed")
+    raw_max_score = len(gates) * 5
+    base_score = normalized_score(raw_score, raw_max_score)
+    native_runtime_observed = native_gate.passed
     four_host_certified, four_host_errors = certified_four_host_status()
-    maturity_cap, maturity_cap_reasons = certification_cap(
+    certification_score_cap, certification_cap_reasons = certification_cap(
         native_runtime_observed,
         four_host_certified,
         native_status,
     )
-    score = min(raw_score, maturity_cap)
+    if args.profile == "desktop":
+        scope = "desktop_web_development"
+        maturity_cap = 100
+        maturity_cap_reasons: list[str] = []
+        excluded_optional_certification = [
+            "native_runtime_observed",
+            "four_host_current_source",
+        ]
+    else:
+        scope = "release_certification"
+        maturity_cap = certification_score_cap
+        maturity_cap_reasons = certification_cap_reasons
+        excluded_optional_certification = []
+    score = min(base_score, maturity_cap)
     hard_failures = [gate.gate_id for gate in gates if gate.hard and not gate.passed]
     ok = score >= args.min_score and not hard_failures
     payload = {
         "schema": SCHEMA,
         "profile": args.profile,
+        "scope": scope,
         "root": str(ROOT),
         "score": score,
         "raw_score": raw_score,
+        "raw_max_score": raw_max_score,
         "max_score": 100,
         "maturity_cap": maturity_cap,
         "maturity_cap_reasons": maturity_cap_reasons,
+        "excluded_optional_certification": excluded_optional_certification,
         "hard_failures": hard_failures,
         "ok": ok,
         "gates": [asdict(gate) for gate in gates],
@@ -708,12 +746,18 @@ def main() -> int:
             "four_host_current_source": four_host_certified,
             "errors": four_host_errors,
         },
+        "release_certification": {
+            "maturity_cap": certification_score_cap,
+            "maturity_cap_reasons": certification_cap_reasons,
+        },
     }
 
     if args.json:
         print(json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True))
     else:
         print(f"design-craft operational maturity ({args.profile}): {score}/100")
+        print(f"scope: {scope}")
+        print(f"raw gates: {raw_score}/{raw_max_score}")
         print(f"maturity cap: {maturity_cap}/100")
         for reason in maturity_cap_reasons:
             print(f"cap reason: {reason}")
@@ -722,6 +766,10 @@ def main() -> int:
             detail = gate.evidence if gate.passed else gate.gap
             hard = " [hard]" if gate.hard else ""
             print(f"{marker} {gate.gate_id}{hard}: {detail}")
+        if args.profile == "desktop" and certification_cap_reasons:
+            print(f"optional release certification cap: {certification_score_cap}/100")
+            for reason in certification_cap_reasons:
+                print(f"optional certification gap: {reason}")
         if hard_failures:
             print("hard failures: " + ", ".join(hard_failures))
 

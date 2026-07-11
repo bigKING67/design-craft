@@ -179,6 +179,9 @@ Expected result:
   Emulator artifacts are observed and validated; physical-device evidence
   remains missing. The maturity JSON reports these three statuses separately
   while the aggregate certification gate stays capped at 95 until all pass.
+- Desktop maturity reports 100/100 for the installed computer-based frontend
+  workflow. It excludes optional four-host and physical-device certification
+  from the daily-development score without weakening `release-certify`.
 - Upstream absorption report runs without fetching or modifying submodules; the
   optional `--remote` check reports remote drift with `git ls-remote`.
 - Upstream lock commits match checked-out submodule commits.

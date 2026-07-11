@@ -297,6 +297,7 @@ python3 scripts/design_craft_active_scope_validate.py --root .
 python3 scripts/design_craft_score.py --self
 python3 scripts/design_craft_maturity.py --profile portable --min-score 95
 python3 scripts/design_craft_maturity.py --profile local --min-score 95
+python3 scripts/design_craft_maturity.py --profile desktop --min-score 100
 bash scripts/design_craft_pass.sh --target . --mode audit --skip-route
 ```
 
@@ -309,6 +310,14 @@ maturity scorer reports 95/100 until schema-valid observed native runtime
 evidence removes the explicit cap. Portable CI exercises Ubuntu and macOS with
 Node 22/24 and Python 3.11/3.12/3.13 rather than treating one Python runtime as
 cross-version proof.
+
+For normal computer-based web/frontend development, use the `desktop` profile.
+It verifies the installed skill, local route pack, design authority, browser and
+screenshot contracts, CI portability, and Codex/Pi evidence, but does not treat
+optional Cursor/Claude portability or physical-device certification as a daily
+development blocker. This profile can report 100/100 while `local` and
+`release-certify` continue to preserve the stricter cross-host/native release
+boundary.
 
 ## Common commands
 
@@ -533,6 +542,7 @@ Score source completeness and operational maturity separately:
 python3 scripts/design_craft_score.py --self --json
 python3 scripts/design_craft_maturity.py --profile portable --min-score 95 --json
 python3 scripts/design_craft_maturity.py --profile local --min-score 95 --json
+python3 scripts/design_craft_maturity.py --profile desktop --min-score 100 --json
 ```
 
 ## Upstream policy

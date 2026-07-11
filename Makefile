@@ -3,7 +3,7 @@ SKILL_CREATOR_QUICK_VALIDATE ?= $(HOME)/.codex/skills/.system/skill-creator/scri
 INSTALL_ARGS ?=
 export PYTHONDONTWRITEBYTECODE := 1
 
-.PHONY: validate validate-portable package-check public-repo-check workflow-check skill-quick-validate score maturity-portable maturity-local pass audit critique motion taste-review seed-dry-run route-smoke doctor platform-scan-check native-runtime-probe native-runtime-check codex-route-pack-check init-dry-run active-scope-check cross-agent-check cross-agent-observed-check cross-agent-four-host-check cross-agent-motion-observed-check cross-agent-native-observed-check l4-capture-check historical-l4-metadata-check real-l4-check smell-smoke static-review-smoke upstream-report upstream-freshness-audit upstream-remote-report sync-status sync-status-remote install install-with-legacy install-verify legacy-alias-smoke release-contract-check github-release-check release-gate-source publish-local release-gate-local release-gate release-readiness certification-install-check release-certify-prepublish release-certify-publish release-certify-internal release-certify release-tag-verify
+.PHONY: validate validate-portable package-check public-repo-check workflow-check skill-quick-validate score maturity-portable maturity-local maturity-desktop pass audit critique motion taste-review seed-dry-run route-smoke doctor platform-scan-check native-runtime-probe native-runtime-check codex-route-pack-check init-dry-run active-scope-check cross-agent-check cross-agent-observed-check cross-agent-four-host-check cross-agent-motion-observed-check cross-agent-native-observed-check l4-capture-check historical-l4-metadata-check real-l4-check smell-smoke static-review-smoke upstream-report upstream-freshness-audit upstream-remote-report sync-status sync-status-remote install install-with-legacy install-verify legacy-alias-smoke release-contract-check github-release-check release-gate-source publish-local release-gate-local release-gate release-readiness certification-install-check release-certify-prepublish release-certify-publish release-certify-internal release-certify release-tag-verify
 
 validate:
 	bash scripts/validate.sh
@@ -32,6 +32,9 @@ maturity-portable:
 
 maturity-local:
 	python3 scripts/design_craft_maturity.py --profile local --min-score 95
+
+maturity-desktop:
+	python3 scripts/design_craft_maturity.py --profile desktop --min-score 100
 
 pass:
 	bash scripts/design_craft_pass.sh --target . --mode audit --skip-route
@@ -173,6 +176,7 @@ release-gate-source: validate-portable package-check public-repo-check workflow-
 publish-local: release-gate-source
 	bash scripts/install_local.sh $(INSTALL_ARGS)
 	python3 scripts/design_craft_maturity.py --profile local --min-score 95
+	python3 scripts/design_craft_maturity.py --profile desktop --min-score 100
 	$(MAKE) install-verify
 
 release-gate-local: publish-local

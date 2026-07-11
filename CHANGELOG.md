@@ -19,6 +19,11 @@ All notable local changes to `design-craft` are recorded here.
 - Made 100-point certification two-phase: all source, remote, evidence, native,
   and temporary-install checks now pass before the live skill installation is
   atomically published.
+- Added a `desktop` maturity profile for the actual installed computer-based
+  frontend workflow. It normalizes the applicable local gates to 100/100 while
+  reporting four-host and physical-device gaps as optional release
+  certification status; the existing portable/local and `release-certify`
+  contracts remain strict and unchanged.
 - Regenerated all three Codex/Pi current-source v2 benchmarks against
   `gpt-5.6-sol` max and `deepseek-v4-pro` high, rescored each criterion without
   carrying forward stale headline scores, and expanded multilingual output
