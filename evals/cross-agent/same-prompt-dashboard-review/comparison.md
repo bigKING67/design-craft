@@ -2,15 +2,16 @@
 
 ## Summary
 
-The 0.3.0 dashboard benchmark has real observed outputs for Codex and Pi only.
-Cursor and Claude remain explicitly unverified for this release.
+Observed on 2026-07-11 against clean `design-craft 0.5.0` source commit
+`e3a6bc6` and skill tree `ebbd7a36...`. Codex and Pi have current-source v2
+records; Cursor and Claude remain explicitly unverified.
 
 | Host | Status | Score | Notes |
 |---|---:|---:|---|
-| Codex | verified | 94 | Strong evidence labeling, explicit verified/unverified boundary, and concrete design moves. |
-| Pi | verified | 91 | Strong critique and validation plan; slightly stricter score band and less detailed implementation anatomy than Codex. |
-| Cursor | unverified | N/A | `cursor agent --help` attempted `cursor-agent` install and timed out; no agent output collected. |
-| Claude | unverified | N/A | CLI present, but quota was unavailable; no agent output collected. |
+| Codex | verified | 97 | `codex-cli 0.144.1`, `gpt-5.6-sol`, high reasoning; strongest on decision hierarchy, operational state, and validation boundaries. |
+| Pi | verified | 96 | `pi 0.80.3`, `deepseek/deepseek-v4-pro`, high thinking; concise exception-first redesign with a few inferred table details. |
+| Cursor | unverified | N/A | `cursor-agent` is installed but not logged in; no current-source output exists. |
+| Claude | unverified | N/A | CLI reports OAuth state, but a usable inference response has not been verified; no current-source output exists. |
 
 ## Common behavior
 
@@ -26,7 +27,6 @@ Cursor and Claude remain explicitly unverified for this release.
 
 ## Boundary
 
-This comparison supports the claim that Codex and Pi can apply the same
-`design-craft` dashboard prompt consistently enough for a 0.3.0 smoke benchmark.
-It does not support any claim that Cursor or Claude behavior is stable, because
-their same-prompt outputs were not collected.
+This comparison supports current-source Codex/Pi dashboard behavior only. It
+does not certify Cursor or Claude, rendered dashboard quality, browser states,
+responsive behavior, accessibility, or production implementation quality.

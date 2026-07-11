@@ -1,43 +1,59 @@
 {
-  "schema": "design-craft.cross-agent-score.v1",
+  "schema": "design-craft.cross-agent-score.v2",
   "task_id": "same-prompt-native-adaptive-review",
   "agent": "codex",
   "verified": true,
   "agent_version": "codex-cli 0.144.1",
-  "date": "2026-07-10",
+  "model": "gpt-5.6-sol",
+  "reasoning_profile": "high",
+  "runner_os": "macOS arm64",
+  "date": "2026-07-11",
   "prompt_sha256": "56a6cf59d4a5e5e98280481ec5d04b5207714eb69f0fdafcba06c7bedbbdfc4c",
-  "skill_path": "/Users/gaoqian/Documents/sixseven/codeproject/design-craft/skills/design-craft",
-  "command_summary": "codex exec in a read-only sandbox with the source design-craft skill and output-last-message artifact",
+  "scorecard_sha256": "cfd347d26e3cb72636be39f8e94c17948bc7c4eecbe21a8e68303760dd9396ee",
+  "skill_version": "0.5.0",
+  "skill_source_commit": "e3a6bc61204387a79f241b3c2a5377ca9094b756",
+  "skill_source_dirty": false,
+  "skill_tree_sha256": "ebbd7a3671a5058ec9ea822a2e40251ced0966eaa74873af2964233a6f310f8c",
+  "skill_path": "/Users/gaoqian/.agents/skills/design-craft",
+  "command_summary": "codex exec 0.144.1 --ephemeral --sandbox read-only in an isolated empty workspace with gpt-5.6-sol, high reasoning, installed design-craft 0.5.0, and the exact benchmark prompt; final response normalized only for trailing whitespace",
   "output_path": "codex-output.md",
+  "output_sha256": "f5677c8b3a3ac8809d156cccc50bfdf34f52a8c358b8bdcf433007f2dafc1e58",
   "score": 97,
   "criteria": {
     "style_authority": {
       "passed": true,
-      "note": "Separated PRODUCT.md platform/user/accessibility context from DESIGN.md semantic visual authority."
+      "earned": 15,
+      "note": "Separated adaptive PRODUCT context from shared DESIGN semantic roles and platform-native divergence."
     },
     "reference_selection": {
       "passed": true,
-      "note": "Applied iOS, Android, adaptive, product, motion, design-system, and validation contracts."
+      "earned": 15,
+      "note": "Applied product, iOS, Android, adaptive, accessibility, motion, and validation references."
     },
     "anti_generic_redesign": {
       "passed": true,
-      "note": "Focused on native trust, adaptivity, accessibility, and task recovery rather than decoration."
+      "earned": 15,
+      "note": "Rejected a pixel-identical mobile shell and restored platform trust, task continuity, and window adaptation."
     },
     "evidence_level": {
       "passed": true,
-      "note": "Labeled the review L0 static and did not convert prompt claims into runtime evidence."
+      "earned": 15,
+      "note": "Labeled prompt-level static evidence and explicitly named every missing source, build, simulator, emulator, and hardware class."
     },
     "verified_boundary": {
       "passed": true,
-      "note": "Separated prompt-supported violations from unverified source, build, accessibility tree, and runtime behavior."
+      "earned": 15,
+      "note": "Separated described implementation facts from unverified source integration, runtime navigation, accessibility, layout, and performance."
     },
     "design_moves": {
       "passed": true,
-      "note": "Provided platform-specific navigation, Back, tokens, type, controls, adaptivity, motion, and a detailed parity matrix."
+      "earned": 14,
+      "note": "Provided a strong parity matrix and concrete navigation, type, target, control, token, motion, adaptivity, and recovery moves with some implementation overbreadth."
     },
     "scope_control": {
       "passed": true,
-      "note": "Stayed within adaptive product UI and its source/build/runtime validation boundary."
+      "earned": 8,
+      "note": "Stayed within native product quality and validation, but expanded well beyond the minimal benchmark response."
     }
   }
 }

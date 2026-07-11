@@ -1,43 +1,59 @@
 {
-  "schema": "design-craft.cross-agent-score.v1",
+  "schema": "design-craft.cross-agent-score.v2",
   "task_id": "same-prompt-motion-review",
   "agent": "pi",
   "verified": true,
   "agent_version": "pi 0.80.3",
-  "date": "2026-07-10",
+  "model": "deepseek/deepseek-v4-pro",
+  "reasoning_profile": "high",
+  "runner_os": "macOS arm64",
+  "date": "2026-07-11",
   "prompt_sha256": "0b1a5b271c01e7570cd15d02d15893b208e5178f493da12b51e904cda4aa519e",
-  "skill_path": "/Users/gaoqian/Documents/sixseven/codeproject/design-craft/skills/design-craft",
-  "command_summary": "pi non-interactive run with no tools and the source design-craft skill explicitly loaded",
+  "scorecard_sha256": "017291b4dd1a7ee08de44ffb910828d98f7fc4203696b808b9cff4f291150783",
+  "skill_version": "0.5.0",
+  "skill_source_commit": "e3a6bc61204387a79f241b3c2a5377ca9094b756",
+  "skill_source_dirty": false,
+  "skill_tree_sha256": "ebbd7a3671a5058ec9ea822a2e40251ced0966eaa74873af2964233a6f310f8c",
+  "skill_path": "/Users/gaoqian/.agents/skills/design-craft",
+  "command_summary": "pi 0.80.3 isolated with --no-extensions --no-context-files, read-only tools, deepseek/deepseek-v4-pro, high thinking, explicit installed design-craft 0.5.0, and the exact benchmark prompt; final response normalized only for trailing whitespace",
   "output_path": "pi-output.md",
-  "score": 86,
+  "output_sha256": "a73d461b8780bfcdc6253cfca2b33576d9a895d3a58bab4a2f006ff930f98ea2",
+  "score": 94,
   "criteria": {
     "style_authority": {
       "passed": true,
-      "note": "Recognized the calm utility context and the causal purpose of sheet motion."
+      "earned": 15,
+      "note": "Preserved calm repeated-use motion and direct-manipulation causality."
     },
     "reference_selection": {
       "passed": true,
-      "note": "Applied direct-manipulation, interruption, velocity, boundary, and Reduced Motion concepts."
+      "earned": 14,
+      "note": "Used motion-quality, interaction-physics, product, and validation guidance."
     },
     "anti_generic_redesign": {
       "passed": true,
-      "note": "Removed broad transition behavior instead of adding decorative animation."
+      "earned": 15,
+      "note": "Rejected transition-all, ease-in settlement, input locking, and decorative motion."
     },
     "evidence_level": {
       "passed": true,
-      "note": "Clearly labeled the evidence as static and runtime behavior as unverified."
+      "earned": 15,
+      "note": "Labeled the review static-source-only without claiming smoothness, layout thrash, or device feel as observed."
     },
     "verified_boundary": {
       "passed": true,
-      "note": "Did not claim measured frame rate, touch response, or browser state."
+      "earned": 15,
+      "note": "Separated block-visible facts from runtime-dependent pointer, performance, and touch conclusions."
     },
     "design_moves": {
-      "passed": false,
-      "note": "Useful direction, but some suggestions still retained top-based transitions and imprecise interruption state handling."
+      "passed": true,
+      "earned": 12,
+      "note": "Covered all requested physics moves, but the press scale and translate tracking compete for transform and the projection formula is over-specific."
     },
     "scope_control": {
       "passed": true,
-      "note": "Stayed scoped to the sheet motion interaction and validation."
+      "earned": 8,
+      "note": "Stayed read-only and motion-focused, with moderate excess detail and implementation specificity."
     }
   }
 }

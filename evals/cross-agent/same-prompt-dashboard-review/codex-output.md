@@ -1,841 +1,629 @@
+# Dashboard 设计评审
+
+**方法**：`design-craft / critique`，单上下文、只读评审。
+**证据来源**：仅用户提供的产品背景和结构描述；未读取代码、设计稿、截图、DOM 或运行态。
+
 ## 1. 证据等级与评分区间
 
-**Evidence level：L0 static**
+- **Evidence level：L0 static**
+  - 有产品、用户、任务和页面结构描述。
+  - 但没有截图；按 `design-craft` 的证据分级，不能升级为 L1，因为 L1 至少需要截图与产品上下文。
+- **暂定 Product UI taste band：75–84 / 100，较可能落在 78–82**
+- **成熟度区间：Clean but generic（整洁但通用）**
+- **置信度：中低**
 
-依据仅为产品背景和概念描述，没有截图、DOM、computed style、设计 token、真实数据或运行态证据。虽然提示词提供了用户和任务上下文，但按 `design-craft` 的评分口径，**仅有 prose description 仍属于 L0**。
-
-**暂定 Product UI taste score band：60–74 / 100，Functional but ordinary**
-
-更可能落在 **低到中 60 分段**，但不应给出更精确的单点分数。当前能够判断的是信息架构层面的明显问题，而不是实际排版、色彩、间距或组件完成度。
+这不是对实际像素质量的评分，而是对**已描述的信息架构和产品适配度**的概念级判断。
 
 主要加分项：
 
-- 已有 KPI、趋势、账户明细等基本运营信息。
-- 稠密企业控制台的方向与内部运营用户相符。
-- 账户表至少提供了从总览进入对象级决策的潜在路径。
+- 产品用户和任务明确。
+- 企业控制台方向明确。
+- 已有 KPI、趋势和明细表，基础信息对象并不缺失。
+- 明确要求 token-backed color，说明设计系统意识正确。
 
 主要扣分项：
 
-- 12 个等权 KPI 形成典型的 **dashboard card soup**。
-- 页面没有明确的第一关注对象和下一步动作。
-- 装饰性图表不承担诊断任务。
-- 通用 tips 右栏占用高价值空间，却不推动当前小时内的决策。
-- 密集表格被放在视觉竞争激烈的页面中，但未说明是否按运营任务组织。
+- `12 equal KPI cards` 是典型的 **flat KPI grid / card soup**。
+- 装饰性图表不回答运营问题。
+- 通用 tips 与当前账户、异常和决策脱节。
+- 页面组织围绕“有什么数据”，而不是“下一小时应该处理什么”。
+- 在“扁平层级或 card soup 仍是主要问题”的情况下，不应评到 85 分以上。
 
-> 该评分只针对描述中可以确认的结构意图。实际界面可能因 typography、spacing、tokens、表格实现或状态设计而明显高于或低于此区间。
-
----
-
-## 2. Design read：这个仪表盘应该优化什么
-
-**Reading this as：一个面向内部电商 Revenue Operations 操作员的高密度、克制、可信赖的运营控制台，优化目标是在 3 秒内识别未来一小时最值得处理的账户或活动，并快速理解原因、影响和下一步动作。**
-
-它不应该主要优化：
-
-- 展示所有可用指标；
-- 给管理者做泛化经营汇报；
-- 通过大图表营造“数据很多”的感觉；
-- 让每个模块都获得相同曝光；
-- 用卡片数量表达产品能力。
-
-它应该优化一个连续的决策链：
-
-1. **现在最需要处理什么？**
-2. **为什么它比其他对象更优先？**
-3. **不处理会造成多大影响？**
-4. **异常由什么指标或事件驱动？**
-5. **我下一步能采取什么动作？**
-6. **动作完成后，如何返回队列继续处理？**
-
-最关键的产品原则风险是 **Purpose / Task focus**：当前结构展示了信息，却没有证明它能有效地把用户带到“下一小时要处理的对象”。
+由于没有视觉和运行态证据，以下内容不进入评分：真实排版、间距、色彩、对比度、响应式、表格可读性、交互状态、无障碍和性能。
 
 ---
 
-## 3. 主要层级与产品匹配问题
+## 2. Design read：这个 dashboard 应优化什么工作
 
-### P1：12 个等权 KPI 抹平了运营优先级
+> **Reading this as:** 面向内部电商收入运营人员的高密度 revenue operations command center，视觉上克制、冷静、低装饰，优化目标是让用户在三秒内识别未来一小时最值得处理的账户或 campaign，并立即理解原因、潜在收入影响和下一步动作。
 
-所有 KPI 使用相同卡片尺寸和表面权重，会向用户传达“这些数字同等重要”。但 Revenue Operations 的真实优先级通常取决于：
+它的核心工作不是“展示经营概况”，而是完成以下决策闭环：
 
-- 异常严重度；
-- 潜在收入影响；
-- 时间敏感度；
-- 可操作性；
-- 置信度；
-- 是否已有人处理。
+1. **哪里出现异常或机会？**
+2. **哪一个最紧急、影响最大？**
+3. **为什么被判定需要关注？**
+4. **数据是否足够新、足够可信？**
+5. **我现在能采取什么动作？**
+6. **处理后如何知道状态发生了变化？**
 
-因此，账户数、收入总额、预算消耗、转化率、异常活动数等指标不应该天然等权。
+`design-craft` 里最适合的结构模式是：
 
-问题不是 KPI 数量本身，而是缺少：
+> **Ops command center + decision surface**
+> `lead risk object + supporting metric strip + exception queue + diagnostic chart + task-first table`
 
-- lead metric 或 lead operational state；
-- 与基线、目标或上一周期的比较；
-- 风险含义；
-- 指标与受影响账户之间的路径；
-- 指标对应的可执行动作。
-
-**用户影响：**操作员需要先阅读和解释 12 个模块，自己建立优先级模型，增加 decision latency。
+最有风险的产品原则是 **Purpose**：当前模块存在，但首屏还没有围绕用户的主要工作组织。其次是 **Simplicity**：这里需要删除的是无关模块和无差别强调，而不是降低必要的数据密度。
 
 ---
 
-### P1：缺少明确的“异常队列 / 下一动作”作为第一任务面
+## 3. 主要层级与产品适配问题
 
-页面已有总览和明细，却缺少两者之间最关键的一层：**经过优先级排序的异常或机会队列**。
+### P1 — 12 个等权 KPI 制造了“重要性民主化”
 
-Revenue Operations 首页更应该首先呈现对象级结论，例如：
+所有 KPI 使用相同尺寸、位置和表面权重，会让用户自己承担优先级计算。
 
-- `3 campaigns need action in the next 60 min`
-- `Account A: spend accelerated 42%, conversion fell 18%`
-- `Campaign B: budget will exhaust in approximately 47 min`
-- `Account C: tracking signal missing since 10:32`
+运营人员需要的不是同时阅读 12 个数字，而是：
 
-每条对象至少应该回答：
+- 哪个指标现在越过阈值；
+- 哪个指标与目标或基线偏差最大；
+- 哪个偏差能够归因到具体账户或 campaign；
+- 哪个问题具有最高收入影响；
+- 哪个问题现在可操作。
 
-- 对象是谁；
-- 发生了什么；
-- 严重程度；
-- 预计收入或预算影响；
-- 已持续多久；
-- 为什么现在需要处理；
-- 推荐动作或进入诊断的路径。
+如果 12 个指标同权，风险、机会、总量、效率和诊断指标会互相竞争。用户可能需要先扫完所有卡片，再进入表格寻找原因，增加了 decision latency。
 
-**用户影响：**当前布局可能让用户知道业务总体发生了变化，却不知道应该先处理哪一行。
+**产品影响**：延迟定位、误判优先级、频繁在 KPI 和表格之间来回映射。
 
 ---
 
-### P1：装饰性 area chart 没有承担分析问题
+### P1 — 页面没有明确的“attention queue”
 
-Dashboard 中的图表必须回答一个具体问题，而不是填充版面。一个泛化面积图通常存在以下风险：
+用户的主任务是判断“下一小时处理谁”，但现有结构中没有明确说明：
 
-- 图形面积制造视觉重量，但没有增加判断价值；
-- 缺少异常阈值、基线或对照系列；
-- 不清楚用户应从趋势中得出什么结论；
-- 与账户或活动表没有联动；
-- 图表占据高层级空间，却不能产生动作。
+- 哪些账户或 campaign 需要关注；
+- 为什么需要关注；
+- 严重程度如何；
+- 预计收入风险或机会是多少；
+- 数据更新时间；
+- 是否已有负责人；
+- 下一步动作是什么。
 
-它至少需要回答其中一个问题：
+密集表格可能包含这些数据，但“数据存在于列中”不等于“优先级已经被表达”。
 
-- 异常从什么时候开始？
-- 当前变化是全局现象还是单一账户导致？
-- 收入、花费和转化之间在哪个时间点发生背离？
-- 当前表现偏离基线或目标多少？
-- 风险是在扩大、稳定还是恢复？
-- 哪个对象贡献了主要变化？
-
-如果图表不能帮助用户判断原因、紧迫度或处理顺序，它应下移、缩小，或被更有效的诊断视图替代。
+**产品影响**：dashboard 更像分析数据库入口，而不是运营工作台。
 
 ---
 
-### P1：密集账户表可能是数据仓库顺序，而不是任务顺序
+### P1 — 装饰性 area chart 不具备诊断价值
 
-“Dense table”本身不是问题。对于企业运营工具，高密度通常比过度留白更合适。风险在于表格是否围绕操作员的决策顺序组织。
+图表必须回答一个明确问题，例如：
 
-任务优先的列序通常应接近：
+- 收入损失从什么时候开始？
+- 哪个账户贡献了主要偏差？
+- 当前偏差是持续恶化、短时波动还是已经恢复？
+- 与目标线、预算线或历史基线相比差多少？
+- 某个异常是否与预算、流量、转化率或库存变化同期发生？
 
-1. Account / Campaign identity
-2. Status / Severity
-3. Trigger or anomaly
-4. Estimated revenue impact
-5. Time sensitivity / Duration
-6. Current versus baseline
-7. Owner / Handling state
-8. Recommended next action
-9. Secondary metadata
+如果 area chart 只是展示总收入曲线，它会占据高级视觉位置，却不推动下一步决策。
 
-如果列顺序按数据库 schema、组织报表或数据可得性排列，用户就需要横向解码才能判断优先级。
-
-还缺少的信息包括：
-
-- 默认排序是否按 attention priority；
-- 是否能筛选 `Needs action`、`Unassigned`、`High impact`；
-- 行选择和详情打开方式；
-- 批量操作是否必要；
-- 行动作是否明确；
-- 是否有 sticky header / identifier；
-- 数字是否右对齐并使用 tabular numerals；
-- 长名称、缺失数据和大数值如何处理。
+**产品影响**：视觉显著性与操作价值不匹配，削弱首屏信噪比。
 
 ---
 
-### P1：generic tips 右栏与小时级运营任务不匹配
+### P1 — 密集表格很可能是 schema-first，而非 task-first
 
-通用 tips 通常既不与当前对象绑定，也不随实时状态变化。它们会产生持续的视觉成本，却很少推动成熟操作员行动。
+仅知道表格“dense”，无法判断列结构；但在当前页面架构下，存在较高概率：
 
-右栏只有在内容具有以下特征时才值得保留：
+- 账户标识、严重程度和收入影响没有相邻；
+- 诊断字段与行动字段分离；
+- 默认排序不是按紧急性和影响；
+- 行内没有解释“为什么被标记”；
+- 用户需要横向扫描多个字段自行计算优先级；
+- 筛选器与表格上下文脱节。
 
-- 与当前选中账户或异常上下文相关；
-- 能解释当前风险；
-- 有置信度或证据来源；
-- 能产生明确动作；
-- 能显示 ownership、SLA、最近变更或处理记录；
-- 能在没有建议时自然折叠，而不是填充通用文案。
+一个任务导向的表格应该先呈现：
 
-否则应：
+`Identity → Status/Severity → Impact → Reason → Freshness → Owner → Next action`
 
-- 删除；
-- 改为 context-sensitive action rail；
-- 改为选中行后的诊断详情；
-- 改为 attention queue；
-- 或把稀有帮助内容放入按需 disclosure，而非永久占用页面宽度。
+而不是后端字段或报表字段的原始顺序。
 
 ---
 
-### P1：页面缺少可验证的注意力顺序
+### P1 — generic tips 右栏占据持续空间，却没有持续价值
 
-理想扫描路径应该是：
+“提高转化率”“关注预算消耗”“及时优化素材”一类泛化建议，无法帮助用户决定当前具体操作对象。
 
-1. 当前风险或机会概况；
-2. 最优先对象；
-3. 影响及异常原因；
-4. 可执行动作；
-5. 全量账户表；
-6. 历史趋势与辅助信息。
+右栏是高成本位置，因为它：
 
-当前描述更接近：
+- 持续压缩主表格横向空间；
+- 容易制造第二条视觉扫描路径；
+- 在没有选中对象时仍占据注意力；
+- 如果内容不随账户、campaign 或异常变化，就没有上下文价值。
 
-1. 12 个等权数字；
-2. 一张视觉重量较大的趋势图；
-3. 大量表格数据；
-4. 通用建议。
-
-这是一种“数据模块排列”，而不是“决策流程编排”。
+**产品影响**：降低数据区密度，却没有提供等价的决策价值。
 
 ---
 
-### P2：企业控制台可能被过度卡片化
+### P2 — 缺少明确的时间语义与数据可信度
 
-受限于没有截图，无法确认视觉表现，但 12 个 KPI card 加图表、表格、右栏，很容易出现：
+Revenue operations 特别依赖：
 
-- 每个区域都有边框、圆角和背景；
-- 多层嵌套卡片；
-- 表面数量过多；
-- section hierarchy 依赖容器，而不是 typography、spacing 和 alignment；
-- 低风险信息与高风险状态共享相同 elevation。
+- 当前时间范围；
+- 数据最新更新时间；
+- 数据延迟；
+- 与哪个基准比较；
+- 目标、预算或阈值来源；
+- 异常是否已恢复；
+- 部分数据是否缺失。
 
-对于 **restrained enterprise console**，更适合：
-
-- flat canvas；
-- 少量真实 section container；
-- subtle divider；
-- compact type；
-- disciplined grid；
-- minimal elevation；
-- semantic status treatment；
-- elevation 只保留给 overlay、selected state 或真正需要抬升的对象。
+如果 KPI 只有值和涨跌箭头，没有 period、comparison、threshold 和 freshness，数字会显得精确，却无法支撑可靠行动。
 
 ---
 
-### P1：时间窗口和比较语义可能不足
+### P2 — 克制的企业风格容易被误解为“所有内容都一样轻”
 
-“未来一小时需要关注什么”要求所有数据具有明确时间语义。单独显示数字不够，每个关键指标应回答：
+“Dense but calm”不是降低所有对比度，而是：
 
-- 数据时间范围是什么；
-- 最新更新时间是什么；
-- 与什么比较；
-- 是否处于实时、延迟或部分数据状态；
-- 阈值来自哪里；
-- 当前变化是否具有统计或业务意义。
+- 大部分界面保持安静；
+- 少数真正重要的异常具有清晰语义；
+- 通过位置、排版、状态和内容建立层级；
+- 不依赖彩色卡片或大面积背景制造优先级。
 
-例如，不应只显示：
+需要避免两种极端：
 
-- `Revenue: ¥1.28M`
-
-而应更接近：
-
-- `Revenue pace: -11.8% vs expected`
-- `Updated 2 min ago`
-- `Main driver: Account A`
-- `Estimated hourly exposure: ¥42k`
-
-指标是否越高越好也不能仅依赖红绿颜色表达。
+1. 12 个彩色 KPI 卡片造成噪声；
+2. 所有模块都使用相同灰度和边框，导致异常也不突出。
 
 ---
 
 ## 4. 具体设计动作
 
-### Move 1：从 equal KPI grid 改为 `lead + support + action queue`
+## A. 将 `12-card grid` 改为 `lead + support + queue`
 
-建议的首屏结构：
+建议首屏结构：
 
-#### A. Compact context bar
+```text
+[Scope / time range / freshness / filters]
 
-放在页面标题附近，而不是做营销式 hero：
+[Lead operational state]
+需要关注 7 个账户 · 预计收入风险 ¥XXX,XXX · 3 个需在 30 分钟内处理
 
-- 当前业务范围；
-- 时间窗口；
-- 时区；
-- 数据更新时间；
-- 账户/渠道筛选；
-- refresh 或 auto-refresh 状态；
-- 数据延迟或质量警告。
+[Compact supporting metric strip]
+GMV vs target | Spend pacing | Conversion variance | ROAS risk | Data freshness
 
-保持紧凑，不使用超大标题或夸张留白。
+[Exception queue / ranked attention list]
+账户或 Campaign | 严重度 | 收入影响 | 触发原因 | 时效 | Owner | 下一步
 
-#### B. Lead operational state
+[Diagnostic chart linked to current selection]
 
-只突出一个当前最重要的运营结论，例如：
+[Full task-first account table]
+```
+
+### Lead operational state
+
+首屏最强对象不一定是“最大 GMV”，而应该是最能回答当前运营任务的状态：
 
 - `7 accounts need attention`
-- `¥186k estimated hourly revenue at risk`
-- `2 campaigns likely to exhaust budget within 60 min`
+- `¥428k revenue at risk`
+- `3 campaigns likely to exhaust budget within 45 min`
+- `2 anomalies currently worsening`
 
-lead object 应包含：
+应同时显示：
 
-- 当前值；
-- 与基线或目标的比较；
-- 影响范围；
-- 更新时间；
-- 进入异常队列的动作。
-
-这不是 marketing hero，而是 **operational focal point**。
-
-#### C. Supporting metric strip
-
-将原 12 个 KPI 缩减为约 4–6 个决策相关指标，以紧凑 strip 呈现：
-
-- At-risk revenue
-- Accounts needing action
-- Budget pacing exceptions
-- Conversion anomalies
-- Tracking/data-quality incidents
-- Unassigned alerts
-
-每个指标至少提供：
-
-- label；
-- value；
-- comparison；
-- semantic state；
-- relevant scope。
-
-其余指标移入：
-
-- secondary overview；
-- 可配置 metrics；
-- detail drawer；
-- 或更低层级的分析区域。
-
-#### D. Exception queue
-
-紧接 lead state，显示最优先的 3–7 个对象。采用 **ops command center** 的处理方式：
-
-- blocker-first hierarchy；
-- short labels；
-- strong state semantics；
-- queue/action grammar；
-- minimal decoration。
-
-验收标准应是：
-
-> 用户进入页面后，不打开任何二级页面，能在三秒内指出第一处理对象以及原因。
-
----
-
-### Move 2：建立明确的 priority model，而不是只做视觉排序
-
-排序不能只是设计师手工把某一行放在前面。应定义可解释的优先级模型，例如：
-
-`Priority = impact × urgency × anomaly confidence × actionability`
-
-界面不一定展示完整公式，但应该让用户理解排序理由：
-
-- `Critical · ¥42k/hr exposure · 18 min remaining`
-- `High · Conversion down 23% · Spend still accelerating`
-- `Medium · Tracking delayed · Revenue impact unknown`
-
-同时提供：
-
-- 默认排序 `Recommended priority`；
-- 用户可改为 `Revenue impact`、`Urgency`、`Newest`；
-- 排序规则说明；
-- 人工 pin、assign、snooze 或 resolve 的能力；
-- 已处理对象不应持续占据首位。
-
-这是 **agency** 和 **responsibility** 的要求：系统可以推荐，但不能让优先级变成不可解释的黑箱。
-
----
-
-### Move 3：把 generic tips 变为 contextual action rail
-
-右栏可以保留，但职责必须重定义。
-
-选中某个异常或表格行后，右栏显示：
-
-- 异常摘要；
-- 关键证据；
-- 影响估算；
-- 最近相关变更；
-- 当前 owner；
-- 推荐动作；
-- 进入账户详情；
-- assign / acknowledge / snooze / resolve；
-- 风险估算或推荐的不确定性。
-
-推荐文案应采用 action-object grammar，例如：
-
-- `Review budget pacing`
-- `Open conversion breakdown`
-- `Assign to channel owner`
-- `Snooze for 30 minutes`
-- `Mark tracking issue resolved`
-
-避免：
-
-- `View`
-- `Confirm`
-- `Take action`
-- `Optimize now`
-- `Tip`
-
-如果没有选中对象，右栏应显示真正的 attention queue，或收起释放表格宽度，而不是显示通用教育内容。
-
----
-
-### Move 4：将 area chart 改为 diagnostic chart
-
-先定义问题，再选图。
-
-可考虑的诊断视图：
-
-#### 趋势背离
-
-显示：
-
-- revenue pace；
-- spend pace；
-- conversion；
-- baseline 或 expected range；
-- 异常开始时刻；
-- deploy、budget change 或 tracking event 注释。
-
-用于回答：
-
-> 当前收入风险从何时开始，是否由花费与转化背离导致？
-
-#### 贡献分解
-
-显示：
-
-- 哪些账户贡献了收入下降；
-- 哪些活动贡献了异常消耗；
-- Top contributors 与 long tail。
-
-用于回答：
-
-> 当前全局异常主要由哪些对象造成？
-
-#### 异常时间线
-
-显示：
-
-- alerts；
-- configuration changes；
-- budget edits；
-- tracking failures；
-- operator actions。
-
-用于回答：
-
-> 异常发生前后发生了什么？
-
-图表应该具备：
-
-- 明确标题，最好直接写出问题或结论；
-- 正确 scale；
-- baseline / target；
-- 直接标签或清晰 legend；
-- tooltip；
 - 时间范围；
+- 相比目标或基线；
 - 数据更新时间；
-- 与队列或表格的 selection 联动；
-- 非颜色唯一的异常标记。
+- 是否存在延迟或部分缺失。
 
-如果暂时无法定义诊断问题，宁可把图表降级到下方辅助区域，也不要让装饰性面积图占据主要注意力。
-
----
-
-### Move 5：把账户表改为 task-first table
-
-建议表格 anatomy：
-
-| Account / Campaign | Priority | Trigger | Impact | Time sensitivity | Current vs baseline | Owner | Next action |
-|---|---|---|---:|---|---:|---|---|
-
-具体原则：
-
-- identity、status、risk、impact、next action 在无需横向滚动时可见；
-- 数字右对齐；
-- 使用 tabular numerals；
-- 状态不只靠颜色；
-- 主要标识可在纵向滚动时保持上下文；
-- 筛选器紧邻表格；
-- 默认筛选优先显示 `Needs attention`；
-- row action 明确且键盘可达；
-- secondary metadata 后置或进入详情；
-- selected row 与 contextual rail 有清晰对应关系；
-- 表格的空、加载、错误状态出现在表格自身范围内。
-
-不要把每一行变成独立重阴影卡片。高密度表格更适合：
-
-- flat rows；
-- subtle dividers；
-- restrained selected surface；
-- 明确 hover / focus-visible / selected 区分；
-- 极少量语义颜色。
+这属于 **lead risk object**，而不是 marketing hero。字号可以有层级，但不应变成超大标题或品牌化首屏。
 
 ---
 
-### Move 6：用 density gradient，而不是让所有区域同密度、同权重
+## B. 将剩余 KPI 压缩为 supporting metric strip
 
-建议建立密度梯度：
+12 个指标不一定全部删除，但不应该全部成为独立、等权、带背景的卡片。
 
-- **顶部：**少量、高价值、可快速判断；
-- **中部：**异常队列和诊断信息，中高密度；
-- **下部：**完整任务表，高密度；
-- **深层：**历史数据、详细指标、配置与说明，按需展开。
+将指标分为三层：
 
-这样既保持 enterprise console 的信息密度，也避免首屏成为视觉墙。
+1. **Lead**
+   - 当前最关键的运营风险或机会。
+2. **Supporting**
+   - 4–6 个支撑整体判断的指标。
+3. **Diagnostic**
+   - 只有进入账户、campaign 或异常分析时才展示。
 
----
+每个被强调的指标至少要回答：
 
-### Move 7：通过 token roles 控制克制感
+- 当前值是什么；
+- 相比什么；
+- 比较周期是什么；
+- 是否越过阈值；
+- 数据更新时间；
+- 点击后会过滤或解释什么。
 
-提示词明确要求 **token-backed color only**，因此设计阶段应定义语义角色，而不是为每个模块挑颜色。
-
-至少需要：
-
-- `surface.canvas`
-- `surface.base`
-- `surface.raised`
-- `surface.selected`
-- `surface.muted`
-- `text.primary`
-- `text.secondary`
-- `text.muted`
-- `border.subtle`
-- `border.strong`
-- `status.critical`
-- `status.warning`
-- `status.success`
-- `status.info`
-- `focus.ring`
-- `action.primary`
-- `action.secondary`
-
-颜色只承担：
-
-- 状态；
-- 选择；
-- 操作；
-- 风险；
-- 必要的图表编码。
-
-不要用不同 accent color 区分 12 个 KPI。优先通过：
-
-- placement；
-- type weight；
-- number size；
-- proximity；
-- density；
-- divider；
-- state label
-
-建立层级。
+使用 tabular numerals；数值、单位、delta 和上下文应形成稳定 anatomy。颜色只表达语义状态，不用于给 12 个卡片做差异化装饰。
 
 ---
 
-### Move 8：使用适合数据控制台的 typography 与 alignment
+## C. 在首屏放置 exception queue
 
-推荐方向，不是已验证规格：
+这是最重要的产品结构调整。
 
-- 页面标题克制，避免 hero scale；
-- 表格与高密度内容以约 14px 产品字体角色为基准；
-- section title 与 body 建立明确但不过度的差异；
-- KPI 数字使用 tabular numerals；
-- 币种、百分比、时间单位保持一致格式；
-- 正负变化同时使用符号、文案和语义状态；
-- labels 避免全大写和过度 letter spacing；
-- 数值精度按决策用途控制，避免无意义小数；
-- 时间统一明确时区和相对/绝对表达。
+队列应该默认按照产品定义的注意力优先级排序，例如：
 
-例如：
+```text
+Priority = urgency × estimated revenue impact × confidence × actionability
+```
 
-- `Updated 2 min ago · 14:32 CST`
-- `-11.8% vs expected pace`
-- `¥42k estimated hourly exposure`
+这只是结构示例，实际公式必须由业务语义验证，不能由视觉设计自行假定。
 
-比单独的大数字更有决策意义。
+每一项至少应该说明：
+
+- **对象**：账户、店铺或 campaign；
+- **状态**：critical / warning / recovering / monitoring；
+- **影响**：收入风险、机会或目标缺口；
+- **触发原因**：例如 spend pacing、CVR drop、库存、拒审、投放停止；
+- **趋势**：恶化、稳定、恢复；
+- **新鲜度**：最后更新时间和数据延迟；
+- **Owner**：当前负责人；
+- **下一步**：查看详情、调整预算、检查素材、联系负责人等。
+
+目标验收条件：
+
+> 用户应能在三秒内指出“现在先处理谁”，并能在不打开详情的情况下说明原因。
 
 ---
 
-### Move 9：删除装饰性动效，保留 causal motion
+## D. 把 area chart 改造成 diagnostic chart
 
-这是内部运营控制台，不需要营销式进入动画。动效只应帮助表达：
+图表应该跟随当前选择的账户、campaign 或异常，而不是独立存在。
 
-- 队列重新排序；
-- 筛选生效；
-- 选中行与右栏关联；
-- 状态由 open 变为 acknowledged/resolved；
-- 数据刷新；
-- 新异常进入；
-- drawer / popover 的空间关系。
+可能的诊断模式：
 
-避免：
+- 实际收入与目标/基线的时间序列；
+- spend、traffic、CVR、revenue 的相关变化；
+- 偏差贡献拆分；
+- 异常前后时间窗口；
+- 预算消耗速度和预计耗尽时间；
+- 账户或 campaign 对总缺口的贡献排名。
 
-- KPI 逐张飞入；
-- 图表反复绘制；
-- 数字每次刷新都滚动计数；
-- `transition-all`；
-- 过度 scale；
-- 高频脉冲告警。
+具体要求：
 
-高风险状态可以明确，但不应通过持续动画制造疲劳。
+- 标题直接写成问题或结论，而不是只写“收入趋势”；
+- 显示目标线、阈值线或基准区间；
+- 标记异常开始、预算变更、暂停、恢复等事件；
+- 使用直接标签或明确图例；
+- tooltip 要包含时间、值、比较对象和变化；
+- 色彩来自语义 token；
+- 不使用渐变填充制造“高级感”；
+- 如果图表不能比表格更快回答问题，应删除或下移。
+
+---
+
+## E. 把 dense table 改为 task-first table
+
+建议列顺序：
+
+1. 账户 / campaign 标识；
+2. 状态与严重程度；
+3. 预计收入影响或机会；
+4. 与目标/基线的偏差；
+5. 主要触发原因；
+6. 趋势；
+7. 数据新鲜度；
+8. Owner；
+9. 下一步动作；
+10. 次要元数据。
+
+具体设计动作：
+
+- 默认按 attention priority 排序，而不是名称或创建时间；
+- 数值右对齐并使用 tabular numerals；
+- 严重程度不要只依赖颜色，同时使用文本、图标或状态形状；
+- 风险原因用短句表达，避免只显示内部错误码；
+- 将次要 metadata 放入展开区、列自定义或详情面板；
+- filters 与表格相邻，并显示当前 filter scope；
+- 支持保存视图时，可提供诸如：
+  - `Needs attention`
+  - `High revenue impact`
+  - `Unassigned`
+  - `Data stale`
+  - `Recovering`
+- 行操作应使用明确的 verb-object 文案，而不是泛化的 `View` 或 `Action`。
+
+---
+
+## F. 移除 generic tips，改为 contextual inspector
+
+右栏有两个合理方向：
+
+### 方向 1：默认取消常驻右栏
+
+让主表格获得完整宽度。选择一行后，再打开 contextual drawer 或 detail pane。
+
+适用于：
+
+- 用户主要进行跨账户快速扫描；
+- 列宽和横向比较非常重要；
+- 详情不是持续并排阅读。
+
+### 方向 2：保留可折叠 contextual inspector
+
+仅当右栏会随当前选择实时变化时保留，内容包括：
+
+- 为什么被标记；
+- 影响估算及置信度；
+- 最近发生的关键事件；
+- 推荐动作；
+- Owner 和处理状态；
+- 相关账户或 campaign；
+- 数据来源和更新时间。
+
+右栏不应出现与当前对象无关的运营常识。
+
+---
+
+## G. 采用 `Enterprise dense + Ops command center` 视觉语法
+
+视觉策略应是：
+
+- 紧凑但清晰的类型层级；
+- tabular numerals 用于指标和表格数值；
+- subtle dividers 优先于大量卡片背景；
+- minimal elevation；
+- elevation 只用于 overlay、selection 或真正的层级关系；
+- 普通区域保持中性；
+- warning、critical、success、info 使用语义 token；
+- 禁止用红绿以外观装饰，且状态不能只依赖颜色；
+- 同类组件保持统一 anatomy；
+- 通过内容层级、字重、间距和对齐建立秩序，而不是阴影和大圆角；
+- motion 只表达选择、过滤、更新和状态变化，保持 quiet and state-oriented。
+
+建议状态 token 角色，而不是具体色值：
+
+```text
+surface/base
+surface/subtle
+surface/selected
+border/default
+border/strong
+text/primary
+text/secondary
+text/muted
+status/critical
+status/warning
+status/success
+status/info
+focus/ring
+```
+
+所有实际颜色必须来自项目 design tokens；此处不建议任何硬编码色值。
+
+---
+
+## H. 明确反馈与处理闭环
+
+“发现异常”之后还需要表示处理状态：
+
+- `New`
+- `Acknowledged`
+- `Assigned`
+- `In progress`
+- `Monitoring`
+- `Recovered`
+- `Dismissed`
+
+如果运营动作发生在外部系统，也至少应支持：
+
+- 标记已知；
+- 分配 owner；
+- 添加备注；
+- 暂时 snooze；
+- 查看变化是否恢复；
+- 保留变更记录。
+
+这能避免用户每次刷新后重新判断同一个问题，也能让 dashboard 从“观察面板”升级为真正的 operations surface。
 
 ---
 
 ## 5. 已验证与未验证声明
 
-### 可视为已知的输入事实
+### 基于提示词可以确认
 
-以下内容来自用户提供的概念描述，而不是运行态观察：
+以下仅表示“提示词明确提供”，不是运行态验证：
 
-- 产品是内部电商团队使用的 Revenue Operations dashboard。
-- 主要用户需要决定未来一小时应关注哪个账户或活动。
-- 当前概念包含 12 个等权 KPI cards。
-- 当前概念包含一个装饰性 area chart。
-- 当前概念包含密集账户表。
+- 产品表面是内部 revenue operations dashboard。
+- 主要用户是需要在下一小时决定关注对象的电商运营人员。
+- 当前概念包含 12 个等权 KPI 卡片。
+- 当前概念包含一个被描述为 decorative 的 area chart。
+- 当前概念包含一张密集账户表。
 - 当前概念包含 generic tips 右栏。
-- 风格目标是克制、稠密但平静的 enterprise console。
-- 不应使用 marketing hero treatment。
-- 颜色必须来自 token-backed system。
+- 目标视觉方向是 restrained enterprise console。
+- 目标密度是 dense but calm。
+- 不应采用 marketing hero treatment。
+- 颜色应由 tokens 驱动。
+- 没有提供截图、DOM、响应式、focus、hover、loading 或 error 证据。
 
-### 可在概念层面成立的评审判断
+### 可以作出的概念级判断
 
-基于上述结构描述，可以合理判断：
+- 当前结构与用户的“一小时内确定优先对象”任务匹配不足。
+- 等权 KPI 会造成扁平优先级。
+- decorative chart 不应占据高级视觉位置。
+- generic tips 的产品价值低于 contextual actions 或 selection inspector。
+- 页面更适合采用 blocker-first、exception-first 的 decision surface。
+- 该结构符合 `card soup` 的典型风险特征。
 
-- 12 个等权 KPI 会削弱优先级表达。
-- 装饰性图表与操作型仪表盘的主要任务不匹配。
-- generic tips 不是最有效的永久右栏内容。
-- 该页面需要从“指标总览”转为“决策与异常处理界面”。
-- `lead + support + action queue` 比等权卡片网格更符合用户任务。
-- 表格应按身份、风险、影响和下一动作组织，而不是按 schema 组织。
+### 未验证，不应被表述为事实
 
-这些是设计建议，不是对现有实现行为的运行态证明。
+- KPI 卡片实际是否视觉杂乱；
+- 当前配色是否符合 token authority；
+- 字体、字号、行高、间距和对齐质量；
+- 页面是否真的使用阴影、大圆角或硬编码颜色；
+- 表格实际列顺序、默认排序、筛选能力和行操作；
+- 图表的数据、坐标、tooltip、legend 和实际诊断价值；
+- 是否存在数据刷新时间、阈值和比较基线；
+- 桌面、窄屏或移动布局是否溢出；
+- hover、selected、focus-visible、keyboard navigation；
+- loading、empty、error、partial、stale 和 permission states；
+- 颜色对比度和非颜色状态表达；
+- 屏幕阅读器语义；
+- 大数据量下的表格、筛选和图表性能；
+- 用户能否在三秒内识别最高优先级对象；
+- 当前实现是否“可用”“无障碍”“响应式”或“已通过浏览器验证”。
 
-### 未验证，不能作肯定声明的内容
-
-以下全部未验证：
-
-- 实际视觉质量和准确评分；
-- spacing、grid、alignment、padding 和 component dimensions；
-- typography、font weight、line-height 和 numeric alignment；
-- 实际颜色、对比度和 token 使用情况；
-- 是否存在硬编码颜色或 arbitrary values；
-- 表格真实列顺序、排序、筛选和 pagination；
-- 图表真实数据、scale、labels、tooltip 和 legend；
-- hover、active、selected、disabled 状态；
-- `:focus-visible`；
-- keyboard navigation 和 focus order；
-- screen-reader semantics；
-- loading、empty、error、success、partial-data 状态；
-- 数据刷新、延迟和 stale-data 行为；
-- 表格长文本、大数值、缺失值表现；
-- 响应式布局和窄视口降级；
-- sticky header、sticky rail 或 overflow 行为；
-- light/dark/high-contrast theme parity；
-- 浏览器性能、表格虚拟化或图表渲染成本；
-- 当前页面是否真的允许用户在三秒内识别首要对象；
-- 推荐、优先级或风险估算是否可解释；
-- 任何浏览器验证或截图验证。
-
-**本次没有进行浏览器验证、截图验证、DOM 检查、focus walk 或 responsive run。**
+**本次没有进行浏览器验证，也没有产生截图 artifact。**
 
 ---
 
-## 6. 实施前所需的最小验证计划
+## 6. 实施前的最小验证计划
 
-目标不是先做完整研究，而是获得足够证据，将当前评审从 **L0 prose** 提升到至少 **L2 browser/contextual implementation evidence**，并避免按错误假设重构页面。
+以下是开始设计实现前应补齐的最小证据，不需要先做完整重设计。
 
-### A. 明确任务与数据语义
+### 1. 现场基线采集
 
-与产品或实际操作员确认以下最小问题：
+至少获得：
 
-1. 过去两周内，操作员最常见的前三类小时级动作是什么？
-2. 什么条件使一个账户必须“现在”处理，而不是当天处理？
-3. 优先级由 revenue impact、urgency、confidence、SLA 还是人工规则决定？
-4. 每类异常对应的实际动作是什么？
-5. 操作员处理完成后，如何 acknowledge、assign、snooze 或 resolve？
-6. 哪些 KPI 是决策输入，哪些只是管理汇报指标？
-7. tips 右栏目前是否被真实使用；如果使用，解决的是什么任务？
+- 当前桌面主视口截图；
+- KPI、图表、表格和右栏的完整结构；
+- 主视口尺寸；
+- 实际 DESIGN/token authority；
+- 当前数据范围和刷新时间；
+- 一组具有代表性的真实或脱敏数据。
 
-最低交付物应是：
-
-- 3–5 个真实的 attention scenarios；
-- 每个场景的 trigger、impact、urgency、next action；
-- 明确的默认排序规则；
-- 可解释的状态模型。
+目的：把当前 L0 提升至至少 L1 contextual，并避免仅凭文字描述误判实际视觉层级。
 
 ---
 
-### B. 获取当前页面的静态与浏览器证据
+### 2. 验证一个真实的一小时决策场景
 
-实施前至少采集：
+让目标运营人员用当前 dashboard 完成一次具体任务：
 
-- 主桌面视口完整截图；
-- KPI 区域截图；
-- 表格首屏截图；
-- 右栏展开状态；
-- 当前 DOM 层级的关键片段；
-- KPI、table、status、surface、color 的 computed-style/token evidence；
-- 页面实际可用宽度和右栏宽度；
-- 表格可见列、溢出及滚动方式。
+> “现在是某个明确时间点，请指出未来一小时最需要处理的三个账户或 campaign，解释原因并说明下一步。”
 
-需要核对：
+记录：
 
-- 是否真的所有 KPI 等权；
-- 是否存在隐藏的层级或交互；
-- 卡片是否过度依赖边框、阴影和圆角；
-- 当前 design tokens 是否足以表达 proposed hierarchy；
-- 现有组件能否通过 variant 调整完成，而不是重新建一套平行组件。
+- 找到第一个对象所需时间；
+- 用户先查看哪个模块；
+- 用户为了判断优先级读取了哪些字段；
+- 是否需要在 KPI、图表和表格之间反复切换；
+- 哪些信息缺失；
+- 用户如何判断风险、影响和紧急程度；
+- 操作最终在哪里执行。
 
-该步骤尚未执行，不能在本评审中宣称任何结果。
+这是判断 IA 是否正确的最小产品证据。
 
 ---
 
-### C. 用真实或脱敏数据跑三个最小场景
+### 3. 确认 attention priority 的业务语义
 
-至少验证：
+实施 exception queue 前，必须确认：
 
-#### 场景 1：一个明确高优先级异常
+- 什么条件代表“需要关注”；
+- 紧急程度如何定义；
+- 收入影响如何估算；
+- 机会与风险是否使用同一排序逻辑；
+- 数据延迟如何影响置信度；
+- 哪些问题真正可操作；
+- 已分配或已确认的问题如何降权；
+- 恢复中的异常如何表达；
+- 排序公式是否需要业务可解释性。
 
-检查：
-
-- 是否在三秒内被识别；
-- 是否能理解原因和影响；
-- 是否能直接进入下一动作。
-
-#### 场景 2：没有需要处理的异常
-
-检查：
-
-- 页面是否仍然有用；
-- 是否显示清晰的 all-clear 状态；
-- 是否避免用空白卡片填充；
-- 是否提供合理的下一检查时间或健康概况。
-
-#### 场景 3：大量并发异常
-
-检查：
-
-- 队列排序是否稳定；
-- 严重度是否可扫描；
-- 表格是否仍可用；
-- 右栏是否挤压关键列；
-- 是否需要筛选、分组、分页或虚拟化。
-
-最好再增加：
-
-- 数据延迟或部分失败；
-- 超长账户名称；
-- 缺失影响估算；
-- 已分配给其他 operator；
-- 同一账户多异常。
+不要让前端通过任意权重自行创造业务优先级。
 
 ---
 
-### D. 在设计确认前做一张低保真结构稿
+### 4. 确认模块与数据契约
 
-只验证信息顺序，不先投入视觉 polish。
+为每个首屏对象建立最小数据清单：
 
-建议低保真结构：
+- value；
+- comparison；
+- period；
+- threshold；
+- severity；
+- reason；
+- estimated impact；
+- trend；
+- freshness；
+- confidence；
+- owner；
+- next action；
+- handling state。
+
+缺少这些字段时，应先调整产品契约，而不是只重排组件。
+
+---
+
+### 5. 低保真结构验证
+
+使用代表性数据制作一个低保真方案：
 
 ```text
-[Page context / scope / time / freshness / filters]
-
-[Lead operational state]
-[Supporting metric strip]
-
-[Priority exception queue] [Contextual action rail]
-
-[Diagnostic chart or event timeline]
-
-[Task-first account table]
+lead risk object
+supporting metric strip
+exception queue
+selection-linked diagnostic chart
+task-first table
+contextual inspector
 ```
 
-用这张结构稿完成一次 task walkthrough：
+至少验证两个问题：
 
-> “现在是 14:30，你只有十分钟。请指出应该首先处理哪个账户、为什么，以及下一步做什么。”
+1. 用户是否能在三秒内指出最高优先级对象；
+2. 用户是否能在十秒内解释其原因、影响和下一步动作。
 
-接受条件：
-
-- 用户三秒内找到首要对象；
-- 十秒内说出原因和影响；
-- 不需要先阅读全部 KPI；
-- 不需要依赖通用 tips；
-- 下一动作的位置和结果可预测。
+如果不能，不应进入高保真视觉实现。
 
 ---
 
-### E. 实施前冻结最小组件与状态合同
+### 6. 定义必须覆盖的状态矩阵
 
-至少定义以下组件责任：
+实施验收范围至少应包含：
 
-- `OperationalLead`
-- `MetricStrip`
-- `ExceptionQueue`
-- `ExceptionRow`
-- `DiagnosticChart`
-- `TaskTable`
-- `ContextualActionRail`
-- `DataFreshnessIndicator`
-
-并为拥有状态的组件定义：
-
-- default；
-- hover；
-- focus-visible；
-- selected；
-- disabled；
+- normal；
 - loading；
 - empty；
 - error；
-- success/resolved；
-- stale/partial data；
-- long-content；
-- narrow viewport。
+- partial data；
+- stale data；
+- delayed data；
+- permission-limited；
+- no items requiring attention；
+- many critical items；
+- long account/campaign names；
+- large positive/negative numbers；
+- missing owner；
+- missing impact estimate；
+- recovering anomaly。
 
-这一步应先建立合同，不代表状态已经在浏览器中验证。
-
----
-
-### F. 确认最小响应式策略
-
-即使主要使用桌面，也需要在实施前确认最低支持窗口宽度。至少定义：
-
-- 宽屏：queue + table + contextual rail 如何分配空间；
-- 中等宽度：右栏是否变为 drawer；
-- 窄宽度：首要任务是否仍先于低优先级指标；
-- 表格如何降级：列优先级、横向滚动、row detail 或 responsive table；
-- sticky 元素是否遮挡内容；
-- hover-only 行为是否存在替代路径。
-
-不能简单地把桌面模块按原顺序纵向堆叠，因为这会把 12 个 KPI 继续放在核心任务之前。
+还需要定义 hover、selected、focus-visible、sort、filter、row expansion 和 drawer 的状态契约，但本次没有验证这些状态。
 
 ---
 
-## 实施前最低通过条件
+### 7. 定义最小运行态验证范围
 
-在进入高保真实现前，至少应满足：
+实现完成后，最低验证应包括：
 
-1. 已定义什么叫“未来一小时需要关注”。
-2. 已定义默认 priority model 和排序理由。
-3. 已确定 lead operational state。
-4. 已将 12 个 KPI 分为 lead、support、secondary 三层。
-5. 每个核心图表都有明确分析问题。
-6. 表格列顺序按用户决策而不是 schema 排列。
-7. 右栏已被删除或改为上下文相关的 action rail。
-8. 已用至少三个真实数据场景验证信息结构。
-9. 已定义 loading、empty、error、stale、selected 等状态合同。
-10. 已取得当前界面的截图、DOM/token 证据，但尚不能把这些计划项写成已验证结果。
+- 主要桌面运营视口；
+- 一个较窄的桌面窗口；
+- 表格长文本和大数据量；
+- exception selection 到 chart/table/inspector 的联动；
+- sort、filter、row action；
+- keyboard focus walk；
+- hover、selected、focus-visible；
+- loading、empty、error、stale；
+- semantic status color 的对比度与非颜色表达；
+- 图表 tooltip、legend、axis 和容器缩放；
+- 表格滚动和 sticky 行为；
+- 代表性真实内容下的扫描时间。
 
-总体上，这个概念的问题不是“还不够漂亮”，而是**页面目前更像一个均匀展示数据的 dashboard，而不是一个帮助操作员分配下一小时注意力的 decision surface**。第一轮设计工作应优先重建 attention hierarchy 和 task flow，而不是先调整卡片样式、颜色或图表美化。
+是否需要移动端，应由真实使用环境决定；内部运营控制台不应为了形式完整强行做“桌面布局纵向堆叠”的移动版，但必须验证产品支持的最小窗口宽度。
+
+---
+
+## 结论
+
+当前概念最大的问题不是视觉不够高级，而是**页面没有把“下一小时处理谁”提升为首要信息对象**。建议停止继续美化 12 个等权 KPI 卡片，先完成以下结构转换：
+
+> **从 overview dashboard 转为 exception-first decision surface：一个主风险状态、一个紧凑指标带、一条排序清晰的 attention queue、一张用于解释当前选择的诊断图表，以及一张围绕影响和下一步动作组织的 task-first table。**
+
+右栏只有在成为选中对象的 contextual inspector 时才应保留；否则应移除，把横向空间还给决策表格。视觉上保持 enterprise dense、低装饰和 token-backed semantic color，但关键异常必须通过位置、文字、数值上下文和状态语义明确突出，而不是让所有模块一起“安静”。

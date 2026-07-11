@@ -1,43 +1,59 @@
 {
-  "schema": "design-craft.cross-agent-score.v1",
+  "schema": "design-craft.cross-agent-score.v2",
   "task_id": "same-prompt-native-adaptive-review",
   "agent": "pi",
   "verified": true,
   "agent_version": "pi 0.80.3",
-  "date": "2026-07-10",
+  "model": "deepseek/deepseek-v4-pro",
+  "reasoning_profile": "high",
+  "runner_os": "macOS arm64",
+  "date": "2026-07-11",
   "prompt_sha256": "56a6cf59d4a5e5e98280481ec5d04b5207714eb69f0fdafcba06c7bedbbdfc4c",
-  "skill_path": "/Users/gaoqian/Documents/sixseven/codeproject/design-craft/skills/design-craft",
-  "command_summary": "pi non-interactive run with no tools and the source design-craft skill explicitly loaded",
+  "scorecard_sha256": "cfd347d26e3cb72636be39f8e94c17948bc7c4eecbe21a8e68303760dd9396ee",
+  "skill_version": "0.5.0",
+  "skill_source_commit": "e3a6bc61204387a79f241b3c2a5377ca9094b756",
+  "skill_source_dirty": false,
+  "skill_tree_sha256": "ebbd7a3671a5058ec9ea822a2e40251ced0966eaa74873af2964233a6f310f8c",
+  "skill_path": "/Users/gaoqian/.agents/skills/design-craft",
+  "command_summary": "pi 0.80.3 isolated with --no-extensions --no-context-files, read-only tools, deepseek/deepseek-v4-pro, high thinking, explicit installed design-craft 0.5.0, and the exact benchmark prompt; final response normalized only for trailing whitespace",
   "output_path": "pi-output.md",
-  "score": 84,
+  "output_sha256": "5684bb641cebc642eb5b62088293bf571bb605075843ce5e832bb2e82787e245",
+  "score": 94,
   "criteria": {
     "style_authority": {
       "passed": true,
-      "note": "Recognized adaptive platform intent and semantic DESIGN.md roles."
+      "earned": 15,
+      "note": "Correctly separated adaptive PRODUCT context from shared semantic DESIGN authority."
     },
     "reference_selection": {
       "passed": true,
-      "note": "Covered iOS, Android, accessibility, adaptivity, theming, and motion concerns."
+      "earned": 14,
+      "note": "Covered iOS, Android, adaptive, accessibility, motion, and validation guidance, though references were mislabeled as skills."
     },
     "anti_generic_redesign": {
       "passed": true,
-      "note": "Focused on platform conformance and did not apply a decorative mobile redesign."
+      "earned": 14,
+      "note": "Rejected the fixed cross-platform shell and required native behavior, with some over-prescriptive framework choices."
     },
     "evidence_level": {
       "passed": true,
-      "note": "Called out missing source, build, simulator, emulator, and device evidence."
+      "earned": 15,
+      "note": "Labeled L0 static evidence and explicitly named missing Simulator, Emulator, accessibility, window, and device proof."
     },
     "verified_boundary": {
-      "passed": false,
-      "note": "Mostly careful, but some prompt-given facts were inconsistently described as wholly unverified."
+      "passed": true,
+      "earned": 15,
+      "note": "Separated stated prompt violations from unverified source, build, navigation, accessibility, and runtime behavior."
     },
     "design_moves": {
       "passed": true,
-      "note": "Provided platform navigation, type, controls, token, motion, and adaptive layout moves with a parity matrix."
+      "earned": 13,
+      "note": "Provided a useful parity matrix and platform-specific moves, but assumed native UIKit/NavHost implementation details for a React Native concept."
     },
     "scope_control": {
       "passed": true,
-      "note": "Stayed within native UI quality and runtime validation scope."
+      "earned": 8,
+      "note": "Stayed within adaptive product UI and validation, but included some framework and system-setting implementation overreach."
     }
   }
 }

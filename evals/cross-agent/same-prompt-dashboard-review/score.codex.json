@@ -1,43 +1,59 @@
 {
-  "schema": "design-craft.cross-agent-score.v1",
+  "schema": "design-craft.cross-agent-score.v2",
   "task_id": "same-prompt-dashboard-review",
   "agent": "codex",
   "verified": true,
-  "agent_version": "codex-cli 0.142.5",
-  "date": "2026-07-01",
+  "agent_version": "codex-cli 0.144.1",
+  "model": "gpt-5.6-sol",
+  "reasoning_profile": "high",
+  "runner_os": "macOS arm64",
+  "date": "2026-07-11",
   "prompt_sha256": "b622939ec19d093fc5bee6bc06d93f29f1016f47db66505642bd8752e74f584b",
+  "scorecard_sha256": "bb7c6d619794a0bf8b483f5d297d67aaf6767d4ac7c14a3a96e8b48a60d7571e",
+  "skill_version": "0.5.0",
+  "skill_source_commit": "e3a6bc61204387a79f241b3c2a5377ca9094b756",
+  "skill_source_dirty": false,
+  "skill_tree_sha256": "ebbd7a3671a5058ec9ea822a2e40251ced0966eaa74873af2964233a6f310f8c",
   "skill_path": "/Users/gaoqian/.agents/skills/design-craft",
-  "command_summary": "codex exec in read-only sandbox with output-last-message written to /tmp/design-craft-codex-output.md",
+  "command_summary": "codex exec 0.144.1 --ephemeral --sandbox read-only in an isolated empty workspace with gpt-5.6-sol, high reasoning, installed design-craft 0.5.0, and the exact benchmark prompt; final response normalized only for trailing whitespace",
   "output_path": "codex-output.md",
-  "score": 94,
+  "output_sha256": "fc8a1f8ea188e579737e70145fe7dcb7db37d781927e91e293ad113d501fe9a0",
+  "score": 97,
   "criteria": {
     "style_authority": {
       "passed": true,
-      "note": "Used restrained enterprise console and product context as the design read."
+      "earned": 15,
+      "note": "Preserved the restrained enterprise console and next-hour operator decision context."
     },
     "reference_selection": {
       "passed": true,
-      "note": "Selected dashboard/product UI taste, design moves, surface playbook, and validation guidance."
+      "earned": 14,
+      "note": "Used focused taste, dashboard, design-move, product, and validation guidance with minor reference overhead."
     },
     "anti_generic_redesign": {
       "passed": true,
-      "note": "Diagnosed card soup and decorative charting instead of applying decorative redesign."
+      "earned": 15,
+      "note": "Rejected equal KPI card soup and decorative modules in favor of an exception-first decision surface."
     },
     "evidence_level": {
       "passed": true,
-      "note": "Labeled the run as L0 static/prose-only and avoided browser claims."
+      "earned": 15,
+      "note": "Labeled the review L0 prompt-only and bounded the score to concept-level evidence."
     },
     "verified_boundary": {
       "passed": true,
-      "note": "Separated prompt-supported claims from inferred judgments and explicit unverified runtime states."
+      "earned": 15,
+      "note": "Separated prompt-supported structure from unverified rendering, states, responsiveness, accessibility, and performance."
     },
     "design_moves": {
       "passed": true,
-      "note": "Proposed lead/support/action queue, priority tiers, analytical chart, task-first table, and contextual rail."
+      "earned": 15,
+      "note": "Specified lead risk, supporting strip, exception queue, diagnostic chart, task-first table, and contextual inspector moves."
     },
     "scope_control": {
       "passed": true,
-      "note": "Stayed within dashboard UI critique and validation plan without backend or unrelated implementation changes."
+      "earned": 8,
+      "note": "Stayed read-only and dashboard-focused, but the response was materially longer than the benchmark required."
     }
   }
 }

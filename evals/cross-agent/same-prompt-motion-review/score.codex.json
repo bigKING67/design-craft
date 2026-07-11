@@ -1,43 +1,59 @@
 {
-  "schema": "design-craft.cross-agent-score.v1",
+  "schema": "design-craft.cross-agent-score.v2",
   "task_id": "same-prompt-motion-review",
   "agent": "codex",
   "verified": true,
   "agent_version": "codex-cli 0.144.1",
-  "date": "2026-07-10",
+  "model": "gpt-5.6-sol",
+  "reasoning_profile": "high",
+  "runner_os": "macOS arm64",
+  "date": "2026-07-11",
   "prompt_sha256": "0b1a5b271c01e7570cd15d02d15893b208e5178f493da12b51e904cda4aa519e",
-  "skill_path": "/Users/gaoqian/Documents/sixseven/codeproject/design-craft/skills/design-craft",
-  "command_summary": "codex exec in a read-only sandbox with the source design-craft skill and output-last-message artifact",
+  "scorecard_sha256": "017291b4dd1a7ee08de44ffb910828d98f7fc4203696b808b9cff4f291150783",
+  "skill_version": "0.5.0",
+  "skill_source_commit": "e3a6bc61204387a79f241b3c2a5377ca9094b756",
+  "skill_source_dirty": false,
+  "skill_tree_sha256": "ebbd7a3671a5058ec9ea822a2e40251ced0966eaa74873af2964233a6f310f8c",
+  "skill_path": "/Users/gaoqian/.agents/skills/design-craft",
+  "command_summary": "codex exec 0.144.1 --ephemeral --sandbox read-only in an isolated empty workspace with gpt-5.6-sol, high reasoning, installed design-craft 0.5.0, and the exact benchmark prompt; final response normalized only for trailing whitespace",
   "output_path": "codex-output.md",
-  "score": 97,
+  "output_sha256": "c272f8697e5410c3c20e00c1c73892a71e9c1be8c6fda756266316854b88ad98",
+  "score": 98,
   "criteria": {
     "style_authority": {
       "passed": true,
-      "note": "Kept the high-frequency calm operations context and removed decorative whole-sheet motion."
+      "earned": 15,
+      "note": "Preserved calm high-frequency utility motion and direct-manipulation causality."
     },
     "reference_selection": {
       "passed": true,
-      "note": "Used motion quality, interaction physics, design moves, and validation evidence boundaries."
+      "earned": 15,
+      "note": "Applied motion quality, interaction physics, accessibility, product, and validation guidance precisely."
     },
     "anti_generic_redesign": {
       "passed": true,
-      "note": "Questioned each motion and preserved only causal direct-manipulation feedback."
+      "earned": 15,
+      "note": "Removed decorative scale, transition-all, and ease-in behavior while retaining only causal motion."
     },
     "evidence_level": {
       "passed": true,
-      "note": "Labeled the run L0 static-source only and did not claim runtime smoothness."
+      "earned": 15,
+      "note": "Explicitly labeled static source evidence without claiming browser timing, frame, or device proof."
     },
     "verified_boundary": {
       "passed": true,
-      "note": "Separated code-visible defects from unverified frame cost, touch feel, and device behavior."
+      "earned": 15,
+      "note": "Distinguished code-visible defects from unverified runtime feel, performance, scrolling conflict, and touch behavior."
     },
     "design_moves": {
       "passed": true,
-      "note": "Specified pointer capture, grab offset, transform tracking, interruption, velocity handoff, projection, resistance, and Reduced Motion."
+      "earned": 15,
+      "note": "Covered grab offset, capture, tracking, presentation interruption, velocity handoff, projection, hysteresis, soft bounds, and Reduced Motion."
     },
     "scope_control": {
       "passed": true,
-      "note": "Stayed within the sheet interaction and its browser/device validation plan."
+      "earned": 8,
+      "note": "Stayed read-only and motion-focused, but the response was substantially more verbose than necessary."
     }
   }
 }

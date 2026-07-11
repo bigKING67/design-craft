@@ -1,43 +1,59 @@
 {
-  "schema": "design-craft.cross-agent-score.v1",
+  "schema": "design-craft.cross-agent-score.v2",
   "task_id": "same-prompt-dashboard-review",
   "agent": "pi",
   "verified": true,
-  "agent_version": "0.80.3",
-  "date": "2026-07-01",
+  "agent_version": "pi 0.80.3",
+  "model": "deepseek/deepseek-v4-pro",
+  "reasoning_profile": "high",
+  "runner_os": "macOS arm64",
+  "date": "2026-07-11",
   "prompt_sha256": "b622939ec19d093fc5bee6bc06d93f29f1016f47db66505642bd8752e74f584b",
-  "skill_path": "skills/design-craft",
-  "command_summary": "pi --skill skills/design-craft --tools read,grep,find,ls --no-session -p with output redirected to /tmp/design-craft-pi-output.md",
+  "scorecard_sha256": "bb7c6d619794a0bf8b483f5d297d67aaf6767d4ac7c14a3a96e8b48a60d7571e",
+  "skill_version": "0.5.0",
+  "skill_source_commit": "e3a6bc61204387a79f241b3c2a5377ca9094b756",
+  "skill_source_dirty": false,
+  "skill_tree_sha256": "ebbd7a3671a5058ec9ea822a2e40251ced0966eaa74873af2964233a6f310f8c",
+  "skill_path": "/Users/gaoqian/.agents/skills/design-craft",
+  "command_summary": "pi 0.80.3 isolated with --no-extensions --no-context-files, read-only tools, deepseek/deepseek-v4-pro, high thinking, explicit installed design-craft 0.5.0, and the exact benchmark prompt; final response normalized only for trailing whitespace",
   "output_path": "pi-output.md",
-  "score": 91,
+  "output_sha256": "5605194c399c9cb7b775ad0549e34be5d361a9f6c32a7cec00ee69c50f0f8746",
+  "score": 96,
   "criteria": {
     "style_authority": {
       "passed": true,
-      "note": "Preserved the restrained enterprise console context and treated the job as next-hour triage."
+      "earned": 15,
+      "note": "Preserved the calm enterprise console, token authority, and operator triage job."
     },
     "reference_selection": {
       "passed": true,
-      "note": "Reported focused design-craft references relevant to dashboard critique and design moves."
+      "earned": 14,
+      "note": "Used relevant dashboard, taste, design-move, surface, and validation guidance."
     },
     "anti_generic_redesign": {
       "passed": true,
-      "note": "Rejected equal card soup, decorative charting, and generic tips in favor of an operations surface."
+      "earned": 15,
+      "note": "Replaced card soup, decoration, and generic tips with an operations decision surface."
     },
     "evidence_level": {
       "passed": true,
-      "note": "Labeled evidence as L0 prompt-only and explicitly skipped browser/screenshot validation."
+      "earned": 15,
+      "note": "Labeled L0 prose evidence and applied an explicit anti-inflation score boundary."
     },
     "verified_boundary": {
       "passed": true,
-      "note": "Marked runtime, responsive, focus, state, token, and contrast claims as unverified."
+      "earned": 15,
+      "note": "Clearly separated prompt facts from unverified token, table, state, responsive, and accessibility behavior."
     },
     "design_moves": {
       "passed": true,
-      "note": "Proposed decision surface, diagnostic chart, task-first table, exception rail, and semantic color moves."
+      "earned": 14,
+      "note": "Delivered lead metric, compact strip, exception queue, diagnostic chart, task-first table, and state moves, with a few inferred details."
     },
     "scope_control": {
       "passed": true,
-      "note": "Kept output to read-only critique and a validation plan without modifying files or broadening scope."
+      "earned": 8,
+      "note": "Stayed read-only and dashboard-focused, though it introduced some speculative table structure and remained longer than necessary."
     }
   }
 }
