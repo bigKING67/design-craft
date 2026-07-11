@@ -8,6 +8,9 @@ All notable local changes to `design-craft` are recorded here.
   Install parity now remains valid across unrelated ancestor commits and
   repo-level benchmark WIP when the installed skill tree is unchanged, while
   release certification continues to require a completely clean worktree.
+- Bound installation provenance to the actual `skills/<name>` tree stored at
+  the recorded source commit, so naming an unrelated ancestor can no longer
+  pass merely because the current and installed trees happen to match.
 - Fixed the native-runtime workflow by compiling the UIKit fixture as a
   library-style `@main` module, enabling KVM access for the Android runner, and
   replacing fragile `/sdcard` UIAutomator pulls with retried

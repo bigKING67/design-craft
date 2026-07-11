@@ -422,6 +422,8 @@ Before committing a release:
    This checks the installed skill tree and skill-scoped dirty state. Separate
    `repo_dirty` provenance remains visible for audit, while the release
    certification gate independently requires the whole worktree to be clean.
+   The recorded source commit must also contain the exact installed skill tree;
+   ancestor status alone is not sufficient provenance.
 10. Legacy alias source check:
    `grep -Fq 'renamed to \`design-craft\`' skills/frontend-craft/SKILL.md`
 11. Optional legacy install dry-run:

@@ -19,6 +19,7 @@ from design_craft_evidence_common import (
     git_head,
     git_is_ancestor,
     git_root,
+    git_tree_sha256,
     skill_provenance,
 )
 
@@ -117,6 +118,20 @@ def validate_metadata(
             "metadata source_commit must be an ancestor of the current source HEAD "
             f"{expected_source_commit}"
         )
+    else:
+        try:
+            recorded_commit_digest = git_tree_sha256(
+                expected_source_root,
+                expected_source_path,
+                source_commit,
+            )
+        except (OSError, ValueError, subprocess.CalledProcessError) as exc:
+            errors.append(f"cannot inspect skill tree at metadata source_commit: {exc}")
+        else:
+            if recorded_commit_digest != expected_tree_digest:
+                errors.append(
+                    "metadata source_commit skill tree must match source_tree_sha256"
+                )
 
     source_dirty = payload.get("source_dirty")
     if not isinstance(source_dirty, bool):
@@ -329,6 +344,31 @@ def run_self_check() -> None:
             raise RuntimeError("changed skill source unexpectedly passed install parity")
         if changed["expected_source"]["skill_source_dirty"] is not True:
             raise RuntimeError("changed skill source was not reported dirty")
+
+        subprocess.run(("git", "add", "skills/design-craft/SKILL.md"), cwd=repo, check=True)
+        subprocess.run(("git", "commit", "-qm", "change fixture skill"), cwd=repo, check=True)
+        shutil.copy2(source / "SKILL.md", installed / "SKILL.md")
+        metadata["source_tree_sha256"] = tree_digest(snapshot(source))
+        (installed / METADATA_NAME).write_text(
+            json.dumps(metadata, indent=2) + "\n", encoding="utf-8"
+        )
+        forged_ancestor = verify(
+            source,
+            installed,
+            expected_name="design-craft",
+            expected_version="0.0.0",
+            require_metadata=True,
+        )
+        if forged_ancestor["ok"]:
+            raise RuntimeError(
+                "metadata pointing at an ancestor with a different skill tree unexpectedly passed"
+            )
+        if not any(
+            "source_commit skill tree" in error for error in forged_ancestor["errors"]
+        ):
+            raise RuntimeError(
+                "historical skill-tree mismatch did not produce a provenance error"
+            )
 
 
 def main() -> int:

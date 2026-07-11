@@ -103,6 +103,93 @@ def git_is_ancestor(root: Path, ancestor: str, descendant: str = "HEAD") -> bool
     return result.returncode == 0
 
 
+def git_snapshot_tree(
+    root: Path,
+    path: Path,
+    commit: str,
+    *,
+    ignored_dirs: set[str] | None = None,
+    ignored_files: set[str] | None = None,
+) -> dict[str, str]:
+    resolved_root = root.expanduser().resolve()
+    resolved_path = path.expanduser().resolve()
+    try:
+        relative_root = resolved_path.relative_to(resolved_root)
+    except ValueError as exc:
+        raise ValueError(
+            f"Git tree path must stay inside {resolved_root}: {resolved_path}"
+        ) from exc
+
+    result = subprocess.run(
+        [
+            "git",
+            "-C",
+            str(resolved_root),
+            "ls-tree",
+            "-r",
+            "-z",
+            "--name-only",
+            commit,
+            "--",
+            relative_root.as_posix(),
+        ],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        check=False,
+    )
+    if result.returncode != 0:
+        raise subprocess.CalledProcessError(
+            result.returncode,
+            result.args,
+            output=result.stdout,
+            stderr=result.stderr,
+        )
+
+    ignored_dir_names = DEFAULT_IGNORED_DIRS | set(ignored_dirs or ())
+    ignored_file_names = DEFAULT_IGNORED_FILES | set(ignored_files or ())
+    prefix = relative_root.as_posix().rstrip("/") + "/"
+    values: dict[str, str] = {}
+    for raw_path in result.stdout.split(b"\0"):
+        if not raw_path:
+            continue
+        repository_path = raw_path.decode("utf-8", errors="strict")
+        if not repository_path.startswith(prefix):
+            continue
+        relative = Path(repository_path[len(prefix) :])
+        if any(part in ignored_dir_names for part in relative.parts):
+            continue
+        if (
+            relative.name in ignored_file_names
+            or relative.suffix in {".pyc", ".pyo"}
+        ):
+            continue
+        content = subprocess.check_output(
+            ["git", "-C", str(resolved_root), "show", f"{commit}:{repository_path}"],
+            stderr=subprocess.DEVNULL,
+        )
+        values[relative.as_posix()] = sha256_bytes(content)
+    return values
+
+
+def git_tree_sha256(
+    root: Path,
+    path: Path,
+    commit: str,
+    *,
+    ignored_dirs: set[str] | None = None,
+    ignored_files: set[str] | None = None,
+) -> str:
+    return digest_snapshot(
+        git_snapshot_tree(
+            root,
+            path,
+            commit,
+            ignored_dirs=ignored_dirs,
+            ignored_files=ignored_files,
+        )
+    )
+
+
 def read_version(skill_root: Path) -> str:
     path = skill_root / "VERSION"
     return path.read_text(encoding="utf-8").strip() if path.is_file() else ""

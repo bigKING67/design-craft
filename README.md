@@ -77,7 +77,10 @@ records `.design-craft-install.json` version/commit/tree-digest provenance plus
 separate `skill_source_dirty` and `repo_dirty` states, and retains the newest
 ten backups by default. Install parity is scoped to the installed skill tree,
 so unrelated benchmark WIP or later ancestor commits do not invalidate an
-unchanged installation; certified releases still require a clean whole repo.
+unchanged installation. The verifier also reconstructs the skill tree at the
+recorded source commit, preventing metadata from naming an ancestor that never
+contained the installed content. Certified releases still require a clean
+whole repo.
 It syncs:
 
 ```text
