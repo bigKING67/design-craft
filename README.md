@@ -557,6 +557,10 @@ Emulator, and physical-device evidence, a dated release section, a clean
 worktree, local maturity 100/100, and install provenance parity. After pushing
 and tagging, verify tag/HEAD/upstream parity plus successful `Validate` and
 `Native runtime evidence` workflow runs with `make release-tag-verify`.
+The certification entrypoints acquire a repository-local single-writer lock
+and reject a changed HEAD or dirty worktree at the end of the run. Tag
+verification requires the latest `push` run whose `headBranch` is the release
+tag; an older manual success for the same commit cannot satisfy the contract.
 
 The gate split is documented in `docs/maintenance.md`. The portable gate checks
 package shape, syntax, bundled runtime independence, platform fixtures,

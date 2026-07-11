@@ -258,6 +258,7 @@ required_files=(
   "scripts/design_craft_score.py"
   "scripts/design_craft_install_verify.py"
   "scripts/design_craft_release_verify.py"
+  "scripts/design_craft_release_certify.sh"
   "scripts/design_craft_sync_status.py"
   "scripts/native_runtime_ci_ios.sh"
   "scripts/native_runtime_ci_android.sh"
@@ -508,6 +509,7 @@ for path in \
 	"scripts/design_craft_score.py" \
 	"scripts/design_craft_install_verify.py" \
 	"scripts/design_craft_release_verify.py" \
+	"scripts/design_craft_release_certify.sh" \
 	"scripts/design_craft_sync_status.py" \
 	"scripts/design_craft_cross_agent_record.py" \
 	"scripts/design_craft_evidence_common.py" \
@@ -563,6 +565,7 @@ for path in \
   scripts/design_craft_route.sh \
   scripts/design_craft_seed_design.sh \
   scripts/design_craft_taste_review.sh \
+  scripts/design_craft_release_certify.sh \
   scripts/native_runtime_ci_ios.sh \
   scripts/native_runtime_ci_android.sh \
   skills/design-craft/scripts/design_craft_audit.sh \
@@ -596,10 +599,16 @@ four_host_recipe = makefile.split("cross-agent-four-host-check:", 1)[1].split("\
 for needle in ("set -e", "--require-schema-v2", "--require-current-source"):
     if needle not in four_host_recipe:
         raise SystemExit(f"cross-agent-four-host-check missing {needle!r}")
-certify_recipe = makefile.split("release-certify:", 1)[1].split("\n\n", 1)[0]
+certify_recipe = makefile.split("release-certify-internal:", 1)[1].split("\n\n", 1)[0]
 for needle in ("cross-agent-four-host-check", "native-runtime-check", "--min-score 100"):
     if needle not in certify_recipe:
-        raise SystemExit(f"release-certify missing {needle!r}")
+        raise SystemExit(f"release-certify-internal missing {needle!r}")
+wrapper_recipe = makefile.split("release-certify:", 1)[1].split("\n\n", 1)[0]
+tag_recipe = makefile.split("release-tag-verify:", 1)[1].split("\n\n", 1)[0]
+if "design_craft_release_certify.sh certify" not in wrapper_recipe:
+    raise SystemExit("release-certify must use the single-writer release wrapper")
+if "design_craft_release_certify.sh tag" not in tag_recipe:
+    raise SystemExit("release-tag-verify must use the tag-bound release wrapper")
 PY
 
 for path in \
@@ -643,6 +652,7 @@ done
 python3 scripts/upstream_absorption_report.py --check
 python3 scripts/design_craft_maturity.py --check
 python3 scripts/design_craft_native_runtime_validate.py --check
+python3 scripts/design_craft_github_checks.py --check >/dev/null
 python3 - <<'PY'
 import json
 import plistlib

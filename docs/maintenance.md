@@ -187,6 +187,10 @@ a dated release section, clean worktree, maturity 100/100, and exact installed
 provenance. After the normal push and `v<VERSION>` tag, run
 `make release-tag-verify` to require tag/HEAD/upstream parity plus successful
 GitHub `Validate` and `Native runtime evidence` runs for that exact HEAD.
+Both certification entrypoints use a repository-local single-writer lock and
+verify that HEAD and the clean-worktree invariant remain unchanged throughout
+the run. Tag verification accepts only the latest tag-push run for each
+required workflow.
 
 ## Upstream sync procedure
 

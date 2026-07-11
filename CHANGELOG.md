@@ -11,6 +11,9 @@ All notable local changes to `design-craft` are recorded here.
 - Bound installation provenance to the actual `skills/<name>` tree stored at
   the recorded source commit, so naming an unrelated ancestor can no longer
   pass merely because the current and installed trees happen to match.
+- Added a single-writer release lock with start/end HEAD and clean-worktree
+  invariants, and bound tag verification to the latest tag-triggered workflow
+  runs instead of accepting any older success for the same commit.
 - Fixed the native-runtime workflow by compiling the UIKit fixture as a
   library-style `@main` module, enabling KVM access for the Android runner, and
   replacing fragile `/sdcard` UIAutomator pulls with retried
