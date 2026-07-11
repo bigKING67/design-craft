@@ -2,13 +2,33 @@ import UIKit
 
 @main
 final class AppDelegate: UIResponder, UIApplicationDelegate {
+    func application(
+        _ application: UIApplication,
+        configurationForConnecting connectingSceneSession: UISceneSession,
+        options: UIScene.ConnectionOptions
+    ) -> UISceneConfiguration {
+        let configuration = UISceneConfiguration(
+            name: "Default Configuration",
+            sessionRole: connectingSceneSession.role
+        )
+        configuration.delegateClass = SceneDelegate.self
+        return configuration
+    }
+}
+
+final class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     var window: UIWindow?
     private weak var statusLabel: UILabel?
 
-    func application(
-        _ application: UIApplication,
-        didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil
-    ) -> Bool {
+    func scene(
+        _ scene: UIScene,
+        willConnectTo session: UISceneSession,
+        options connectionOptions: UIScene.ConnectionOptions
+    ) {
+        guard let windowScene = scene as? UIWindowScene else {
+            return
+        }
+
         let controller = UIViewController()
         controller.view.backgroundColor = .systemBackground
 
@@ -19,7 +39,9 @@ final class AppDelegate: UIResponder, UIApplicationDelegate {
         title.accessibilityIdentifier = "evidence-title"
 
         let status = UILabel()
-        status.text = UIAccessibility.isReduceMotionEnabled ? "Reduced Motion enabled" : "Reduced Motion disabled"
+        status.text = UIAccessibility.isReduceMotionEnabled
+            ? "Reduced Motion enabled"
+            : "Reduced Motion disabled"
         status.font = .preferredFont(forTextStyle: .body)
         status.adjustsFontForContentSizeCategory = true
         status.accessibilityIdentifier = "evidence-status"
@@ -40,30 +62,33 @@ final class AppDelegate: UIResponder, UIApplicationDelegate {
         stack.translatesAutoresizingMaskIntoConstraints = false
         controller.view.addSubview(stack)
         NSLayoutConstraint.activate([
-            stack.leadingAnchor.constraint(equalTo: controller.view.safeAreaLayoutGuide.leadingAnchor, constant: 24),
-            stack.trailingAnchor.constraint(equalTo: controller.view.safeAreaLayoutGuide.trailingAnchor, constant: -24),
+            stack.leadingAnchor.constraint(
+                equalTo: controller.view.safeAreaLayoutGuide.leadingAnchor,
+                constant: 24
+            ),
+            stack.trailingAnchor.constraint(
+                equalTo: controller.view.safeAreaLayoutGuide.trailingAnchor,
+                constant: -24
+            ),
             stack.centerYAnchor.constraint(equalTo: controller.view.centerYAnchor),
         ])
 
-        let window = UIWindow(frame: UIScreen.main.bounds)
+        let window = UIWindow(windowScene: windowScene)
         window.rootViewController = controller
         window.makeKeyAndVisible()
         self.window = window
         print("DESIGN_CRAFT_RUNTIME_LAUNCHED")
-        if let url = launchOptions?[.url] as? URL {
-            DispatchQueue.main.async { [weak self] in
-                _ = self?.handleRuntimeURL(url)
-            }
+
+        if let url = connectionOptions.urlContexts.first?.url {
+            _ = handleRuntimeURL(url)
         }
-        return true
     }
 
-    func application(
-        _ app: UIApplication,
-        open url: URL,
-        options: [UIApplication.OpenURLOptionsKey: Any] = [:]
-    ) -> Bool {
-        handleRuntimeURL(url)
+    func scene(_ scene: UIScene, openURLContexts urlContexts: Set<UIOpenURLContext>) {
+        guard let url = urlContexts.first?.url else {
+            return
+        }
+        _ = handleRuntimeURL(url)
     }
 
     private func handleRuntimeURL(_ url: URL) -> Bool {

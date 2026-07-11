@@ -671,6 +671,10 @@ assert isinstance(payload.get("ios", {}).get("ready"), bool)
 assert isinstance(payload.get("android", {}).get("ready"), bool)
 plist = plistlib.loads(Path("evals/native-runtime/fixtures/ios/Info.plist").read_bytes())
 assert plist.get("CFBundleIdentifier") == "dev.designcraft.runtime-evidence"
+scene_manifest = plist.get("UIApplicationSceneManifest", {})
+assert scene_manifest.get("UIApplicationSupportsMultipleScenes") is False
+scene_configs = scene_manifest.get("UISceneConfigurations", {})
+assert scene_configs.get("UIWindowSceneSessionRoleApplication")
 ET.parse("evals/native-runtime/fixtures/android/app/src/main/AndroidManifest.xml")
 
 workflow = Path(".github/workflows/native-runtime.yml").read_text(encoding="utf-8")
@@ -681,7 +685,7 @@ ios_runner = Path("scripts/native_runtime_ci_ios.sh").read_text(encoding="utf-8"
 android_runner = Path("scripts/native_runtime_ci_android.sh").read_text(encoding="utf-8")
 android_common = Path("scripts/native_runtime_android_common.sh").read_text(encoding="utf-8")
 assert "xcrun simctl" in ios_runner and "design_craft_native_runtime_record.py" in ios_runner
-assert "-parse-as-library" in ios_runner
+assert "-parse-as-library" in ios_runner and "-module-name DesignCraftEvidence" in ios_runner
 assert "simctl terminate" in ios_runner and "simctl openurl" in ios_runner
 assert "interaction_observed" in ios_runner and "runtime-interaction.txt" in ios_runner
 assert "design_craft_native_runtime_record.py" in android_runner

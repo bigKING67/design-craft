@@ -18,7 +18,8 @@ All notable local changes to `design-craft` are recorded here.
   library-style `@main` module, enabling KVM access for the Android runner, and
   replacing fragile `/sdcard` UIAutomator pulls with retried
   `/data/local/tmp` capture and `adb exec-out` reads. The iOS deep-link
-  interaction now handles cold-launch URL options and waits for a bounded,
+  interaction now uses the required `UIScene` lifecycle for both cold-launch
+  and already-running URL contexts, then waits for a bounded,
   filesystem-backed confirmation marker.
 - Hardened native evidence with platform-specific assertion and artifact-role
   contracts, hashed runtime identifiers, XML/PNG content validation, decisive
