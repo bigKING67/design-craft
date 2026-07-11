@@ -7,6 +7,36 @@ source scripts/native_runtime_android_common.sh
 
 EVIDENCE_DIR="${DESIGN_CRAFT_NATIVE_EVIDENCE_DIR:-${RUNNER_TEMP:-${TMPDIR:-/tmp}}/native-runtime-android}"
 mkdir -p "${EVIDENCE_DIR}"
+PACKAGE="dev.designcraft.runtimeevidence"
+COMPONENT="${PACKAGE}/.MainActivity"
+
+capture_android_diagnostics() {
+  adb shell dumpsys activity activities > "${EVIDENCE_DIR}/activity-diagnostics.txt" 2>&1 || true
+  adb shell dumpsys window windows > "${EVIDENCE_DIR}/window-diagnostics.txt" 2>&1 || true
+}
+
+wait_for_activity() {
+  local attempt
+  local activity_state
+  local resumed_state
+
+  for attempt in {1..20}; do
+    activity_state="$(adb shell dumpsys activity activities 2>/dev/null || true)"
+    resumed_state="$(grep -E 'mResumedActivity|topResumedActivity|ResumedActivity' <<< "${activity_state}" || true)"
+    if grep -q "${PACKAGE}" <<< "${resumed_state}" \
+      && grep -q "MainActivity" <<< "${resumed_state}"; then
+      return 0
+    fi
+    if [[ "${attempt}" == "10" ]]; then
+      adb shell am start -W -n "${COMPONENT}" >> "${EVIDENCE_DIR}/launch.txt" 2>&1 || true
+    fi
+    sleep 2
+  done
+
+  capture_android_diagnostics
+  echo "Android evidence activity did not become resumed: ${COMPONENT}" >&2
+  return 1
+}
 
 PROJECT_DIR="${EVIDENCE_DIR}/android-project"
 rm -rf "${PROJECT_DIR}"
@@ -20,14 +50,15 @@ fi
 adb install -r "${apk}"
 adb wait-for-device
 design_craft_prepare_device_ui
-adb shell am force-stop dev.designcraft.runtimeevidence
-adb shell am start -W -n dev.designcraft.runtimeevidence/.MainActivity > "${EVIDENCE_DIR}/launch.txt"
-sleep 3
+adb shell settings put system screen_off_timeout 2147483647 || true
+adb shell am force-stop "${PACKAGE}"
+adb shell am start -W -n "${COMPONENT}" > "${EVIDENCE_DIR}/launch.txt"
+wait_for_activity
 design_craft_dump_ui \
   "${EVIDENCE_DIR}" \
   "${EVIDENCE_DIR}/window-before.xml" \
   "Native runtime evidence title" \
-  "dev.designcraft.runtimeevidence/.MainActivity"
+  "${COMPONENT}"
 
 read -r tap_x tap_y < <(python3 - "${EVIDENCE_DIR}/window-before.xml" <<'PY'
 import re
@@ -51,7 +82,7 @@ design_craft_dump_ui \
   "${EVIDENCE_DIR}" \
   "${EVIDENCE_DIR}/window-after.xml" \
   "Runtime interaction confirmed" \
-  "dev.designcraft.runtimeevidence/.MainActivity"
+  "${COMPONENT}"
 adb exec-out screencap -p > "${EVIDENCE_DIR}/android-emulator.png"
 
 python3 scripts/design_craft_native_runtime_record.py \

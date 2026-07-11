@@ -92,6 +92,7 @@ final class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     }
 
     private func handleRuntimeURL(_ url: URL) -> Bool {
+        print("DESIGN_CRAFT_RUNTIME_URL_RECEIVED:\(url.absoluteString)")
         guard url.scheme == "designcraft-evidence", url.host == "confirm" else {
             return false
         }

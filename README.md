@@ -67,6 +67,10 @@ product/platform context and must provide `DESIGN.md` or an explicit
 
 ## Install locally
 
+Repository automation is verified on macOS and Linux. Native Windows shells are
+not currently certified; Windows users should use WSL or a compatible Git Bash
+environment and treat that path as unverified until a Windows CI lane exists.
+
 ```bash
 bash scripts/install_local.sh
 ```
@@ -157,6 +161,17 @@ submodules:
 
 ```bash
 make public-repo-check
+```
+
+GitHub Actions and npm metadata updates are tracked separately through
+`.github/dependabot.yml`; action executions remain pinned to reviewed full
+commit SHAs.
+
+Validate workflow pins, native fixture manifests, real iOS deep-link routing,
+Android dialog recovery, and compile-smoke coverage independently with:
+
+```bash
+make workflow-check
 ```
 
 ## Agent adapters
@@ -621,7 +636,8 @@ python3 scripts/design_craft_native_runtime_validate.py --validate --require ios
 `.github/workflows/native-runtime.yml` runs a real iOS Simulator fixture and a
 real Android Emulator fixture on manual dispatch and release tags. It builds,
 installs, launches, captures runtime artifacts, exercises the Android control
-and an iOS deep-link-driven runtime state transition,
+and a real iOS `simctl openurl` transition against the running app with a cold
+deep-link fallback,
 hashes the evidence, and validates the generated JSON before upload. Downloaded
 artifacts must still be reviewed before `ios-observed.json` and
 `android-observed.json` are admitted as durable evidence. A separate physical

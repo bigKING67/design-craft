@@ -60,6 +60,7 @@ required_files=(
   ".github/workflows/validate.yml"
   ".github/workflows/upstream-audit.yml"
   ".github/workflows/native-runtime.yml"
+  ".github/dependabot.yml"
   ".github/scripts/upstream_review_issue.cjs"
   ".gitmodules"
   "docs/maintenance.md"
@@ -245,6 +246,7 @@ required_files=(
   "scripts/design_craft_maturity.py"
   "scripts/design_craft_package_validate.py"
   "scripts/design_craft_public_repo_validate.py"
+  "scripts/design_craft_workflow_validate.py"
   "scripts/design_craft_native_runtime_validate.py"
   "scripts/design_craft_native_runtime_record.py"
   "scripts/design_craft_platform_scan.py"
@@ -344,53 +346,6 @@ if ! cmp -s VERSION skills/design-craft/VERSION; then
   exit 1
 fi
 
-node <<'NODE'
-const fs = require("fs");
-const pkg = JSON.parse(fs.readFileSync("package.json", "utf8"));
-const lock = JSON.parse(fs.readFileSync("package-lock.json", "utf8"));
-const version = fs.readFileSync("VERSION", "utf8").trim();
-if (pkg.version !== version) {
-  throw new Error(`package.json version (${pkg.version}) must match VERSION (${version})`);
-}
-if (lock.name !== pkg.name || lock.version !== version) {
-  throw new Error("package-lock.json root name/version must match package.json and VERSION");
-}
-if (!lock.packages || !lock.packages[""] || lock.packages[""].version !== version) {
-  throw new Error("package-lock.json packages root version must match VERSION");
-}
-if (!Array.isArray(pkg.keywords) || !pkg.keywords.includes("pi-package")) {
-  throw new Error("package.json keywords must include pi-package");
-}
-const expectedSkills = ["skills/design-craft"];
-const actualSkills = pkg.pi && Array.isArray(pkg.pi.skills) ? pkg.pi.skills : [];
-for (const skill of expectedSkills) {
-  if (!actualSkills.includes(skill)) {
-    throw new Error(`package.json pi.skills must include ${skill}`);
-  }
-  if (!fs.existsSync(`${skill}/SKILL.md`)) {
-    throw new Error(`missing package skill entrypoint: ${skill}/SKILL.md`);
-  }
-}
-if (actualSkills.includes("skills/frontend-craft")) {
-  throw new Error("package.json pi.skills must not expose the legacy frontend-craft alias by default");
-}
-const compatibility = JSON.parse(fs.readFileSync("skills/design-craft/COMPATIBILITY.json", "utf8"));
-if (
-  compatibility.schema !== "design-craft.compatibility.v1" ||
-  !compatibility.codex_route_pack ||
-  compatibility.codex_route_pack.schema !== "design-craft.codex-route-pack.v2" ||
-  compatibility.codex_route_pack.manifest_schema !== "codex.frontend-route-pack.manifest.v1" ||
-  compatibility.codex_route_pack.snapshot_schema !== "codex.global_agents.snapshot.v2" ||
-  compatibility.codex_route_pack.routing_version !== 2 ||
-  !compatibility.evidence_contracts ||
-  compatibility.evidence_contracts.cross_agent !== "design-craft.cross-agent-score.v2" ||
-  compatibility.evidence_contracts.native_runtime !== "design-craft.native-runtime-evidence.v2" ||
-  compatibility.evidence_contracts.release_verification !== "design-craft.release-verification.v1" ||
-  compatibility.evidence_contracts.github_checks !== "design-craft.github-checks.v1"
-) {
-  throw new Error("skills/design-craft/COMPATIBILITY.json must pin route-pack and evidence contracts");
-}
-NODE
 python3 scripts/design_craft_package_validate.py --check --validate >/dev/null
 python3 scripts/design_craft_public_repo_validate.py --check --validate >/dev/null
 grep -Fq 'make release-certify-prepublish' scripts/design_craft_release_certify.sh
@@ -523,6 +478,7 @@ for path in \
 	"scripts/design_craft_maturity.py" \
 	"scripts/design_craft_package_validate.py" \
 	"scripts/design_craft_public_repo_validate.py" \
+	"scripts/design_craft_workflow_validate.py" \
 	"scripts/design_craft_native_runtime_validate.py" \
 	"scripts/design_craft_native_runtime_record.py" \
   "scripts/design_craft_platform_scan.py" \
@@ -671,6 +627,7 @@ for path in \
 	scripts/design_craft_maturity.py \
 	scripts/design_craft_package_validate.py \
 	scripts/design_craft_public_repo_validate.py \
+	scripts/design_craft_workflow_validate.py \
 	scripts/design_craft_native_runtime_validate.py \
 	scripts/design_craft_native_runtime_record.py \
   scripts/design_craft_platform_scan.py \
@@ -700,55 +657,7 @@ python3 scripts/upstream_absorption_report.py --check
 python3 scripts/design_craft_maturity.py --check
 python3 scripts/design_craft_native_runtime_validate.py --check
 python3 scripts/design_craft_github_checks.py --check >/dev/null
-python3 - <<'PY'
-import json
-import plistlib
-import xml.etree.ElementTree as ET
-from pathlib import Path
-
-payload = json.loads(Path("evals/native-runtime/environment-probe.json").read_text(encoding="utf-8"))
-assert payload.get("schema") == "design-craft.native-runtime-probe.v1"
-assert isinstance(payload.get("ios", {}).get("ready"), bool)
-assert isinstance(payload.get("android", {}).get("ready"), bool)
-plist = plistlib.loads(Path("evals/native-runtime/fixtures/ios/Info.plist").read_bytes())
-assert plist.get("CFBundleIdentifier") == "dev.designcraft.runtime-evidence"
-scene_manifest = plist.get("UIApplicationSceneManifest", {})
-assert scene_manifest.get("UIApplicationSupportsMultipleScenes") is False
-scene_configs = scene_manifest.get("UISceneConfigurations", {})
-assert scene_configs.get("UIWindowSceneSessionRoleApplication")
-ET.parse("evals/native-runtime/fixtures/android/app/src/main/AndroidManifest.xml")
-
-workflow = Path(".github/workflows/native-runtime.yml").read_text(encoding="utf-8")
-validate_workflow = Path(".github/workflows/validate.yml").read_text(encoding="utf-8")
-for needle in ("native_runtime_ci_ios.sh", "reactivecircus/android-emulator-runner@", "native_runtime_ci_android.sh"):
-    assert needle in workflow
-ios_runner = Path("scripts/native_runtime_ci_ios.sh").read_text(encoding="utf-8")
-android_runner = Path("scripts/native_runtime_ci_android.sh").read_text(encoding="utf-8")
-android_common = Path("scripts/native_runtime_android_common.sh").read_text(encoding="utf-8")
-assert "xcrun simctl" in ios_runner and "design_craft_native_runtime_record.py" in ios_runner
-assert "-parse-as-library" in ios_runner and "-module-name DesignCraftEvidence" in ios_runner
-assert "simctl terminate" in ios_runner and "simctl openurl" in ios_runner
-assert "interaction_observed" in ios_runner and "runtime-interaction.txt" in ios_runner
-assert "design_craft_native_runtime_record.py" in android_runner
-assert "uiautomator" in android_common and "adb exec-out cat" in android_common
-assert "native_runtime_android_common.sh" in android_runner
-assert "before_accessibility_tree=" in android_runner and "after_accessibility_tree=" in android_runner
-assert "before_screenshot=" in ios_runner and "interaction_marker=" in ios_runner
-assert "Enable KVM access" in workflow and "-no-metrics" in workflow
-assert "DESIGN_CRAFT_NATIVE_BUILD_ONLY" in validate_workflow
-assert "android-fixture-build" in validate_workflow
-PY
-
-python3 - <<'PY'
-import re
-from pathlib import Path
-
-for workflow in Path(".github/workflows").glob("*.yml"):
-    for line_number, line in enumerate(workflow.read_text(encoding="utf-8").splitlines(), start=1):
-        match = re.search(r"\buses:\s*[^@\s]+@([^\s#]+)", line)
-        if match and not re.fullmatch(r"[0-9a-f]{40}", match.group(1)):
-            raise SystemExit(f"{workflow}:{line_number}: action must be pinned to a full SHA")
-PY
+python3 scripts/design_craft_workflow_validate.py --check --validate >/dev/null
 
 (
   tmp_native_dir="$(mktemp -d -t design-craft-native-record.XXXXXX)"

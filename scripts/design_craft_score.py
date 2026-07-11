@@ -339,6 +339,7 @@ def build_score(root: Path, run_smoke: bool) -> list[Dimension]:
                 (has(root, "LICENSE") and has(root, "LICENSES/Apache-2.0.txt"), "root and upstream licenses are preserved", "Add the root license and preserved upstream license texts."),
                 (has(root, "scripts/design_craft_package_validate.py"), "publishable package boundary validator exists", "Add a Pi/npm package size and path validator."),
                 (has(root, "scripts/design_craft_public_repo_validate.py"), "public repository privacy validator exists", "Add a repository-wide user-home path and license validator."),
+                (has(root, "scripts/design_craft_workflow_validate.py"), "workflow and native runner contract validator exists", "Add a dedicated workflow pinning and native runner validator."),
                 (has(root, "scripts/design_craft_certification_install_check.sh"), "certification uses an isolated install root", "Verify install parity in a temporary root before publishing live."),
                 (
                     set(json.loads(read_text(root / "package.json")).get("files", []))

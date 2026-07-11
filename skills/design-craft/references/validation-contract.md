@@ -195,10 +195,13 @@ Check and report:
 
 ## Route summary fields
 
-When route planner is used, report:
+Use `--output compact-json` for normal agent handoff/context ingestion and
+`--output json` only when the complete static delivery contract is required.
+Use `--output human` for interactive inspection. When route planner is used,
+report:
 
 - `frontend_tier`
-- `design_tier` (must equal `frontend_tier` in 0.4.x)
+- `design_tier` (must equal `frontend_tier` under `frontend-route-v2`)
 - `platform`, `platform_source`, and `platform_confidence`
 - `product_context_path`
 - `candidate_skills`

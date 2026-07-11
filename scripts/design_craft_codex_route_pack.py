@@ -395,6 +395,12 @@ def semantic_validation(source_root: Path) -> dict:
                 issues.append("surface=mobile must not be a native platform signal")
             if platform_validation.get("static_scan_is_runtime_proof") is not False:
                 issues.append("static native scans must not be runtime proof")
+        quality_governance = routing.get("quality_governance", {})
+        risk_governance = quality_governance.get("risk_governance", {})
+        if risk_governance.get("architecture_review_required_intents") != ["redesign", "new-page"]:
+            issues.append("architecture review intent triggers must be declared in routing config")
+        if quality_governance.get("performance_review_required_for_surfaces") != ["dashboard", "app"]:
+            issues.append("performance review surface triggers must be declared in routing config")
         reasoning = routing.get("reasoning_overrides")
         required_reasoning = {"inherit", "low", "medium", "high", "xhigh", "max", "ultra"}
         if not isinstance(reasoning, dict) or not required_reasoning.issubset(reasoning):
@@ -438,6 +444,8 @@ def semantic_validation(source_root: Path) -> dict:
             "--browser-context",
             "--delegation-authorization",
             "--visual-contract",
+            "compact-json",
+            "human",
         ],
         "frontend_route_core.py": [
             "from frontend_route_authority import",
@@ -449,6 +457,9 @@ def semantic_validation(source_root: Path) -> dict:
             "delegation_contract",
             "runtime_profile_verified",
             "delegation_authorization_missing",
+            "architecture_review_required_intents",
+            "performance_review_required_for_surfaces",
+            '"frontend-route.compact.v1"',
             '"design_tier": tier',
             '"preferred_browser_tool": preferred_browser_tool',
             '"runtime_validation_kind": runtime_validation_kind',
@@ -655,6 +666,37 @@ def semantic_validation(source_root: Path) -> dict:
     )
     if not runtime_truth_probe_ok:
         issues.append(f"verified environment runtime-profile probe failed: {detail[:240]}")
+
+    compact_arguments = [
+        *probe_base[:-1],
+        "compact-json",
+        "--browser-context",
+        "local",
+    ]
+    returncode, payload, detail = run_route_probe(
+        source_root,
+        compact_arguments,
+        runtime_model="gpt-5.6-sol",
+        runtime_reasoning="max",
+    )
+    compact_probe_ok = (
+        returncode == 0
+        and payload.get("schema") == "frontend-route.compact.v1"
+        and "delivery_contract" not in payload
+        and payload.get("route", {}).get("frontend_tier") == "L1-F"
+        and payload.get("runtime_profile", {}).get("verified") is True
+        and payload.get("validation", {}).get("preflight_code") == "OK"
+    )
+    runtime_probes.append(
+        {
+            "name": "compact_route_output",
+            "ok": compact_probe_ok,
+            "returncode": returncode,
+            "schema": payload.get("schema"),
+        }
+    )
+    if not compact_probe_ok:
+        issues.append(f"compact route output probe failed: {detail[:240]}")
 
     returncode, payload, detail = run_route_probe(
         source_root,

@@ -375,7 +375,14 @@ def validate_output(task_dir: Path, host: str) -> list[str]:
     required_concepts = {
         "evidence": ("evidence", "证据"),
         "unverified": ("unverified", "未验证"),
-        "design move": ("design move", "设计动作", "设计建议", "设计移动"),
+        "design move": (
+            "design move",
+            "设计动作",
+            "设计建议",
+            "设计移动",
+            "设计修正",
+            "设计改进",
+        ),
     }
     for label, variants in required_concepts.items():
         if not any(variant in lowered for variant in variants):

@@ -28,8 +28,16 @@ This document is the local release and maintenance checklist for
   routing.
 - Keep helper scripts deterministic and cheap enough to run before real
   UI/UX/design/frontend work.
+- Keep OS support explicit: repository automation is verified on macOS/Linux;
+  Windows requires WSL or a compatible Git Bash environment and remains
+  unverified without a native Windows CI lane.
 - Keep the deterministic release gate independent of mutable upstream remote
   heads. Remote freshness is a separate release-readiness and scheduled audit.
+- Keep GitHub Actions pinned to full reviewed SHAs. Dependabot may propose
+  GitHub Actions or npm metadata updates, but those changes still require the
+  normal validation and review gates.
+- Keep package, public-repository, and workflow/native contract checks in their
+  dedicated validators rather than expanding the monolithic validation shell.
 - Keep 95/100 operational readiness distinct from certified 100/100. The latter
   requires current-source v2 four-host and native runtime evidence and must not
   be inferred from legacy artifacts or workflow definitions.
@@ -167,10 +175,10 @@ Expected result:
   exist on the certification machine.
 - Observed cross-agent evidence validates for the hosts that actually ran the
   same benchmark prompt. Uncollected hosts must remain explicitly unverified.
-- Local maturity reports 95/100. Until native runtime artifacts exist, the
-  release must say `iOS Simulator: unverified locally` and
-  `Android Emulator: unverified locally`, with real-device evidence also
-  unverified.
+- Local maturity reports 95/100. Current-source iOS Simulator and Android
+  Emulator artifacts are observed and validated; physical-device evidence
+  remains missing. The maturity JSON reports these three statuses separately
+  while the aggregate certification gate stays capped at 95 until all pass.
 - Upstream absorption report runs without fetching or modifying submodules; the
   optional `--remote` check reports remote drift with `git ls-remote`.
 - Upstream lock commits match checked-out submodule commits.
@@ -461,9 +469,10 @@ Before committing a release:
    `bash scripts/install_local.sh --dry-run --include-legacy-alias`
 12. Confirm no repo docs were added inside `skills/design-craft/` except the
     machine-readable `VERSION` and `COMPATIBILITY.json` contracts.
-13. Record `iOS Simulator: unverified locally` and
-    `Android Emulator: unverified locally`, plus real-device status, until all
-    observed artifacts exist.
+13. Record each maturity JSON status independently. Current evidence should say
+    `ios_simulator: observed_current_source`,
+    `android_emulator: observed_current_source`, and `real_device: missing`
+    until a current-source physical-device artifact is admitted.
 14. For a release claiming native runtime evidence, dispatch
     `.github/workflows/native-runtime.yml`, download both artifacts, verify their
     hashes and assertions, and then validate the admitted JSON with

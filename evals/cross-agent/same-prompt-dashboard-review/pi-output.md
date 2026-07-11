@@ -1,205 +1,247 @@
-# Design-Craft Critique — Revenue Operations Dashboard
-
-**Mode:** `critique` (read-only, no file edits, no browser validation claimed)
-**Method:** single-context (prose concept description only)
-**Evidence level:** L0 static — prose description, no screenshot, DOM, responsive, focus walk, hover state, loading, empty, or error state verified
-**Style authority:** prompt-described ("restrained enterprise console, dense but calm, no marketing hero treatment, token-backed color only")
+Now I have all the references needed. Here is the design-craft critique:
 
 ---
 
-## Design Read
+# Design-Craft Critique: Revenue Operations Dashboard
 
-> **Reading this as:** enterprise revenue operations dashboard for an internal ecommerce operator, with restrained/calm console density, optimized for *triaging which account or campaign needs attention in the next hour* — but the current visual structure buries the triage decision behind equal-weight decoration and non-decision content.
-
----
-
-## Overall Score
-
-**Score: 72 / 100**
-**Design maturity band: Functional but ordinary (60–74)**
-
-### Why this score
-
-| Signal | Impact |
-|---|---|
-| **−** 12 equal KPI cards enforce zero priority hierarchy — the operator's core job is flatlined | Major deduction (card soup, P1) |
-| **−** Decorative area chart consumes space but answers no operational question | P1 structural waste |
-| **−** Generic tips rail occupies premium right-column real estate with no triage value | P1 misallocation |
-| **−** Dense account table (the only decision-surface object) is buried *below* decoration and equal-weight metrics | P1 inverted information order |
-| **−** No exception queue, anomaly callout, or "needs attention" signal — the exact thing the operator needs is absent | P0 task-focus failure |
-| **+** Token-backed color discipline and restrained enterprise tone are explicitly stated as the design authority | Calms the visual noise risk |
-| **+** A dense table exists, which *is* the right object for account-level triage — it’s just in the wrong position | Positive latent structure |
-| **Not scored as verified:** hover, focus, active, disabled, loading, empty, error, success states; responsive behavior; real-content overflow; keyboard accessibility; screen-reader labels; motion; color contrast ratios; token implementation fidelity. All claimed at L0 only. | |
-
-### Anti-inflation guard
-
-The 12 equal KPI cards are the **textbook definition of card soup** (design-move-library: "All KPI cards have equal size, color, and surface weight"). Per `taste-score-calibration.md`: *Do not score above 84 when the main issue is a flat hierarchy or card soup.* The score is further constrained below 78 because the decorative chart and generic tips rail push the surface past "clean but generic" into "actively misaligned with the primary user job."
+**Mode**: `critique` (read-only)
+**Reference routing**: `surface-playbooks.md` (dashboard), `product-ui-taste-review.md`, `taste-score-calibration.md`, `design-move-library.md`, `foundational-visual-principles.md`, `validation-contract.md`
 
 ---
 
-## Top Hierarchy / Product-Fit Issues
+## 1. Evidence Level and Score Band
 
-| Priority | Location | Category | Problem | Why It Hurts |
-|:---|:---|:---|:---|:---|
-| **P0** | Entire surface | Task focus | No exception/anomaly/attention signal exists. The operator's explicit job — "decide which account needs attention in the next hour" — has no visual answer on the page. | Operator cannot complete the primary task without decoding 12 equal cards and scanning a dense table manually. |
-| **P1** | Top section | Information order, contrast | 12 equal KPI cards. All metrics share the same visual weight, size, surface treatment, and emphasis regardless of risk, trend, or operational urgency. | Positive, negative, warning, and neutral states are indistinguishable. The highest-risk metric looks identical to a benign total. |
-| **P1** | Mid section | Composition | Decorative area chart. The prompt itself calls it "decorative" — it answers no analytical question about accounts, campaigns, revenue anomalies, or triage. | Prime vertical space used for ornamentation in a surface where every pixel should serve the decision path. |
-| **P1** | Right rail | Task focus, contrast | Generic tips rail. Advice content has no operational relationship to the accounts or campaigns the operator needs to triage. | Wastes the most scannable sidebar real estate on non-decision content; competes for visual attention with the table. |
-| **P1** | Below fold | Information order | Dense account table placed after cards + chart + tips rail. This is the only object where the operator can actually *decide*, but it arrives last in the scan path. | Continuity principle violated: summary → decoration → tips → decision makes no cognitive flow. |
-| **P2** | Table | Repetition | Schema-order columns (implied by "dense" + no task-first restructuring). Columns likely follow database field order rather than triage order. | Operator must decode horizontally to find status, risk, and next-action columns. |
-| **P2** | KPI cards | Alignment, repetition | 12 cards naturally invite alignment drift, inconsistent padding, mismatched label lengths, and varying delta/trend treatments unless rigorously templated. | Without a shared `KpiCard` anatomy and strict token boundary, the grid drifts toward "assembled" rather than "composed." |
+**Evidence level: L0 static** — prose description only. No screenshot, DOM, computed style, responsive run, focus walk, hover state, loading state, error state, or real-content behavior was verified. The prompt itself confirms this: *"No screenshot, DOM, responsive run, focus walk, hover state, loading state, or error state was verified."*
 
----
+### Product UI Taste Score: 35 / 100
 
-## Concrete Design Moves
+**Band**: Rough / unfinished (0–59)
 
-Using design-craft vocabulary and the **dashboard card soup → decision surface** move family from `design-move-library.md`, treatment variant: **Ops command center** (blocker-first hierarchy, high-contrast exceptions, queue/action rail, short labels, strong state semantics).
+**Why this score:**
 
-### Move 1: Card soup → priority hierarchy (P0 + P1)
-
-**Before:** 12 equal KPI cards in a flat grid.
-**After:** Split into three tiers with distinct visual weight:
-
-1. **Lead risk object** (one dominant module at top-left): the single most urgent metric — e.g., "Accounts at risk (3)" — with trend sparkline, time window, and a direct link to the filtered table below. Occupies ~2× the width of a standard KPI card. Uses the project's semantic warning/danger token only when the threshold is breached.
-2. **Supporting metric strip** (compact row of 4–5 secondary KPIs): revenue, margin, order volume, conversion rate. Each shows value + delta + period. Smaller type, flatter surface, no card elevation — a tight horizontal band, not a grid of equal boxes.
-3. **Diagnostic metric drawer or collapsed row** for the remaining 6–7 metrics. Disclosed on demand or tucked into a compact secondary row below the fold. These are inspection metrics, not triage metrics.
-
-**Acceptance criteria:** Operator can identify the highest-risk metric within 3 seconds. Positive/negative/warning states are visually distinct without relying solely on color.
-
-### Move 2: Decorative chart → diagnostic chart (P1)
-
-**Before:** Area chart that the prompt itself calls "decorative."
-**After:** Replace with a chart that answers *one* operational question directly relevant to triage. Candidates:
-- "Revenue anomaly timeline" (highlighting deviations from expected range per hour/day)
-- "At-risk account count trend" (30-day rolling, with threshold annotation)
-- "Campaign performance variance" (actual vs. target with tolerance band)
-
-**Implementation discipline:** Label axes directly (no legend-only decoding). Use the project's semantic status palette for above/below-threshold regions. Keep tooltips compact with decision-relevant data (account name, delta, action link), not raw series names.
-
-**Acceptance criteria:** The chart answers a named analytical question. Anomalous data points are visually distinct and link to the filtered table.
-
-### Move 3: Generic tips rail → action queue / priority alerts (P1)
-
-**Before:** Right rail with generic tips.
-**After:** Convert to an **exception queue** or **action rail** — the operator's "what needs attention" surface:
-
-- **Priority alerts** (top): accounts/campaigns breaching thresholds, sorted by severity. Each row: account name, metric at risk, delta, time since alert, and a one-click filter action on the table below.
-- **Pending actions** (mid): operator-owned tasks (approvals, reviews, escalations).
-- **Recent activity** (bottom, compact): last 3–5 triage actions taken by the team.
-
-**Surface treatment:** Use the project's raised surface token for the rail container, but keep internal rows flat (dividers, not nested cards). Use semantic status color sparingly — only on the severity indicator, not the entire row.
-
-**Acceptance criteria:** The rail contains only operational decision content. No generic advice. Every row links to a filterable action on the main table.
-
-### Move 4: Table repositioning and task-first columns (P1 + P2)
-
-**Before:** Dense table below all decoration, schema-order columns.
-**After:**
-
-1. **Position:** Table moves to center stage, directly below the lead metric + strip + diagnostic chart. It is the primary decision surface and should occupy the main content column, not compete with a tips rail.
-2. **Column order (task-first):** Account identity → Status (active/at-risk/paused) → Risk indicator → Revenue impact ($) → Trend (sparkline or delta) → Next action (button or link). Metadata columns (region, manager, created date, last contact) move to a right-side cluster or are disclosed on row expand.
-3. **Row hierarchy:** At-risk rows get a subtle left-border accent (semantic danger/warning token) and sort to the top by default. Healthy rows use the default surface treatment.
-4. **Empty/loading/error states** scoped to the table region, not a page-level spinner.
-
-**Acceptance criteria:** Operator can scan identity → status → risk → next action without horizontal scrolling. At-risk rows are sorted first. Long account names truncate with tooltip. Narrow viewport gracefully collapses metadata columns.
-
-### Move 5: Layout restructure (P1)
-
-**Before:** 12 cards → decorative chart → table || tips rail.
-**After (proposed page grammar):**
-
-```
-┌──────────────────────────────────────────────────┐
-│  Page header: title, time range selector, export  │
-├──────────────────────────┬───────────────────────┤
-│ Lead risk object (2col)  │  Exception queue      │
-│ + Supporting metric      │  • Alert 1 (severity) │
-│   strip (compact row)    │  • Alert 2            │
-│                          │  • Alert 3            │
-│ Diagnostic chart         │  Pending actions      │
-│ (answers one question)   │  Recent activity      │
-├──────────────────────────┴───────────────────────┤
-│  Account table (task-first columns, at-risk      │
-│  rows sorted to top, filters adjacent to data)   │
-└──────────────────────────────────────────────────┘
-```
-
-This preserves the restrained enterprise tone (no hero treatment, token-backed color) while replacing decoration with operational signal density.
-
----
-
-## Verified vs. Unverified Claims
-
-### Verified (by prompt only)
-
-- ✅ 12 equal KPI cards exist — self-declared in the prompt.
-- ✅ Decorative area chart exists — self-declared in the prompt.
-- ✅ Dense account table exists.
-- ✅ Generic tips rail exists.
-- ✅ Style intent: restrained enterprise console, token-backed color.
-
-### Unverified (claimed but not confirmed)
-
-| Claim | Why unverified | Risk if false |
+| Dimension | Score | Reasoning |
 |---|---|---|
-| "Token-backed color only" | No DESIGN.md, token file, or CSS variable dump inspected. Hard-coded hex values unknown. | Color may contain untracked one-offs that drift from the restrained intent. |
-| All 12 cards share equal visual weight | No screenshot or DOM. "Equal KPI cards" could mean equal conceptual role but slightly varied size. | If cards already have some priority differentiation, the scoring is conservative. |
-| Table is truly dense and useful | No row count, column count, or sample data. "Dense" could mean noisy rather than information-rich. | The table might need its own redesign prior to repositioning. |
-| No loading/empty/error states exist | Implied by omission in the prompt, not confirmed. | If these states are actually designed, polish is higher than scored. |
-| No focus-visible, hover, or keyboard behavior | L0 evidence cannot verify interaction states. | Accessibility baseline unknown. |
-| Responsive behavior | No viewport testing. A 3-column layout with right rail likely breaks on narrow screens. | Mobile/tablet operator scenario unaddressed. |
-| Chart is truly decorative | Prompt self-describes it as "decorative." But decorative is a judgment, not a fact. The chart might carry implicit meaning the prompt author dismissed. | If the chart answers a real question, the score is slightly low. |
+| Design intent & taste direction | 4 / 10 | Stated intent ("restrained enterprise, dense but calm, token-backed") is strong and appropriate. But the described layout — 12 equal KPI cards + decorative chart + generic tips — reads as a generic SaaS template, directly contradicting the intent. |
+| Task focus & attention control | 2 / 10 | The primary job is identifying which account or campaign needs attention in the next hour. Twelve equal-weight cards with no risk prioritization, no exception queue, and a decorative chart make this impossible to triage within seconds. |
+| Information order & structure | 3 / 10 | Summary → detail → action flow is inverted. Flat KPI grid dominates prime real estate, the decorative chart doesn't answer a named analytical question, the decision-critical table is buried, and generic tips are disconnected from data. |
+| Proximity & grouping | 4 / 10 | Twelve equal cards collapse all metric groups into one undifferentiated mass. Right-rail tips are physically separated from the data they should explain. Filters (if any exist) are likely detached from the table. |
+| Alignment & grid discipline | 5 / 10 | The 12-card grid is likely geometrically aligned. The problem is semantic, not geometric. Generous extrapolation from the description. |
+| Repetition & system coherence | 4 / 10 | Consistent card anatomy exists but encodes zero priority semantics. A -35% revenue anomaly card looks identical to a flat "total sessions" card. The system is coherent in shape but broken in meaning. |
+| Contrast & hierarchy | 2 / 10 | **Primary failure.** Zero visual distinction between blocker, warning, neutral, and positive states across all 12 KPIs. The entire header zone is one flat visual weight. The decorative chart and generic tips dilute remaining contrast. |
+| Typography, color, surface quality | 6 / 15 | Token-backed color is a redeeming signal — suggests an existing design system. The dense table may use disciplined data typography. But the "decorative" area chart and "generic tips" signal weak surface judgment. |
+| Interaction polish & microcopy | 3 / 10 | Not described. "Generic tips" implies boilerplate copy with no contextual recovery language. No evidence of row actions, tooltips, loading, error, or empty states. |
+| Responsive & frontend craft | 2 / 5 | Not described. A dense table + right rail structure is at high risk of horizontal overflow and broken stacking on narrow viewports. No token-audit or component-reuse evidence. |
+
+**Anti-inflation check**: Score is capped below 84 due to flat hierarchy and card soup (per calibration rules). Score is capped below 88 due to L0 static evidence. Score is capped below 92 because interaction states are entirely unverified.
 
 ---
 
-## Minimal Validation Plan (Before Implementation)
+## 2. Design Read
 
-Per `validation-contract.md`, the absolute minimum before any implementation work:
+**Reading this as**: revenue operations dashboard for an ecommerce operator, with a restrained enterprise console feel, **optimized for triaging which account or campaign needs attention in the next hour**, but the described layout optimizes for overview-at-a-glance rather than urgent operational decision-making — a category mismatch between the stated job and the visual structure.
 
-### 1. Capture current-state screenshot (L0 → L1)
-- **Tool:** any browser screenshot at 1440×900 viewport.
-- **What to capture:** the full dashboard showing all 12 cards, chart, table, and tips rail.
-- **Purpose:** establishes baseline layout truth — confirms actual card sizes, spacing, chart type, column count, and whether the "dense" table is scannable or noisy.
+The stated style authority ("restrained enterprise console, dense but calm, no marketing hero treatment, token-backed color only") is an excellent fit for the product register. The problem is not the intended aesthetic — it's that the described layout is the opposite of what this surface needs.
 
-### 2. Real-content stress test
-- Load the dashboard with **real production data** for a known bad hour (e.g., 3 accounts at risk, 1 campaign failing).
-- Ask: *Does the operator see the 3 at-risk accounts within 3 seconds?* If yes, the current structure works better than this critique assumes. If no, the P0 finding is confirmed.
+---
 
-### 3. Operator task walk
-- Observe one operator performing their actual triage workflow on the current dashboard.
-- Record: first thing they look at, first click, time to decision, and any manual scanning they do to compensate for missing hierarchy.
-- This directly validates or refutes the "no exception surface" P0 finding.
+## 3. Top Hierarchy / Product-Fit Issues
 
-### 4. State inventory (L0 → L2)
-- Manually trigger and screenshot: **empty state** (no accounts), **loading state** (initial fetch), **error state** (API failure), and **all-normal state** (no accounts at risk).
-- Catalog which states are designed vs. which are browser-default spinners or blank containers.
-- This determines whether state-work is a polish task or a build-from-scratch task.
+### P0 — Flat KPI hierarchy blocks the primary job
 
-### 5. Token audit (if DESIGN.md or CSS variable file exists)
-- Run `design_craft_token_audit.py` or manual grep for hard-coded hex values.
-- Confirm that the "token-backed color only" claim holds.
-- If tokens don't exist, they need to be established before any visual restructuring.
+The dashboard's core purpose is operator triage: *which account or campaign needs attention in the next hour?* Twelve equal KPI cards cannot answer that question within three seconds. Every metric — whether it's on fire or flat — gets the same size, color, and surface weight. An operator must decode all twelve values and mentally rank them. This is the single highest-cost failure.
 
-### Gate before implementation
-- **Do not restructure** until the current-state screenshot and real-content test confirm that the operator is not already served by the existing layout.
-- **Do not polish** until the state inventory confirms which loading/empty/error variants need to be built.
-- **Do not finalize score** without at least one screenshot artifact (L1 minimum).
+**Design-craft principle**: *If everything is emphasized, nothing is important.* (foundational-visual-principles: Attention)
+
+### P0 — No exception queue or risk surface exists
+
+The operator needs to see: what's broken right now, what's trending toward broken, and what needs a decision before the hour ends. The described layout has no exception queue, no anomaly surface, no watched-account list, no alert panel. The account table is the closest thing to a decision surface, but it's buried below the decorative chart and lacks priority sorting in the described structure.
+
+### P1 — The area chart is described as "decorative"
+
+A chart that exists for visual fill rather than answering a named analytical question is a direct violation of data-viz grammar (surface-playbooks: "Pick the chart from the analytical question, not decoration"). It consumes prime real estate between the KPI header and the table, displacing what should be the operator's primary decision surface.
+
+**Design-craft principle**: *Economy — remove visual decisions that do not clarify task, structure, state, or brand.*
+
+### P1 — Right-rail tips are generic and disconnected
+
+"Generic tips" in a right rail is an anti-pattern in two ways:
+- **Proximity violation**: tips live far from the data they're meant to contextualize.
+- **Microcopy weakness**: generic tips don't tell the operator what to do with the specific numbers on this dashboard at this moment.
+
+### P2 — Table is "dense" without task-first column order
+
+The account table is the likely decision surface (scan accounts, identify issues, take action), but "dense" without further description suggests columns may follow database schema order rather than operator task order: identity → status → risk → impact → next action.
+
+---
+
+## 4. Concrete Design Moves
+
+Using design-craft vocabulary and the **dashboard card soup → decision surface** move from `design-move-library.md`.
+
+### Move 1: Promote a lead risk object above the fold
+
+**Current**: 12 equal KPI cards across the top.
+
+**Recommended**: Replace with a **lead risk object** — a single, visually dominant module that surfaces the highest-priority operational state. This could be:
+- The single worst-performing account or campaign by revenue deviation
+- An aggregate "attention score" with drill-down
+- The number of accounts currently below threshold
+
+Below the lead object, convert the remaining KPIs into a **compact supporting metric strip** (3 rows × 4 columns at most, or a single-row band with inline deltas). This respects the need for density while establishing clear hierarchy.
+
+**Treatment variant**: *Ops command center* — blocker-first hierarchy, high-contrast exceptions, short labels, strong state semantics.
+
+### Move 2: Replace the decorative chart with an exception queue
+
+**Current**: A decorative area chart sits between KPIs and the table.
+
+**Recommended**: Replace with an **exception queue or anomaly panel** — a scannable list of accounts/campaigns that are outside threshold, ranked by deviation severity. Each row shows: entity name, metric-at-risk, deviation delta, time window, and a single next-action affordance.
+
+If a trend chart is genuinely needed for diagnostics, tuck it below the exception queue or make it a secondary panel that the operator expands on demand. It should answer a named question (e.g., "Is the revenue dip accelerating or recovering?"), not exist for decoration.
+
+### Move 3: Restructure the table for task-first scanning
+
+**Current**: "Dense account table."
+
+**Recommended**: Reorder columns for the operator's decision flow:
+- **Column 1**: Account/campaign identity (primary scan key)
+- **Column 2**: Status — a semantic indicator (on-track / warning / critical / paused) using token-backed status color, not decoration
+- **Column 3**: Risk metric — the number that drives attention, right-aligned
+- **Column 4**: Impact — revenue, budget, or opportunity cost, right-aligned
+- **Column 5**: Next action — inline button or link (investigate, adjust, escalate)
+
+Group secondary metadata (contact, region, channel, created date) into a collapsible detail row or later columns. Right-align all numeric columns. Add explicit empty/loading/error states near the table, not at page bottom.
+
+### Move 4: Replace the right rail with contextual inline help
+
+**Current**: Right rail with generic tips.
+
+**Recommended**: Eliminate the right rail entirely. Move contextual guidance inline:
+- Tooltip or hover text on at-risk metrics explaining the threshold and recommended action
+- A compact "what to do next" text block directly below the exception queue (not in a detached side rail)
+- Recovery language that references the specific data on screen, not generic best practices
+
+This recovers horizontal space for the table (critical for a dense ops surface) and fixes the proximity problem.
+
+### Move 5: Establish status semantics and monotone surfaces
+
+The style authority says "token-backed color only." Enforce this:
+- **Status tokens only**: green for on-track, amber for approaching threshold, red for below threshold, neutral for informational. No decorative color on cards, borders, or backgrounds.
+- **Surface treatment**: flat or minimally raised surfaces with subtle dividers, not heavy card shadows. The "restrained enterprise console" feel comes from quiet surfaces and semantic color, not elevation.
+- **Typography**: use the project's token scale. Metrics should be data-font (tabular figures) at a larger size, with comparison context (delta, period, threshold) at caption size directly below. No decorative type treatments.
+
+### Layout target
+
+```
+┌──────────────────────────────────────────────────────┐
+│  Lead Risk Object (dominant, 1 module)               │
+│  "3 accounts below 15% margin threshold this hour"   │
+├──────────────────────────────────────────────────────┤
+│  Supporting Metric Strip (compact, 1-row band)       │
+│  [Revenue ▼3%] [Margin 22%] [ACoS ▲5%] [ROAS 3.2x]  │
+├──────────────────────────────────────────────────────┤
+│  Exception Queue (scannable list, ranked by severity)│
+│  ● Account A  -18% rev  |  Investigate               │
+│  ● Campaign X +42% ACoS |  Adjust bids                │
+│  ○ Account C  -7% margin|  Monitor                    │
+├──────────────────────────────────────────────────────┤
+│  Account Table (task-first columns, full width)       │
+│  Identity | Status | Risk | Impact | Next Action      │
+├──────────────────────────────────────────────────────┤
+│  Diagnostic Chart (collapsed, "Show trend" toggle)   │
+└──────────────────────────────────────────────────────┘
+```
+
+---
+
+## 5. Verified Versus Unverified Claims
+
+| Claim | Status | Evidence |
+|---|---|---|
+| "Restrained enterprise console, dense but calm" | **Unverified** — stated intent, but described layout contradicts it | Prompt text only |
+| "Token-backed color only" | **Unverified** — claimed but no token file, CSS variable audit, or computed-style evidence | Prompt text only |
+| "12 equal KPI cards at the top" | **Verified** — this is the structural description being critiqued | Prompt text |
+| "One decorative area chart" | **Verified** — confirms this is decoration, not analytical tool | Prompt text |
+| "Dense account table" | **Partially verified** — the word "dense" is given, but column order, alignment, sorting, filtering, and state behavior are all unverified | Prompt text |
+| "Right rail with generic tips" | **Verified** — confirms the proximity and microcopy anti-pattern | Prompt text |
+| Hover states exist and are polished | **Unverified** | Not described |
+| Focus-visible states exist | **Unverified** | Not described |
+| Loading, empty, error states exist | **Unverified** | Not described |
+| Responsive behavior on narrow viewports | **Unverified** | Not described |
+| Table supports sorting, filtering, row actions | **Unverified** | Not described |
+| Color contrast meets accessibility minimums | **Unverified** | No token or computed-style evidence |
+| KPI cards show deltas, time ranges, or thresholds | **Unverified** | Not described |
+| Chart has labeled axes, legend, tooltips, or handles empty data | **Unverified** | Not described |
+
+**Summary**: Of the 17 review dimensions in the taste rubric, only structural layout (proximity of top-level sections) and stated intent can be judged from L0 evidence. All interaction states, responsive behavior, typography specifics, color values, accessibility, and microcopy are entirely unverified.
+
+---
+
+## 6. Minimal Validation Plan Before Implementation
+
+Per `validation-contract.md`, the minimal command ladder for a dashboard redesign would be type-check + lint + build + browser smoke. But the prompt says *"do not edit files."* The validation plan below describes what must be verified before any implementation work begins — it is a pre-implementation audit plan, not a post-build QA checklist.
+
+### Phase 1: Static evidence (before any code change)
+
+1. **Capture an L2 baseline**: Take a viewport screenshot of the current dashboard at a standard desktop resolution (1440×900). This moves evidence from L0 to L2 and enables before/after comparison. Use `browser_screenshot_ops target:"viewport"` if TMWD is available.
+
+2. **Token audit**: Run `design_craft_token_audit.py` (or manual review) against the project's CSS variables / Tailwind config / design-token file. Confirm:
+   - Semantic status tokens exist (critical, warning, neutral, positive, info)
+   - Surface tokens exist (base, raised, overlay) and are not over-decorated
+   - Typography scale includes a data/metric role with tabular figures
+   - Spacing scale is defined (4/8/12/16/24/32px minimum)
+   - No hard-coded colors outside the token system
+
+3. **Table column audit**: Inspect the actual table column order. Document whether it follows database schema order or task-first order. Check numeric alignment (are numbers right-aligned?).
+
+4. **Component inventory**: Catalog how many distinct KPI card variants exist. If there is exactly one variant, confirm the system has no mechanism to express risk priority.
+
+### Phase 2: Interaction and state discovery (before redesign)
+
+5. **Responsive check**: Resize the viewport to 375px and 768px widths. Document:
+   - Does the right rail collapse, stack below, or overflow?
+   - Does the 12-card grid reflow or produce horizontal scroll?
+   - Does the table have horizontal overflow or responsive column hiding?
+   - Are touch targets ≥ 44 CSS px?
+
+6. **State audit**: Manually inspect or use `design_craft_focus_audit.py`:
+   - Loading states for KPI cards, chart, and table
+   - Empty states (no accounts, no campaigns, zero data)
+   - Error states (API failure, permission denied)
+   - Focus-visible on table rows, filter controls, and any action buttons
+   - Hover states on interactive elements
+
+7. **Chart question audit**: For the area chart, ask: "What analytical question does this chart answer?" If the answer is "it looks nice" or no one can name the question, it's confirmed decorative.
+
+### Phase 3: Product-context validation
+
+8. **Operator interview** (one session, 20 minutes): Show the current dashboard to one actual operator and ask:
+   - "In the first 5 seconds, what do you look at?"
+   - "How do you decide which account to investigate next?"
+   - "What numbers do you wish were more visible?"
+   - This confirms or refutes the hypothesis that the flat KPI grid fails the triage job.
+
+### Phase 4: Implementation gates (post-redesign)
+
+9. **Before/after evidence (L4)**: Capture viewport screenshots before and after the redesign. Run type-check, lint, and build. Document the diff.
+
+10. **Acceptance checklist** (from `product-ui-taste-review.md`):
+    - [ ] Operator can identify the top risk within 3 seconds of loading
+    - [ ] Operational blockers appear before low-risk overview metrics
+    - [ ] No decorative elements remain that don't serve a named analytical question
+    - [ ] Status semantics use token-backed color, not decoration
+    - [ ] Table columns follow task-first order (identity → status → risk → impact → action)
+    - [ ] Right rail is eliminated; contextual guidance is inline
+    - [ ] Empty, loading, and error states exist for all data-dependent modules
+    - [ ] Dashboard works at 375px without horizontal overflow
+    - [ ] All interactive elements have visible focus-visible states
 
 ---
 
 ## Summary
 
-| Field | Value |
-|---|---|
-| Evidence level | L0 static (prose only) |
-| Score | 72 / 100 |
-| Band | Functional but ordinary |
-| Primary diagnosis | Card soup + decorative chart + non-operational rail bury the only decision surface (the table), and no exception signal exists for the operator's explicit triage job |
-| P0 issues | 1 (no anomaly/attention surface) |
-| P1 issues | 4 (card soup, decorative chart, generic tips rail, inverted information order) |
-| P2 issues | 2 (schema-order columns, card alignment drift risk) |
-| Validated claims | 5 (prompt-self-declared only) |
-| Unverified claims | 7 (states, responsive, interaction, tokens, real content, chart intent, table quality) |
-| Design authority | Enforced as stated — restrained enterprise console, token-backed color, no hero treatment |
-| Recommended treatment variant | Ops command center (blocker-first, exception queue, short labels, strong state semantics) |
-| Next step | Capture screenshot → real-content stress test → operator task walk → state inventory → redesign, not before |
+This dashboard concept suffers from a category mismatch between the stated product job (operator triage within the hour) and the visual structure (flat overview dashboard). The layout matches the canonical "bad dashboard" anti-pattern from the design-move-library almost exactly: 12 equal KPI cards + decorative chart + table + generic tips. The primary redesign direction is to convert the surface from an overview dashboard into a decision surface with a lead risk object, exception queue, task-first table, and eliminated decorative elements — all within the existing "restrained enterprise console, token-backed color only" style authority, which is a strong and appropriate visual constraint.
+
+**Score**: 35 / 100 (L0 static)
+**Primary diagnosis**: Flat hierarchy makes operator triage impossible within the decision window.
+**Recovery path**: Lead risk object → compact metric strip → exception queue → task-first table → contextual inline help.

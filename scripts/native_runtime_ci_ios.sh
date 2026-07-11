@@ -55,28 +55,54 @@ xcrun simctl io "${udid}" screenshot "${EVIDENCE_DIR}/ios-before-interaction.png
 data_container="$(xcrun simctl get_app_container "${udid}" dev.designcraft.runtime-evidence data)"
 interaction_marker="${data_container}/Documents/runtime-interaction.txt"
 rm -f "${interaction_marker}"
-xcrun simctl terminate "${udid}" dev.designcraft.runtime-evidence
-xcrun simctl openurl "${udid}" "designcraft-evidence://confirm" > "${EVIDENCE_DIR}/openurl.txt"
+wait_for_interaction() {
+  local attempt
+  for attempt in {1..15}; do
+    if [[ -f "${interaction_marker}" ]] \
+      && grep -q "Runtime interaction confirmed" "${interaction_marker}"; then
+      return 0
+    fi
+    sleep 2
+  done
+  return 1
+}
+
+interaction_path=""
+if xcrun simctl openurl \
+  "${udid}" \
+  "designcraft-evidence://confirm" \
+  > "${EVIDENCE_DIR}/openurl-live.txt" 2>&1 \
+  && wait_for_interaction; then
+  interaction_path="live-deep-link"
+else
+  xcrun simctl terminate "${udid}" dev.designcraft.runtime-evidence || true
+  rm -f "${interaction_marker}"
+  if xcrun simctl openurl \
+    "${udid}" \
+    "designcraft-evidence://confirm" \
+    > "${EVIDENCE_DIR}/openurl-cold.txt" 2>&1 \
+    && wait_for_interaction; then
+    interaction_path="cold-deep-link"
+  fi
+fi
+
 {
   printf '%s\n' '[initial launch]'
   cat "${EVIDENCE_DIR}/launch.txt"
-  printf '%s\n' '[deep-link launch]'
-  cat "${EVIDENCE_DIR}/openurl.txt"
-} > "${EVIDENCE_DIR}/runtime-launch.log"
-interaction_observed=0
-for _ in {1..20}; do
-  if [[ -f "${interaction_marker}" ]] \
-    && grep -q "Runtime interaction confirmed" "${interaction_marker}"; then
-    interaction_observed=1
-    break
+  printf '%s\n' '[live deep link]'
+  cat "${EVIDENCE_DIR}/openurl-live.txt" 2>/dev/null || true
+  if [[ -f "${EVIDENCE_DIR}/openurl-cold.txt" ]]; then
+    printf '%s\n' '[cold deep link fallback]'
+    cat "${EVIDENCE_DIR}/openurl-cold.txt"
   fi
-  sleep 2
-done
-if [[ "${interaction_observed}" != "1" ]]; then
+  printf '%s\n' "[confirmed interaction path] ${interaction_path:-none}"
+} > "${EVIDENCE_DIR}/runtime-launch.log"
+
+if [[ -z "${interaction_path}" ]]; then
   xcrun simctl spawn "${udid}" log show --last 2m \
     --predicate 'process == "DesignCraftEvidence"' \
     > "${EVIDENCE_DIR}/interaction-diagnostics.log" 2>&1 || true
-  echo "iOS runtime URL interaction did not produce the marker" >&2
+  echo "iOS runtime deep link did not produce the interaction marker" >&2
   exit 1
 fi
 cp "${interaction_marker}" "${EVIDENCE_DIR}/runtime-interaction.txt"
@@ -89,7 +115,7 @@ python3 scripts/design_craft_native_runtime_record.py \
   --tool "xcodebuild/xcrun simctl" \
   --command "xcrun swiftc iOS fixture" \
   --command "xcrun simctl boot/install/launch" \
-  --command "xcrun simctl openurl interaction and marker assertion" \
+  --command "xcrun simctl openurl live/cold deep-link interaction and marker assertion" \
   --command "xcrun simctl io before/after screenshots" \
   --assertion build_succeeded=true \
   --assertion install_and_launch_succeeded=true \

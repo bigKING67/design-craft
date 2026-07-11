@@ -87,7 +87,12 @@ def read_json(path: Path) -> dict[str, Any]:
     return payload
 
 
-def package_errors(package: dict[str, Any]) -> list[str]:
+def package_errors(
+    package: dict[str, Any],
+    lock: dict[str, Any] | None = None,
+    compatibility: dict[str, Any] | None = None,
+    version: str | None = None,
+) -> list[str]:
     errors: list[str] = []
     configured = package.get("files")
     if not isinstance(configured, list) or any(not isinstance(item, str) for item in configured):
@@ -100,6 +105,40 @@ def package_errors(package: dict[str, Any]) -> list[str]:
     pi_skills = package.get("pi", {}).get("skills") if isinstance(package.get("pi"), dict) else None
     if pi_skills != ["skills/design-craft"]:
         errors.append("package.json pi.skills must expose only skills/design-craft")
+
+    if version is not None and package.get("version") != version:
+        errors.append("package.json version must match VERSION")
+    if not isinstance(package.get("keywords"), list) or "pi-package" not in package["keywords"]:
+        errors.append("package.json keywords must include pi-package")
+
+    if lock is not None and version is not None:
+        if lock.get("name") != package.get("name") or lock.get("version") != version:
+            errors.append("package-lock.json root name/version must match package.json and VERSION")
+        root_package = lock.get("packages", {}).get("") if isinstance(lock.get("packages"), dict) else None
+        if not isinstance(root_package, dict) or root_package.get("version") != version:
+            errors.append("package-lock.json packages root version must match VERSION")
+
+    if compatibility is not None:
+        route = compatibility.get("codex_route_pack", {})
+        evidence = compatibility.get("evidence_contracts", {})
+        expected = {
+            "schema": "design-craft.codex-route-pack.v2",
+            "manifest_schema": "codex.frontend-route-pack.manifest.v1",
+            "snapshot_schema": "codex.global_agents.snapshot.v2",
+            "routing_version": 2,
+        }
+        if compatibility.get("schema") != "design-craft.compatibility.v1" or any(
+            route.get(key) != value for key, value in expected.items()
+        ):
+            errors.append("COMPATIBILITY.json must pin the route-pack v2 contracts")
+        expected_evidence = {
+            "cross_agent": "design-craft.cross-agent-score.v2",
+            "native_runtime": "design-craft.native-runtime-evidence.v2",
+            "release_verification": "design-craft.release-verification.v1",
+            "github_checks": "design-craft.github-checks.v1",
+        }
+        if any(evidence.get(key) != value for key, value in expected_evidence.items()):
+            errors.append("COMPATIBILITY.json must pin the release evidence contracts")
     return errors
 
 
@@ -179,7 +218,16 @@ def validate() -> dict[str, Any]:
     except (OSError, ValueError, json.JSONDecodeError) as exc:
         package = {}
         errors.append(f"package.json is invalid: {exc}")
-    errors.extend(package_errors(package))
+    try:
+        lock = read_json(ROOT / "package-lock.json")
+        compatibility = read_json(ROOT / "skills/design-craft/COMPATIBILITY.json")
+        version = (ROOT / "VERSION").read_text(encoding="utf-8").strip()
+    except (OSError, ValueError, json.JSONDecodeError) as exc:
+        lock = {}
+        compatibility = {}
+        version = ""
+        errors.append(f"package compatibility metadata is invalid: {exc}")
+    errors.extend(package_errors(package, lock, compatibility, version))
 
     pack, npm_errors = npm_pack()
     errors.extend(npm_errors)
@@ -211,10 +259,33 @@ def validate() -> dict[str, Any]:
 def self_check() -> list[str]:
     errors: list[str] = []
     valid_package = {
+        "name": "design-craft",
+        "version": "0.5.0",
         "files": sorted(EXPECTED_PACKAGE_FILES),
+        "keywords": ["pi-package"],
         "pi": {"skills": ["skills/design-craft"]},
     }
-    if package_errors(valid_package):
+    valid_lock = {
+        "name": "design-craft",
+        "version": "0.5.0",
+        "packages": {"": {"version": "0.5.0"}},
+    }
+    valid_compatibility = {
+        "schema": "design-craft.compatibility.v1",
+        "codex_route_pack": {
+            "schema": "design-craft.codex-route-pack.v2",
+            "manifest_schema": "codex.frontend-route-pack.manifest.v1",
+            "snapshot_schema": "codex.global_agents.snapshot.v2",
+            "routing_version": 2,
+        },
+        "evidence_contracts": {
+            "cross_agent": "design-craft.cross-agent-score.v2",
+            "native_runtime": "design-craft.native-runtime-evidence.v2",
+            "release_verification": "design-craft.release-verification.v1",
+            "github_checks": "design-craft.github-checks.v1",
+        },
+    }
+    if package_errors(valid_package, valid_lock, valid_compatibility, "0.5.0"):
         errors.append("package validator rejected the valid package boundary fixture")
 
     valid_pack = {

@@ -19,6 +19,33 @@ All notable local changes to `design-craft` are recorded here.
 - Made 100-point certification two-phase: all source, remote, evidence, native,
   and temporary-install checks now pass before the live skill installation is
   atomically published.
+- Regenerated all three Codex/Pi current-source v2 benchmarks against
+  `gpt-5.6-sol` max and `deepseek-v4-pro` high, rescored each criterion without
+  carrying forward stale headline scores, and expanded multilingual output
+  validation to recognize concrete Chinese design-correction headings. Native
+  maturity reporting now preserves per-runtime truth: current-source iOS
+  Simulator and Android Emulator evidence remain observed while a missing or
+  invalid physical-device artifact is reported independently.
+- Added compact JSON and human-readable frontend route outputs so normal agent
+  handoffs do not need to ingest the full static delivery contract. Moved
+  architecture-intent and performance-surface triggers into the routing JSON
+  truth source, added schema and semantic probes, and removed stale `0.4.x`
+  wording from the route-v2 delivery contract.
+- Reworked iOS certification around a real `simctl openurl` transition against
+  the running app with a cold deep-link fallback, explicit URL-received logs,
+  and no test-only confirmation argument. Strengthened Android activity/UI
+  readiness and system-dialog recovery, and upgraded GitHub Actions pins to
+  their current Node 24 runtime releases.
+- Added Dependabot coverage for GitHub Actions and npm metadata while retaining
+  full-SHA action pinning and normal review gates.
+- Documented the verified macOS/Linux automation boundary and the currently
+  unverified Windows-via-WSL/Git-Bash path instead of implying native Windows
+  certification.
+- Reduced broad-task context loading to a three-reference core with explicit
+  conditional additions, preventing cross-host context dilution from loading
+  the full reference library by default.
+- Extracted package metadata and workflow/native contract checks from the
+  monolithic validation shell into independently testable validators.
 - Split installation provenance into `skill_source_dirty` and `repo_dirty`.
   Install parity now remains valid across unrelated ancestor commits and
   repo-level benchmark WIP when the installed skill tree is unchanged, while

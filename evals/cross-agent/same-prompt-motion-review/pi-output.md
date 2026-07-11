@@ -1,215 +1,284 @@
-## Motion Critique: Gesture-Sheet Interaction
+## Design Craft — Motion Critique: Gesture Sheet
 
-**Design read**: Web ops app for repeat daily use by operators. Drag a bottom sheet between `collapsed`, `half`, and `full` states. Calm utility UI — motion only to preserve causality and direct manipulation. No entertainment.
-
-**Mode**: `critique` (read-only, no edits, no browser/device claims).
-
-**References applied**: `motion-quality.md`, `interaction-physics.md`, `product-context.md`, `product-design-principles.md`, `design-move-library.md`.
+**Mode:** `critique` (read-only)
+**Evidence level:** Static source only — JavaScript + CSS snippet, no pointer trace, frame timeline, Reduced Motion run, responsive run, or real-device touch test. Per `interaction-physics.md`: *static source checks cannot prove gesture feel.*
 
 ---
 
-### 1. Evidence level
+### Design Read
 
-**Static source only.** No pointer trace, computed-style snapshot, frame timeline, Reduced Motion run, responsive run, or real-device touch test. The implementation evidence is two code blocks (JS event handlers + CSS). This caps every finding at *reasoned from source* — nothing below is confirmed at runtime.
-
----
-
-### 2. Should this motion exist?
-
-**Yes, but not all of it.** A draggable bottom sheet needs:
-
-- **Must animate**: pointer-down feedback, 1:1 tracking, and a settle animation after release. These preserve causality and direct manipulation.
-- **Must not animate**: The 480ms `ease-in` snap is decorative and slow. The 300ms `transition: all` fights the JS animation and adds layout thrash. The `:active` scale is harmless in intent but wrongly timed and wrongly eased for a daily-use tool.
+**Reading this as:** a web operations app for repeated daily use, with calm utility UI, optimized for preserving task context while dragging a sheet between `collapsed` / `half` / `full`. Motion exists only to preserve causality and direct manipulation — not to entertain.
 
 ---
 
-### 3. Prioritized findings
+### 1. Should This Motion Exist?
 
-#### 🔴 P0 — Block-level
+**Yes**, but only parts of it. Per `motion-quality.md` frequency table: a sheet dragged "tens/day" merits standard animation with restraint. The snap-to-nearest-point after release serves a causal purpose (spatial consistency + state indication). The `scale(0.96)` press feedback is also valid if brief.
 
-| # | Finding | Reasoning |
-|---|---------|-----------|
-| **P0.1** | `transition: all 300ms` on `.sheet` | Animates every CSS property over 300ms — including `top`, which `pointermove` sets directly and the snap `.animate()` also sets via WAAPI. This creates a CSS-transition vs. WAAPI-animation fight. `all` also triggers layout recalculation for `width`, `height`, `padding`, `margin` on any sheet change. Performance anti-pattern per `motion-quality.md`. |
-| **P0.2** | No `prefers-reduced-motion` anywhere | A block-level violation per `motion-quality.md`. The sheet must replace large spatial travel with a cross-fade or instant state switch when the user has Reduced Motion on. The 480ms snap with `ease-in` and the `scale(0.96)` press effect are both undamped spatial motion with no reduced path. |
-| **P0.3** | `animating` flag blocks all input during snap | Violates the *presentation-value interruption* contract from `interaction-physics.md` ("never lock input until a transition completes"). If the user grabs the sheet mid-snap, they are ignored for up to 480ms. For a daily-use ops tool where the sheet is the primary interaction surface, this is a direct-manipulation regression. |
-| **P0.4** | `ease-in` for 480ms snap duration | `motion-quality.md`: "Avoid `ease-in` for UI interactions; it delays the moment users watch most." The sheet accelerates slowly and only visibly moves at the end, making it feel sluggish. Combined with 480ms duration, this is both the wrong curve and too slow. |
+**What must not animate as written:**
 
-#### 🟡 P1 — Direct-manipulation failures
-
-| # | Finding | Reasoning |
-|---|---------|-----------|
-| **P1.1** | No grab-offset preservation | `pointermove` sets `sheet.style.top = event.clientY`. This snaps the top of the sheet to the pointer's Y coordinate, regardless of where the user grabbed. If the sheet is at Y=400 and the user touches at Y=350 (50px below the top), the sheet jumps to Y=350 on first move. `interaction-physics.md`: "Preserve the grab offset; never jump the object center under the finger." |
-| **P1.2** | No velocity measurement or handoff | `pointerup` calls `nearestSnapPoint(sheet.offsetTop)` without any velocity history. A flick that carries momentum toward `full` at release will snap to `half` if the release position is closer to `half`. `interaction-physics.md`: "Choose a snap target from the projected endpoint, not only the release point." |
-| **P1.3** | No projected endpoint | Related to P1.2. The snap decision is purely position-based. The formula `projection(v, d) = (v / 1000) * d / (1 - d)` is entirely absent. |
-| **P1.4** | Animates `top` (layout property) | `motion-quality.md`: "Avoid animating layout properties such as `top`." The snap uses WAAPI on `top`, which triggers layout on every frame. Should use `transform: translateY()`. |
-| **P1.5** | No pointer capture | `setPointerCapture` is never called. If the user drags beyond the sheet bounds or the pointer leaves the sheet edge, tracking is lost. `interaction-physics.md`: "Use pointer capture or the native gesture equivalent so tracking continues outside the original bounds." |
-
-#### 🟠 P2 — Interaction physics gaps
-
-| # | Finding | Reasoning |
-|---|---------|-----------|
-| **P2.1** | No hysteresis / intent threshold | `pointerdown` begins tracking immediately without requiring any movement threshold. Every tap becomes a micro-drag. `interaction-physics.md`: "Require roughly 8-12px of movement before committing a drag direction so taps remain taps." |
-| **P2.2** | No soft boundaries or rubber-banding | Dragging beyond `collapsed` or `full` has no resistance — the sheet can be dragged arbitrarily far and then snaps hard on release. `interaction-physics.md`: "Use progressive resistance beyond a boundary instead of a hard stop." |
-| **P2.3** | No multi-touch guard | Additional touch points after the initial drag are not ignored. Can cause interference on real devices. `interaction-physics.md`: "Ignore additional touch points after the initial drag begins." |
-| **P2.4** | Snaps from release position, not current presentation value | If the sheet is mid-snap (though input is locked — P0.3), the next snap would jump from the logical target, not where it currently appears. This is moot because of P0.3, but if interruption is fixed, this becomes a follow-up bug. |
-
-#### 🟢 P3 — Feedback timing
-
-| # | Finding | Reasoning |
-|---|---------|-----------|
-| **P3.1** | `:active` scale delayed by CSS transition | `.sheet { transition: all 300ms }` means the `scale(0.96)` is eased over 300ms. Press feedback should be 100-160ms per `motion-quality.md`. The feedback arrives too slowly and feels disconnected from the touch. |
-| **P3.2** | `:active` pseudo-class is unreliable for touch feedback | Browser `:active` timing varies across devices and does not guarantee feedback on `pointerdown`. `interaction-physics.md` says "Show press feedback on pointer/touch down, not only on click/up." A dedicated `pointerdown` class or WAAPI-driven press state is needed. |
-| **P3.3** | `scale(0.96)` is within acceptable range | The magnitude (0.96) is inside the 0.90-0.97 band per `motion-quality.md`. The problem is timing and trigger, not the value. |
+| Element | Problem |
+|---|---|
+| `transition: all 300ms` on `.sheet` | Animates `top` (layout property — violates performance gate). `all` catches every property change, including unintended ones. |
+| `ease-in` on the snap animation | Delays the moment users watch most. Directly violates `motion-quality.md`: *"Avoid ease-in for UI interactions."* |
+| 480ms snap duration | Too long for a daily-use utility interaction. Motion-quality defaults modal/drawer to 200-500ms, but a repeated sheet snap should be brisker (200-350ms). |
+| `:active` scale relying on the 300ms `transition: all` | The press-down feedback will lag by 300ms instead of responding in 100-160ms. Wrong easing, wrong property scope, wrong duration. |
 
 ---
 
-### 4. Concrete design moves
+### 2. Prioritized Findings
 
-#### 4.1 Pointer-down feedback
+#### 🔴 **Block — `ease-in` on the snap animation**
 
-- **Remove** `transition: all 300ms` from `.sheet` entirely.
-- **Add** a short `pointerdown`-driven press state:
-  ```css
-  .sheet {
-    transition: transform 120ms ease-out;
+```js
+{ duration: 480, easing: "ease-in", fill: "forwards" }
+```
+
+`ease-in` starts slow and accelerates. The user releases the sheet and sees… nothing for the first ~100ms, then a lurch. This is the opposite of what direct manipulation demands: the animation must start at the carried velocity and settle. Per `motion-quality.md`: *"Users need immediate response at the start."*
+
+**User impact:** The sheet feels sticky/unresponsive on release. In a daily-use ops tool, this erodes trust that the interface heard the input.
+
+---
+
+#### 🔴 **Block — No interruption; `animating` flag locks input**
+
+```js
+if (animating) return;
+// ...
+animating = true;
+// ... animation.finished.then(() => animating = false);
+```
+
+The entire ~480ms snap window is a dead zone. If the user grabs the sheet mid-snap to reverse direction, the input is silently dropped. `interaction-physics.md` is explicit: *"never lock input until a transition completes."*
+
+**User impact:** In an ops app used repeatedly, a user will grab the sheet again before a snap finishes — especially after an 480ms `ease-in` that feels delayed. Dropped input teaches the user to wait, which is anti-agency (product-design-principles: Agency).
+
+---
+
+#### 🔴 **Block — No velocity tracking or projected endpoint**
+
+```js
+const target = nearestSnapPoint(sheet.offsetTop);
+```
+
+The snap target is chosen only from the release position. A quick flick toward `full` that ends just above the `half` threshold will snap to `half` — ignoring the user's clear intent. `interaction-physics.md` requires projection:
+
+```text
+projectedEndpoint = current + projection(releaseVelocity, 0.998)
+target = nearestSnapPoint(projectedEndpoint)
+```
+
+**User impact:** Inconsistent snapping undermines direct-manipulation causality. The sheet fights the user's momentum.
+
+---
+
+#### 🟡 **Approve with changes — `transition: all 300ms` on `.sheet`**
+
+Animating `top` triggers layout recalculation on every frame. `motion-quality.md`: *"Avoid animating layout properties such as top and left."* The JS already sets `top` via `pointermove`, so the CSS transition fights the JS for control of the same property during drags — potentially causing stutter. The `:active` scale also inherits this 300ms/`all` transition, making press feedback sluggish.
+
+---
+
+#### 🟡 **Approve with changes — Missing hysteresis and pointer capture**
+
+No intent threshold before committing to a drag. A short tap will move the sheet by 1-2px before the snap fires. `interaction-physics.md`: *"Require roughly 8-12px of movement before committing a drag direction so taps remain taps."*
+
+No `setPointerCapture` — if the pointer leaves the sheet bounds, tracking stops. On a narrow sheet (collapsed state), this is likely.
+
+---
+
+#### 🟡 **Approve with changes — `:active` press feedback missing its own transition**
+
+`scale(0.96)` is a reasonable value, but it piggybacks on `transition: all 300ms`. Press feedback should be 100-160ms with strong `ease-out` per `motion-quality.md`. A missing `:active` transition also means there's no Reduced Motion alternative.
+
+---
+
+#### 🟢 **Approve — `fill: "forwards"` on the snap**
+
+Correct — preserves the final `top` value so the sheet doesn't snap back. But unnecessary if the JS sets `style.top` after the animation completes. Minor redundancy, not a defect.
+
+---
+
+### 3. Concrete Design Moves
+
+#### Pointer-down feedback
+
+```css
+.sheet {
+  transition: transform 120ms var(--ease-out);
+}
+.sheet:active {
+  transform: scale(0.97);
+}
+```
+
+Separate transition from the sheet's positional logic. Drop `all`. Keep duration ≤160ms. Per `motion-quality.md`, press feedback should use `ease-out` and stay under 160ms.
+
+#### 1:1 tracking
+
+```js
+let grabOffset = 0;
+let gestureActive = false;
+
+sheet.addEventListener("pointerdown", (e) => {
+  if (gestureActive) return; // interrupt current snap instead of dropping input
+  sheet.setPointerCapture(e.pointerId);
+  grabOffset = e.clientY - sheet.getBoundingClientRect().top;
+  gestureActive = false; // wait for hysteresis
+});
+
+sheet.addEventListener("pointermove", (e) => {
+  const dy = Math.abs(e.clientY - startY);
+  if (!gestureActive && dy < 10) return; // hysteresis ~10px
+  gestureActive = true;
+  // Cancel any in-flight WAAPI animation, read current presentation value
+  sheet.style.top = `${e.clientY - grabOffset}px`;
+});
+```
+
+Key improvements: pointer capture, grab-offset preservation, hysteresis threshold, and cancellation of in-flight animations instead of input blocking.
+
+#### Presentation-value interruption
+
+```js
+sheet.addEventListener("pointerdown", (e) => {
+  // Instead of "if (animating) return", cancel current animation:
+  if (sheet.getAnimations().length > 0) {
+    sheet.getAnimations().forEach(a => a.cancel());
+    // Read the current computed top so we retarget from presentation value
+    sheet.style.top = `${sheet.getBoundingClientRect().top}px`;
   }
-  .sheet.pressed {
-    transform: scale(0.96);
+  // ... proceed with tracking
+});
+```
+
+Per `interaction-physics.md`: *"retarget from the current on-screen presentation value, not the previous logical target."*
+
+#### Velocity handoff + projected endpoints
+
+```js
+const VELOCITY_HISTORY = 5;
+const pointerHistory = [];
+
+function measureVelocity(event) {
+  pointerHistory.push({ y: event.clientY, t: event.timeStamp });
+  if (pointerHistory.length > VELOCITY_HISTORY) pointerHistory.shift();
+}
+
+function releaseVelocity() {
+  if (pointerHistory.length < 2) return 0;
+  const first = pointerHistory[0];
+  const last = pointerHistory[pointerHistory.length - 1];
+  const dt = last.t - first.t;
+  if (dt === 0) return 0;
+  return (last.y - first.y) / dt; // px/ms
+}
+
+function projectedEndpoint(current, velocity) {
+  const d = 0.998;
+  return current + (velocity * d) / (1 - d);
+}
+```
+
+Then: `target = nearestSnapPoint(projectedEndpoint(currentTop, releaseVelocity()));`
+
+#### Soft boundaries
+
+For the `collapsed` and `full` extremes, apply progressive resistance during tracking:
+
+```js
+function rubberBand(offset, min, max, constant = 0.55) {
+  if (offset < min) {
+    const overshoot = min - offset;
+    return min - (overshoot * max * constant) / (max + constant * overshoot);
   }
-  ```
-  Toggle `.pressed` on `pointerdown`/`pointerup`. This gives crisp 120ms feedback and cleans up when the drag starts. Gate with `@media (hover: none) and (pointer: coarse)` or apply universally — the ops tool needs press feedback on all input modes.
+  if (offset > max) {
+    const overshoot = offset - max;
+    return max + (overshoot * max * constant) / (max + constant * overshoot);
+  }
+  return offset;
+}
+```
 
-#### 4.2 1:1 tracking
+Per `interaction-physics.md`: the provided formula uses `dimension` as the range length and `constant` starting at `0.55`.
 
-- **Store grab offset** on `pointerdown`:
-  ```js
-  grabOffset = event.clientY - sheet.getBoundingClientRect().top;
-  ```
-- **Track with offset** on `pointermove`:
-  ```js
-  const clampedY = clampWithRubberBand(event.clientY - grabOffset, minY, maxY);
-  sheet.style.transform = `translateY(${clampedY}px)`;
-  ```
-- Use `transform: translateY()` instead of `top` to stay on the compositor.
-- **Call `sheet.setPointerCapture(event.pointerId)`** on `pointerdown` after the hysteresis threshold.
-- **Add 8px hysteresis** before committing to drag. Until then, treat it as a potential tap.
+#### Snap animation
 
-#### 4.3 Presentation-value interruption
+```js
+sheet.animate(
+  [{ top: `${currentTop}px` }, { top: `${target}px` }],
+  {
+    duration: 300,
+    easing: "cubic-bezier(0.32, 0.72, 0, 1)", // --ease-drawer from motion-quality.md
+    fill: "forwards",
+  }
+);
+```
 
-- **Drop the `animating` guard.** Never lock input.
-- On `pointerdown` during a snap animation:
-  1. Read the current on-screen `translateY` from the computed transform (or maintain a tracked value).
-  2. Cancel the running animation (`sheet.getAnimations().forEach(a => a.cancel())`).
-  3. Start a new drag with that presentation value as the origin and zero initial velocity.
-- This satisfies `interaction-physics.md`: "retarget from the current on-screen presentation value, not the previous logical target."
+Spring alternative (if using a spring library or WAAPI spring): damping `0.8`, response `0.3s` per `interaction-physics.md` drawer/sheet defaults.
 
-#### 4.4 Velocity handoff and projected endpoints
-
-- **Store last N pointer events** (positions and timestamps) in a ring buffer during tracking.
-- **Compute release velocity**: average velocity over the last ~3-5 events.
-- **Project endpoint**:
-  ```js
-  const projected = currentY + (releaseVelocity / 1000) * 0.998 / (1 - 0.998);
-  const target = nearestSnapPoint(projected);
-  ```
-- Use `d = 0.998` for scroll-like momentum per `interaction-physics.md`.
-- Clamp projection so a wild flick cannot target a state the sheet cannot reach.
-
-#### 4.5 Snap animation (settle spring)
-
-- Replace WAAPI `animate([{top}, {top}], { duration: 480, easing: "ease-in" })` with a spring or spring-equivalent WAAPI:
-  ```js
-  sheet.animate(
-    [{ transform: `translateY(${currentY}px)` }, { transform: `translateY(${target}px)` }],
-    {
-      duration: 350,
-      easing: "cubic-bezier(0.32, 0.72, 0, 1)", // --ease-drawer
-      fill: "forwards",
-    },
-  );
-  ```
-- **Duration: 350ms** (within 200-500ms for drawers, tightened for daily repeat use).
-- **Easing: `ease-drawer` curve** (`cubic-bezier(0.32, 0.72, 0, 1)`) per `motion-quality.md`. This gives a responsive settle with natural deceleration.
-- If the release velocity is high enough to carry to a boundary, increase damping (shorter effective settle) to avoid the sheet feeling floaty.
-
-#### 4.6 Soft boundaries
-
-- Apply **progressive resistance** when dragging beyond `collapsed` or `full`:
-  ```js
-  const overshoot = clampedY - boundaryY;
-  const resisted = (overshoot * viewportHeight * 0.55) / (viewportHeight + 0.55 * Math.abs(overshoot));
-  ```
-  This is the rubber-band function from `interaction-physics.md` with `constant = 0.55`.
-- On release beyond a boundary, use a **spring with higher damping** (~1.0, critically damped) to pull back to the nearest valid snap point cleanly.
-- Set a **distance threshold beyond which dragging away cancels the gesture** (e.g., >30% of the sheet height past a boundary), snapping to the boundary-adjacent snap point.
-
-#### 4.7 Reduced Motion
+#### Reduced Motion
 
 ```css
 @media (prefers-reduced-motion: reduce) {
   .sheet {
-    transition: transform 0ms;      /* instant tracking */
+    transition: opacity 150ms ease-out;
+    /* Remove transform transition — no spatial travel */
   }
-  .sheet.pressed {
-    transition: opacity 150ms;      /* keep causal feedback */
+  .sheet:active {
     transform: none;
-    opacity: 0.85;
-  }
-  /* Snap settle: instant or cross-fade */
-  .sheet.settling {
-    transition: opacity 200ms;
+    /* Replace with a static state indicator: */
+    outline: 2px solid var(--color-accent);
+    outline-offset: -2px;
   }
 }
 ```
 
-In JS: when `prefers-reduced-motion` is active, skip the spring animation. On `pointerup`, snap instantly to the chosen target. Use a brief opacity cross-fade (150-200ms) to signal the state change without spatial travel. This preserves the *causal feedback* contract from `motion-quality.md` while removing the large positional movement that Reduced Motion users should not experience.
+And in JS:
+
+```js
+const prefersReduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+const snapDuration = prefersReduced ? 0 : 300;
+const snapEasing = prefersReduced ? "steps(1)" : "cubic-bezier(0.32, 0.72, 0, 1)";
+```
+
+Per `motion-quality.md`: *"Reduced motion means gentler and less positional movement, not necessarily zero change; opacity/color transitions that aid comprehension can remain."* A cross-fade to the new position plus a static border on press preserves state feedback without spatial travel — matching the product context's accessibility requirement that Reduced Motion "must preserve state feedback without large spatial travel."
 
 ---
 
-### 5. Verified vs. unverified claims
+### 4. Verified vs. Unverified Claims
 
 | Claim | Status |
-|-------|--------|
-| `transition: all 300ms` conflicts with WAAPI `animate()` on `top` | **Unverified.** Reasoned from source. Requires DevTools animation inspector or frame timeline to confirm compounding. |
-| `ease-in` 480ms feels sluggish | **Unverified.** Reasoned from easing curve shape. Requires pointer-trace timing on real device. |
-| `animating` flag blocks mid-snap regrabs | **Verified from source.** The guard is on line 4. |
-| Grab-offset jump on first `pointermove` | **Unverified.** Reasoned from `event.clientY` assigned directly as `top`. Confirmation requires a computed-style trace after the first move event. |
-| No velocity / projection logic | **Verified from source.** `nearestSnapPoint` receives only `sheet.offsetTop`. |
-| No `prefers-reduced-motion` anywhere | **Verified from source.** Zero occurrences in both blocks. |
-| No pointer capture | **Verified from source.** No `setPointerCapture` call. |
-| No soft boundaries | **Verified from source.** `top` is set unbounded in `pointermove`. |
-| `:active` scale transitioned at 300ms | **Unverified.** Reasoned from CSS cascade. `transition: all 300ms` covers `transform`, and `.sheet:active { transform: scale(0.96) }` triggers it. Browser DevTools "Animations" panel would confirm the actual transition duration. |
-| Animating `top` causes layout thrash | **Unverified.** Not confirmed by Performance panel or layout-shift recording. Reasoned from the well-established compositor vs. layout pipeline model. |
+|---|---|
+| `ease-in` is the wrong easing for UI snap | **Verified** — matches motion-quality.md easing rules and the physics of direct manipulation. |
+| 480ms is too long for a daily-use sheet snap | **Verified** — motion-quality.md bounds standard UI to ≤300ms; the 300ms `transition: all` on the same element confirms inconsistency. |
+| Missing pointer capture will break tracking on small surfaces | **Unverified** — depends on the sheet's collapsed-state dimensions and whether the user's pointer strays. Needs a real-device test. |
+| `transition: all` causes layout thrash during `pointermove` | **Unverified** — depends on the DOM tree size, paint complexity, and whether the browser coalesces style/layout. A Performance panel trace would confirm. |
+| Missing hysteresis causes false drags on taps | **Unverified** — depends on how steady the user's finger is. 10px is a starting recommendation, not observed. |
+| Projected-endpoint snapping improves perceived responsiveness | **Unverified** — needs A/B testing or frame-by-frame comparison with real release velocities. |
+| Rubber-band function constant `0.55` feels correct | **Unverified** — starting value from `interaction-physics.md`; needs tuning on the actual sheet dimensions and device. |
 
 ---
 
-### 6. Minimal validation plan before implementation approval
+### 5. Minimal Browser/Device Validation Plan
 
-1. **Browser DevTools — Animation inspector**:
-   - Open the sheet, record a drag-and-release.
-   - Confirm whether the CSS `transition: all 300ms` and WAAPI `animate()` are fighting (look for double entries or conflicting keyframes on `top`).
-   - Verify the actual duration of the `scale(0.96)` press effect under `:active`.
+Before approving implementation, run these checks in order of priority:
 
-2. **Browser DevTools — Performance panel**:
-   - Record a full drag cycle. Check for `Layout` / `Recalculate Style` events on every `pointermove` frame (confirms `top` layout thrash).
-   - After switching to `transform: translateY()`, re-record and confirm layout events drop to near zero.
+| # | Check | Tool | What to verify |
+|---|---|---|---|
+| 1 | **Real touch device** | iPad or Android phone, DevTools remote debug | Does pointer tracking survive leaving the collapsed-sheet bounds? Does `:active` scale feel immediate or laggy? Does the 8-12px hysteresis prevent false drags on taps? |
+| 2 | **Frame timeline** | Chrome DevTools Performance panel, record while dragging + releasing | Is `top` causing layout/paint on every frame during `pointermove`? Is the `transition: all` creating style recalc storms? |
+| 3 | **Velocity projection A/B** | Two builds: release-position snap vs. projected-endpoint snap | Does projection reduce "the sheet snapped the wrong way" incidents with quick flicks? |
+| 4 | **Interruption test** | Manual: grab sheet mid-snap, drag opposite direction | Confirm there is no visual jump on re-grab (retarget from presentation value). |
+| 5 | **Boundary resistance** | Drag past `collapsed` and `full` extremes | Confirm rubber-banding feels progressive, not hard-stop. Confirm release from overshoot snaps to the nearest valid point. |
+| 6 | **Reduced Motion** | macOS Accessibility → Display → Reduce motion; or iOS Settings → Accessibility → Motion → Reduce Motion | Confirm no spatial travel, feedback preserved via static indicator (outline, opacity cross-fade, or color change). |
+| 7 | **120 Hz device** | iPad Pro or high-refresh Android | Confirm no jank visible at higher frame rates; `top` animation may tear at 120Hz where it looked fine at 60Hz. |
 
-3. **Real touch device** (phone or tablet with touch screen):
-   - Test grab-offset: touch near the bottom of the sheet → verify the sheet does NOT jump.
-   - Test interruption: drag → release → regrab mid-snap → verify seamless continuation.
-   - Test velocity: flick up fast → verify the sheet targets `full` even if release position is closer to `half`.
-   - Test boundary rubber-banding: drag past `full` → verify progressive resistance, not a hard stop.
-   - Test multi-touch: place a second finger during drag → verify it is ignored.
-
-4. **Reduced Motion**:
-   - Enable `prefers-reduced-motion: reduce` in OS settings or DevTools rendering emulation.
-   - Drag and release → verify instant snap (or opacity cross-fade ≤200ms) with no spatial travel animation.
-
-5. **Refresh rate check**:
-   - Test on both 60Hz and 120Hz displays. The `pointermove` hot path (reading `getBoundingClientRect()`, mutation, velocity buffer) should stay under the frame budget on 60Hz.
+**Minimum bar for approval:** items 1, 4, and 6 must pass on at least one real touch device. Items 2, 3, and 5 are "should pass" unless the product context treats them as release-critical. Item 7 is nice-to-have unless 120Hz users are a known segment.
 
 ---
 
 ### Verdict
 
-**Block.** The current implementation has four P0 regressions (`transition: all` fight, no Reduced Motion, locked input during snap, `ease-in` 480ms) and six P1/P2 direct-manipulation failures (grab-offset jump, no velocity, no projection, `top` animation, no pointer capture, no hysteresis). No amount of visual polish can fix a sheet that jumps under the finger, ignores mid-snap regrabs, and fails to dismiss on a flick. Return to implementation with the design moves above and complete the validation plan on real touch hardware before re-review.
+**Block.** The `ease-in` snap animation, missing interruption, absent velocity/projection, and `transition: all 300ms` on a layout property are each independently blocking for a direct-manipulation sheet used repeatedly in a daily ops tool. The `:active` press feedback piggybacking on the same transition is a compounding defect. None of these findings depend on runtime evidence — the static code alone is sufficient to block.
+
+The design moves above provide concrete, reference-backed alternatives for every finding. The validation plan gates implementation approval on real touch-device evidence, per `interaction-physics.md`: *"If no suitable runtime is available, report the interaction as unverified rather than 'correct.'"*

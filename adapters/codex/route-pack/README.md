@@ -81,6 +81,8 @@ This prints:
 - browser/runtime tool parity probes for external and local contexts
 - a verified `gpt-5.6-sol/max` environment-runtime truth probe with session
   discovery disabled
+- a bounded `frontend-route.compact.v1` output probe that omits the repeated
+  static delivery contract
 - an unauthorized GPT-5.6 `ultra` runtime-conflict denial probe
 - a privacy-safe telemetry self-check that remains isolated from inherited test
   context
@@ -101,6 +103,21 @@ provider URLs, browser state, and unrelated configuration are never exported.
 Strict route probes also disable route telemetry writes and current-session
 discovery, so an audit neither pollutes production latency history nor reads the
 caller's session JSONL.
+
+## Route output modes
+
+Use the smallest output that matches the consumer:
+
+```bash
+bash ~/.codex/tools/frontend_route_plan.sh ... --output compact-json
+bash ~/.codex/tools/frontend_route_plan.sh ... --output human
+bash ~/.codex/tools/frontend_route_plan.sh ... --output json
+```
+
+`compact-json` is the normal agent-context format. It returns current route,
+authority, runtime, execution, quality, validation, and telemetry decisions plus
+versioned contract references. `human` is for interactive inspection. Full
+`json` remains available for contract audits and compatibility consumers.
 
 ## Export a migration bundle
 
@@ -183,7 +200,7 @@ write. Summarize production latency and quality with:
 python3 ~/.codex/tools/frontend_route_telemetry.py \
   --include-rotated \
   --context prod \
-  --min-events 6 \
+  --min-events 50 \
   --max-p95-ms 1000 \
   --json
 ```
@@ -192,6 +209,8 @@ The summary reports p50/p95/max durations, route/tier/platform/tool/runtime
 source distributions, parse errors, and the privacy marker. The general route
 test and release route smoke disable telemetry; the dedicated telemetry test
 owns append, context, rotation, summary, and self-check coverage.
+Do not use a smaller sample to claim production stability; before 50 events,
+report latency as provisional observation only.
 
 ## Screenshot policy boundary
 
