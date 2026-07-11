@@ -4,16 +4,21 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import os
+import re
 import subprocess
 from datetime import datetime, timezone
 from pathlib import Path
 
 from design_craft_evidence_common import sha256_file, skill_provenance, tree_sha256
-
-
-SCHEMA = "design-craft.native-runtime-evidence.v2"
+from design_craft_native_runtime_validate import (
+    EVIDENCE_SCHEMA,
+    REQUIRED_ARTIFACT_ROLES,
+    REQUIRED_ASSERTIONS,
+    validate_evidence,
+)
 
 
 def parse_assertion(raw: str) -> tuple[str, bool]:
@@ -24,6 +29,15 @@ def parse_assertion(raw: str) -> tuple[str, bool]:
     if not name.strip() or normalized not in {"true", "false"}:
         raise argparse.ArgumentTypeError("assertion must use name=true|false")
     return name.strip(), normalized == "true"
+
+
+def parse_artifact(raw: str) -> tuple[str, str]:
+    if "=" not in raw:
+        raise argparse.ArgumentTypeError("artifact must use role=path")
+    role, path = raw.split("=", 1)
+    if not re.fullmatch(r"[a-z][a-z0-9_]*", role.strip()) or not path.strip():
+        raise argparse.ArgumentTypeError("artifact must use role=path")
+    return role.strip(), path.strip()
 
 
 def main() -> int:
@@ -38,7 +52,7 @@ def main() -> int:
     parser.add_argument("--tool", required=True)
     parser.add_argument("--command", action="append", required=True)
     parser.add_argument("--assertion", action="append", type=parse_assertion, required=True)
-    parser.add_argument("--artifact", action="append", required=True)
+    parser.add_argument("--artifact", action="append", type=parse_artifact, required=True)
     parser.add_argument("--skill-root", default="skills/design-craft")
     parser.add_argument("--fixture-root", required=True)
     parser.add_argument("--output", required=True)
@@ -48,10 +62,16 @@ def main() -> int:
     if not args.runtime_kind.startswith(expected_prefix):
         parser.error("runtime kind does not match platform")
     assertions = dict(args.assertion)
-    if len(assertions) < 3:
-        parser.error("at least three distinct assertions are required")
+    if len(assertions) != len(args.assertion):
+        parser.error("assertion names must be unique")
+    missing_assertions = sorted(REQUIRED_ASSERTIONS[args.runtime_kind] - set(assertions))
+    if missing_assertions:
+        parser.error(f"missing required assertions: {missing_assertions}")
+    if not all(assertions.values()):
+        parser.error("refusing to record verified evidence with a failed assertion")
 
     output = Path(args.output).expanduser()
+    output.parent.mkdir(parents=True, exist_ok=True)
     skill_root = Path(args.skill_root).expanduser().resolve()
     fixture_root = Path(args.fixture_root).expanduser().resolve()
     if not fixture_root.is_dir():
@@ -64,30 +84,46 @@ def main() -> int:
     if len(source_commit) != 40:
         parser.error("skill provenance must contain a full source commit")
     artifacts = []
-    for raw in args.artifact:
-        path = Path(raw).expanduser()
+    observed_roles: set[str] = set()
+    for role, raw_path in args.artifact:
+        if role in observed_roles:
+            parser.error(f"artifact role must be unique: {role}")
+        observed_roles.add(role)
+        path = Path(raw_path).expanduser()
         if not path.is_file():
             parser.error(f"artifact does not exist: {path}")
         try:
             stored_path = str(path.resolve().relative_to(output.parent.resolve()))
         except ValueError:
-            stored_path = raw
+            parser.error("artifacts must be stored inside the evidence output directory")
         artifacts.append(
             {
+                "role": role,
                 "path": stored_path,
                 "sha256": sha256_file(path),
                 "bytes": path.stat().st_size,
             }
         )
+    missing_roles = sorted(REQUIRED_ARTIFACT_ROLES[args.runtime_kind] - observed_roles)
+    if missing_roles:
+        parser.error(f"missing required artifact roles: {missing_roles}")
+
+    raw_runtime_id = args.runtime_id.strip()
+    if not raw_runtime_id:
+        parser.error("runtime-id must be non-empty")
+    redacted_runtime_id = "sha256:" + hashlib.sha256(
+        raw_runtime_id.encode("utf-8")
+    ).hexdigest()
 
     payload = {
-        "schema": SCHEMA,
+        "schema": EVIDENCE_SCHEMA,
         "platform": args.platform,
         "verified": True,
         "runtime_kind": args.runtime_kind,
         "evidence_level": "runtime_observed",
         "observed_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
-        "runtime_id": args.runtime_id,
+        "runtime_id_kind": "sha256",
+        "runtime_id": redacted_runtime_id,
         "tool": args.tool,
         "source_commit": source_commit,
         "source_dirty": provenance.get("skill_source_dirty"),
@@ -108,8 +144,17 @@ def main() -> int:
         "assertions": assertions,
         "artifacts": artifacts,
     }
-    output.parent.mkdir(parents=True, exist_ok=True)
     output.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    _, errors = validate_evidence(
+        output,
+        args.platform,
+        args.runtime_kind,
+        skill_root=skill_root,
+        fixture_root=fixture_root.parent,
+    )
+    if errors:
+        output.unlink(missing_ok=True)
+        parser.error("generated evidence did not validate: " + "; ".join(errors))
     print(output)
     return 0
 

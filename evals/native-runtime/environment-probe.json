@@ -1,6 +1,6 @@
 {
   "schema": "design-craft.native-runtime-probe.v1",
-  "generated_at": "2026-07-11T03:34:08Z",
+  "generated_at": "2026-07-11T08:28:40Z",
   "host": {
     "system": "Darwin",
     "release": "24.6.0",
@@ -19,6 +19,8 @@
     "emulator_path": null,
     "available_avds": [],
     "connected_devices": [],
+    "connected_device_count": 0,
+    "device_ready": false,
     "ready": false,
     "detail": "adb unavailable"
   }

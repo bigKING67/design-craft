@@ -12,12 +12,14 @@ import shutil
 import subprocess
 import sys
 import tempfile
+import xml.etree.ElementTree as ET
 from datetime import datetime, timezone
 from pathlib import Path
 
 from design_craft_evidence_common import (
     git_is_ancestor,
     git_root,
+    git_tree_sha256,
     read_version,
     tree_sha256,
 )
@@ -41,6 +43,73 @@ RUNTIME_KINDS = {
     "ios": {"ios_simulator", "ios_device"},
     "android": {"android_emulator", "android_device"},
 }
+REQUIRED_ASSERTIONS = {
+    "ios_simulator": {
+        "build_succeeded",
+        "install_and_launch_succeeded",
+        "runtime_interaction_observed",
+        "before_and_after_screenshots_captured",
+    },
+    "ios_device": {
+        "build_succeeded",
+        "install_and_launch_succeeded",
+        "runtime_interaction_observed",
+        "before_and_after_screenshots_captured",
+        "physical_device_confirmed",
+        "device_authorization_confirmed",
+    },
+    "android_emulator": {
+        "build_succeeded",
+        "install_and_launch_succeeded",
+        "accessibility_tree_observed",
+        "interaction_observed",
+        "screenshot_captured",
+    },
+    "android_device": {
+        "build_succeeded",
+        "install_and_launch_succeeded",
+        "accessibility_tree_observed",
+        "interaction_observed",
+        "screenshot_captured",
+        "physical_device_confirmed",
+        "device_authorization_confirmed",
+    },
+}
+REQUIRED_ARTIFACT_ROLES = {
+    "ios_simulator": {
+        "before_screenshot",
+        "after_screenshot",
+        "interaction_marker",
+        "launch_log",
+    },
+    "ios_device": {
+        "before_screenshot",
+        "after_screenshot",
+        "interaction_marker",
+        "launch_log",
+    },
+    "android_emulator": {
+        "before_accessibility_tree",
+        "after_accessibility_tree",
+        "after_screenshot",
+        "launch_log",
+    },
+    "android_device": {
+        "before_accessibility_tree",
+        "after_accessibility_tree",
+        "after_screenshot",
+        "launch_log",
+    },
+}
+ARTIFACT_ROLE_SUFFIXES = {
+    "before_screenshot": {".png"},
+    "after_screenshot": {".png"},
+    "after_accessibility_tree": {".xml"},
+    "before_accessibility_tree": {".xml"},
+    "interaction_marker": {".txt"},
+    "launch_log": {".txt", ".log"},
+}
+PNG_SIGNATURE = b"\x89PNG\r\n\x1a\n"
 
 
 def run(command: list[str], timeout: int = 15) -> subprocess.CompletedProcess[str]:
@@ -73,7 +142,7 @@ def probe_environment() -> dict:
                 for devices in payload.get("devices", {}).values():
                     for device in devices:
                         if device.get("isAvailable"):
-                            ios_devices.append(f"{device.get('name')} ({device.get('udid')})")
+                            ios_devices.append(str(device.get("name", "Simulator")))
             except json.JSONDecodeError:
                 pass
 
@@ -82,10 +151,14 @@ def probe_environment() -> dict:
     if adb_path:
         listed = run([adb_path, "devices", "-l"])
         if listed.returncode == 0:
-            adb_devices = [
-                line.strip()
+            connected = [
+                line.split("\t", 1)[0]
                 for line in listed.stdout.splitlines()[1:]
                 if line.strip() and "\tdevice" in line
+            ]
+            adb_devices = [
+                "emulator" if serial.startswith("emulator-") else "physical-device"
+                for serial in connected
             ]
 
     emulator_path = command_path("emulator")
@@ -116,10 +189,40 @@ def probe_environment() -> dict:
             "emulator_path": emulator_path,
             "available_avds": android_avds,
             "connected_devices": adb_devices,
+            "connected_device_count": len(adb_devices),
+            "device_ready": "physical-device" in adb_devices,
             "ready": bool(adb_path and emulator_path and android_avds),
             "detail": "adb unavailable" if not adb_path else "emulator unavailable" if not emulator_path else "no AVD configured" if not android_avds else "ready",
         },
     }
+
+
+def validate_artifact_content(role: str, artifact_path: Path) -> str | None:
+    expected_suffixes = ARTIFACT_ROLE_SUFFIXES.get(role)
+    if expected_suffixes and artifact_path.suffix.lower() not in expected_suffixes:
+        return f"role {role} requires one of {sorted(expected_suffixes)}"
+    if role in {"before_screenshot", "after_screenshot"}:
+        if not artifact_path.read_bytes().startswith(PNG_SIGNATURE):
+            return f"role {role} must contain PNG data"
+    elif role in {"before_accessibility_tree", "after_accessibility_tree"}:
+        try:
+            ET.parse(artifact_path)
+        except (ET.ParseError, OSError) as exc:
+            return f"role {role} must contain valid XML: {exc}"
+        text = artifact_path.read_text(encoding="utf-8", errors="replace")
+        expected_text = (
+            "Native runtime evidence title"
+            if role == "before_accessibility_tree"
+            else "Runtime interaction confirmed"
+        )
+        if expected_text not in text:
+            return f"role {role} must contain {expected_text!r}"
+    elif role == "interaction_marker":
+        if "Runtime interaction confirmed" not in artifact_path.read_text(
+            encoding="utf-8", errors="replace"
+        ):
+            return "role interaction_marker must confirm the runtime interaction"
+    return None
 
 
 def validate_evidence(
@@ -145,9 +248,10 @@ def validate_evidence(
         errors.append(f"{path}: platform must be {expected_platform}")
     if payload.get("verified") is not True:
         errors.append(f"{path}: verified must be true")
-    if payload.get("runtime_kind") not in RUNTIME_KINDS[expected_platform]:
+    runtime_kind = payload.get("runtime_kind")
+    if runtime_kind not in RUNTIME_KINDS[expected_platform]:
         errors.append(f"{path}: invalid runtime_kind for {expected_platform}")
-    if expected_runtime_kind and payload.get("runtime_kind") != expected_runtime_kind:
+    if expected_runtime_kind and runtime_kind != expected_runtime_kind:
         errors.append(f"{path}: runtime_kind must be {expected_runtime_kind}")
     if payload.get("evidence_level") != "runtime_observed":
         errors.append(f"{path}: evidence_level must be runtime_observed")
@@ -155,8 +259,12 @@ def validate_evidence(
     if not isinstance(observed_at, str) or not observed_at.endswith("Z"):
         errors.append(f"{path}: observed_at must be a UTC timestamp ending in Z")
     runtime_id = payload.get("runtime_id")
-    if not isinstance(runtime_id, str) or len(runtime_id.strip()) < 3:
-        errors.append(f"{path}: runtime_id is required")
+    if payload.get("runtime_id_kind") != "sha256":
+        errors.append(f"{path}: runtime_id_kind must be sha256")
+    if not isinstance(runtime_id, str) or not re.fullmatch(
+        r"sha256:[0-9a-f]{64}", runtime_id
+    ):
+        errors.append(f"{path}: runtime_id must be a redacted SHA-256 identifier")
     if not isinstance(payload.get("tool"), str) or not payload["tool"].strip():
         errors.append(f"{path}: tool is required")
     if not re.fullmatch(r"[0-9a-f]{40}", str(payload.get("source_commit", ""))):
@@ -183,19 +291,35 @@ def validate_evidence(
     if not isinstance(commands, list) or not commands or not all(isinstance(item, str) and item.strip() for item in commands):
         errors.append(f"{path}: commands must be a non-empty string array")
     assertions = payload.get("assertions")
-    if not isinstance(assertions, dict) or len(assertions) < 3:
-        errors.append(f"{path}: assertions must contain at least three runtime checks")
-    elif not all(value is True for value in assertions.values()):
-        errors.append(f"{path}: every recorded runtime assertion must pass")
+    required_assertions = REQUIRED_ASSERTIONS.get(str(runtime_kind), set())
+    if not isinstance(assertions, dict):
+        errors.append(f"{path}: assertions must be an object")
+    else:
+        missing_assertions = sorted(required_assertions - set(assertions))
+        if missing_assertions:
+            errors.append(
+                f"{path}: assertions are missing required checks: {missing_assertions}"
+            )
+        if not all(value is True for value in assertions.values()):
+            errors.append(f"{path}: every recorded runtime assertion must pass")
     artifacts = payload.get("artifacts")
     if not isinstance(artifacts, list) or not artifacts:
         errors.append(f"{path}: at least one runtime artifact is required")
     else:
         evidence_dir = path.parent.resolve()
+        observed_roles: set[str] = set()
         for index, artifact in enumerate(artifacts):
             if not isinstance(artifact, dict):
                 errors.append(f"{path}: artifact {index} must be an object")
                 continue
+            role = artifact.get("role")
+            if not isinstance(role, str) or role not in ARTIFACT_ROLE_SUFFIXES:
+                errors.append(f"{path}: artifact {index} has an invalid role")
+                continue
+            if role in observed_roles:
+                errors.append(f"{path}: artifact role {role} must be unique")
+                continue
+            observed_roles.add(role)
             raw_artifact_path = artifact.get("path")
             if not isinstance(raw_artifact_path, str) or not raw_artifact_path.strip():
                 errors.append(f"{path}: artifact {index} path is required")
@@ -226,6 +350,14 @@ def validate_evidence(
             observed_sha = hashlib.sha256(artifact_path.read_bytes()).hexdigest()
             if observed_sha != sha:
                 errors.append(f"{path}: artifact {index} hash does not match {artifact_path}")
+            content_error = validate_artifact_content(role, artifact_path)
+            if content_error:
+                errors.append(f"{path}: artifact {index} {content_error}")
+
+        required_roles = REQUIRED_ARTIFACT_ROLES.get(str(runtime_kind), set())
+        missing_roles = sorted(required_roles - observed_roles)
+        if missing_roles:
+            errors.append(f"{path}: artifacts are missing required roles: {missing_roles}")
 
     if require_current_source:
         source_commit = str(payload.get("source_commit", ""))
@@ -254,6 +386,22 @@ def validate_evidence(
             else:
                 if not git_is_ancestor(repository, source_commit):
                     errors.append(f"{path}: source_commit must be an ancestor of current HEAD")
+                else:
+                    try:
+                        committed_skill_tree = git_tree_sha256(
+                            repository,
+                            skill_root,
+                            source_commit,
+                        )
+                    except (OSError, ValueError, subprocess.CalledProcessError) as exc:
+                        errors.append(
+                            f"{path}: cannot inspect skill tree at source_commit: {exc}"
+                        )
+                    else:
+                        if payload.get("skill_tree_sha256") != committed_skill_tree:
+                            errors.append(
+                                f"{path}: source_commit skill tree must match skill_tree_sha256"
+                            )
     return payload, errors
 
 
@@ -318,8 +466,23 @@ def run_self_check() -> list[str]:
     errors: list[str] = []
     with tempfile.TemporaryDirectory(prefix="design-craft-native-runtime-") as raw:
         root = Path(raw)
-        artifact_path = root / "fixture.png"
-        artifact_path.write_bytes(b"runtime-evidence")
+        before_path = root / "before.png"
+        after_path = root / "after.png"
+        marker_path = root / "runtime-interaction.txt"
+        launch_path = root / "launch.txt"
+        before_path.write_bytes(PNG_SIGNATURE + b"before")
+        after_path.write_bytes(PNG_SIGNATURE + b"after")
+        marker_path.write_text("Runtime interaction confirmed\n", encoding="utf-8")
+        launch_path.write_text("fixture launched\n", encoding="utf-8")
+
+        def artifact(role: str, artifact_path: Path) -> dict[str, object]:
+            return {
+                "role": role,
+                "path": artifact_path.name,
+                "sha256": hashlib.sha256(artifact_path.read_bytes()).hexdigest(),
+                "bytes": artifact_path.stat().st_size,
+            }
+
         valid = {
             "schema": EVIDENCE_SCHEMA,
             "platform": "ios",
@@ -327,7 +490,8 @@ def run_self_check() -> list[str]:
             "runtime_kind": "ios_simulator",
             "evidence_level": "runtime_observed",
             "observed_at": "2026-01-01T00:00:00Z",
-            "runtime_id": "fixture-simulator",
+            "runtime_id_kind": "sha256",
+            "runtime_id": f"sha256:{'d' * 64}",
             "tool": "fixture",
             "source_commit": "a" * 40,
             "source_dirty": False,
@@ -338,13 +502,17 @@ def run_self_check() -> list[str]:
             "fixture_tree_sha256": "c" * 64,
             "capture_context": "fixture",
             "commands": ["xcrun simctl boot fixture"],
-            "assertions": {"build": True, "launch": True, "interaction": True},
+            "assertions": {
+                "build_succeeded": True,
+                "install_and_launch_succeeded": True,
+                "runtime_interaction_observed": True,
+                "before_and_after_screenshots_captured": True,
+            },
             "artifacts": [
-                {
-                    "path": artifact_path.name,
-                    "sha256": hashlib.sha256(artifact_path.read_bytes()).hexdigest(),
-                    "bytes": artifact_path.stat().st_size,
-                }
+                artifact("before_screenshot", before_path),
+                artifact("after_screenshot", after_path),
+                artifact("interaction_marker", marker_path),
+                artifact("launch_log", launch_path),
             ],
         }
         path = root / "ios-observed.json"
@@ -363,7 +531,28 @@ def run_self_check() -> list[str]:
         if not any("file is missing" in item for item in missing_artifact_errors):
             errors.append("self-check failed to reject missing runtime artifacts")
 
-        valid["artifacts"][0]["path"] = artifact_path.name
+        valid["artifacts"][0]["path"] = before_path.name
+        valid["runtime_id"] = "raw-device-identifier"
+        path.write_text(json.dumps(valid), encoding="utf-8")
+        _, raw_id_errors = validate_evidence(path, "ios")
+        if not any("redacted SHA-256" in item for item in raw_id_errors):
+            errors.append("self-check failed to reject a raw runtime identifier")
+        valid["runtime_id"] = f"sha256:{'d' * 64}"
+
+        removed_assertion = valid["assertions"].pop("runtime_interaction_observed")
+        path.write_text(json.dumps(valid), encoding="utf-8")
+        _, assertion_errors = validate_evidence(path, "ios")
+        if not any("missing required checks" in item for item in assertion_errors):
+            errors.append("self-check failed to reject a missing required assertion")
+        valid["assertions"]["runtime_interaction_observed"] = removed_assertion
+
+        removed_artifact = valid["artifacts"].pop()
+        path.write_text(json.dumps(valid), encoding="utf-8")
+        _, role_errors = validate_evidence(path, "ios")
+        if not any("missing required roles" in item for item in role_errors):
+            errors.append("self-check failed to reject a missing required artifact role")
+        valid["artifacts"].append(removed_artifact)
+
         valid["skill_version"] = read_version(DEFAULT_SKILL_ROOT)
         valid["skill_tree_sha256"] = tree_sha256(DEFAULT_SKILL_ROOT)
         valid["fixture_tree_sha256"] = tree_sha256(
@@ -386,6 +575,53 @@ def run_self_check() -> list[str]:
         _, stale_errors = validate_evidence(path, "ios", require_current_source=True)
         if not any("fixture_tree_sha256" in item for item in stale_errors):
             errors.append("self-check failed to reject stale fixture-bound evidence")
+
+        device_root = root / "device"
+        device_root.mkdir()
+        before_xml = device_root / "window-before.xml"
+        after_xml = device_root / "window-after.xml"
+        device_png = device_root / "android-device.png"
+        device_launch = device_root / "launch.txt"
+        before_xml.write_text(
+            '<hierarchy><node content-desc="Native runtime evidence title" /></hierarchy>',
+            encoding="utf-8",
+        )
+        after_xml.write_text(
+            '<hierarchy><node text="Runtime interaction confirmed" /></hierarchy>',
+            encoding="utf-8",
+        )
+        device_png.write_bytes(PNG_SIGNATURE + b"device")
+        device_launch.write_text("physical device launched\n", encoding="utf-8")
+
+        def device_artifact(role: str, artifact_path: Path) -> dict[str, object]:
+            return {
+                "role": role,
+                "path": artifact_path.name,
+                "sha256": hashlib.sha256(artifact_path.read_bytes()).hexdigest(),
+                "bytes": artifact_path.stat().st_size,
+            }
+
+        device_payload = {
+            **valid,
+            "platform": "android",
+            "runtime_kind": "android_device",
+            "fixture_tree_sha256": "e" * 64,
+            "assertions": {
+                assertion: True for assertion in REQUIRED_ASSERTIONS["android_device"]
+            },
+            "artifacts": [
+                device_artifact("before_accessibility_tree", before_xml),
+                device_artifact("after_accessibility_tree", after_xml),
+                device_artifact("after_screenshot", device_png),
+                device_artifact("launch_log", device_launch),
+            ],
+        }
+        (device_root / "real-device-observed.json").write_text(
+            json.dumps(device_payload), encoding="utf-8"
+        )
+        device_validation = validate_root(device_root, [], require_real_device=True)
+        if not device_validation["ok"]:
+            errors.extend(device_validation["errors"])
     return errors
 
 
@@ -426,7 +662,12 @@ def main() -> int:
         return 0
 
     if args.validate:
-        required = args.require or sorted(PLATFORM_FILES)
+        if args.require:
+            required = args.require
+        elif args.require_real_device:
+            required = []
+        else:
+            required = sorted(PLATFORM_FILES)
         payload = validate_root(
             Path(args.root).expanduser().resolve(),
             required,

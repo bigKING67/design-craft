@@ -35,3 +35,20 @@ source inspection. Certified evidence must record a clean source commit that is
 an ancestor of the current checkout while the current skill and fixture trees
 still match the recorded hashes. This allows evidence files to be admitted in a
 later commit without allowing old behavior or fixtures to unlock 100/100.
+
+Runtime identity is recorded only as `sha256:<digest>`; never commit raw device
+serials or UDIDs. Assertions and artifacts are runtime-kind-specific rather
+than arbitrary. Android evidence must hash the before/after accessibility XML,
+the post-interaction screenshot, and the launch log. iOS evidence must hash the
+before/after screenshots, interaction marker, and launch log.
+
+For an authorized physical Android device:
+
+```bash
+bash scripts/native_runtime_device_android.sh \
+  --serial <adb-serial> \
+  --evidence-dir /tmp/design-craft-android-device
+```
+
+The runner rejects emulators, performs the build/install/launch/tap flow, writes
+`real-device-observed.json`, and immediately validates the device-only evidence.

@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import re
 import subprocess
 from pathlib import Path
 
@@ -218,9 +219,31 @@ def skill_provenance(skill_root: Path) -> dict[str, object]:
         repo_dirty = payload.get("repo_dirty")
         if schema == "design-craft.install.v2" and not isinstance(repo_dirty, bool):
             raise ValueError(f"installation metadata has invalid repo dirty state: {metadata_path}")
+        source_commit = str(payload.get("source_commit", ""))
+        if not re.fullmatch(r"[0-9a-f]{40}", source_commit):
+            raise ValueError(f"installation metadata has invalid source commit: {metadata_path}")
+        source_root_value = payload.get("source_root")
+        source_path_value = payload.get("source_path")
+        if isinstance(source_root_value, str) and isinstance(source_path_value, str):
+            source_root = Path(source_root_value).expanduser().resolve()
+            source_path = Path(source_path_value).expanduser().resolve()
+            if source_root.is_dir() and source_path.is_dir():
+                if not git_is_ancestor(source_root, source_commit):
+                    raise ValueError(
+                        f"installation source commit is not current history: {metadata_path}"
+                    )
+                committed_digest = git_tree_sha256(
+                    source_root,
+                    source_path,
+                    source_commit,
+                )
+                if committed_digest != digest:
+                    raise ValueError(
+                        f"installation source commit tree does not match {metadata_path}"
+                    )
         return {
             "skill_version": str(payload.get("version", "")),
-            "skill_source_commit": str(payload.get("source_commit", "")),
+            "skill_source_commit": source_commit,
             "skill_source_dirty": skill_source_dirty,
             "repo_dirty": repo_dirty,
             "skill_tree_sha256": digest,

@@ -588,6 +588,27 @@ artifacts must still be reviewed before `ios-observed.json` and
 device run must provide `real-device-observed.json`; workflow existence is not
 itself runtime proof.
 
+Runtime evidence stores only a SHA-256-derived runtime identifier. Raw
+Simulator UDIDs, iOS device identifiers, and Android serials must not be
+committed. Each runtime kind has required assertion names and artifact roles;
+the validator parses decisive accessibility XML, verifies PNG signatures, and
+binds every artifact by path, byte count, and SHA-256. Normal `Validate` runs
+compile-only iOS and Android fixture jobs so deterministic build failures are
+caught before the release-only runtime workflow.
+
+Capture a connected, authorized physical Android device into a repo-external
+evidence directory with:
+
+```bash
+bash scripts/native_runtime_device_android.sh \
+  --serial <adb-serial> \
+  --evidence-dir /tmp/design-craft-android-device
+```
+
+The raw serial is used only for the live ADB session; the recorded JSON contains
+its SHA-256-derived identifier. Review the output before admitting
+`real-device-observed.json` and its artifacts under `evals/native-runtime/`.
+
 Route smoke uses a temporary fixture project with its own `DESIGN.md`, because
 `design-craft` itself is a reusable skill system rather than a product UI target:
 

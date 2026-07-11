@@ -20,6 +20,10 @@ All notable local changes to `design-craft` are recorded here.
   `/data/local/tmp` capture and `adb exec-out` reads. The iOS deep-link
   interaction now handles cold-launch URL options and waits for a bounded,
   filesystem-backed confirmation marker.
+- Hardened native evidence with platform-specific assertion and artifact-role
+  contracts, hashed runtime identifiers, XML/PNG content validation, decisive
+  Android before/after tree hashes, push-time fixture builds, and a reproducible
+  physical Android device capture runner.
 - Split the Codex frontend route core into dedicated authority, browser,
   delivery, runtime, and telemetry modules and made all five required by the
   route-pack/snapshot manifest and strict semantic audit.

@@ -441,6 +441,10 @@ Before committing a release:
     `.github/workflows/native-runtime.yml`, download both artifacts, verify their
     hashes and assertions, and then validate the admitted JSON with
     `make native-runtime-check`.
+    Runtime identifiers must be hashed, and the decisive Android before/after
+    accessibility trees must be present in the JSON artifact-role set. Capture
+    a physical Android device with `scripts/native_runtime_device_android.sh`;
+    do not hand-author `real-device-observed.json`.
 15. For a release claiming certified 100/100, run `make release-certify`; do
     not substitute the normal 95/100 release-readiness gate.
 16. Commit with a scoped message.

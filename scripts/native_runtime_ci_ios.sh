@@ -10,31 +10,42 @@ mkdir -p "${APP_DIR}"
 cp evals/native-runtime/fixtures/ios/Info.plist "${APP_DIR}/Info.plist"
 
 sdk_path="$(xcrun --sdk iphonesimulator --show-sdk-path)"
-sdk_version="$(xcrun --sdk iphonesimulator --show-sdk-version)"
+deployment_target="$(/usr/libexec/PlistBuddy -c 'Print :MinimumOSVersion' evals/native-runtime/fixtures/ios/Info.plist)"
 arch="$(uname -m)"
-xcrun swiftc \
+xcrun --sdk iphonesimulator swiftc \
   -parse-as-library \
+  -module-name DesignCraftEvidence \
   -sdk "${sdk_path}" \
-  -target "${arch}-apple-ios${sdk_version}-simulator" \
+  -target "${arch}-apple-ios${deployment_target}-simulator" \
   -framework UIKit \
   evals/native-runtime/fixtures/ios/App.swift \
   -o "${APP_DIR}/DesignCraftEvidence"
 codesign --force --sign - "${APP_DIR}"
 
-xcrun simctl list devices available -j > "${EVIDENCE_DIR}/devices.json"
-udid="$(python3 - "${EVIDENCE_DIR}/devices.json" <<'PY'
+if [[ "${DESIGN_CRAFT_NATIVE_BUILD_ONLY:-0}" == "1" ]]; then
+  echo "iOS fixture build verified: ${APP_DIR}"
+  exit 0
+fi
+
+udid="$(xcrun simctl list devices available -j | python3 -c '
 import json
+import re
 import sys
 
-payload = json.load(open(sys.argv[1], encoding="utf-8"))
-for devices in payload.get("devices", {}).values():
+payload = json.load(sys.stdin)
+candidates = []
+for runtime, devices in payload.get("devices", {}).items():
+    match = re.search(r"\.iOS-([0-9-]+)$", runtime)
+    if not match:
+        continue
+    version = tuple(int(part) for part in match.group(1).split("-"))
     for device in devices:
         if device.get("isAvailable") and str(device.get("name", "")).startswith("iPhone"):
-            print(device["udid"])
-            raise SystemExit(0)
-raise SystemExit("No available iPhone Simulator")
-PY
-)"
+            candidates.append((version, str(device.get("name", "")), device["udid"]))
+if not candidates:
+    raise SystemExit("No available iPhone Simulator")
+print(max(candidates)[2])
+')"
 xcrun simctl boot "${udid}" || true
 xcrun simctl bootstatus "${udid}" -b
 xcrun simctl install "${udid}" "${APP_DIR}"
@@ -46,6 +57,12 @@ interaction_marker="${data_container}/Documents/runtime-interaction.txt"
 rm -f "${interaction_marker}"
 xcrun simctl terminate "${udid}" dev.designcraft.runtime-evidence
 xcrun simctl openurl "${udid}" "designcraft-evidence://confirm" > "${EVIDENCE_DIR}/openurl.txt"
+{
+  printf '%s\n' '[initial launch]'
+  cat "${EVIDENCE_DIR}/launch.txt"
+  printf '%s\n' '[deep-link launch]'
+  cat "${EVIDENCE_DIR}/openurl.txt"
+} > "${EVIDENCE_DIR}/runtime-launch.log"
 interaction_observed=0
 for _ in {1..20}; do
   if [[ -f "${interaction_marker}" ]] \
@@ -78,9 +95,10 @@ python3 scripts/design_craft_native_runtime_record.py \
   --assertion install_and_launch_succeeded=true \
   --assertion runtime_interaction_observed=true \
   --assertion before_and_after_screenshots_captured=true \
-  --artifact "${EVIDENCE_DIR}/ios-before-interaction.png" \
-  --artifact "${EVIDENCE_DIR}/ios-after-interaction.png" \
-  --artifact "${EVIDENCE_DIR}/runtime-interaction.txt" \
+  --artifact "before_screenshot=${EVIDENCE_DIR}/ios-before-interaction.png" \
+  --artifact "after_screenshot=${EVIDENCE_DIR}/ios-after-interaction.png" \
+  --artifact "interaction_marker=${EVIDENCE_DIR}/runtime-interaction.txt" \
+  --artifact "launch_log=${EVIDENCE_DIR}/runtime-launch.log" \
   --fixture-root evals/native-runtime/fixtures/ios \
   --output "${EVIDENCE_DIR}/ios-observed.json"
 python3 scripts/design_craft_native_runtime_validate.py \

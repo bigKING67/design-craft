@@ -262,6 +262,8 @@ required_files=(
   "scripts/design_craft_sync_status.py"
   "scripts/native_runtime_ci_ios.sh"
   "scripts/native_runtime_ci_android.sh"
+  "scripts/native_runtime_android_common.sh"
+  "scripts/native_runtime_device_android.sh"
   "scripts/frontend_craft_audit.sh"
   "scripts/frontend_craft_detect.sh"
   "scripts/frontend_craft_browser_evidence.py"
@@ -516,6 +518,8 @@ for path in \
 	"scripts/design_craft_github_checks.py" \
 	"scripts/native_runtime_ci_ios.sh" \
 	"scripts/native_runtime_ci_android.sh" \
+	"scripts/native_runtime_android_common.sh" \
+	"scripts/native_runtime_device_android.sh" \
   "skills/design-craft/scripts/design_craft_audit.sh" \
   "skills/design-craft/scripts/design_craft_browser_evidence.py" \
   "skills/design-craft/scripts/design_craft_css_smell_scan.py" \
@@ -568,6 +572,8 @@ for path in \
   scripts/design_craft_release_certify.sh \
   scripts/native_runtime_ci_ios.sh \
   scripts/native_runtime_ci_android.sh \
+  scripts/native_runtime_android_common.sh \
+  scripts/native_runtime_device_android.sh \
   skills/design-craft/scripts/design_craft_audit.sh \
   skills/design-craft/scripts/design_craft_detect.sh \
   skills/design-craft/scripts/design_craft_l4_eval_case.sh \
@@ -668,17 +674,24 @@ assert plist.get("CFBundleIdentifier") == "dev.designcraft.runtime-evidence"
 ET.parse("evals/native-runtime/fixtures/android/app/src/main/AndroidManifest.xml")
 
 workflow = Path(".github/workflows/native-runtime.yml").read_text(encoding="utf-8")
+validate_workflow = Path(".github/workflows/validate.yml").read_text(encoding="utf-8")
 for needle in ("native_runtime_ci_ios.sh", "reactivecircus/android-emulator-runner@", "native_runtime_ci_android.sh"):
     assert needle in workflow
 ios_runner = Path("scripts/native_runtime_ci_ios.sh").read_text(encoding="utf-8")
 android_runner = Path("scripts/native_runtime_ci_android.sh").read_text(encoding="utf-8")
+android_common = Path("scripts/native_runtime_android_common.sh").read_text(encoding="utf-8")
 assert "xcrun simctl" in ios_runner and "design_craft_native_runtime_record.py" in ios_runner
 assert "-parse-as-library" in ios_runner
 assert "simctl terminate" in ios_runner and "simctl openurl" in ios_runner
 assert "interaction_observed" in ios_runner and "runtime-interaction.txt" in ios_runner
-assert "uiautomator" in android_runner and "design_craft_native_runtime_record.py" in android_runner
-assert "/data/local/tmp/design-craft-window.xml" in android_runner and "adb exec-out cat" in android_runner
+assert "design_craft_native_runtime_record.py" in android_runner
+assert "uiautomator" in android_common and "adb exec-out cat" in android_common
+assert "native_runtime_android_common.sh" in android_runner
+assert "before_accessibility_tree=" in android_runner and "after_accessibility_tree=" in android_runner
+assert "before_screenshot=" in ios_runner and "interaction_marker=" in ios_runner
 assert "Enable KVM access" in workflow and "-no-metrics" in workflow
+assert "DESIGN_CRAFT_NATIVE_BUILD_ONLY" in validate_workflow
+assert "android-fixture-build" in validate_workflow
 PY
 
 python3 - <<'PY'
@@ -695,17 +708,24 @@ PY
 (
   tmp_native_dir="$(mktemp -d -t design-craft-native-record.XXXXXX)"
   trap 'rm -rf "${tmp_native_dir}"' EXIT
-  printf '%s\n' runtime > "${tmp_native_dir}/artifact.txt"
+  printf '\211PNG\r\n\032\nfixture-before' > "${tmp_native_dir}/before.png"
+  printf '\211PNG\r\n\032\nfixture-after' > "${tmp_native_dir}/after.png"
+  printf '%s\n' 'Runtime interaction confirmed' > "${tmp_native_dir}/runtime-interaction.txt"
+  printf '%s\n' 'fixture launched' > "${tmp_native_dir}/launch.txt"
   python3 scripts/design_craft_native_runtime_record.py \
     --platform ios \
     --runtime-kind ios_simulator \
     --runtime-id fixture-simulator \
     --tool fixture \
     --command "fixture build" \
-    --assertion build=true \
-    --assertion launch=true \
-    --assertion screenshot=true \
-    --artifact "${tmp_native_dir}/artifact.txt" \
+    --assertion build_succeeded=true \
+    --assertion install_and_launch_succeeded=true \
+    --assertion runtime_interaction_observed=true \
+    --assertion before_and_after_screenshots_captured=true \
+    --artifact "before_screenshot=${tmp_native_dir}/before.png" \
+    --artifact "after_screenshot=${tmp_native_dir}/after.png" \
+    --artifact "interaction_marker=${tmp_native_dir}/runtime-interaction.txt" \
+    --artifact "launch_log=${tmp_native_dir}/launch.txt" \
     --fixture-root evals/native-runtime/fixtures/ios \
     --output "${tmp_native_dir}/ios-observed.json" >/dev/null
   python3 scripts/design_craft_native_runtime_validate.py \
