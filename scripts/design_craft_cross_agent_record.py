@@ -18,22 +18,10 @@ from design_craft_cross_agent_validate import (
     validate_output,
     validate_observed_score,
 )
-from design_craft_evidence_common import sha256_file, skill_provenance, tree_sha256
+from design_craft_evidence_common import redacted_path, sha256_file, skill_provenance, tree_sha256
 
 
 ROOT = Path(__file__).resolve().parents[1]
-
-
-def redacted_path(path: Path) -> str:
-    resolved = path.expanduser().resolve()
-    home = Path.home().resolve()
-    try:
-        relative = resolved.relative_to(home)
-    except ValueError:
-        return str(resolved)
-    return f"~/{relative.as_posix()}"
-
-
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--task-dir", required=True)

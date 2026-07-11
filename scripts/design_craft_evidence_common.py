@@ -196,6 +196,16 @@ def read_version(skill_root: Path) -> str:
     return path.read_text(encoding="utf-8").strip() if path.is_file() else ""
 
 
+def redacted_path(path: Path) -> str:
+    resolved = path.expanduser().resolve()
+    home = Path.home().resolve()
+    try:
+        relative = resolved.relative_to(home)
+    except ValueError:
+        return str(resolved)
+    return f"~/{relative.as_posix()}"
+
+
 def skill_provenance(skill_root: Path) -> dict[str, object]:
     skill_root = skill_root.expanduser().resolve()
     digest = tree_sha256(skill_root)
@@ -247,7 +257,7 @@ def skill_provenance(skill_root: Path) -> dict[str, object]:
             "skill_source_dirty": skill_source_dirty,
             "repo_dirty": repo_dirty,
             "skill_tree_sha256": digest,
-            "skill_path": str(skill_root),
+            "skill_path": redacted_path(skill_root),
         }
 
     root = git_root(skill_root)
@@ -257,5 +267,5 @@ def skill_provenance(skill_root: Path) -> dict[str, object]:
         "skill_source_dirty": git_dirty(root, skill_root),
         "repo_dirty": git_dirty(root),
         "skill_tree_sha256": digest,
-        "skill_path": str(skill_root),
+        "skill_path": redacted_path(skill_root),
     }
