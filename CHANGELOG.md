@@ -4,6 +4,19 @@ All notable local changes to `design-craft` are recorded here.
 
 ## 0.5.0 - Unreleased
 
+- Split the Codex frontend route core into dedicated authority, browser,
+  delivery, runtime, and telemetry modules and made all five required by the
+  route-pack/snapshot manifest and strict semantic audit.
+- Added live runtime truth resolution for `gpt-5.6-sol/max`: paired explicit
+  environment evidence wins, the current session's latest `turn_context`
+  provides verified fallback evidence, and `config.toml` remains explicitly
+  unverified. Session reads are field-limited and evidence paths are redacted
+  to Codex-home-relative paths.
+- Added privacy-safe route telemetry with context isolation, bounded rotation,
+  p50/p95/max summaries, distribution counts, latency thresholds, and a
+  dedicated regression test. General route tests, release route smoke, and
+  strict route-pack probes now disable telemetry writes and session discovery
+  to avoid production-log pollution or caller-session reads.
 - Defined two honest maturity levels: the normal portable/local release path
   remains usable at 95/100, while certified 100/100 now additionally requires
   current-source v2 evidence from Codex, Pi, Cursor, and Claude plus observed

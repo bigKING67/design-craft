@@ -60,7 +60,8 @@ route-smoke:
 	  printf '%s\n' '## Component Grammar'; \
 	  printf '%s\n' 'Reusable component rules.'; \
 	} > "$$tmp_dir/DESIGN.md"; \
-	bash scripts/design_craft_route.sh --target "$$tmp_dir" --surface dashboard --intent visual-refine --scope page >/dev/null
+		FRONTEND_ROUTE_TELEMETRY_LOG_ENABLED=0 FRONTEND_RUNTIME_SESSION_DISCOVERY=0 \
+		  bash scripts/design_craft_route.sh --target "$$tmp_dir" --surface dashboard --intent visual-refine --scope page >/dev/null
 
 doctor:
 	bash scripts/design_craft_doctor.sh --target . --json >/dev/null

@@ -39,6 +39,7 @@ class PackFile:
 
 SUGGESTED_VALIDATION_COMMANDS = [
     "bash ~/.codex/tools/tests/test_frontend_route_plan.sh",
+    "bash ~/.codex/tools/tests/test_frontend_route_telemetry.sh",
     "bash ~/.codex/tools/tests/test_frontend_delivery_contract.sh",
     "bash ~/.codex/tools/tests/test_frontend_route_contract.sh",
     "bash ~/.codex/tools/tests/test_frontend_preflight_spec_sync.sh",
@@ -277,6 +278,8 @@ def run_route_probe(
             "CODEX_HOME": str(source_root),
             "FRONTEND_WORKSPACE_ROOT": str(source_root),
             "FRONTEND_PREFLIGHT_LOG_ENABLED": "0",
+            "FRONTEND_ROUTE_TELEMETRY_LOG_ENABLED": "0",
+            "FRONTEND_RUNTIME_SESSION_DISCOVERY": "0",
         }
     )
     env.pop("CODEX_EFFECTIVE_MODEL", None)
@@ -314,6 +317,11 @@ def semantic_validation(source_root: Path) -> dict:
     routing_schema_validator_path = source_root / "tools/frontend_route_schema_validate.py"
     route_plan_path = source_root / "tools/frontend_route_plan.sh"
     route_core_path = source_root / "tools/frontend_route_core.py"
+    route_authority_path = source_root / "tools/frontend_route_authority.py"
+    route_browser_path = source_root / "tools/frontend_route_browser.py"
+    route_delivery_path = source_root / "tools/frontend_route_delivery.py"
+    route_runtime_path = source_root / "tools/frontend_route_runtime.py"
+    route_telemetry_path = source_root / "tools/frontend_route_telemetry.py"
     platform_detect_path = source_root / "tools/frontend_platform_detect.py"
     worker_entry_path = source_root / "tools/frontend_worker_entry.sh"
     worker_route_core_path = source_root / "tools/frontend_worker_route_core.py"
@@ -412,6 +420,11 @@ def semantic_validation(source_root: Path) -> dict:
     route_files = [
         route_plan_path,
         route_core_path,
+        route_authority_path,
+        route_browser_path,
+        route_delivery_path,
+        route_runtime_path,
+        route_telemetry_path,
         worker_entry_path,
         worker_route_core_path,
         worker_payload_core_path,
@@ -427,6 +440,11 @@ def semantic_validation(source_root: Path) -> dict:
             "--visual-contract",
         ],
         "frontend_route_core.py": [
+            "from frontend_route_authority import",
+            "from frontend_route_browser import resolve_browser_route",
+            "from frontend_route_delivery import",
+            "from frontend_route_runtime import resolve_runtime_profile",
+            "from frontend_route_telemetry import append_route_event",
             "quality_governance",
             "delegation_contract",
             "runtime_profile_verified",
@@ -435,6 +453,37 @@ def semantic_validation(source_root: Path) -> dict:
             '"preferred_browser_tool": preferred_browser_tool',
             '"runtime_validation_kind": runtime_validation_kind',
             '"native_validation_required": native_validation_required',
+        ],
+        "frontend_route_authority.py": [
+            "discover_design_md",
+            "authority_digest",
+            "build_authority_constraints",
+        ],
+        "frontend_route_browser.py": [
+            "resolve_browser_route",
+            '"preferred_browser_tool"',
+            '"native_validation_required"',
+        ],
+        "frontend_route_delivery.py": [
+            "build_skill_selection_contract",
+            "build_delivery_contract",
+            "current Codex turn_context",
+        ],
+        "frontend_route_runtime.py": [
+            "FRONTEND_RUNTIME_SESSION_DISCOVERY",
+            "codex_session_turn_context",
+            "contains_prompt_data",
+            "_safe_evidence_path",
+            "resolve_runtime_profile",
+        ],
+        "frontend_route_telemetry.py": [
+            "FRONTEND_ROUTE_TELEMETRY_LOG_ENABLED",
+            "FRONTEND_ROUTE_TELEMETRY_CONTEXT",
+            "append_route_event",
+            "summarize",
+            '"p50"',
+            '"p95"',
+            '"contains_sensitive_data"',
         ],
         "frontend_worker_entry.sh": [
             "frontend_worker_route_core.py",
@@ -502,6 +551,37 @@ def semantic_validation(source_root: Path) -> dict:
     except (OSError, ValueError, tomllib.TOMLDecodeError) as exc:
         issues.append(f"failed to validate worker.toml: {exc}")
 
+    telemetry_env = os.environ.copy()
+    telemetry_env.update(
+        {
+            "FRONTEND_ROUTE_TELEMETRY_CONTEXT": "test",
+            "FRONTEND_ROUTE_TELEMETRY_LOG_ENABLED": "0",
+        }
+    )
+    try:
+        telemetry_completed = subprocess.run(
+            [sys.executable, str(route_telemetry_path), "--check"],
+            cwd=source_root,
+            env=telemetry_env,
+            check=False,
+            capture_output=True,
+            text=True,
+            timeout=20,
+        )
+        telemetry_probe_ok = telemetry_completed.returncode == 0
+        telemetry_detail = (telemetry_completed.stderr or telemetry_completed.stdout).strip()
+    except (OSError, subprocess.TimeoutExpired) as exc:
+        telemetry_probe_ok = False
+        telemetry_detail = str(exc)
+    runtime_probes.append(
+        {
+            "name": "route_telemetry_self_check",
+            "ok": telemetry_probe_ok,
+        }
+    )
+    if not telemetry_probe_ok:
+        issues.append(f"frontend route telemetry self-check failed: {telemetry_detail[:240]}")
+
     probe_base = [
         "--surface",
         "dashboard",
@@ -543,6 +623,38 @@ def semantic_validation(source_root: Path) -> dict:
                 f"browser context {browser_context} route probe failed: "
                 f"expected browser/runtime tool {expected_tool}; {detail[:240]}"
             )
+
+    returncode, payload, detail = run_route_probe(
+        source_root,
+        [*probe_base, "--browser-context", "local"],
+        runtime_model="gpt-5.6-sol",
+        runtime_reasoning="max",
+    )
+    runtime_evidence = payload.get("runtime_profile_evidence")
+    runtime_truth_probe_ok = (
+        returncode == 0
+        and payload.get("runtime_profile_source") == "environment"
+        and payload.get("runtime_profile_verified") is True
+        and payload.get("effective_model") == "gpt-5.6-sol"
+        and payload.get("effective_reasoning") == "max"
+        and payload.get("reasoning_application_status") == "runtime_verified"
+        and isinstance(runtime_evidence, dict)
+        and runtime_evidence.get("kind") == "explicit_environment"
+        and runtime_evidence.get("contains_prompt_data") is False
+    )
+    runtime_probes.append(
+        {
+            "name": "verified_environment_runtime_profile",
+            "ok": runtime_truth_probe_ok,
+            "returncode": returncode,
+            "runtime_profile_source": payload.get("runtime_profile_source"),
+            "runtime_profile_verified": payload.get("runtime_profile_verified"),
+            "effective_model": payload.get("effective_model"),
+            "effective_reasoning": payload.get("effective_reasoning"),
+        }
+    )
+    if not runtime_truth_probe_ok:
+        issues.append(f"verified environment runtime-profile probe failed: {detail[:240]}")
 
     returncode, payload, detail = run_route_probe(
         source_root,
@@ -606,6 +718,7 @@ def semantic_validation(source_root: Path) -> dict:
         "issues": issues,
         "warnings": warnings,
         "runtime_probes": runtime_probes,
+        "route_modules": [path.name for path in route_files],
         "runtime_profiles": profiles,
         "model_catalog_source": model_catalog_source,
     }
@@ -657,6 +770,7 @@ def build_manifest(source_root: Path, *, include_semantic: bool = True) -> dict:
             "issues": [],
             "warnings": [reason],
             "runtime_probes": [],
+            "route_modules": [],
             "runtime_profiles": [],
             "model_catalog_source": "unavailable",
         }

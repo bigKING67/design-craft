@@ -373,8 +373,35 @@ python3 scripts/design_craft_codex_route_pack.py \
 After restoring to another Codex home, run the validation commands listed in
 `adapters/codex/route-pack/README.md`. Do not treat the manifest alone as proof
 that the restored route planner works. A strict audit must also pass routing
-JSON Schema validation, browser/runtime tool-parity probes, and the unapproved
-GPT-5.6 `ultra` runtime-conflict denial probe.
+JSON Schema validation, split authority/browser/delivery/runtime/telemetry
+module checks, a telemetry self-check, browser/runtime tool-parity probes, a
+verified `gpt-5.6-sol/max` environment-runtime probe, and the unapproved GPT-5.6
+`ultra` runtime-conflict denial probe. Strict probes set
+`FRONTEND_ROUTE_TELEMETRY_LOG_ENABLED=0` and
+`FRONTEND_RUNTIME_SESSION_DISCOVERY=0`; audit runs must not write production
+telemetry or read the caller's session JSONL.
+
+The live planner may verify the current runtime from the latest session
+`turn_context`, but only `model`, `effort`, `turn_id`, and `current_date` are
+read. Prompt/message/tool payloads remain outside the contract, and evidence
+paths are relative to `CODEX_HOME`. `config.toml` values are candidates, not
+proof of the active turn.
+
+Review production route latency and distributions separately:
+
+```bash
+python3 ~/.codex/tools/frontend_route_telemetry.py \
+  --include-rotated \
+  --context prod \
+  --min-events 6 \
+  --max-p95-ms 1000 \
+  --json
+```
+
+The default privacy-safe log rotates at 2 MB with seven retained files. Use a
+non-production context for fixtures and keep general route tests plus release
+route smoke telemetry-off; `test_frontend_route_telemetry.sh` owns telemetry
+behavior coverage.
 
 ## Release checklist
 

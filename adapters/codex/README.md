@@ -63,4 +63,6 @@ python3 scripts/design_craft_codex_route_pack.py \
 ```
 
 See `adapters/codex/route-pack/README.md` for the tracked file list, restore
-validation commands, and the screenshot evidence policy boundary.
+validation commands, split route-module contract, current-session runtime truth
+and privacy boundary, p50/p95 telemetry workflow, and screenshot evidence
+policy boundary.

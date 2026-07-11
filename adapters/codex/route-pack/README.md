@@ -32,6 +32,11 @@ agents/worker.toml
 tools/frontend_route_pack_manifest.json
 tools/frontend_route_plan.sh
 tools/frontend_route_core.py
+tools/frontend_route_authority.py
+tools/frontend_route_browser.py
+tools/frontend_route_delivery.py
+tools/frontend_route_runtime.py
+tools/frontend_route_telemetry.py
 tools/frontend_platform_detect.py
 tools/frontend_agent_routing.json
 tools/frontend_agent_routing.schema.json
@@ -45,6 +50,7 @@ tools/frontend_preflight_run.sh
 tools/frontend_preflight_verify.sh
 tools/agents_quality_verify.sh
 tools/tests/test_frontend_route_plan.sh
+tools/tests/test_frontend_route_telemetry.sh
 tools/tests/test_frontend_route_contract.sh
 tools/tests/test_frontend_delivery_contract.sh
 tools/tests/test_frontend_preflight.sh
@@ -71,8 +77,13 @@ This prints:
 - missing required files, if any
 - manifest schema, selected/required counts, and required snapshot coverage
 - routing JSON Schema validation plus V2 semantics and stale-model checks
+- split authority, browser, delivery, runtime, and telemetry module contracts
 - browser/runtime tool parity probes for external and local contexts
+- a verified `gpt-5.6-sol/max` environment-runtime truth probe with session
+  discovery disabled
 - an unauthorized GPT-5.6 `ultra` runtime-conflict denial probe
+- a privacy-safe telemetry self-check that remains isolated from inherited test
+  context
 - PRODUCT.md/codebase platform detection and native-runtime evidence boundaries
 - redacted runtime model/profile compatibility from `config.toml`
 - bundled model-catalog compatibility for configured reasoning levels
@@ -87,6 +98,9 @@ The JSON manifest records file paths, size, SHA-256, executable bit, whether
 each file is required, and a redacted `semantic_validation` result. It reads
 only model/profile fields from `config.toml`; credentials, MCP settings,
 provider URLs, browser state, and unrelated configuration are never exported.
+Strict route probes also disable route telemetry writes and current-session
+discovery, so an audit neither pollutes production latency history nor reads the
+caller's session JSONL.
 
 ## Export a migration bundle
 
@@ -129,6 +143,7 @@ After restoring the bundle into another Codex home, run:
 
 ```bash
 bash ~/.codex/tools/tests/test_frontend_route_plan.sh
+bash ~/.codex/tools/tests/test_frontend_route_telemetry.sh
 bash ~/.codex/tools/tests/test_frontend_delivery_contract.sh
 bash ~/.codex/tools/tests/test_frontend_route_contract.sh
 bash ~/.codex/tools/tests/test_frontend_preflight_spec_sync.sh
@@ -136,6 +151,47 @@ bash ~/.codex/tools/tests/test_frontend_preflight.sh
 bash ~/.codex/tools/frontend_preflight_verify.sh
 bash ~/.codex/tools/agents_quality_verify.sh --fast
 ```
+
+## Runtime truth and privacy boundary
+
+Runtime model/reasoning resolution uses this evidence order:
+
+```text
+paired CODEX_EFFECTIVE_MODEL / CODEX_EFFECTIVE_REASONING
+> current CODEX_THREAD_ID session's latest turn_context model/effort
+> config.toml candidate values, explicitly unverified
+```
+
+Session discovery reads only `turn_context` records and only the `model`,
+`effort`, `turn_id`, and `current_date` fields. Route output discloses only a
+Codex-home-relative evidence path and marks `contains_prompt_data=false`; it
+does not return prompts, messages, tool payloads, or absolute home paths.
+
+## Route telemetry boundary
+
+The planner appends a fixed privacy-safe event schema to
+`~/.codex/logs/frontend_route_telemetry.jsonl` by default. Events contain only
+bounded enums, booleans, counts, and millisecond timings. They do not contain
+task prose, source code, PRODUCT/DESIGN paths, tokens, credentials, or session
+content. The default log rotates at 2 MB with seven retained files.
+
+Use `FRONTEND_ROUTE_TELEMETRY_CONTEXT=prod|test|ci` to isolate histories and
+`FRONTEND_ROUTE_TELEMETRY_LOG_ENABLED=0` for probes or tests that should not
+write. Summarize production latency and quality with:
+
+```bash
+python3 ~/.codex/tools/frontend_route_telemetry.py \
+  --include-rotated \
+  --context prod \
+  --min-events 6 \
+  --max-p95-ms 1000 \
+  --json
+```
+
+The summary reports p50/p95/max durations, route/tier/platform/tool/runtime
+source distributions, parse errors, and the privacy marker. The general route
+test and release route smoke disable telemetry; the dedicated telemetry test
+owns append, context, rotation, summary, and self-check coverage.
 
 ## Screenshot policy boundary
 

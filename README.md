@@ -167,11 +167,15 @@ route planner, inherited frontend worker, frontend rules, preflight contract,
 and related tests selected by the single
 `~/.codex/tools/frontend_route_pack_manifest.json` authority. The strict audit
 also validates manifest/snapshot coverage, the routing JSON Schema, split
-route/worker Python cores, browser/runtime tool parity, V2 delegation semantics,
-and redacted runtime model/reasoning profiles against the bundled Codex model
-catalog. GPT-5.6 `ultra` is actively probed as a denied unapproved runtime
-conflict because it includes automatic task delegation; explicit main-owned
-frontend overrides stop at `max`:
+worker Python cores, browser/runtime tool parity, V2 delegation semantics,
+dedicated authority/browser/delivery/runtime/telemetry modules, and redacted
+runtime model/reasoning profiles against the bundled Codex model catalog. Current
+Codex session evidence reads only the latest `turn_context.model/effort`, while
+strict audits disable session discovery and route telemetry writes. Privacy-safe
+route history exposes p50/p95/max latency and bounded routing distributions.
+GPT-5.6 `ultra` is actively probed as a denied unapproved runtime conflict
+because it includes automatic task delegation; explicit main-owned frontend
+overrides stop at `max`:
 
 ```bash
 python3 scripts/design_craft_codex_route_pack.py --strict

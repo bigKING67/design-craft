@@ -110,6 +110,27 @@ if isinstance(manifest_errors, list) and manifest_errors:
 semantic_issues = route_payload.get("semantic_validation", {}).get("issues", [])
 if not route_detail and isinstance(semantic_issues, list) and semantic_issues:
     route_detail = "; ".join(str(item) for item in semantic_issues)
+semantic_payload = route_payload.get("semantic_validation", {})
+runtime_probes = semantic_payload.get("runtime_probes", [])
+if not isinstance(runtime_probes, list):
+    runtime_probes = []
+runtime_probe_map = {
+    str(item.get("name")): item
+    for item in runtime_probes
+    if isinstance(item, dict) and item.get("name")
+}
+route_modules = semantic_payload.get("route_modules", [])
+required_route_modules = {
+    "frontend_route_core.py",
+    "frontend_route_authority.py",
+    "frontend_route_browser.py",
+    "frontend_route_delivery.py",
+    "frontend_route_runtime.py",
+    "frontend_route_telemetry.py",
+}
+route_modules_ok = isinstance(route_modules, list) and required_route_modules.issubset(route_modules)
+route_runtime_truth_ok = runtime_probe_map.get("verified_environment_runtime_profile", {}).get("ok") is True
+route_telemetry_ok = runtime_probe_map.get("route_telemetry_self_check", {}).get("ok") is True
 route_compatible = (
     expected_route_schema == "design-craft.codex-route-pack.v2"
     and expected_manifest_schema == "codex.frontend-route-pack.manifest.v1"
@@ -156,6 +177,9 @@ checks = [
     check("codex route pack manifest", route_pack_manifest_ok, route_detail or str(codex_home / "tools/frontend_route_pack_manifest.json"), required=False),
     check("codex route pack required files", route_pack_manifest_ok and not route_pack_missing, ", ".join(route_pack_missing) if route_pack_missing else str(codex_home), required=False),
     check("codex route pack compatibility", route_compatible, route_detail or f"{route_payload.get('schema')} == {expected_route_schema}", required=False),
+    check("codex route module split", route_modules_ok, ", ".join(sorted(required_route_modules)), required=False),
+    check("codex route runtime truth", route_runtime_truth_ok, "verified explicit environment evidence without session discovery", required=False),
+    check("codex route telemetry", route_telemetry_ok, "privacy-safe telemetry self-check under an inherited test context", required=False),
     check("quick validator", quick_validate.is_file(), str(quick_validate), required=False),
     check("browser evidence helper", (root / "scripts/design_craft_browser_evidence.py").is_file(), str(root / "scripts/design_craft_browser_evidence.py")),
     check("portable runtime", (root / "skills/design-craft/scripts/design_craft_route.sh").is_file(), str(root / "skills/design-craft/scripts")),
