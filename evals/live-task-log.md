@@ -4,19 +4,22 @@ This file records real task evidence for the `design-craft` workflow. It is
 not a substitute for validation output; every entry must state what actually
 ran and what remains unverified.
 
+Historical commands use machine-neutral aliases such as `DATAHUB_REPO` and
+`DESIGN_CRAFT_HOME`; set them to the relevant local checkouts before replay.
+
 ## 2026-06-24 - DataHub marketing industry-news route migration smoke
 
 - Target:
-  `/Users/gaoqian/Documents/sixseven/workman/groland/datahub/src/app/marketing/industry-news`
+  `$DATAHUB_REPO/src/app/marketing/industry-news`
 - Purpose: verify that the workflow can route a real DataHub frontend surface
   while preserving DataHub `DESIGN.md` authority over generic visual guidance.
 - Expected authority:
-  `/Users/gaoqian/Documents/sixseven/workman/groland/datahub/DESIGN.md`
+  `$DATAHUB_REPO/DESIGN.md`
 - Route command:
 
   ```bash
   bash scripts/design_craft_route.sh \
-    --target /Users/gaoqian/Documents/sixseven/workman/groland/datahub/src/app/marketing/industry-news \
+    --target $DATAHUB_REPO/src/app/marketing/industry-news \
     --surface dashboard \
     --intent visual-refine \
     --scope page
@@ -29,7 +32,7 @@ ran and what remains unverified.
   - `preflight_status`: `pass`
   - `preflight_code`: `OK`
   - `style_authority_path`:
-    `/Users/gaoqian/Documents/sixseven/workman/groland/datahub/DESIGN.md`
+    `$DATAHUB_REPO/DESIGN.md`
   - `browser_validation_required`: `true`
   - `browser_screenshot_required`: `true`
   - `preferred_screenshot_tool`: `tmwd_browser.browser_screenshot_ops`
@@ -39,7 +42,7 @@ ran and what remains unverified.
 
   ```bash
   bash scripts/design_craft_detect.sh \
-    --target /Users/gaoqian/Documents/sixseven/workman/groland/datahub/src/app/marketing/industry-news \
+    --target $DATAHUB_REPO/src/app/marketing/industry-news \
     --full-json
   ```
 

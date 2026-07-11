@@ -35,7 +35,7 @@ python3 scripts/design_craft_l4_capture.py \
 Observed result: all four PNG files were written under:
 
 ```text
-/Users/gaoqian/.tmwd-browser-mcp/runtime/runs/ops-dashboard-decision-surface-l4/20260701T015356Z-chrome-headless-fallback/artifacts
+~/.tmwd-browser-mcp/runtime/runs/ops-dashboard-decision-surface-l4/20260701T015356Z-chrome-headless-fallback/artifacts
 ```
 
 Chrome emitted nonfatal stderr during headless capture, but each selected

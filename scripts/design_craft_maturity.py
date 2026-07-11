@@ -335,17 +335,36 @@ def certified_four_host_status() -> tuple[bool, list[str]]:
     return not errors, errors
 
 
-def l4_gate() -> Gate:
+def l4_gate(profile: str) -> Gate:
     cases = [
         ROOT / "evals/product-ui-taste/before-after/generic-review-workbench-local-l4",
         ROOT / "evals/product-ui-taste/before-after/ops-dashboard-decision-surface-l4",
     ]
-    passed = all((case / "screenshots.json").is_file() and (case / "score.after.json").is_file() for case in cases)
+    failures: list[str] = []
+    for case in cases:
+        command = [
+            sys.executable,
+            "scripts/design_craft_l4_case_validate.py",
+            "--case-dir",
+            str(case.relative_to(ROOT)),
+            "--strict",
+        ]
+        if profile == "local":
+            command.append("--require-existing-files")
+        result = run(command)
+        if result.returncode != 0:
+            failures.append(result.stderr.strip() or result.stdout.strip() or case.name)
+    passed = not failures
+    evidence = (
+        "project-neutral L4 before/after artifacts exist and match their manifests"
+        if profile == "local"
+        else "project-neutral L4 before/after manifests validate without claiming local artifact availability"
+    )
     return make_gate(
         "l4_observed_evidence",
         passed,
-        "project-neutral L4 before/after evidence cases exist",
-        "project-neutral L4 observed evidence is incomplete",
+        evidence,
+        "project-neutral L4 evidence is incomplete: " + "; ".join(failures),
         hard=False,
     )
 
@@ -558,7 +577,7 @@ def build_gates(profile: str) -> list[Gate]:
         observed_eval_gate("observed_dashboard_eval", "evals/cross-agent/same-prompt-dashboard-review"),
         observed_eval_gate("observed_motion_eval", "evals/cross-agent/same-prompt-motion-review"),
         observed_eval_gate("observed_native_eval", "evals/cross-agent/same-prompt-native-adaptive-review"),
-        l4_gate(),
+        l4_gate(profile),
         route_pack_gate(profile),
         release_metadata_gate(),
         install_gate(profile),

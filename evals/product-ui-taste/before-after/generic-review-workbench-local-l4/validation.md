@@ -44,7 +44,7 @@ The same capture shape was used for:
 Observed result: all four PNG files were written under:
 
 ```text
-/Users/gaoqian/.tmwd-browser-mcp/runtime/runs/design-craft-generic-l4/20260630T163339Z-headless-chrome-final/artifacts
+~/.tmwd-browser-mcp/runtime/runs/design-craft-generic-l4/20260630T163339Z-headless-chrome-final/artifacts
 ```
 
 Chrome printed shutdown / OS-integration warnings during some headless exits,

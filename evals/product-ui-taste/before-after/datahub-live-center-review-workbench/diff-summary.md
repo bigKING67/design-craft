@@ -2,12 +2,12 @@
 
 ## Files changed
 
-Product repo: `/Users/gaoqian/Documents/sixseven/workman/groland/datahub`
+Product repo: `$DATAHUB_REPO`
 
 - `src/app/content/live-center/_components/live-center-session-detail.tsx`
 - `src/app/content/live-center/live-center.module.css`
 
-Eval repo: `/Users/gaoqian/Documents/sixseven/codeproject/design-craft`
+Eval repo: `$DESIGN_CRAFT_HOME`
 
 - `evals/product-ui-taste/before-after/datahub-live-center-review-workbench/input.md`
 - `evals/product-ui-taste/before-after/datahub-live-center-review-workbench/score.before.json`

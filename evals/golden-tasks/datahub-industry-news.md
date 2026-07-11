@@ -6,10 +6,13 @@ Use this card to verify that `design-craft` routes a real DataHub page through
 the local Codex frontend workflow while keeping DataHub product context,
 `DESIGN.md`, and live runtime behavior above generic visual rules.
 
+Set `DATAHUB_REPO` to the local DataHub checkout before replaying commands.
+The environment variable keeps this public evidence card machine-neutral.
+
 ## Target
 
 ```text
-/Users/gaoqian/Documents/sixseven/workman/groland/datahub/src/app/marketing/industry-news
+$DATAHUB_REPO/src/app/marketing/industry-news
 ```
 
 ## Surface contract
@@ -19,7 +22,7 @@ the local Codex frontend workflow while keeping DataHub product context,
 - Scope: `page`
 - Expected tier: `L2`
 - Expected style authority:
-  `/Users/gaoqian/Documents/sixseven/workman/groland/datahub/DESIGN.md`
+  `$DATAHUB_REPO/DESIGN.md`
 - Expected authority mode: `enforce`
 - Browser validation: required for any visible UI change.
 - Screenshot evidence: required for page-level visual changes when route output
@@ -31,7 +34,7 @@ the local Codex frontend workflow while keeping DataHub product context,
 
 ```bash
 bash scripts/design_craft_route.sh \
-  --target /Users/gaoqian/Documents/sixseven/workman/groland/datahub/src/app/marketing/industry-news \
+  --target $DATAHUB_REPO/src/app/marketing/industry-news \
   --surface dashboard \
   --intent visual-refine \
   --scope page
@@ -44,7 +47,7 @@ bash scripts/design_craft_route.sh \
 - `preflight_status`: `pass`
 - `preflight_code`: `OK`
 - `style_authority_path`:
-  `/Users/gaoqian/Documents/sixseven/workman/groland/datahub/DESIGN.md`
+  `$DATAHUB_REPO/DESIGN.md`
 - `browser_validation_required`: `true`
 - `browser_screenshot_required`: `true`
 - `preferred_screenshot_tool`: `tmwd_browser.browser_screenshot_ops`
@@ -55,7 +58,7 @@ bash scripts/design_craft_route.sh \
 
 ```bash
 bash scripts/design_craft_detect.sh \
-  --target /Users/gaoqian/Documents/sixseven/workman/groland/datahub/src/app/marketing/industry-news \
+  --target $DATAHUB_REPO/src/app/marketing/industry-news \
   --full-json
 ```
 

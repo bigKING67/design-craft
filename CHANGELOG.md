@@ -10,6 +10,15 @@ All notable local changes to `design-craft` are recorded here.
   metadata. A deterministic package gate now rejects repository-only paths,
   user-home strings, payloads above 1 MB compressed or 2 MB unpacked, and more
   than 100 files.
+- Replaced committed workstation-specific evidence paths with home-relative or
+  documented repository aliases and added a whole-repository privacy and
+  portability gate for macOS, Linux, and Windows user-home paths.
+- Split historical L4 metadata validation from real artifact availability.
+  Normal portable/local gates no longer overstate repo-external screenshots,
+  while certified releases require every referenced L4 artifact to exist.
+- Made 100-point certification two-phase: all source, remote, evidence, native,
+  and temporary-install checks now pass before the live skill installation is
+  atomically published.
 - Split installation provenance into `skill_source_dirty` and `repo_dirty`.
   Install parity now remains valid across unrelated ancestor commits and
   repo-level benchmark WIP when the installed skill tree is unchanged, while

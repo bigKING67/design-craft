@@ -338,6 +338,8 @@ def build_score(root: Path, run_smoke: bool) -> list[Dimension]:
                 (".design-craft-install.lock" in read_text(root / "scripts/install_local.sh") and "Atomic install failed" in read_text(root / "scripts/install_local.sh"), "installer is locked and atomic", "Use staging, locking, rollback, and atomic replacement."),
                 (has(root, "LICENSE") and has(root, "LICENSES/Apache-2.0.txt"), "root and upstream licenses are preserved", "Add the root license and preserved upstream license texts."),
                 (has(root, "scripts/design_craft_package_validate.py"), "publishable package boundary validator exists", "Add a Pi/npm package size and path validator."),
+                (has(root, "scripts/design_craft_public_repo_validate.py"), "public repository privacy validator exists", "Add a repository-wide user-home path and license validator."),
+                (has(root, "scripts/design_craft_certification_install_check.sh"), "certification uses an isolated install root", "Verify install parity in a temporary root before publishing live."),
                 (
                     set(json.loads(read_text(root / "package.json")).get("files", []))
                     == {"skills/design-craft", "LICENSE", "LICENSES", "README.md", "THIRD_PARTY_NOTICES.md", "VERSION"},

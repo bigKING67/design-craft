@@ -33,6 +33,9 @@ This document is the local release and maintenance checklist for
 - Keep 95/100 operational readiness distinct from certified 100/100. The latter
   requires current-source v2 four-host and native runtime evidence and must not
   be inferred from legacy artifacts or workflow definitions.
+- Keep certification prepublish checks non-mutating. Verify installation in a
+  temporary skill root first; update the live `~/.agents/skills` copy only
+  after all 100-point gates pass.
 - Keep agent-specific install behavior in `adapters/` and scripts. Do not fork
   the canonical `skills/design-craft/` content per agent.
 - Keep the Codex frontend route layer portable through the route-pack manifest
@@ -40,6 +43,9 @@ This document is the local release and maintenance checklist for
   files, caches, or session logs into this repo.
 - Record meaningful task evidence under `evals/`; do not claim browser
   validation unless a browser validation actually ran.
+- Keep public evidence machine-neutral. Use `~`, repository-relative paths, or
+  documented aliases such as `PRODUCT_REPO` and `DESIGN_CRAFT_HOME`; never
+  commit named macOS, Linux, or Windows user-home paths.
 - Do not add a root `DESIGN.md` to this repository. `design-craft` is a reusable
   skill/workflow system, not a product UI target. Target projects must provide
   their own `DESIGN.md` or pass an explicit style authority path for L1+ route
@@ -101,6 +107,7 @@ It expands to:
 ```bash
 bash scripts/validate.sh --portable
 python3 scripts/design_craft_package_validate.py --check --validate
+python3 scripts/design_craft_public_repo_validate.py --check --validate
 python3 "$SKILL_CREATOR_QUICK_VALIDATE" skills/design-craft
 python3 "$SKILL_CREATOR_QUICK_VALIDATE" skills/frontend-craft
 python3 scripts/design_craft_score.py --self
@@ -116,7 +123,7 @@ bash scripts/design_craft_doctor.sh --target . --json
 make platform-scan-check
 python3 scripts/design_craft_codex_route_pack.py --strict
 make init-dry-run
-make real-l4-check
+make historical-l4-metadata-check
 make cross-agent-observed-check
 make smell-smoke
 python3 scripts/upstream_absorption_report.py
@@ -154,8 +161,10 @@ Expected result:
 - Route smoke passes against a temporary fixture project with its own
   `DESIGN.md`, preserving the contract that product targets provide their own
   design authority.
-- Historical real-project L4 provenance validates only in the local full gate;
-  current public examples stay project-neutral.
+- Historical real-project L4 metadata validates in the normal local full gate;
+  current public examples stay project-neutral. Certified 100/100 additionally
+  runs `make real-l4-check`, which requires every referenced screenshot file to
+  exist on the certification machine.
 - Observed cross-agent evidence validates for the hosts that actually ran the
   same benchmark prompt. Uncollected hosts must remain explicitly unverified.
 - Local maturity reports 95/100. Until native runtime artifacts exist, the
@@ -192,6 +201,12 @@ For a release that claims certified 100/100, run:
 ```bash
 make release-certify
 ```
+
+The wrapper acquires a single-writer release lock, runs
+`release-certify-prepublish`, rechecks the fixed HEAD and clean worktree, then
+runs `release-certify-publish`. The prepublish phase uses
+`scripts/design_craft_certification_install_check.sh` to verify install parity
+and local maturity in a temporary root; it does not mutate the live install.
 
 This additionally requires all four current-source v2 cross-agent runs,
 current-source iOS Simulator, Android Emulator, and physical-device evidence,

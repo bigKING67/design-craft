@@ -4,7 +4,7 @@
   "route": "http://127.0.0.1:4173/generic-review-workbench/",
   "product_surface": "Generic review-operations workbench fixture",
   "capture_context": {
-    "artifact_root": "/Users/gaoqian/.tmwd-browser-mcp/runtime/runs/design-craft-generic-l4/20260630T163339Z-headless-chrome-final/artifacts",
+    "artifact_root": "~/.tmwd-browser-mcp/runtime/runs/design-craft-generic-l4/20260630T163339Z-headless-chrome-final/artifacts",
     "capture_tool": "Google Chrome headless CLI",
     "server": "python3 -m http.server 4173 --bind 127.0.0.1 --directory evals/fixtures/l4-pages",
     "notes": [
@@ -18,7 +18,7 @@
       "desktop": {
         "tool": "chrome-headless-cli",
         "target": "viewport",
-        "path": "/Users/gaoqian/.tmwd-browser-mcp/runtime/runs/design-craft-generic-l4/20260630T163339Z-headless-chrome-final/artifacts/screenshot-viewport-generic-review-workbench-before-desktop-headless-chrome.png",
+        "path": "~/.tmwd-browser-mcp/runtime/runs/design-craft-generic-l4/20260630T163339Z-headless-chrome-final/artifacts/screenshot-viewport-generic-review-workbench-before-desktop-headless-chrome.png",
         "sha256": "db939b6b342a9833b1ec9d133c5aa1d8a6c4f87d02cdae7b9ffd723182de4da3",
         "dimensions": [
           1440,
@@ -57,7 +57,7 @@
       "compact500": {
         "tool": "chrome-headless-cli",
         "target": "viewport",
-        "path": "/Users/gaoqian/.tmwd-browser-mcp/runtime/runs/design-craft-generic-l4/20260630T163339Z-headless-chrome-final/artifacts/screenshot-viewport-generic-review-workbench-before-compact500-headless-chrome.png",
+        "path": "~/.tmwd-browser-mcp/runtime/runs/design-craft-generic-l4/20260630T163339Z-headless-chrome-final/artifacts/screenshot-viewport-generic-review-workbench-before-compact500-headless-chrome.png",
         "sha256": "7d5b355b47622fa44fd0df1016fed43347c0ac09b29f322279ae7c467b303017",
         "dimensions": [
           500,
@@ -98,7 +98,7 @@
       "desktop": {
         "tool": "chrome-headless-cli",
         "target": "viewport",
-        "path": "/Users/gaoqian/.tmwd-browser-mcp/runtime/runs/design-craft-generic-l4/20260630T163339Z-headless-chrome-final/artifacts/screenshot-viewport-generic-review-workbench-after-desktop-headless-chrome.png",
+        "path": "~/.tmwd-browser-mcp/runtime/runs/design-craft-generic-l4/20260630T163339Z-headless-chrome-final/artifacts/screenshot-viewport-generic-review-workbench-after-desktop-headless-chrome.png",
         "sha256": "96827d97a94041db18711e9502fe1978194e55cf270a20462ad9a9b33ffa2ee9",
         "dimensions": [
           1440,
@@ -137,7 +137,7 @@
       "compact500": {
         "tool": "chrome-headless-cli",
         "target": "viewport",
-        "path": "/Users/gaoqian/.tmwd-browser-mcp/runtime/runs/design-craft-generic-l4/20260630T163339Z-headless-chrome-final/artifacts/screenshot-viewport-generic-review-workbench-after-compact500-headless-chrome.png",
+        "path": "~/.tmwd-browser-mcp/runtime/runs/design-craft-generic-l4/20260630T163339Z-headless-chrome-final/artifacts/screenshot-viewport-generic-review-workbench-after-compact500-headless-chrome.png",
         "sha256": "5fdf66b1ebde14a7612445919c9f2600ddd831a645f73b01be7d068a58121afa",
         "dimensions": [
           500,

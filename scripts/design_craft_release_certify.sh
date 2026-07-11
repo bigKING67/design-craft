@@ -62,7 +62,10 @@ acquire_lock
 START_HEAD="$(git rev-parse HEAD)"
 assert_stable_repository "${START_HEAD}"
 
-make release-certify-internal
+make release-certify-prepublish
+assert_stable_repository "${START_HEAD}"
+
+make release-certify-publish
 assert_stable_repository "${START_HEAD}"
 
 if [[ "${MODE}" == "tag" ]]; then

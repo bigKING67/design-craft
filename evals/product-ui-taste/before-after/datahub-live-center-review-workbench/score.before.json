@@ -27,7 +27,7 @@
         3024,
         1638
       ],
-      "artifact_path": "/Users/gaoqian/.tmwd-browser-mcp/runtime/runs/datahub-live-center-l4/20260630T143721691Z-ce83d279/artifacts/screenshot-viewport-datahub-live-center-before-desktop-20260630T143721693Z-014d4baf.png",
+      "artifact_path": "~/.tmwd-browser-mcp/runtime/runs/datahub-live-center-l4/20260630T143721691Z-ce83d279/artifacts/screenshot-viewport-datahub-live-center-before-desktop-20260630T143721693Z-014d4baf.png",
       "artifact_sha256": "a79713c06d20b7ab77e759a0b8175468e3259b7b45d84cdb1f659b1ce5e73a98",
       "horizontal_overflow": false
     },
@@ -41,7 +41,7 @@
         780,
         1688
       ],
-      "artifact_path": "/Users/gaoqian/.tmwd-browser-mcp/runtime/runs/datahub-live-center-l4/20260630T144317Z-headless-before-mobile/artifacts/screenshot-viewport-datahub-live-center-before-mobile-headless-chrome.png",
+      "artifact_path": "~/.tmwd-browser-mcp/runtime/runs/datahub-live-center-l4/20260630T144317Z-headless-before-mobile/artifacts/screenshot-viewport-datahub-live-center-before-mobile-headless-chrome.png",
       "artifact_sha256": "119653d0bbcb7634a853678d2204723238742c50907906923637b3de0ce79c1f",
       "horizontal_overflow": false
     }

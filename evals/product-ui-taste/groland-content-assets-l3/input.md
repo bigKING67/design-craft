@@ -43,10 +43,10 @@ Therefore it must not be treated as L4.
 
 | Target | Artifact | SHA-256 | Dimensions |
 |---|---|---|---|
-| desktop viewport | `/Users/gaoqian/.tmwd-browser-mcp/runtime/runs/frontend-craft-l3-evals/20260630T091051331Z-9a95dc49/artifacts/screenshot-viewport-groland-content-assets-l3-desktop-20260630T091051332Z-2bff25ca.png` | `6c05a3c171460bf65a2132fbbe4709085d2c46fda59f0c7a5decf68b9544476a` | 3024x1646 |
-| desktop priority clip | `/Users/gaoqian/.tmwd-browser-mcp/runtime/runs/frontend-craft-l3-evals/20260630T091104898Z-0b61639e/artifacts/screenshot-clip-groland-content-assets-l3-desktop-priority-clip-20260630T091104898Z-1c820202.png` | `0060f55209e9c49addcdfaf24e46b4b555e7c541e3874b6e0e9ca3934e639a59` | 2420x1220 |
-| mobile viewport | `/Users/gaoqian/.tmwd-browser-mcp/runtime/runs/frontend-craft-l3-evals/20260630T091216314Z-4fc9569c/artifacts/screenshot-viewport-groland-content-assets-l3-mobile-20260630T091216314Z-73a01893.png` | `8ac950915841ce88450072ae224913f7f2dafd276b86ba1fc87b79f5cb8a3091` | 780x1688 |
-| focused upload button clip | `/Users/gaoqian/.tmwd-browser-mcp/runtime/runs/frontend-craft-l3-evals/20260630T091256421Z-8362ee48/artifacts/screenshot-clip-groland-content-assets-l3-focus-clip-20260630T091256422Z-28e6e537.png` | `871235d5420d12c45e502c21248aa08379583c7007669be2a2d3d17e3f2edede` | 500x140 |
+| desktop viewport | `~/.tmwd-browser-mcp/runtime/runs/frontend-craft-l3-evals/20260630T091051331Z-9a95dc49/artifacts/screenshot-viewport-groland-content-assets-l3-desktop-20260630T091051332Z-2bff25ca.png` | `6c05a3c171460bf65a2132fbbe4709085d2c46fda59f0c7a5decf68b9544476a` | 3024x1646 |
+| desktop priority clip | `~/.tmwd-browser-mcp/runtime/runs/frontend-craft-l3-evals/20260630T091104898Z-0b61639e/artifacts/screenshot-clip-groland-content-assets-l3-desktop-priority-clip-20260630T091104898Z-1c820202.png` | `0060f55209e9c49addcdfaf24e46b4b555e7c541e3874b6e0e9ca3934e639a59` | 2420x1220 |
+| mobile viewport | `~/.tmwd-browser-mcp/runtime/runs/frontend-craft-l3-evals/20260630T091216314Z-4fc9569c/artifacts/screenshot-viewport-groland-content-assets-l3-mobile-20260630T091216314Z-73a01893.png` | `8ac950915841ce88450072ae224913f7f2dafd276b86ba1fc87b79f5cb8a3091` | 780x1688 |
+| focused upload button clip | `~/.tmwd-browser-mcp/runtime/runs/frontend-craft-l3-evals/20260630T091256421Z-8362ee48/artifacts/screenshot-clip-groland-content-assets-l3-focus-clip-20260630T091256422Z-28e6e537.png` | `871235d5420d12c45e502c21248aa08379583c7007669be2a2d3d17e3f2edede` | 500x140 |
 
 ## Browser evidence summary
 

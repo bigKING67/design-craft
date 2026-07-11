@@ -2,7 +2,7 @@
 
 ## Commands
 
-From `/Users/gaoqian/Documents/sixseven/workman/groland/datahub`:
+From `$DATAHUB_REPO`:
 
 ```bash
 git diff --check -- src/app/content/live-center/_components/live-center-session-detail.tsx src/app/content/live-center/live-center.module.css
@@ -15,12 +15,12 @@ npm run verify:design:raw-colors
 npm run verify:repo:trellis-spec-compact
 ```
 
-From `/Users/gaoqian/Documents/sixseven/codeproject/design-craft`:
+From `$DESIGN_CRAFT_HOME`:
 
 ```bash
-python3 scripts/design_craft_css_smell_scan.py --target /Users/gaoqian/Documents/sixseven/workman/groland/datahub/src/app/content/live-center --json
-python3 scripts/design_craft_token_audit.py --target /Users/gaoqian/Documents/sixseven/workman/groland/datahub/src/app/content/live-center --json
-python3 scripts/design_craft_focus_audit.py --target /Users/gaoqian/Documents/sixseven/workman/groland/datahub/src/app/content/live-center --json
+python3 scripts/design_craft_css_smell_scan.py --target $DATAHUB_REPO/src/app/content/live-center --json
+python3 scripts/design_craft_token_audit.py --target $DATAHUB_REPO/src/app/content/live-center --json
+python3 scripts/design_craft_focus_audit.py --target $DATAHUB_REPO/src/app/content/live-center --json
 python3 scripts/design_craft_browser_evidence.py --validate-score-json evals/product-ui-taste/before-after/datahub-live-center-review-workbench/score.before.json
 python3 scripts/design_craft_browser_evidence.py --validate-score-json evals/product-ui-taste/before-after/datahub-live-center-review-workbench/score.after.json
 bash scripts/validate.sh
@@ -68,13 +68,13 @@ bash scripts/validate.sh
   - Workbench: two-column, y=449.
   - Selected row count: 1.
   - Focus-visible: selected row outline `rgb(47, 110, 234) solid 2px`.
-  - Screenshot: `/Users/gaoqian/.tmwd-browser-mcp/runtime/runs/datahub-live-center-l4/20260630T145222425Z-ec2814d7/artifacts/screenshot-viewport-datahub-live-center-after-desktop-20260630T145222428Z-a6b69728.png`
+  - Screenshot: `~/.tmwd-browser-mcp/runtime/runs/datahub-live-center-l4/20260630T145222425Z-ec2814d7/artifacts/screenshot-viewport-datahub-live-center-after-desktop-20260630T145222428Z-a6b69728.png`
 - Mobile headless Chrome viewport: 390x844 DPR 2.
   - Final URL: `http://127.0.0.1:3000/content/live-center`.
   - Page-level horizontal overflow: 0.
   - Workbench y=777, in first viewport.
   - Header/command/filter heights: 338/163/264.
-  - Screenshot: `/Users/gaoqian/.tmwd-browser-mcp/runtime/runs/datahub-live-center-l4/20260630T145400Z-headless-after-mobile/artifacts/screenshot-viewport-datahub-live-center-after-mobile-headless-chrome.png`
+  - Screenshot: `~/.tmwd-browser-mcp/runtime/runs/datahub-live-center-l4/20260630T145400Z-headless-after-mobile/artifacts/screenshot-viewport-datahub-live-center-after-mobile-headless-chrome.png`
 
 ## Result
 

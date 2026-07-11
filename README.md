@@ -151,6 +151,13 @@ make package-check
 
 The gate caps the package at 1 MB compressed, 2 MB unpacked, and 100 files,
 rejects repository-only paths, and scans packed text for user-home paths.
+The broader public-repository gate also rejects workstation-specific macOS,
+Linux, and Windows user-home paths anywhere outside pristine upstream
+submodules:
+
+```bash
+make public-repo-check
+```
 
 ## Agent adapters
 
@@ -400,14 +407,18 @@ python3 scripts/design_craft_l4_evidence_manifest.py \
   --strict
 ```
 
-Validate a completed L4 before/after case directory before citing it as real
-evidence:
+Validate a completed L4 before/after case directory before citing its metadata:
 
 ```bash
 python3 scripts/design_craft_l4_case_validate.py \
   --case-dir evals/product-ui-taste/before-after/<case> \
   --strict
 ```
+
+To claim that the referenced PNG artifacts are available on the current
+machine, add `--require-existing-files`. The certified release path does this
+through `make real-l4-check`; the normal portable/local 95-point gate uses
+`make historical-l4-metadata-check` and does not imply artifact availability.
 
 Current project-neutral completed L4 cases are:
 
@@ -423,8 +434,9 @@ Historical real-project L4 provenance is retained for local verification:
 
 - One historical real application workbench before/after case records
   desktop/mobile screenshot metadata, validation commands, and bounded
-  unverified states. It is validated by `make real-l4-check`, but public
-  portable examples remain project-neutral.
+  unverified states. `make historical-l4-metadata-check` validates the durable
+  metadata, while `make real-l4-check` additionally requires every referenced
+  artifact to exist locally. Public portable examples remain project-neutral.
 
 Run the cross-agent dashboard benchmark validators:
 
@@ -578,6 +590,13 @@ Emulator, and physical-device evidence, a dated release section, a clean
 worktree, local maturity 100/100, and install provenance parity. After pushing
 and tagging, verify tag/HEAD/upstream parity plus successful `Validate` and
 `Native runtime evidence` workflow runs with `make release-tag-verify`.
+
+Certification is intentionally two-phase. `release-certify-prepublish` runs
+all source, remote, L4, four-host, native, and 100-point gates and verifies the
+installer in an isolated temporary skill root. Only after those checks pass
+does `release-certify-publish` atomically update the live
+`~/.agents/skills/design-craft` installation. A failed prepublish phase cannot
+leave the active installation on an uncertified tree.
 The certification entrypoints acquire a repository-local single-writer lock
 and reject a changed HEAD or dirty worktree at the end of the run. Tag
 verification requires the latest `push` run whose `headBranch` is the release

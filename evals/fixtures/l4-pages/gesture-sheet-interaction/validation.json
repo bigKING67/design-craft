@@ -25,7 +25,7 @@
   "screenshot": {
     "tool": "tmwd_browser.browser_screenshot_ops",
     "target": "viewport",
-    "artifact_path": "/Users/gaoqian/.browser67/runtime/runs/design-craft/20260710T100114637Z-9b397058/artifacts/screenshot-viewport-design-craft_gesture_sheet_v0.4.0_evidence-20260710T100114640Z-f4f83dc8.png",
+    "artifact_path": "~/.browser67/runtime/runs/design-craft/20260710T100114637Z-9b397058/artifacts/screenshot-viewport-design-craft_gesture_sheet_v0.4.0_evidence-20260710T100114640Z-f4f83dc8.png",
     "repo_external": true,
     "sha256": "867d37e4e672d7aa08a3750aa01678f600556830ca401a60f430876787bb7ca5",
     "dimensions": [

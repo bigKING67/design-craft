@@ -3,7 +3,7 @@
   "case_id": "ops-dashboard-decision-surface-l4",
   "route": "before_url and after_url",
   "capture_context": {
-    "artifact_root": "/Users/gaoqian/.tmwd-browser-mcp/runtime/runs/ops-dashboard-decision-surface-l4/20260701T015356Z-chrome-headless-fallback/artifacts",
+    "artifact_root": "~/.tmwd-browser-mcp/runtime/runs/ops-dashboard-decision-surface-l4/20260701T015356Z-chrome-headless-fallback/artifacts",
     "capture_tool": "Google Chrome headless CLI fallback",
     "preferred_tool": "tmwd_browser.browser_evidence_bundle_ops",
     "fallback_reason": "Use when MCP screenshot capture is unavailable or a deterministic local fixture is enough.",
@@ -20,7 +20,7 @@
       "desktop": {
         "tool": "google-chrome-headless-cli",
         "target": "viewport",
-        "path": "/Users/gaoqian/.tmwd-browser-mcp/runtime/runs/ops-dashboard-decision-surface-l4/20260701T015356Z-chrome-headless-fallback/artifacts/screenshot-viewport-ops-dashboard-decision-surface-l4-before-desktop-chrome-headless.png",
+        "path": "~/.tmwd-browser-mcp/runtime/runs/ops-dashboard-decision-surface-l4/20260701T015356Z-chrome-headless-fallback/artifacts/screenshot-viewport-ops-dashboard-decision-surface-l4-before-desktop-chrome-headless.png",
         "sha256": "ebbfac6ad45fa9cc93252326d8d12892a75367812cc82f7e94875805af54c34e",
         "dimensions": [
           1440,
@@ -64,7 +64,7 @@
       "compact500": {
         "tool": "google-chrome-headless-cli",
         "target": "viewport",
-        "path": "/Users/gaoqian/.tmwd-browser-mcp/runtime/runs/ops-dashboard-decision-surface-l4/20260701T015356Z-chrome-headless-fallback/artifacts/screenshot-viewport-ops-dashboard-decision-surface-l4-before-compact500-chrome-headless.png",
+        "path": "~/.tmwd-browser-mcp/runtime/runs/ops-dashboard-decision-surface-l4/20260701T015356Z-chrome-headless-fallback/artifacts/screenshot-viewport-ops-dashboard-decision-surface-l4-before-compact500-chrome-headless.png",
         "sha256": "cbbbf386e5867058cc322b8d8cf635a4cdd74beb6da58693aeedcd0b72f65d1c",
         "dimensions": [
           500,
@@ -110,7 +110,7 @@
       "desktop": {
         "tool": "google-chrome-headless-cli",
         "target": "viewport",
-        "path": "/Users/gaoqian/.tmwd-browser-mcp/runtime/runs/ops-dashboard-decision-surface-l4/20260701T015356Z-chrome-headless-fallback/artifacts/screenshot-viewport-ops-dashboard-decision-surface-l4-after-desktop-chrome-headless.png",
+        "path": "~/.tmwd-browser-mcp/runtime/runs/ops-dashboard-decision-surface-l4/20260701T015356Z-chrome-headless-fallback/artifacts/screenshot-viewport-ops-dashboard-decision-surface-l4-after-desktop-chrome-headless.png",
         "sha256": "d5f248952f11d871650997fd9e3d21774d9a9b81152b93e8c080e008e7b3fef8",
         "dimensions": [
           1440,
@@ -154,7 +154,7 @@
       "compact500": {
         "tool": "google-chrome-headless-cli",
         "target": "viewport",
-        "path": "/Users/gaoqian/.tmwd-browser-mcp/runtime/runs/ops-dashboard-decision-surface-l4/20260701T015356Z-chrome-headless-fallback/artifacts/screenshot-viewport-ops-dashboard-decision-surface-l4-after-compact500-chrome-headless.png",
+        "path": "~/.tmwd-browser-mcp/runtime/runs/ops-dashboard-decision-surface-l4/20260701T015356Z-chrome-headless-fallback/artifacts/screenshot-viewport-ops-dashboard-decision-surface-l4-after-compact500-chrome-headless.png",
         "sha256": "9db549501f05cb5770c6430c97f9870e1efcb34bbc2b47572cea664596129e71",
         "dimensions": [
           500,

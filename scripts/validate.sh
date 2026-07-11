@@ -244,10 +244,12 @@ required_files=(
   "scripts/design_craft_l4_evidence_manifest.py"
   "scripts/design_craft_maturity.py"
   "scripts/design_craft_package_validate.py"
+  "scripts/design_craft_public_repo_validate.py"
   "scripts/design_craft_native_runtime_validate.py"
   "scripts/design_craft_native_runtime_record.py"
   "scripts/design_craft_platform_scan.py"
   "scripts/design_craft_browser_evidence.py"
+  "scripts/design_craft_certification_install_check.sh"
   "scripts/design_craft_codex_route_pack.py"
   "scripts/design_craft_cross_agent_validate.py"
   "scripts/design_craft_cross_agent_record.py"
@@ -390,6 +392,24 @@ if (
 }
 NODE
 python3 scripts/design_craft_package_validate.py --check --validate >/dev/null
+python3 scripts/design_craft_public_repo_validate.py --check --validate >/dev/null
+grep -Fq 'make release-certify-prepublish' scripts/design_craft_release_certify.sh
+grep -Fq 'make release-certify-publish' scripts/design_craft_release_certify.sh
+python3 - <<'PY'
+from pathlib import Path
+
+makefile = Path("Makefile").read_text(encoding="utf-8")
+prepublish = makefile.index("release-certify-prepublish:")
+publish = makefile.index("release-certify-publish:")
+live_install = makefile.index("bash scripts/install_local.sh $(INSTALL_ARGS)", publish)
+if not prepublish < publish < live_install:
+    raise SystemExit("release certification must finish prepublish gates before live install")
+prepublish_block = makefile[prepublish:publish]
+if "bash scripts/install_local.sh $(INSTALL_ARGS)" in prepublish_block:
+    raise SystemExit("release prepublish gates must not mutate the live install")
+if "certification-install-check" not in prepublish_block:
+    raise SystemExit("release prepublish gates must verify a temporary install")
+PY
 node --check .github/scripts/upstream_review_issue.cjs
 node <<'NODE'
 const assert = require("assert");
@@ -501,6 +521,8 @@ for path in \
   "scripts/design_craft_l4_eval_case.sh" \
   "scripts/design_craft_l4_evidence_manifest.py" \
 	"scripts/design_craft_maturity.py" \
+	"scripts/design_craft_package_validate.py" \
+	"scripts/design_craft_public_repo_validate.py" \
 	"scripts/design_craft_native_runtime_validate.py" \
 	"scripts/design_craft_native_runtime_record.py" \
   "scripts/design_craft_platform_scan.py" \
@@ -519,6 +541,7 @@ for path in \
 	"scripts/design_craft_install_verify.py" \
 	"scripts/design_craft_release_verify.py" \
 	"scripts/design_craft_release_certify.sh" \
+	"scripts/design_craft_certification_install_check.sh" \
 	"scripts/design_craft_sync_status.py" \
 	"scripts/design_craft_cross_agent_record.py" \
 	"scripts/design_craft_evidence_common.py" \
@@ -577,6 +600,7 @@ for path in \
   scripts/design_craft_seed_design.sh \
   scripts/design_craft_taste_review.sh \
   scripts/design_craft_release_certify.sh \
+  scripts/design_craft_certification_install_check.sh \
   scripts/native_runtime_ci_ios.sh \
   scripts/native_runtime_ci_android.sh \
   scripts/native_runtime_android_common.sh \
@@ -612,8 +636,16 @@ four_host_recipe = makefile.split("cross-agent-four-host-check:", 1)[1].split("\
 for needle in ("set -e", "--require-schema-v2", "--require-current-source"):
     if needle not in four_host_recipe:
         raise SystemExit(f"cross-agent-four-host-check missing {needle!r}")
+prepublish_recipe = makefile.split("release-certify-prepublish:", 1)[1].split("\n\n", 1)[0]
+for needle in ("real-l4-check", "cross-agent-four-host-check", "native-runtime-check", "certification-install-check"):
+    if needle not in prepublish_recipe:
+        raise SystemExit(f"release-certify-prepublish missing {needle!r}")
+publish_recipe = makefile.split("release-certify-publish:", 1)[1].split("\n\n", 1)[0]
+for needle in ("install_local.sh", "install-verify", "--min-score 100"):
+    if needle not in publish_recipe:
+        raise SystemExit(f"release-certify-publish missing {needle!r}")
 certify_recipe = makefile.split("release-certify-internal:", 1)[1].split("\n\n", 1)[0]
-for needle in ("cross-agent-four-host-check", "native-runtime-check", "--min-score 100"):
+for needle in ("release-certify-prepublish", "release-certify-publish"):
     if needle not in certify_recipe:
         raise SystemExit(f"release-certify-internal missing {needle!r}")
 wrapper_recipe = makefile.split("release-certify:", 1)[1].split("\n\n", 1)[0]
@@ -637,6 +669,8 @@ for path in \
   scripts/design_craft_l4_case_validate.py \
   scripts/design_craft_l4_evidence_manifest.py \
 	scripts/design_craft_maturity.py \
+	scripts/design_craft_package_validate.py \
+	scripts/design_craft_public_repo_validate.py \
 	scripts/design_craft_native_runtime_validate.py \
 	scripts/design_craft_native_runtime_record.py \
   scripts/design_craft_platform_scan.py \

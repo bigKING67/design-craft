@@ -18,15 +18,15 @@ and after variants are served from the same HTML file and selected with:
 
 | Artifact | Path | SHA-256 | Dimensions |
 |---|---|---|---|
-| before desktop viewport | `/Users/gaoqian/.tmwd-browser-mcp/runtime/runs/ops-dashboard-decision-surface-l4/20260701T015356Z-chrome-headless-fallback/artifacts/screenshot-viewport-ops-dashboard-decision-surface-l4-before-desktop-chrome-headless.png` | `ebbfac6ad45fa9cc93252326d8d12892a75367812cc82f7e94875805af54c34e` | 1440x900 |
-| before compact viewport | `/Users/gaoqian/.tmwd-browser-mcp/runtime/runs/ops-dashboard-decision-surface-l4/20260701T015356Z-chrome-headless-fallback/artifacts/screenshot-viewport-ops-dashboard-decision-surface-l4-before-compact500-chrome-headless.png` | `cbbbf386e5867058cc322b8d8cf635a4cdd74beb6da58693aeedcd0b72f65d1c` | 500x844 |
+| before desktop viewport | `~/.tmwd-browser-mcp/runtime/runs/ops-dashboard-decision-surface-l4/20260701T015356Z-chrome-headless-fallback/artifacts/screenshot-viewport-ops-dashboard-decision-surface-l4-before-desktop-chrome-headless.png` | `ebbfac6ad45fa9cc93252326d8d12892a75367812cc82f7e94875805af54c34e` | 1440x900 |
+| before compact viewport | `~/.tmwd-browser-mcp/runtime/runs/ops-dashboard-decision-surface-l4/20260701T015356Z-chrome-headless-fallback/artifacts/screenshot-viewport-ops-dashboard-decision-surface-l4-before-compact500-chrome-headless.png` | `cbbbf386e5867058cc322b8d8cf635a4cdd74beb6da58693aeedcd0b72f65d1c` | 500x844 |
 
 ## After evidence
 
 | Artifact | Path | SHA-256 | Dimensions |
 |---|---|---|---|
-| after desktop viewport | `/Users/gaoqian/.tmwd-browser-mcp/runtime/runs/ops-dashboard-decision-surface-l4/20260701T015356Z-chrome-headless-fallback/artifacts/screenshot-viewport-ops-dashboard-decision-surface-l4-after-desktop-chrome-headless.png` | `d5f248952f11d871650997fd9e3d21774d9a9b81152b93e8c080e008e7b3fef8` | 1440x900 |
-| after compact viewport | `/Users/gaoqian/.tmwd-browser-mcp/runtime/runs/ops-dashboard-decision-surface-l4/20260701T015356Z-chrome-headless-fallback/artifacts/screenshot-viewport-ops-dashboard-decision-surface-l4-after-compact500-chrome-headless.png` | `9db549501f05cb5770c6430c97f9870e1efcb34bbc2b47572cea664596129e71` | 500x844 |
+| after desktop viewport | `~/.tmwd-browser-mcp/runtime/runs/ops-dashboard-decision-surface-l4/20260701T015356Z-chrome-headless-fallback/artifacts/screenshot-viewport-ops-dashboard-decision-surface-l4-after-desktop-chrome-headless.png` | `d5f248952f11d871650997fd9e3d21774d9a9b81152b93e8c080e008e7b3fef8` | 1440x900 |
+| after compact viewport | `~/.tmwd-browser-mcp/runtime/runs/ops-dashboard-decision-surface-l4/20260701T015356Z-chrome-headless-fallback/artifacts/screenshot-viewport-ops-dashboard-decision-surface-l4-after-compact500-chrome-headless.png` | `9db549501f05cb5770c6430c97f9870e1efcb34bbc2b47572cea664596129e71` | 500x844 |
 
 ## Runtime evidence
 
