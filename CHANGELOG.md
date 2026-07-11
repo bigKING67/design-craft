@@ -8,6 +8,10 @@ All notable local changes to `design-craft` are recorded here.
   Install parity now remains valid across unrelated ancestor commits and
   repo-level benchmark WIP when the installed skill tree is unchanged, while
   release certification continues to require a completely clean worktree.
+- Fixed the native-runtime workflow by compiling the UIKit fixture as a
+  library-style `@main` module, enabling KVM access for the Android runner, and
+  replacing fragile `/sdcard` UIAutomator pulls with retried
+  `/data/local/tmp` capture and `adb exec-out` reads.
 - Split the Codex frontend route core into dedicated authority, browser,
   delivery, runtime, and telemetry modules and made all five required by the
   route-pack/snapshot manifest and strict semantic audit.

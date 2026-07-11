@@ -13,6 +13,7 @@ sdk_path="$(xcrun --sdk iphonesimulator --show-sdk-path)"
 sdk_version="$(xcrun --sdk iphonesimulator --show-sdk-version)"
 arch="$(uname -m)"
 xcrun swiftc \
+  -parse-as-library \
   -sdk "${sdk_path}" \
   -target "${arch}-apple-ios${sdk_version}-simulator" \
   -framework UIKit \
