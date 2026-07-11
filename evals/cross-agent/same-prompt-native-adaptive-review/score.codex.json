@@ -14,7 +14,7 @@
   "skill_source_commit": "e3a6bc61204387a79f241b3c2a5377ca9094b756",
   "skill_source_dirty": false,
   "skill_tree_sha256": "ebbd7a3671a5058ec9ea822a2e40251ced0966eaa74873af2964233a6f310f8c",
-  "skill_path": "/Users/gaoqian/.agents/skills/design-craft",
+  "skill_path": "~/.agents/skills/design-craft",
   "command_summary": "codex exec 0.144.1 --ephemeral --sandbox read-only in an isolated empty workspace with gpt-5.6-sol, high reasoning, installed design-craft 0.5.0, and the exact benchmark prompt; final response normalized only for trailing whitespace",
   "output_path": "codex-output.md",
   "output_sha256": "f5677c8b3a3ac8809d156cccc50bfdf34f52a8c358b8bdcf433007f2dafc1e58",

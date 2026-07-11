@@ -24,6 +24,16 @@ from design_craft_evidence_common import sha256_file, skill_provenance, tree_sha
 ROOT = Path(__file__).resolve().parents[1]
 
 
+def redacted_path(path: Path) -> str:
+    resolved = path.expanduser().resolve()
+    home = Path.home().resolve()
+    try:
+        relative = resolved.relative_to(home)
+    except ValueError:
+        return str(resolved)
+    return f"~/{relative.as_posix()}"
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--task-dir", required=True)
@@ -97,7 +107,7 @@ def main() -> int:
         parser.error(
             "observed host skill tree does not match the clean provenance skill tree"
         )
-    provenance["skill_path"] = str(skill_root)
+    provenance["skill_path"] = redacted_path(skill_root)
     if provenance.get("skill_source_dirty") is not False and not args.allow_dirty_source:
         parser.error("refusing to record certified evidence from a dirty skill source")
 

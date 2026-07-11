@@ -7,6 +7,7 @@ import argparse
 import json
 import re
 import shutil
+import subprocess
 import sys
 import tempfile
 from pathlib import Path
@@ -14,6 +15,7 @@ from pathlib import Path
 from design_craft_evidence_common import (
     git_is_ancestor,
     git_root,
+    git_tree_sha256,
     read_version,
     sha256_file,
     skill_provenance,
@@ -236,6 +238,9 @@ def validate_observed_score(
     for key in ("agent_version", "date", "skill_path", "command_summary"):
         if not isinstance(payload.get(key), str) or not payload[key].strip():
             errors.append(f"{path}: {key} must be a non-empty string")
+    skill_path_value = str(payload.get("skill_path", ""))
+    if re.match(r"^(?:/Users/|/home/|[A-Za-z]:[\\/]Users[\\/])", skill_path_value):
+        errors.append(f"{path}: skill_path must redact the host home directory")
     score = payload.get("score")
     if not isinstance(score, int) or isinstance(score, bool) or not 0 <= score <= 100:
         errors.append(f"{path}: score must be an integer from 0 to 100")
@@ -298,6 +303,22 @@ def validate_observed_score(
                         errors.append(
                             f"{path}: skill_source_commit must be an ancestor of current HEAD"
                         )
+                    else:
+                        try:
+                            committed_tree = git_tree_sha256(
+                                repository,
+                                skill_root,
+                                source_commit,
+                            )
+                        except (OSError, ValueError, subprocess.CalledProcessError) as exc:
+                            errors.append(
+                                f"{path}: cannot inspect skill tree at skill_source_commit: {exc}"
+                            )
+                        else:
+                            if payload.get("skill_tree_sha256") != committed_tree:
+                                errors.append(
+                                    f"{path}: skill_source_commit tree must match skill_tree_sha256"
+                                )
 
     criteria = payload.get("criteria")
     if not isinstance(criteria, dict):

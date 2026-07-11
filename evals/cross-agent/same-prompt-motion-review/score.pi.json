@@ -14,7 +14,7 @@
   "skill_source_commit": "e3a6bc61204387a79f241b3c2a5377ca9094b756",
   "skill_source_dirty": false,
   "skill_tree_sha256": "ebbd7a3671a5058ec9ea822a2e40251ced0966eaa74873af2964233a6f310f8c",
-  "skill_path": "/Users/gaoqian/.agents/skills/design-craft",
+  "skill_path": "~/.agents/skills/design-craft",
   "command_summary": "pi 0.80.3 isolated with --no-extensions --no-context-files, read-only tools, deepseek/deepseek-v4-pro, high thinking, explicit installed design-craft 0.5.0, and the exact benchmark prompt; final response normalized only for trailing whitespace",
   "output_path": "pi-output.md",
   "output_sha256": "a73d461b8780bfcdc6253cfca2b33576d9a895d3a58bab4a2f006ff930f98ea2",

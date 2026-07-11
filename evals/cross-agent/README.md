@@ -79,4 +79,7 @@ Create v2 score JSON with `scripts/design_craft_cross_agent_record.py`. Copy
 scorecard weight, and preserve the exact `<host>-output.md`. The recorder
 computes the score and records hashes for the prompt, scorecard, output, and
 skill tree plus the source commit, version, model, reasoning profile, host
-version, and runner OS. Do not backfill those fields onto an older run.
+version, and runner OS. Host-home paths are stored with a `~/` prefix rather
+than a public absolute path. Do not backfill model, version, or reasoning fields
+onto an older run; deterministic path redaction does not alter the observed
+output or score.
