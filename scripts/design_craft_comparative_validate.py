@@ -431,6 +431,12 @@ def active_cases(root: Path) -> list[Path]:
     ) if root.is_dir() else []
 
 
+def copy_definition_fixture(source: Path, destination: Path) -> None:
+    destination.mkdir(parents=True)
+    for name in REQUIRED_DEFINITION_FILES:
+        shutil.copy2(source / name, destination / name)
+
+
 def run_self_check() -> list[str]:
     errors: list[str] = []
     source = ROOT / "evals/comparative/emil-motion-ablation"
@@ -438,7 +444,7 @@ def run_self_check() -> list[str]:
         errors.append("comparative self-check source definition is invalid")
     with tempfile.TemporaryDirectory(prefix="design-craft-comparative-validate-") as raw:
         case = Path(raw) / "invalid-case"
-        shutil.copytree(source, case)
+        copy_definition_fixture(source, case)
         variants = json.loads((case / "variants.json").read_text(encoding="utf-8"))
         variants["variants"] = []
         (case / "variants.json").write_text(json.dumps(variants), encoding="utf-8")
@@ -453,7 +459,7 @@ def run_self_check() -> list[str]:
 
     with tempfile.TemporaryDirectory(prefix="design-craft-comparative-e2e-") as raw:
         case = Path(raw) / source.name
-        shutil.copytree(source, case)
+        copy_definition_fixture(source, case)
         variants, definition_errors = load_variants(case)
         weights, scorecard_errors = load_scorecard(case)
         if definition_errors or scorecard_errors:

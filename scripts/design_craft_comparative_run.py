@@ -28,6 +28,7 @@ from design_craft_evidence_common import tree_sha256
 
 
 ROOT = Path(__file__).resolve().parents[1]
+READ_ONLY_TOOLS = "read,grep,find,ls"
 
 
 def load_variants(case_dir: Path) -> dict:
@@ -95,7 +96,8 @@ def command_for(
         "--no-session",
         "--no-context-files",
         "--no-skills",
-        "--no-tools",
+        "--tools",
+        READ_ONLY_TOOLS,
         "--model",
         model,
         "--thinking",
@@ -116,6 +118,10 @@ def run_self_check() -> None:
             workspace.mkdir()
             installed, trees, public_paths = install_variant_skills(item, workspace)
             command = command_for(model="fixture", thinking="low", installed_skills=installed)
+            if "--tools" not in command or READ_ONLY_TOOLS not in command:
+                raise RuntimeError("comparative runner must expose only the read-only skill tools")
+            if any(tool in command for tool in ("bash", "edit", "write")):
+                raise RuntimeError("comparative runner exposed a mutating tool")
             redacted = public_command(command, workspace, installed)
             if str(root) in redacted or str(Path.home()) in redacted:
                 raise RuntimeError("comparative command leaked a local path")

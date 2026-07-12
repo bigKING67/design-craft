@@ -34,6 +34,39 @@ asks to implement selected plans.
 - A high-frequency interaction usually needs less motion, but causal feedback,
   accessibility, and project-specific intent can justify a short transition.
 
+## Accuracy checkpoints
+
+Apply these before turning a static snippet into a finding or plan:
+
+- `ease-in` starts slowly and accelerates; `ease-out` starts quickly and
+  decelerates. Inspect the actual cubic-bezier control points before naming a
+  project token: `cubic-bezier(0.23, 1, 0.32, 1)` is a strong ease-out-like
+  response, not an in-out curve.
+- Treat `transition: all` as broad property ownership and maintenance risk. It
+  does not make every state change perform layout or paint by itself; name the
+  properties that actually change, and reserve runtime cost claims for a trace.
+- Layout-property animation such as `top` is a performance risk, especially on
+  repeated or hot-path surfaces, but static source cannot prove dropped frames.
+  Likewise, do not claim GPU compositing merely because a transform is used.
+- For anchored popovers, dropdowns, and tooltips, inspect trigger-relative
+  `transform-origin` before changing timing. Do not preserve `center` merely
+  because it is already present unless the surface is actually centered.
+- Do not invent positioning mode, framework behavior, usage counts, component
+  relationships, selectors, or API capabilities that the supplied evidence
+  does not establish. Turn them into explicit pre-implementation checks.
+- When recon finds a drag, swipe, reorder, sheet, or other direct-manipulation
+  surface, read `interaction-physics.md` and audit pointer capture, grab offset,
+  1:1 tracking, interruption from the presentation value, measured velocity,
+  projected endpoints, and snap selection before deprioritizing it.
+- A shorter duration alone does not establish a valid Reduced Motion path.
+  State which spatial properties are removed and which opacity, color, focus,
+  or static state feedback remains; do not offer contradictory alternatives in
+  an implementation-ready plan.
+- Tie each source-drift stop condition to the cited excerpt, authority, token,
+  component state contract, or animation API signature. Stop before editing if
+  that prerequisite changed materially; a future lint regression is a separate
+  mechanical check, not source drift.
+
 ## Phase 1: motion recon
 
 Map the real motion surface before judging individual values.
@@ -98,8 +131,10 @@ Before presenting a finding:
 2. Check project authority and nearby correct exemplars.
 3. Reject duplicates, intentional exceptions, dead code, and unsupported runtime
    claims.
-4. Separate corrective findings from additive opportunities.
-5. Rank by `user impact x frequency x confidence / implementation cost`.
+4. Run the accuracy checkpoints above, including real easing semantics and
+   exact changed-property analysis.
+5. Separate corrective findings from additive opportunities.
+6. Rank by `user impact x frequency x confidence / implementation cost`.
 
 Use one compact table:
 

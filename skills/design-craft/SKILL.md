@@ -143,8 +143,11 @@ Read only the references needed for the current task:
   motion:
   `references/motion-quality.md`.
 - Whole-codebase animation improvement, motion inventory, prioritized audit,
-  implementation-ready motion plans, or plan reconciliation:
-  `references/motion-audit-planning.md`; scaffold individual plans from
+  implementation-ready motion plans, or plan reconciliation: read
+  `references/motion-audit-planning.md` together with
+  `references/motion-quality.md`; if recon finds drag, swipe, sheet, drawer,
+  momentum, reordering, or another direct-manipulation surface, also read
+  `references/interaction-physics.md`. Scaffold individual plans from
   `templates/motion-plan/plan.md`.
 - Gesture-driven motion, direct manipulation, interruption, springs, velocity
   handoff, projection, hysteresis, and rubber-banding:
@@ -212,6 +215,16 @@ unverified:
 - Platform: native navigation, controls, insets, gestures, accessibility, and
   adaptive structure match the resolved platform; mobile web is not mislabeled
   as native.
+- Static evidence: source can prove present or missing branches, property
+  ownership, and explicit values; it cannot prove perceived lag, smoothness,
+  frame rate, compositing, browser-specific behavior, layout shift, or device
+  feel. Label those as risks or runtime hypotheses until observed.
+- Direct manipulation: for drag, swipe, sheet, drawer, reorder, momentum, or
+  scrubbing work, reject input lockout and require pointer/native capture, grab
+  offset, 1:1 tracking, explicit coordinate space and velocity units,
+  interruption from the current presentation value without a jump, velocity
+  handoff plus projected-endpoint snap selection, non-conflicting transform
+  ownership, and a non-vestibular Reduced Motion path.
 - Engineering: clear component boundaries, no needless abstraction, observable
   errors, dependency checks before imports.
 - Performance: measured or reasoned hot paths, no layout thrashing, no unbounded

@@ -1,0 +1,119 @@
+{
+  "blind_map_sha256": "94c0d9fcbf0aa3ba56c62488959e5d3557ebc493394e34193227b0a45637713e",
+  "blind_packet_sha256": "6ccc639972a9e1b8b43614c8499efc4bd190c46c9655bc27506bd8ed08675403",
+  "case_id": "emil-motion-planning-ablation",
+  "judge": {
+    "host": "codex",
+    "model": "gpt-5.6-sol",
+    "model_observation": "requested_by_cli",
+    "raw_output_path": "judge-output.raw.txt",
+    "raw_output_sha256": "a4c47f2d523dcd04e8ab16004ff8ecd89cc0c409f4effa147ae0ee1279fc2e61",
+    "reasoning": "max",
+    "reasoning_observation": "requested_by_cli",
+    "run_path": "run.judge.json",
+    "run_sha256": "55c259eaa6a769ebb1f23f19ecb42bf8c89f1f5caf6b1eb0710b4f4ba0448434",
+    "runner_os": "macOS-15.7.7-arm64-arm-64bit-Mach-O",
+    "version": "codex-cli 0.144.1"
+  },
+  "judgment_path": "blind-judgment.json",
+  "judgment_schema_sha256": "b90b0fc1ec877d783cbffba9848944df30f73b9a7270c094a1cab2d7c37d9e71",
+  "judgment_sha256": "8f5be596ad806c1a144c8c6eb0d4e11288c61b5770786a7259032ab3de01b0ac",
+  "prompt_sha256": "81453e8d19e3de0d27bf7603b60f045cedaafa90b1a6fd7ee6dcc7249ca639ba",
+  "rationale": "B 的总分最高。它最完整地满足了技术准确性中特别要求的属性成本、transform origin、动画中断、指针跟踪以及 keyframe/transition 取舍，并把这些判断落实为带边界和漂移停止条件的实施步骤。A 更克制且更贴合现有 token，但对直接操作和中断机制的计划深度稍弱；C 虽然清晰安全，却以完全删除高频面板动效替代因果连续性设计，并没有为 sortable queue 提供同等完整的落地方案。",
+  "recorded_at": "2026-07-12T03:55:24Z",
+  "results": {
+    "baseline": {
+      "blind_label": "A",
+      "criteria": {
+        "accessibility_performance": 8,
+        "evidence_recon": 15,
+        "plan_self_containment": 19,
+        "prioritization": 8,
+        "project_conventions": 10,
+        "purpose_frequency": 10,
+        "technical_accuracy": 12,
+        "verification_quality": 9
+      },
+      "score": 91,
+      "summary": "静态证据边界、动作分布、现有 token、按钮先例和频率判断都交代得很完整，三个计划也具备路径、原文、边界、检查项和漂移停止条件。主要扣分在于对可中断性、指针坐标系、抓取偏移、pointer capture 与当前呈现值接续的分析不够具体，执行顺序把全局 popover 整理放在高频命令面板之前，且缺少可量化的性能检查并明显超出要求的精简尺度。"
+    },
+    "design-craft": {
+      "blind_label": "B",
+      "criteria": {
+        "accessibility_performance": 9,
+        "evidence_recon": 15,
+        "plan_self_containment": 19,
+        "prioritization": 8,
+        "project_conventions": 9,
+        "purpose_frequency": 10,
+        "technical_accuracy": 14,
+        "verification_quality": 9
+      },
+      "score": 93,
+      "summary": "覆盖最全面：不仅识别 transition-all、top 动画、错误 origin 风险和硬编码节奏，还具体处理了状态动画中断、局部坐标、抓取偏移、pointer capture、transform ownership 与从当前呈现值接续。所有计划都有精确路径、摘录、边界、机械检查、体验检查、Reduced Motion 和漂移门禁。扣分点是队列的速度投影和弹簧方案超出了现有证据所必然支持的最小修复，可能改变精确排序语义；Reduced Motion 示例中的 transform:none 也可能覆盖定位 transform，且没有明确的量化性能 trace 检查，整体同样偏长。"
+    },
+    "emil": {
+      "blind_label": "C",
+      "criteria": {
+        "accessibility_performance": 8,
+        "evidence_recon": 15,
+        "plan_self_containment": 18,
+        "prioritization": 7,
+        "project_conventions": 8,
+        "purpose_frequency": 8,
+        "technical_accuracy": 11,
+        "verification_quality": 9
+      },
+      "score": 84,
+      "summary": "证据声明清楚，popover 与 toast 计划较保守，能够复用既有 token、限定动画属性、处理 transform 冲突，并提供慢速播放、快速重开和 Reduced Motion 检查。主要弱点是直接移除命令面板动画，放弃了用现有语义 token 保留因果连续性的机会；复杂且高价值的 sortable queue 仅停留在优先表，没有形成实施计划，对指针坐标、抓取偏移、捕获和可中断接续的诊断也不足。性能验证仍以体验检查为主，未给出可量化测量办法。"
+    }
+  },
+  "schema": "design-craft.comparative-result.v2",
+  "scorecard_json_sha256": "a06d975f9da69fa9bea87362ee0e4f90bdc790e552561e6b6ac96f650bb53a88",
+  "scorecard_sha256": "b6d4e57b1800cf71f9cc91c5dacda55169279634d8f9346544354d9d5afbc2b0",
+  "variant_runs": {
+    "baseline": {
+      "contract_sha256": "bfcc78ccdc0cc78f114b747ceba9734e822469cdbe46343a8cea1d6750a9a41a",
+      "host": "pi",
+      "host_version": "0.80.3",
+      "model": "codex/gpt-5.5",
+      "output_path": "output.baseline.md",
+      "output_sha256": "057eebb2ab6419a2d98b882b1eb2e48fe4c9c68894e8f1fb53e8e8f711cbcadc",
+      "run_path": "run.baseline.json",
+      "run_sha256": "4ef05cb5f446f8ed86cbce189373c4e4700088b05b40fef42638b081338a60c8",
+      "skill_trees": {},
+      "thinking": "high"
+    },
+    "design-craft": {
+      "contract_sha256": "bfcc78ccdc0cc78f114b747ceba9734e822469cdbe46343a8cea1d6750a9a41a",
+      "host": "pi",
+      "host_version": "0.80.3",
+      "model": "codex/gpt-5.5",
+      "output_path": "output.design-craft.md",
+      "output_sha256": "8d2a01c4d65978dfdfbd795d500c38720b729c8980e8ded26731b10c0bc973e7",
+      "run_path": "run.design-craft.json",
+      "run_sha256": "ea4718d94a3c239bf69bd082b6974ded93baf1b9b10520e87666c177b2cc94f1",
+      "skill_trees": {
+        "skills/design-craft": "a37f5b9c4b7c947c3cfe612a19c84b38396f52883a42bede9d92aa64dc560259"
+      },
+      "thinking": "high"
+    },
+    "emil": {
+      "contract_sha256": "bfcc78ccdc0cc78f114b747ceba9734e822469cdbe46343a8cea1d6750a9a41a",
+      "host": "pi",
+      "host_version": "0.80.3",
+      "model": "codex/gpt-5.5",
+      "output_path": "output.emil.md",
+      "output_sha256": "66299efe61c849680c8e95a18e776200e99a0ee18545e9a8a7c3678cb3f2836d",
+      "run_path": "run.emil.json",
+      "run_sha256": "1ca989887a6373c31159375e5337183e48f815a127bba948047f84ae5dfce75b",
+      "skill_trees": {
+        "upstreams/emilkowalski-skills/skills/apple-design": "84ebad0905bc9274fc22eb0b100778adaee20e6d479a69168b5f3a2f018e19de",
+        "upstreams/emilkowalski-skills/skills/improve-animations": "b4813f60575f3e1e3d916bb76def2b5821e91194fc6896e6d47177cc22a9e488",
+        "upstreams/emilkowalski-skills/skills/review-animations": "b86f754de11344856c2e7ae5c809eb134c8b8c23920baa44adaa06e77cf4ad00"
+      },
+      "thinking": "high"
+    }
+  },
+  "winner": "design-craft"
+}

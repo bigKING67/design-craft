@@ -1,6 +1,6 @@
 {
   "schema": "design-craft.native-runtime-probe.v1",
-  "generated_at": "2026-07-11T08:28:40Z",
+  "generated_at": "2026-07-12T02:40:02Z",
   "host": {
     "system": "Darwin",
     "release": "24.6.0",

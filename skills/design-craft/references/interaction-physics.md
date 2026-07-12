@@ -24,6 +24,12 @@ For ordinary hover/color transitions, `motion-quality.md` is sufficient.
   outside the original bounds.
 - Track a short time/position history so release velocity is measured rather
   than guessed from one event.
+- State the coordinate space and units. For web examples, keep samples in CSS
+  pixels with monotonic timestamps and report release velocity in CSS px/s;
+  use points/s or dp/s only when the platform API uses those units.
+- If drag translation and press feedback both write `transform`, give them
+  separate wrapper layers or one explicit composed-transform owner. Do not let
+  `translateY(...)` silently replace `scale(...)`, or vice versa.
 
 ## Presentation-value interruption
 
