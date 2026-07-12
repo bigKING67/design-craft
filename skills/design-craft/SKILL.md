@@ -142,6 +142,11 @@ Read only the references needed for the current task:
   popovers, drawers, gestures, perceived animation performance, or reduced
   motion:
   `references/motion-quality.md`.
+- Concrete web motion implementation recipes for press feedback, anchored
+  overlays, tooltip groups, `@starting-style`, percentage transforms,
+  clip-path, crossfade repair, or transient UI lifecycle:
+  `references/motion-patterns.md` together with
+  `references/motion-quality.md`.
 - Whole-codebase animation improvement, motion inventory, prioritized audit,
   implementation-ready motion plans, or plan reconciliation: read
   `references/motion-audit-planning.md` together with
@@ -157,6 +162,9 @@ Read only the references needed for the current task:
   `references/motion-vocabulary.md`.
 - Code elegance, component boundaries, state, types, errors:
   `references/engineering-quality.md`.
+- Reusable component-library APIs, defaults, invisible interaction edge cases,
+  and interactive documentation: `references/engineering-quality.md`; add
+  `references/motion-patterns.md` when transient or animated UI is involved.
 - UI performance, Web Vitals, render hot paths, charts/tables:
   `references/performance-quality.md`.
 - Architecture, interfaces, migrations, data flow:

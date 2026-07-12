@@ -8,6 +8,9 @@ For direct manipulation, drag/swipe, interruptible sheets, momentum, or
 rubber-banding, also read `interaction-physics.md`.
 For a whole-codebase motion inventory and implementation-plan workflow, read
 `motion-audit-planning.md` instead of expanding a single-interaction review.
+For concrete web recipes such as anchored overlays, tooltip groups,
+`@starting-style`, percentage transforms, clip-path reveals, and transient UI
+lifecycle handling, also read `motion-patterns.md`.
 
 This is a local `design-craft` fusion of Emil Kowalski-style design engineering
 motion rules with the existing project-authority workflow. It is not a universal

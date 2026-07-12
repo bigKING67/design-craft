@@ -41,6 +41,10 @@ safety; a creative tool may prioritize agency and joy after correctness.
   happened, and how to leave or recover?
 - **Feedback**: status, completion, warning, and error feedback arrive at the
   causal moment and name the affected object.
+- **Multimodal feedback**: when visual, audio, or haptic channels are supported,
+  align them with the same causal state change. Add them only when they improve
+  understanding or commitment, respect platform/user settings, and never delay
+  one channel merely to meet an unrelated animation-end callback.
 - **Mapping**: controls sit near what they affect and use labels specific enough
   to predict the result.
 - **Forgiveness**: reversible operations prefer undo; irreversible operations

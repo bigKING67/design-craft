@@ -134,6 +134,25 @@ Choose typography by role before choosing size:
 Avoid three adjacent type sizes that visually collapse into the same hierarchy.
 For dashboards and reports, data typography must be as intentional as prose.
 
+Treat optical detail as part of the role contract:
+
+- Prefer platform/system UI fonts for controls unless the brand has a specific
+  reason to replace them. System faces already carry platform legibility and
+  text-scaling behavior.
+- When a variable font supports optical sizing, enable
+  `font-optical-sizing: auto` and verify that the actual font file exposes an
+  optical-size axis.
+- Set tracking by role and size rather than applying one letter-spacing to the
+  whole product. Large display text often needs slightly tighter tracking;
+  small labels must not be compressed until letterforms merge.
+- Set leading inversely with scale: display type is usually tighter, while body
+  copy needs more line height. Recheck scripts with tall ascenders, descenders,
+  or different shaping behavior instead of inheriting a Latin-only value.
+- Use relative units and responsive layout so browser text zoom, iOS Dynamic
+  Type, and Android font scaling do not clip labels or make actions unreachable.
+- Use tabular figures for changing metrics, timers, and aligned numeric columns
+  when the selected font supports them.
+
 ## Layout rhythm
 
 Prefer a small spacing scale over ad hoc gaps:

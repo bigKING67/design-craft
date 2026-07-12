@@ -64,6 +64,7 @@ required_files=(
   ".github/scripts/upstream_review_issue.cjs"
   ".gitmodules"
   "docs/maintenance.md"
+  "docs/emilkowalski-absorption.md"
   "THIRD_PARTY_NOTICES.md"
   "upstreams.lock.json"
   "skills/design-craft/SKILL.md"
@@ -86,6 +87,7 @@ required_files=(
   "skills/design-craft/references/impeccable-workflow.md"
   "skills/design-craft/references/intent-map.md"
   "skills/design-craft/references/motion-quality.md"
+  "skills/design-craft/references/motion-patterns.md"
   "skills/design-craft/references/motion-audit-planning.md"
   "skills/design-craft/references/motion-vocabulary.md"
   "skills/design-craft/references/engineering-quality.md"
@@ -285,6 +287,7 @@ required_files=(
   "scripts/design_craft_active_scope_validate.py"
   "scripts/design_craft_detect.sh"
   "scripts/design_craft_doctor.sh"
+  "scripts/design_craft_emil_absorption.py"
   "scripts/design_craft_init_agent.sh"
   "scripts/design_craft_l4_capture.py"
   "scripts/design_craft_l4_case_validate.py"
@@ -538,6 +541,7 @@ for path in \
   "scripts/design_craft_active_scope_validate.py" \
   "scripts/design_craft_detect.sh" \
   "scripts/design_craft_doctor.sh" \
+  "scripts/design_craft_emil_absorption.py" \
   "scripts/design_craft_init_agent.sh" \
   "scripts/design_craft_l4_capture.py" \
   "scripts/design_craft_l4_case_validate.py" \
@@ -664,6 +668,7 @@ make -n release-certify >/dev/null
 make -n release-tag-verify >/dev/null
 make -n sync-status >/dev/null
 make -n motion-plan-dry-run >/dev/null
+make -n emil-absorption-check >/dev/null
 make -n sync-status-check >/dev/null
 make -n release-assets-check >/dev/null
 make -n native-release-bundle-check >/dev/null
@@ -1319,6 +1324,7 @@ for ref in \
   "impeccable-workflow.md" \
   "intent-map.md" \
   "motion-quality.md" \
+  "motion-patterns.md" \
   "motion-audit-planning.md" \
   "interaction-physics.md" \
   "motion-vocabulary.md" \
@@ -1393,6 +1399,8 @@ if errors:
     print("\n".join(errors), file=sys.stderr)
     sys.exit(1)
 PY
+
+python3 scripts/design_craft_emil_absorption.py --check --strict >/dev/null
 
 python3 - <<'PY'
 import json

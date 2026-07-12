@@ -262,6 +262,18 @@ required workflow.
    `repository_operations_only` means upstream CI or repository automation,
    and `manual_review` requires human judgment before changing the fusion layer.
 
+   For the Emil upstream, validate the complete five-Skill inventory and local
+   capability mapping separately:
+
+   ```bash
+   make emil-absorption-check
+   ```
+
+   The contract fails if a Skill, auxiliary Markdown file, or non-Markdown
+   implementation file appears without an explicit inventory decision. Update
+   `docs/emilkowalski-absorption.md`, the fusion references, attribution, and
+   `upstreams.lock.json` together after review.
+
 5. Review upstream licenses and attribution if upstream content changed:
 
    ```bash

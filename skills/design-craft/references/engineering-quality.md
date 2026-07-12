@@ -1,7 +1,7 @@
 # Engineering quality
 
-Use this when changing frontend code, components, state, data flow, or
-interactions.
+Use this when changing frontend code, components, state, data flow,
+interactions, or a reusable component library.
 
 ## Code elegance
 
@@ -49,6 +49,30 @@ Do not split merely to reduce file length if cohesion is still high.
 - One icon family per surface unless the project already mixes families.
 - For design systems, use official packages when the brief clearly maps to one
   and the project can accept the dependency.
+
+## Reusable component craft
+
+- Make the common path low-friction, but keep state ownership and failure
+  behavior explicit. A tiny API that hides global side effects is not a better
+  API.
+- Invest in excellent defaults before adding option count. Most consumers keep
+  the default timing, spacing, copy, focus, and accessibility behavior.
+- Name components and actions for their user-visible role. Memorability is
+  useful only when discoverability, semantics, and package conventions remain
+  clear.
+- Handle invisible lifecycle edges: interruption, focus restoration, pointer
+  capture, Reduced Motion, hidden-document timers, unmount during async work,
+  and rapid repeated invocation.
+- For transient UI, pause remaining-time timers on `visibilitychange` so a toast
+  or undo action does not expire while the page is hidden. See
+  `motion-patterns.md` for the interaction recipe and verification checks.
+- Preserve reachable hover/pointer regions while stacked items move; do not
+  create animated gaps that unexpectedly dismiss or de-hover the component.
+- If the component is distributed to others, provide interactive examples with
+  copyable usage, states, and accessibility behavior. Documentation is part of
+  the component's adoption and quality surface.
+- Prefer one cohesive component behavior over a large matrix of individually
+  configurable timing values that can no longer be tested together.
 
 ## Review checklist
 

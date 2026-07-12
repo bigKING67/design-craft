@@ -92,6 +92,12 @@ The following `b024c8b` update changes README newsletter copy only and remains
 provenance-only.
 The subsequent `4691d39` and `7bb7061` range corrects two README typos only and
 also remains provenance-only.
+The 2026-07-12 five-Skill deep audit maps every upstream Skill entrypoint and
+auxiliary Markdown file. The local fusion adds original calibrated rules and
+implementation recipes rather than redistributing an upstream component
+library; the reviewed upstream Skill tree contains no non-Markdown runtime
+source. Substantial adapted text and code snippets remain covered by the
+preserved MIT notice below.
 
 The preserved distribution license is available at:
 `LICENSES/MIT-upstreams.txt`.

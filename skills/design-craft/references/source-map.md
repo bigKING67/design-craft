@@ -104,6 +104,13 @@ production-readiness flows.
   newsletter copy; no additional behavior was imported.
 - 2026-07-12 provenance note: `4691d39` and merge commit `7bb7061` correct two
   README typos only; no additional behavior was imported.
+- 2026-07-12 five-Skill deep-audit note: all five `SKILL.md` entrypoints plus
+  `AUDIT.md`, `PLAN-TEMPLATE.md`, and `STANDARDS.md` are now mapped in
+  `docs/emilkowalski-absorption.md` and checked by
+  `scripts/design_craft_emil_absorption.py`. This pass added original local web
+  motion recipes, component-lifecycle craft, optical typography detail, and
+  the previously omitted spring/ambient/principle vocabulary. The upstream
+  Skill tree has no non-Markdown implementation files to vendor.
 - Primary material to inspect:
   - `skills/emil-design-eng/SKILL.md`
   - `skills/apple-design/SKILL.md`
@@ -120,6 +127,9 @@ gesture craft, animation performance, reduced-motion behavior, strict motion
 reviews, codebase-wide audit-to-plan workflows, and animation vocabulary. Do
 not absorb standalone tone or unqualified framework/performance claims; keep
 the local `design-craft` voice evidence-led, measured, and project-aware.
+In the canonical source repository, see `docs/emilkowalski-absorption.md` for
+the capability-level status matrix, including deliberate rejections and
+contextual partial coverage.
 
 ## External design references
 
@@ -162,6 +172,9 @@ developer-product templates as a comparison baseline for missing system pieces.
 - `references/interaction-physics.md`: curated direct-manipulation,
   interruption, spring, velocity, projection, hysteresis, and rubber-band
   contract.
+- `references/motion-patterns.md`: original web implementation recipes for
+  press feedback, anchored overlays, tooltip groups, interruptible state,
+  percentage transforms, clip-path, crossfade repair, and transient lifecycle.
 - `references/ios-quality.md`, `references/android-quality.md`, and
   `references/adaptive-quality.md`: original platform-specific audit and
   evidence boundaries built from the reviewed upstream principles.

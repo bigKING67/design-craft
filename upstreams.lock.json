@@ -31,7 +31,24 @@
       "absorbed_commit": "b57fc72f8415d84db1e9cfb43270466bf12ac6e2",
       "reviewed_at": "2026-07-12",
       "decision": "absorbed",
-      "notes": "Previously absorbed Apple-style direct manipulation, presentation-value interruption, spring response/damping, velocity handoff, momentum projection, rubber-banding, accessibility variants, optical typography, and product design principles. The later 2026-07-11 range added improve-animations; design-craft selectively absorbed its recon, frequency-map, eight-dimension audit, vetted prioritization, self-contained plan, and reconciliation workflow while keeping absolute heuristics subordinate to project authority and runtime evidence. The following b024c8b newsletter edit and 4691d39/7bb7061 README typo-only range are provenance-only."
+      "notes": "All five current Skill entrypoints and three auxiliary Markdown files are mapped by the design-craft.emil-absorption.v1 contract. High-value behavior now includes calibrated motion rules, concrete web recipes, component-lifecycle craft, Apple-style interaction physics, product principles, optical typography, audit-to-plan workflow, and the expanded vocabulary. Promotional tone, forced delegation/read-only policy, decorative Apple imitation, and unqualified framework/performance claims remain intentionally rejected. The upstream Skill tree contains no non-Markdown implementation files. The b024c8b newsletter edit and 4691d39/7bb7061 README typo-only range are provenance-only.",
+      "coverage_contract": "design-craft.emil-absorption.v1",
+      "coverage_matrix": "docs/emilkowalski-absorption.md",
+      "skill_inventory": {
+        "skills": [
+          "animation-vocabulary",
+          "apple-design",
+          "emil-design-eng",
+          "improve-animations",
+          "review-animations"
+        ],
+        "auxiliary_markdown": [
+          "skills/improve-animations/AUDIT.md",
+          "skills/improve-animations/PLAN-TEMPLATE.md",
+          "skills/review-animations/STANDARDS.md"
+        ],
+        "non_markdown_files": []
+      }
     }
   }
 }

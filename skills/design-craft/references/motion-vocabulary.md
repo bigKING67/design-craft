@@ -97,8 +97,32 @@ alternates with how they differ.
 - **Cubic-bezier** — Custom easing curve.
 - **Asymmetric easing** — Acceleration/deceleration differ for a livelier feel.
 - **Spring** — Physics-based motion using tension, mass, damping, or bounce.
+- **Stiffness / Tension** — How strongly a spring pulls toward its target;
+  higher values usually feel snappier.
+- **Damping** — How quickly a spring settles; lower damping permits more
+  overshoot and oscillation.
+- **Mass** — How heavy the animated value behaves; more mass resists changes in
+  velocity.
+- **Bounce** — Spring overshoot used to add a restrained physical or playful
+  response.
+- **Perceptual duration** — The time at which a spring appears finished even
+  though very small settling may continue.
 - **Momentum** — Motion carries velocity after drag or interruption.
+- **Velocity** — Speed plus direction at an instant, commonly handed from a
+  gesture into its release animation.
 - **Interruptible animation** — Motion can redirect mid-flight instead of finishing first.
+
+### Looping and ambient motion
+
+- **Marquee** — Content travels continuously through a repeating viewport.
+- **Loop** — An animation repeats a fixed number of times or indefinitely.
+- **Alternate / Yoyo** — A loop reverses direction each cycle instead of
+  jumping to the first frame.
+- **Orbit** — An element circles another element or focal point.
+- **Pulse** — Repeating scale or opacity change used to draw attention.
+- **Float** — Gentle continuous drift that makes an object feel suspended.
+- **Idle animation** — Subtle autonomous motion while an element is waiting for
+  interaction.
 
 ### Effects and polish
 
@@ -121,6 +145,28 @@ alternates with how they differ.
 - **Compositing** — GPU moves/fades an element without layout/paint.
 - **will-change** — Hint that an element will animate soon.
 - **Layout thrashing** — Layout reads/writes or layout-property animations force repeated recalculation.
+
+### Animation principles
+
+- **Purposeful animation** — Motion explains state, relationship, continuity,
+  or feedback instead of decorating by default.
+- **Anticipation** — A small preparatory movement hints at the action that will
+  follow.
+- **Follow-through** — Secondary parts continue and settle after the primary
+  movement, adding weight.
+- **Squash and stretch** — Shape deformation communicates weight, impact, speed,
+  or flexibility.
+- **Perceived performance** — Motion changes how fast a response feels without
+  changing the underlying work duration.
+- **Frequency of use** — Repeated interactions need shorter, subtler motion than
+  rare or explanatory moments.
+- **Spatial consistency** — Enter, change, and exit paths preserve where an
+  object came from and where it goes.
+- **Hardware acceleration** — Browser/runtime execution that can update an
+  eligible visual property without repeating full layout and paint; it must be
+  observed rather than inferred from one property name.
+- **Reduced Motion** — A user preference and behavior contract that removes or
+  reduces vestibular travel while preserving necessary feedback.
 
 ## Disambiguation examples
 

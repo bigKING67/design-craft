@@ -560,6 +560,19 @@ recommendation without changing submodule checkouts:
 python3 scripts/upstream_absorption_report.py --remote-details
 ```
 
+Verify that Emil's reviewed repository still has the expected five Skill
+entrypoints and that every high-value capability remains mapped into the local
+fusion layer:
+
+```bash
+make emil-absorption-check
+```
+
+The human-readable capability and rejection matrix is
+`docs/emilkowalski-absorption.md`. The current upstream Skill tree contains
+Markdown instructions and code snippets, not a component/runtime source
+library; the contract records that inventory explicitly.
+
 Score source completeness and operational maturity separately:
 
 ```bash
@@ -601,6 +614,10 @@ the decision metadata. Before absorbing upstream changes, run:
 ```bash
 python3 scripts/upstream_absorption_report.py --remote-details --fail-on-unreviewed
 ```
+
+For `emilkowalski-skills`, also run `make emil-absorption-check`. A new Skill,
+auxiliary reference, or non-Markdown implementation file is treated as review
+drift rather than silently ignored.
 
 ## Licensing
 

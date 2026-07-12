@@ -250,6 +250,7 @@ EOF
   motion)
     cat <<'EOF'
 - Read references/motion-quality.md before judging animation values.
+- Read references/motion-patterns.md when the task needs concrete web component recipes.
 - Read references/interaction-physics.md for direct manipulation, momentum, or interruptible gestures.
 - Start by asking whether the motion should exist: high-frequency and keyboard-triggered actions usually get no animation.
 - Review with a Before | After | Why table; cite file:line when concrete code is available.

@@ -4,6 +4,15 @@ All notable local changes to `design-craft` are recorded here.
 
 ## 0.5.0 - Unreleased
 
+- Added a five-Skill Emil Kowalski absorption contract and human-readable
+  matrix. The gate verifies all five entrypoints, three auxiliary Markdown
+  files, local capability mappings, the pinned commit, and the upstream fact
+  that there is no non-Markdown implementation library to vendor.
+- Deepened the Emil fusion with concrete web motion recipes, tooltip/transient
+  lifecycle handling, reusable-component craft, optical typography details,
+  and the previously omitted spring, ambient-motion, and animation-principle
+  vocabulary while explicitly rejecting overbroad static performance claims,
+  forced delegation/read-only policy, and promotional response text.
 - Added a root MIT license, preserved upstream Apache/MIT license and notice
   text, and documented the separate Vercel snapshot redistribution boundary.
 - Restricted the Pi/npm payload to the canonical skill plus required legal
