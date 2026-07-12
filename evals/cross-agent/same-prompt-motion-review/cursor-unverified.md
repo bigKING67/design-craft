@@ -1,7 +1,11 @@
 # Cursor unverified
 
-Status: unverified.
+- Host: Cursor
+- Date: 2026-07-12
+- Status: unverified
+- Reason: the active motion prompt, scorecard, isolated runner, and score
+  contract changed after the historical v2 snapshot. No clean current-source
+  run-manifest v2 plus score schema v3 has been recorded for this host.
 
-Reason: Cursor Agent `2026.07.09-a3815c0` is installed, but `cursor-agent
-status` reported `Not logged in` on 2026-07-11. The IDE launcher alone is not a
-headless Agent Skills run, so no output or score is recorded.
+Do not count Cursor as verified until the controlled runner publishes a new
+output/run manifest and the recorder derives a valid v3 score from that run.

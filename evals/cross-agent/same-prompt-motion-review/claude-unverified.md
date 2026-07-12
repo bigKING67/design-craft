@@ -1,8 +1,11 @@
 # Claude unverified
 
-Status: unverified.
+- Host: Claude
+- Date: 2026-07-12
+- Status: unverified
+- Reason: the active motion prompt, scorecard, isolated runner, and score
+  contract changed after the historical v2 snapshot. No clean current-source
+  run-manifest v2 plus score schema v3 has been recorded for this host.
 
-Reason: Claude Code `2.1.116` reported a logged-in account, but its configured
-custom API base was unreachable and repeatedly failed before inference. A
-command-scoped official-endpoint override connected but returned HTTP 401 for
-the existing bearer on 2026-07-11. No benchmark output or score is recorded.
+Do not count Claude as verified until the controlled runner publishes a new
+output/run manifest and the recorder derives a valid v3 score from that run.

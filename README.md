@@ -494,7 +494,9 @@ python3 scripts/design_craft_cross_agent_validate.py \
 Legacy v2 Codex/Pi dashboard, gesture-motion, and native-adaptive artifacts are
 historical 95/100 baseline evidence only. Certified `0.5.0` evidence requires a
 fresh isolated run-manifest v2 plus score schema v3 for Codex, Pi, Cursor, and
-Claude. Cursor and Claude remain explicitly unverified until those runs exist.
+Claude. All four active hosts remain explicitly unverified until those runs
+exist; the old self-contained snapshots live under
+`evals/cross-agent/history/2026-07-11-v2/`.
 
 Run the host first, then score only the transactionally published output and
 its run manifest. Fill a criteria JSON copied from

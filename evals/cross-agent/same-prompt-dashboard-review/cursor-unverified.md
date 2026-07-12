@@ -1,12 +1,11 @@
 # Cursor unverified
 
 - Host: Cursor
-- Version observed: `2026.07.09-a3815c0`
-- Date: 2026-07-11
+- Date: 2026-07-12
 - Status: unverified
-- Reason: Cursor Agent is now installed, but `cursor-agent status` reports
-  `Not logged in`. The IDE launcher alone is not a headless Agent Skills run.
-  No same-prompt Cursor output or score was collected.
+- Reason: the active dashboard prompt, scorecard, isolated runner, and score
+  contract changed after the historical v2 snapshot. No clean current-source
+  run-manifest v2 plus score schema v3 has been recorded for this host.
 
-Do not count Cursor as a verified cross-agent behavior host until a real Cursor
-agent run records an output and score JSON for this same benchmark prompt.
+Do not count Cursor as verified until the controlled runner publishes a new
+output/run manifest and the recorder derives a valid v3 score from that run.

@@ -298,8 +298,8 @@ def observed_eval_gate(gate_id: str, directory: str) -> Gate:
     return make_gate(
         gate_id,
         passed,
-        f"schema-valid Codex/Pi artifacts and explicit remaining-host boundaries exist in {directory}",
-        result.stderr.strip() or f"observed cross-agent evidence is invalid in {directory}",
+        f"schema-valid historical Codex/Pi artifacts and explicit remaining-host boundaries exist in {directory}",
+        result.stderr.strip() or f"historical cross-agent evidence is invalid in {directory}",
     )
 
 
@@ -562,7 +562,7 @@ def release_metadata_gate() -> Gate:
     )
 
 
-def build_gates(profile: str, native_gate: Gate) -> list[Gate]:
+def build_gates(profile: str) -> list[Gate]:
     gates = [
         source_completeness_gate(),
         runtime_payload_gate(),
@@ -602,16 +602,23 @@ def build_gates(profile: str, native_gate: Gate) -> list[Gate]:
             "daily actionable upstream audit reports changed paths and opens a review issue",
             "upstream audit workflow is incomplete",
         ),
-        observed_eval_gate("observed_dashboard_eval", "evals/cross-agent/same-prompt-dashboard-review"),
-        observed_eval_gate("observed_motion_eval", "evals/cross-agent/same-prompt-motion-review"),
-        observed_eval_gate("observed_native_eval", "evals/cross-agent/same-prompt-native-adaptive-review"),
+        observed_eval_gate(
+            "observed_dashboard_eval",
+            "evals/cross-agent/history/2026-07-11-v2/same-prompt-dashboard-review",
+        ),
+        observed_eval_gate(
+            "observed_motion_eval",
+            "evals/cross-agent/history/2026-07-11-v2/same-prompt-motion-review",
+        ),
+        observed_eval_gate(
+            "observed_native_eval",
+            "evals/cross-agent/history/2026-07-11-v2/same-prompt-native-adaptive-review",
+        ),
         l4_gate(profile),
         route_pack_gate(profile),
         release_metadata_gate(),
         install_gate(profile),
     ]
-    if profile != "desktop":
-        gates.append(native_gate)
     return gates
 
 
@@ -699,7 +706,7 @@ def main() -> int:
         return 0
 
     native_gate, native_status = native_runtime_gate()
-    gates = build_gates(args.profile, native_gate)
+    gates = build_gates(args.profile)
     raw_score = sum(gate.points for gate in gates)
     raw_max_score = len(gates) * 5
     base_score = normalized_score(raw_score, raw_max_score)
@@ -722,7 +729,10 @@ def main() -> int:
         scope = "release_certification"
         maturity_cap = certification_score_cap
         maturity_cap_reasons = certification_cap_reasons
-        excluded_optional_certification = []
+        excluded_optional_certification = [
+            "native_runtime_observed",
+            "four_host_current_source",
+        ]
     score = min(base_score, maturity_cap)
     hard_failures = [gate.gate_id for gate in gates if gate.hard and not gate.passed]
     ok = score >= args.min_score and not hard_failures

@@ -219,10 +219,11 @@ release-assets-build:
 release-assets-verify:
 	python3 scripts/design_craft_release_assets.py --validate --output-dir "$${RELEASE_ASSET_DIR:-dist/release}"
 
-release-gate-source: validate-portable lint contract-tests package-check public-repo-check workflow-check skill-quick-validate score maturity-portable pass audit critique motion motion-plan-dry-run taste-review seed-dry-run route-smoke doctor platform-scan-check native-release-bundle-check codex-route-pack-check init-dry-run active-scope-check cross-agent-check cross-agent-observed-check comparative-check l4-capture-check historical-l4-metadata-check smell-smoke upstream-report legacy-alias-smoke sync-status-check release-assets-check github-governance-contract-check release-contract-check
+release-gate-source: validate-portable lint contract-tests package-check public-repo-check workflow-check skill-quick-validate score maturity-portable pass audit critique motion motion-plan-dry-run taste-review seed-dry-run route-smoke doctor platform-scan-check native-release-bundle-check codex-route-pack-check init-dry-run active-scope-check cross-agent-check cross-agent-observed-check comparative-check l4-capture-check historical-l4-metadata-check smell-smoke upstream-report legacy-alias-smoke release-assets-check github-governance-contract-check release-contract-check
 
 publish-local: release-gate-source
 	bash scripts/install_local.sh $(INSTALL_ARGS)
+	$(MAKE) sync-status-check
 	python3 scripts/design_craft_maturity.py --profile local --min-score 95
 	python3 scripts/design_craft_maturity.py --profile desktop --min-score 100
 	$(MAKE) install-verify
@@ -250,6 +251,7 @@ release-certify-prepublish:
 release-certify-publish:
 	bash scripts/install_local.sh $(INSTALL_ARGS)
 	$(MAKE) install-verify
+	$(MAKE) sync-status-check
 	python3 scripts/design_craft_maturity.py --profile local --min-score 100
 
 release-certify-internal:

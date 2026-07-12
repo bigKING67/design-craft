@@ -36,6 +36,11 @@ an ancestor of the current checkout while the current skill and fixture trees
 still match the recorded hashes. This allows evidence files to be admitted in a
 later commit without allowing old behavior or fixtures to unlock 100/100.
 
+The active directory intentionally contains no pre-contract observed JSON.
+Earlier v2 Simulator/Emulator files are preserved under `history/2026-07-11-v2/`
+for provenance and are excluded from current validation. Never copy them back
+or backfill v3 fields; regenerate all required artifacts from the real runtime.
+
 Runtime identity is recorded only as `sha256:<digest>`; never commit raw device
 serials or UDIDs. Assertions and artifacts are runtime-kind-specific rather
 than arbitrary. Android evidence must hash the before/after accessibility XML,

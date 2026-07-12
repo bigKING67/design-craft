@@ -204,7 +204,7 @@ def validate_root(root: Path) -> list[str]:
     task_dirs = sorted(
         path
         for path in root.iterdir()
-        if path.is_dir() and not path.name.startswith("_")
+        if path.is_dir() and path.name.startswith("same-prompt-")
     )
     if not task_dirs:
         return [f"{root}: at least one active benchmark task directory is required"]

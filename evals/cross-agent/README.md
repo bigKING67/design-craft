@@ -25,16 +25,18 @@ The validator checks active `same-prompt-*` task directories, not `_template/`.
 
 Observed benchmark outputs are intentionally host-specific. A host only counts
 as verified after it runs the same prompt and records an output plus score JSON.
-Legacy v2 Codex and Pi artifacts remain historical baseline evidence for the
-dashboard, gesture-motion, and native-adaptive benchmarks. The validator treats
-each of Codex, Pi, Cursor,
-and Claude independently: a host must provide both a real output and score JSON,
-or retain an explicit unverified note. A partial pair is rejected, and a stale
-unverified note is rejected after evidence is recorded.
+Legacy v2 Codex and Pi artifacts are preserved as self-contained snapshots
+under `history/2026-07-11-v2/`. They are historical baseline evidence only and
+are excluded from active release validation because the active prompts,
+scorecards, runner, and score contract changed. The validator treats each of
+Codex, Pi, Cursor, and Claude independently: a host must provide both a real
+output and score JSON, or retain an explicit unverified note. A partial pair is
+rejected, and a stale unverified note is rejected after evidence is recorded.
 
-As of 2026-07-11, Cursor Agent is installed but not logged in. Claude Code is
-logged in, but no current-source inference has completed under the v3 contract.
-Those preflights are environment status only, not observed benchmark output.
+As of 2026-07-12, all four hosts are explicitly unverified for the active v3
+score/run-v2 contract. Environment preflights are status only, not observed
+benchmark output. Do not restore historical outputs to active directories or
+edit their hashes; rerun the controlled host instead.
 
 Validate the recorded runs with:
 

@@ -130,7 +130,9 @@ its growing dependency list back into this document. It currently includes
 portable validation, lint, contract tests, package/public/workflow checks,
 source scoring, route/platform/native-bundle self-checks, comparative and
 cross-agent definition validation, L4/static scans, upstream lock checks,
-sync-status, governance contract checks, and release metadata checks.
+governance contract checks, and release metadata checks. Active-install parity
+is intentionally checked only after the atomic installer runs, avoiding a
+stale-install circular dependency.
 
 Expected result:
 
@@ -167,9 +169,10 @@ Expected result:
 - Observed cross-agent evidence validates for the hosts that actually ran the
   same benchmark prompt. Uncollected hosts must remain explicitly unverified.
 - Local maturity reports 95/100 without promoting stale evidence. At the time
-  of this unreleased change, the older iOS Simulator and Android Emulator
-  artifacts require a clean-source v3 rerun and physical-device evidence is
-  missing. The maturity JSON reports all three statuses independently.
+  of this unreleased change, older iOS Simulator and Android Emulator v2
+  artifacts are archived under native history, all active v3 runtime records
+  require a clean-source rerun, and physical-device evidence is missing. The
+  maturity JSON reports all three statuses independently.
 - Desktop maturity reports 100/100 for the installed computer-based frontend
   workflow. It excludes optional four-host and physical-device certification
   from the daily-development score without weakening `release-certify`.
@@ -379,8 +382,8 @@ Agent Skills-compatible client applies the same `design-craft` prompt.
 Do not claim cross-agent stability until real outputs are recorded. Template
 cases define prompts and scorecards only. Legacy v2 dashboard, gesture-motion,
 and native-adaptive Codex/Pi artifacts are historical baseline evidence;
-Cursor and Claude remain explicitly unverified. Certified 0.5.0 evidence must
-use isolated run-manifest v2 plus score schema v3, binding the current skill,
+all four hosts remain explicitly unverified for the active contract. Certified
+0.5.0 evidence must use isolated run-manifest v2 plus score schema v3, binding the current skill,
 prompt, scorecard, output, runner/adapter contract, host version, and worktree
 fingerprints. Host/model/command fields are derived from the controlled run,
 not trusted from manual recorder flags.
@@ -469,8 +472,8 @@ Before committing a release:
 13. Confirm no repo docs were added inside `skills/design-craft/` except the
     machine-readable `VERSION` and `COMPATIBILITY.json` contracts.
 14. Record each maturity JSON status independently. Do not prescribe success
-    strings in documentation: use the validator's live output. Existing v2
-    Simulator/Emulator files are stale for 0.5.0 certification, and
+    strings in documentation: use the validator's live output. Historical v2
+    Simulator/Emulator files are archived and excluded from 0.5.0 certification, and
     `real_device` remains missing until a current-source physical-device
     artifact is admitted.
 15. For a release claiming native runtime evidence, dispatch

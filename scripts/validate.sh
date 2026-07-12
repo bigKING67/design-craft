@@ -167,29 +167,61 @@ required_files=(
   "evals/cross-agent/same-prompt-dashboard-review/prompt.md"
   "evals/cross-agent/same-prompt-dashboard-review/expected-findings.md"
   "evals/cross-agent/same-prompt-dashboard-review/scorecard.md"
+  "evals/cross-agent/same-prompt-dashboard-review/codex-unverified.md"
+  "evals/cross-agent/same-prompt-dashboard-review/pi-unverified.md"
+  "evals/cross-agent/same-prompt-dashboard-review/cursor-unverified.md"
+  "evals/cross-agent/same-prompt-dashboard-review/claude-unverified.md"
+  "evals/cross-agent/same-prompt-dashboard-review/comparison.md"
   "evals/cross-agent/same-prompt-landing-polish/prompt.md"
   "evals/cross-agent/same-prompt-landing-polish/expected-findings.md"
   "evals/cross-agent/same-prompt-landing-polish/scorecard.md"
   "evals/cross-agent/same-prompt-motion-review/prompt.md"
   "evals/cross-agent/same-prompt-motion-review/expected-findings.md"
   "evals/cross-agent/same-prompt-motion-review/scorecard.md"
-  "evals/cross-agent/same-prompt-motion-review/codex-output.md"
-  "evals/cross-agent/same-prompt-motion-review/pi-output.md"
-  "evals/cross-agent/same-prompt-motion-review/score.codex.json"
-  "evals/cross-agent/same-prompt-motion-review/score.pi.json"
-  "evals/cross-agent/same-prompt-motion-review/comparison.md"
+  "evals/cross-agent/same-prompt-motion-review/codex-unverified.md"
+  "evals/cross-agent/same-prompt-motion-review/pi-unverified.md"
   "evals/cross-agent/same-prompt-motion-review/cursor-unverified.md"
   "evals/cross-agent/same-prompt-motion-review/claude-unverified.md"
+  "evals/cross-agent/same-prompt-motion-review/comparison.md"
   "evals/cross-agent/same-prompt-native-adaptive-review/prompt.md"
   "evals/cross-agent/same-prompt-native-adaptive-review/expected-findings.md"
   "evals/cross-agent/same-prompt-native-adaptive-review/scorecard.md"
-  "evals/cross-agent/same-prompt-native-adaptive-review/codex-output.md"
-  "evals/cross-agent/same-prompt-native-adaptive-review/pi-output.md"
-  "evals/cross-agent/same-prompt-native-adaptive-review/score.codex.json"
-  "evals/cross-agent/same-prompt-native-adaptive-review/score.pi.json"
-  "evals/cross-agent/same-prompt-native-adaptive-review/comparison.md"
+  "evals/cross-agent/same-prompt-native-adaptive-review/codex-unverified.md"
+  "evals/cross-agent/same-prompt-native-adaptive-review/pi-unverified.md"
   "evals/cross-agent/same-prompt-native-adaptive-review/cursor-unverified.md"
   "evals/cross-agent/same-prompt-native-adaptive-review/claude-unverified.md"
+  "evals/cross-agent/same-prompt-native-adaptive-review/comparison.md"
+  "evals/cross-agent/history/README.md"
+  "evals/cross-agent/history/2026-07-11-v2/same-prompt-dashboard-review/prompt.md"
+  "evals/cross-agent/history/2026-07-11-v2/same-prompt-dashboard-review/expected-findings.md"
+  "evals/cross-agent/history/2026-07-11-v2/same-prompt-dashboard-review/scorecard.md"
+  "evals/cross-agent/history/2026-07-11-v2/same-prompt-dashboard-review/codex-output.md"
+  "evals/cross-agent/history/2026-07-11-v2/same-prompt-dashboard-review/pi-output.md"
+  "evals/cross-agent/history/2026-07-11-v2/same-prompt-dashboard-review/score.codex.json"
+  "evals/cross-agent/history/2026-07-11-v2/same-prompt-dashboard-review/score.pi.json"
+  "evals/cross-agent/history/2026-07-11-v2/same-prompt-dashboard-review/comparison.md"
+  "evals/cross-agent/history/2026-07-11-v2/same-prompt-dashboard-review/cursor-unverified.md"
+  "evals/cross-agent/history/2026-07-11-v2/same-prompt-dashboard-review/claude-unverified.md"
+  "evals/cross-agent/history/2026-07-11-v2/same-prompt-motion-review/prompt.md"
+  "evals/cross-agent/history/2026-07-11-v2/same-prompt-motion-review/expected-findings.md"
+  "evals/cross-agent/history/2026-07-11-v2/same-prompt-motion-review/scorecard.md"
+  "evals/cross-agent/history/2026-07-11-v2/same-prompt-motion-review/codex-output.md"
+  "evals/cross-agent/history/2026-07-11-v2/same-prompt-motion-review/pi-output.md"
+  "evals/cross-agent/history/2026-07-11-v2/same-prompt-motion-review/score.codex.json"
+  "evals/cross-agent/history/2026-07-11-v2/same-prompt-motion-review/score.pi.json"
+  "evals/cross-agent/history/2026-07-11-v2/same-prompt-motion-review/comparison.md"
+  "evals/cross-agent/history/2026-07-11-v2/same-prompt-motion-review/cursor-unverified.md"
+  "evals/cross-agent/history/2026-07-11-v2/same-prompt-motion-review/claude-unverified.md"
+  "evals/cross-agent/history/2026-07-11-v2/same-prompt-native-adaptive-review/prompt.md"
+  "evals/cross-agent/history/2026-07-11-v2/same-prompt-native-adaptive-review/expected-findings.md"
+  "evals/cross-agent/history/2026-07-11-v2/same-prompt-native-adaptive-review/scorecard.md"
+  "evals/cross-agent/history/2026-07-11-v2/same-prompt-native-adaptive-review/codex-output.md"
+  "evals/cross-agent/history/2026-07-11-v2/same-prompt-native-adaptive-review/pi-output.md"
+  "evals/cross-agent/history/2026-07-11-v2/same-prompt-native-adaptive-review/score.codex.json"
+  "evals/cross-agent/history/2026-07-11-v2/same-prompt-native-adaptive-review/score.pi.json"
+  "evals/cross-agent/history/2026-07-11-v2/same-prompt-native-adaptive-review/comparison.md"
+  "evals/cross-agent/history/2026-07-11-v2/same-prompt-native-adaptive-review/cursor-unverified.md"
+  "evals/cross-agent/history/2026-07-11-v2/same-prompt-native-adaptive-review/claude-unverified.md"
   "evals/comparative/README.md"
   "evals/comparative/emil-motion-ablation/prompt.md"
   "evals/comparative/emil-motion-ablation/variants.json"
@@ -204,6 +236,13 @@ required_files=(
   "evals/comparative/emil-motion-planning-ablation/expected-findings.md"
   "evals/comparative/emil-motion-planning-ablation/judgment.schema.json"
   "evals/native-runtime/README.md"
+  "evals/native-runtime/history/README.md"
+  "evals/native-runtime/history/2026-07-11-v2/ios-observed.json"
+  "evals/native-runtime/history/2026-07-11-v2/android-observed.json"
+  "evals/native-runtime/history/2026-07-11-v2/ios-before-interaction.png"
+  "evals/native-runtime/history/2026-07-11-v2/ios-after-interaction.png"
+  "evals/native-runtime/history/2026-07-11-v2/runtime-interaction.txt"
+  "evals/native-runtime/history/2026-07-11-v2/android-emulator.png"
   "evals/native-runtime/environment-probe.json"
   "evals/native-runtime/fixtures/ios/App.swift"
   "evals/native-runtime/fixtures/ios/Info.plist"
@@ -659,9 +698,16 @@ for needle in ("real-l4-check", "comparative-observed-check", "cross-agent-four-
     if needle not in prepublish_recipe:
         raise SystemExit(f"release-certify-prepublish missing {needle!r}")
 publish_recipe = makefile.split("release-certify-publish:", 1)[1].split("\n\n", 1)[0]
-for needle in ("install_local.sh", "install-verify", "--min-score 100"):
+for needle in ("install_local.sh", "install-verify", "sync-status-check", "--min-score 100"):
     if needle not in publish_recipe:
         raise SystemExit(f"release-certify-publish missing {needle!r}")
+source_recipe = makefile.split("release-gate-source:", 1)[1].split("\n\n", 1)[0]
+if "sync-status-check" in source_recipe:
+    raise SystemExit("release-gate-source must not depend on the stale active install")
+local_publish_recipe = makefile.split("publish-local:", 1)[1].split("\n\n", 1)[0]
+for needle in ("install_local.sh", "sync-status-check", "install-verify"):
+    if needle not in local_publish_recipe:
+        raise SystemExit(f"publish-local missing {needle!r}")
 certify_recipe = makefile.split("release-certify-internal:", 1)[1].split("\n\n", 1)[0]
 for needle in ("release-certify-prepublish", "release-certify-publish"):
     if needle not in certify_recipe:
@@ -892,8 +938,18 @@ with tempfile.TemporaryDirectory(prefix="design-craft-cross-agent-record-") as t
     shutil.copytree(source, observed_skill)
     shutil.copytree(source, provenance_skill)
     task.mkdir()
-    for name in ("prompt.md", "scorecard.md", "codex-output.md"):
+    for name in ("prompt.md", "scorecard.md"):
         shutil.copy2(task_source / name, task / name)
+    (task / "codex-output.md").write_text(
+        (
+            "Evidence is limited to the benchmark prompt. Unverified browser, "
+            "responsive, focus, and runtime states remain explicit. The design "
+            "move is to improve hierarchy, decision priority, interaction "
+            "feedback, and scoped validation without unrelated changes. "
+        )
+        * 8,
+        encoding="utf-8",
+    )
 
     metadata = {
         "schema": "design-craft.install.v2",
@@ -986,7 +1042,11 @@ with tempfile.TemporaryDirectory(prefix="design-craft-cross-agent-record-") as t
     if result.returncode != 0:
         raise SystemExit("cross-agent recorder self-check failed: " + result.stderr.strip())
     payload = json.loads(score_path.read_text(encoding="utf-8"))
-    if payload.get("skill_path") != str(observed_skill.resolve()) or payload.get("score") != 100:
+    if (
+        payload.get("skill_path")
+        != "$BENCHMARK_WORKSPACE/.agents/skills/design-craft"
+        or payload.get("score") != 100
+    ):
         raise SystemExit("cross-agent recorder did not preserve the observed host path or computed score")
 
     with (observed_skill / "SKILL.md").open("a", encoding="utf-8") as handle:

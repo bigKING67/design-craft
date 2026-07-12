@@ -30,10 +30,17 @@ All notable local changes to `design-craft` are recorded here.
   and derives host/model/command metadata from the controlled run. Existing
   Codex/Pi artifacts remain historical until all four hosts are rerun against a
   clean current source; Cursor/Claude evidence is not claimed in advance.
+- Moved the former Codex/Pi v2 benchmarks into self-contained historical
+  snapshots with their matching old prompts and scorecards. Active cases now
+  carry explicit four-host unverified notes until real v3/run-v2 evidence is
+  generated; hash editing or field backfills cannot promote history.
 - Preserved per-runtime native truth while upgrading certification to evidence
-  schema v3 and role-specific artifacts. Earlier Simulator/Emulator evidence is
-  intentionally stale until regenerated against the final clean source, and
-  physical-device evidence remains required independently.
+  schema v3 and role-specific artifacts. Earlier Simulator/Emulator v2 evidence
+  is archived as immutable history until regenerated against the final clean
+  source, and physical-device evidence remains required independently.
+- Split operational maturity from certification evidence: validated historical
+  run baselines support the normal 95/100 workflow, while current four-host and
+  native evidence exclusively controls the 95-to-100 certification cap.
 - Added compact JSON and human-readable frontend route outputs so normal agent
   handoffs do not need to ingest the full static delivery contract. Moved
   architecture-intent and performance-surface triggers into the routing JSON
@@ -144,6 +151,9 @@ All notable local changes to `design-craft` are recorded here.
   dedicated source/install verifier that rejects non-ancestor source commits,
   skill-scoped dirty-state, source-root, and source-path mismatches even when
   tree hashes match.
+- Removed active-install parity from `release-gate-source`; the atomic installer
+  now runs first and `sync-status-check` is enforced immediately afterward,
+  eliminating the stale-install circular dependency.
 - Added installed `VERSION` and Codex route-pack compatibility contracts,
   refreshed existing legacy aliases by default, and exposed install/route
   compatibility through doctor and maturity checks.
