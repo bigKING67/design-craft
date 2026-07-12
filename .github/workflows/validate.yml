@@ -109,6 +109,7 @@ jobs:
         run: |
           git config --global core.autocrlf false
           git config --global core.eol lf
+          printf 'DESIGN_CRAFT_BASH=%s\n' "$(cygpath -w "${BASH}")" >> "${GITHUB_ENV}"
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
           submodules: recursive

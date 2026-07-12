@@ -1142,6 +1142,11 @@ import tempfile
 from pathlib import Path
 
 root = Path.cwd()
+bash_executable = shutil.which(os.environ.get("DESIGN_CRAFT_BASH") or "bash")
+if not bash_executable:
+    raise SystemExit("Git Bash is required for portable validation")
+if os.name == "nt" and bash_executable.replace("\\", "/").lower().endswith("/windows/system32/bash.exe"):
+    raise SystemExit("DESIGN_CRAFT_BASH must resolve to Git Bash, not the WSL launcher")
 
 
 def run(command, *, env=None):
@@ -1155,6 +1160,17 @@ def run(command, *, env=None):
         text=True,
     )
     return result
+
+
+def load_json_result(result, label):
+    if result.returncode != 0:
+        detail = result.stderr.strip() or result.stdout.strip() or "no process output"
+        raise SystemExit(f"{label} failed with exit {result.returncode}: {detail}")
+    try:
+        return json.loads(result.stdout)
+    except json.JSONDecodeError as exc:
+        detail = result.stderr.strip() or result.stdout.strip() or "empty stdout"
+        raise SystemExit(f"{label} emitted invalid JSON: {exc}; {detail}") from exc
 
 
 for platform in ("ios", "android", "adaptive"):
@@ -1203,7 +1219,7 @@ with tempfile.TemporaryDirectory(prefix="design-craft-portable-") as raw:
     route_env["DESIGN_CRAFT_ROUTE_PLAN"] = str(temp / "missing-route-plan.sh")
     route = run(
         [
-            "bash",
+            bash_executable,
             "skills/design-craft/scripts/design_craft_route.sh",
             "--target",
             target,
@@ -1217,7 +1233,7 @@ with tempfile.TemporaryDirectory(prefix="design-craft-portable-") as raw:
         ],
         env=route_env,
     )
-    route_payload = json.loads(route.stdout)
+    route_payload = load_json_result(route, "portable route fallback")
     if not (
         route.returncode == 0
         and route_payload.get("route_source") == "portable_fallback"
@@ -1233,7 +1249,7 @@ with tempfile.TemporaryDirectory(prefix="design-craft-portable-") as raw:
     detector_env["DESIGN_CRAFT_IMPECCABLE_DETECTOR"] = str(temp / "missing-detector.mjs")
     detector = run(
         [
-            "bash",
+            bash_executable,
             "skills/design-craft/scripts/design_craft_detect.sh",
             "--target",
             root / "evals/fixtures/css-smells",
@@ -1241,7 +1257,7 @@ with tempfile.TemporaryDirectory(prefix="design-craft-portable-") as raw:
         ],
         env=detector_env,
     )
-    detector_payload = json.loads(detector.stdout)
+    detector_payload = load_json_result(detector, "portable detector degraded probe")
     upstream_detector = detector_payload.get("upstream_detector", {})
     if not (
         detector.returncode == 0
@@ -1255,7 +1271,7 @@ with tempfile.TemporaryDirectory(prefix="design-craft-portable-") as raw:
     cases = temp / "installed-cases"
     scaffold = run(
         [
-            "bash",
+            bash_executable,
             installed / "scripts/design_craft_l4_eval_case.sh",
             "--case-id",
             "portable-installed-runtime",

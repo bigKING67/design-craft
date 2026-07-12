@@ -54,6 +54,7 @@ def validate() -> dict:
     android_common_path = ROOT / "scripts/native_runtime_android_common.sh"
     portable_validator_path = ROOT / "scripts/validate.sh"
     lint_validator_path = ROOT / "scripts/design_craft_lint.py"
+    maturity_validator_path = ROOT / "scripts/design_craft_maturity.py"
     git_attributes_path = ROOT / ".gitattributes"
     ios_fixture_path = ROOT / "evals/native-runtime/fixtures/ios/App.swift"
 
@@ -66,6 +67,7 @@ def validate() -> dict:
         android_common_path,
         portable_validator_path,
         lint_validator_path,
+        maturity_validator_path,
         git_attributes_path,
         ios_fixture_path,
     )
@@ -83,6 +85,7 @@ def validate() -> dict:
     android_common = android_common_path.read_text(encoding="utf-8")
     portable_validator = portable_validator_path.read_text(encoding="utf-8")
     lint_validator = lint_validator_path.read_text(encoding="utf-8")
+    maturity_validator = maturity_validator_path.read_text(encoding="utf-8")
     git_attributes = git_attributes_path.read_text(encoding="utf-8")
     ios_fixture = ios_fixture_path.read_text(encoding="utf-8")
 
@@ -131,6 +134,8 @@ def validate() -> dict:
         "shell: bash",
         "git config --global core.autocrlf false",
         "git config --global core.eol lf",
+        "DESIGN_CRAFT_BASH=",
+        "GITHUB_ENV",
     ):
         if token not in windows_block:
             errors.append(
@@ -177,6 +182,8 @@ def validate() -> dict:
                 '"${BASH}" -n',
                 'cygpath -w "${BASH}"',
                 "export DESIGN_CRAFT_BASH",
+                'shutil.which(os.environ.get("DESIGN_CRAFT_BASH") or "bash")',
+                "DESIGN_CRAFT_BASH must resolve to Git Bash",
             ),
             "scripts/validate.sh",
         )
@@ -190,6 +197,17 @@ def validate() -> dict:
                 "[executable, *command[1:], str(path)]",
             ),
             "scripts/design_craft_lint.py",
+        )
+    )
+    errors.extend(
+        require_tokens(
+            maturity_validator,
+            (
+                'os.environ.get("DESIGN_CRAFT_BASH")',
+                'normalized.endswith("/windows/system32/bash.exe")',
+                "resolved_command[0] = executable",
+            ),
+            "scripts/design_craft_maturity.py",
         )
     )
     errors.extend(

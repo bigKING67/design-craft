@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -68,8 +69,23 @@ def read(path: Path) -> str:
 
 
 def run(command: list[str], *, env: dict[str, str] | None = None, timeout: int = 60) -> subprocess.CompletedProcess[str]:
+    resolved_command = list(command)
+    if resolved_command and resolved_command[0] == "bash":
+        executable = shutil.which(os.environ.get("DESIGN_CRAFT_BASH") or "bash")
+        if executable and os.name == "nt":
+            normalized = executable.replace("\\", "/").lower()
+            if normalized.endswith("/windows/system32/bash.exe"):
+                executable = None
+        if not executable:
+            return subprocess.CompletedProcess(
+                resolved_command,
+                127,
+                "",
+                "Git Bash is required; set DESIGN_CRAFT_BASH to Git for Windows bash.exe",
+            )
+        resolved_command[0] = executable
     return subprocess.run(
-        command,
+        resolved_command,
         cwd=ROOT,
         env=env,
         stdout=subprocess.PIPE,
