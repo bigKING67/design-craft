@@ -1,122 +1,135 @@
 ## 1. Evidence level, platform, design read
 
-- **Evidence level:** L0 static/prose-only review with product context supplied. No source tree, build, screenshot, accessibility tree, rotation, split-screen, foldable, simulator, emulator, or hardware run was performed.
-- **Resolved platform:** `adaptive` from supplied `PRODUCT.md` platform. Confidence: high for intent, unverified for actual repo targets.
-- **Design read:** Reading this as a native adaptive field-operations task flow for one-handed operators and tablet-review managers, with a calm trustworthy operational tone, optimized for fast completion, verification, and interruption recovery.
+- **Evidence level:** **L0 static/prose only** — based on the prompt and static implementation description. No source tree, build, screenshot, accessibility tree, rotation, split-screen, foldable, simulator/emulator, or hardware evidence was provided.
+- **Resolved platform:** **adaptive** from supplied `PRODUCT.md` context: one product shipping through iOS and Android stores. Confidence: high for review purposes, but not source-verified.
+- **Design read:** Reading this as a native adaptive field-operations task flow for one-handed phone completion and tablet manager review, with a calm trustworthy operational tone, optimized for fast completion, verification, and interruption resilience.
 
 ## 2. Platform-conformance verdict
 
-- **iOS / iPadOS verdict: Block release.** The concept violates core native trust requirements: fixed phone canvas on iPad, custom navigation/back behavior, undersized targets, disabled Dynamic Type, non-semantic colors, non-native icon/control grammar, and missing Reduce Motion alternative.
-- **Android verdict: Block release.** The concept violates Material/Android behavior: Android Back and predictive Back are consumed, touch targets are below `48dp`, font scaling is disabled, iOS-shaped controls ship on Android, tablet navigation does not adapt, and Remove animations is not honored.
+- **iOS verdict:** **Not conformant; release-blocking.** The concept violates core iOS expectations around native navigation stack behavior, iPad adaptation, Dynamic Type, 44pt targets, native controls/icons, semantic color behavior, and Reduce Motion support.
+- **Android verdict:** **Not conformant; release-blocking.** The concept violates Android system/predictive Back, Material/adaptive navigation, 48dp touch targets, font scaling, Material controls/icons, semantic theming, tablet/foldable adaptation, and Remove animations support.
 
-## 3. Prioritized blocking findings
+## 3. Prioritized findings — blocking only
 
-1. **Accessibility release requirements are directly broken.**  
-   Evidence: `40x40` pressables, fixed `fontSize: 14`, font scaling disabled, no Reduced Motion/Remove animations path.  
-   Impact: fails VoiceOver/TalkBack operability, Dynamic Type/font scaling, motor accessibility, and motion-sensitivity requirements.
+1. **Accessibility gate failure — blocking**
+   - Evidence: `40x40` pressables, fixed `fontSize: 14`, font scaling disabled, no Reduced Motion/Remove animations alternative.
+   - Impact: fails stated release requirements for Dynamic Type/font scaling, touch accessibility, motion sensitivity, and likely external keyboard/AT traversal.
+   - iOS risk: below 44pt target; no Dynamic Type.
+   - Android risk: below 48dp target; ignores system font scale and Remove animations.
 
-2. **Navigation breaks native platform trust and Android system behavior.**  
-   Evidence: custom top bar/JS back replaces iOS navigation stack and Android system/predictive Back; empty `BackHandler` consumes Android Back.  
-   Impact: users cannot rely on learned back gestures, predictive Back previews, native hierarchy, or recovery expectations.
+2. **Navigation contract broken — blocking**
+   - Evidence: custom top bar and JavaScript back button replace platform navigation; empty `BackHandler` consumes Android Back.
+   - Impact: undermines platform trust and increases risk of lost progress or trapped users during interruptions.
+   - iOS: likely breaks native stack affordances and left-edge back expectation.
+   - Android: directly breaks system Back and predictive Back.
 
-3. **Adaptive layout is a phone mock inside tablet space.**  
-   Evidence: one React Native screen forced to `width: 390` and centered on tablets; bottom tab bar unchanged on phone, iPad, and Android tablet.  
-   Impact: manager split-screen/multi-window review is underserved; tablet affordances, size classes, rails/sidebars/panes, and resize resilience are absent.
+3. **Adaptive layout is not adaptive — blocking**
+   - Evidence: screen forced to `width: 390` and centered on tablets; same bottom tab bar on phone, iPad, and Android tablet.
+   - Impact: manager tablet split-screen/multi-window review is reduced to a phone canvas, wasting space and likely harming scan/review speed.
+   - Missing: size classes, panes, rails/sidebars, split view, fold/multi-window behavior.
 
-4. **Design-system and theming contract is bypassed.**  
-   Evidence: raw `#777777` and `#FFFFFF` used in both appearances despite shared semantic color roles; same web icon set and Cupertino-shaped switch on both platforms.  
-   Impact: weak dark/high-contrast behavior, possible contrast failure, and platform-inappropriate controls reduce trust.
+4. **Controls, icons, and theming are platform-incorrect — blocking**
+   - Evidence: same Cupertino-shaped switch and one web icon set on both platforms; raw `#777777` and `#FFFFFF` in both appearances.
+   - Impact: looks like a port rather than native software; risks dark-mode, high-contrast, contrast, and state inconsistency.
+   - DESIGN allows shared semantic roles, not forced identical controls/materials.
 
-5. **Completion motion is too expressive and not accessibility-aware.**  
-   Evidence: `500ms` spring with overshoot and no Reduced Motion/Remove animations alternative.  
-   Impact: excessive for a high-frequency operational task, potentially vestibular, and mismatched to calm trustworthy positioning.
+5. **Motion violates accessibility and product tone — blocking**
+   - Evidence: task-complete transition is a 500ms overshooting spring with no Reduced Motion/Remove animations alternative.
+   - Impact: too expressive for “calm operational” completion, can be vestibular-hostile, and may delay or obscure task state feedback.
 
 ## 4. Concrete design moves
 
-1. **Replace fixed `390` layout with window-size adaptation.**  
-   Compact phone: single task stack. Medium/expanded: task list + detail/review pane, or review sidebar. Support iPad Split View, Android multi-window, orientation, IME, and fold posture.
+1. Replace custom navigation with platform-native navigation:
+   - iOS: native stack/tab/sidebar patterns with preserved back gesture.
+   - Android: top app bar/navigation components with system and predictive Back preserved; remove empty `BackHandler`.
 
-2. **Restore native navigation ownership.**  
-   iOS: native stack/large-or-inline titles, preserved left-edge back gesture.  
-   Android: system Back/predictive Back integration; only intercept for explicit unsaved-work confirmation, never with an empty consumer.
+2. Make the screen responsive to window/size class, not fixed width:
+   - Compact phone: focused one-handed task flow.
+   - Tablet/split-screen: task detail + verification/review pane, sidebar/rail where appropriate.
 
-3. **Raise and clarify action targets.**  
-   iOS minimum `44x44pt`; Android minimum `48x48dp` with spacing. Use labeled primary actions where ambiguity exists, not icon-only `40x40` buttons for critical task completion.
+3. Raise interactive target sizes:
+   - iOS minimum **44x44pt**.
+   - Android minimum **48x48dp** with adequate spacing.
+   - Use full-width or bottom-reachable primary actions for one-handed operation.
 
-4. **Use scalable type roles.**  
-   Map content hierarchy to platform text roles; enable Dynamic Type/font scaling; verify 200% text, wrapping, truncation, and reachable actions.
+4. Restore text scaling:
+   - Use semantic text roles and allow Dynamic Type / Android font scaling.
+   - Reflow content instead of clipping or hiding actions at larger sizes.
 
-5. **Use platform-native controls and iconography.**  
-   iOS: native switch, SF Symbols, system materials.  
-   Android: Material switch, Material Symbols, tonal elevation, Android top app bars/navigation patterns.
+5. Replace raw colors with semantic roles from `DESIGN.md`:
+   - Validate light, dark, high-contrast, disabled, pressed, error, success, and focus states.
+   - Avoid raw `#777777` / `#FFFFFF` except as token definitions.
 
-6. **Map shared semantic tokens to platform implementations.**  
-   Keep roles such as `surface`, `text.secondary`, `action.primary`, `status.success`; resolve them to iOS system colors/materials and Android Material ColorScheme/Dynamic Color-compatible values. Remove raw `#777777`/`#FFFFFF` from components.
+6. Use platform controls and iconography:
+   - iOS: native switch behavior, SF Symbols, iOS materials where appropriate.
+   - Android: Material switch, Material Symbols, tonal elevation/Dynamic Color where appropriate.
 
-7. **Adapt navigation chrome by width.**  
-   Phone: bottom tabs only if they represent true top-level destinations.  
-   iPad: sidebar/tab sidebar where appropriate.  
-   Android tablet: navigation rail or drawer where appropriate. Do not keep identical phone tabs everywhere.
+7. Define a platform-aware motion policy:
+   - Default completion feedback should be quick, restrained, interruptible, and state-first.
+   - Reduced Motion / Remove animations path should use cross-fade, opacity change, or immediate state update with no overshoot.
 
-8. **Redesign completion feedback for operations.**  
-   Use immediate state change plus short confirmation. Default: crisp fade/settle under ~300ms, no overshoot. Reduced Motion/Remove animations: cross-fade or immediate state, with accessibility announcement and optional restrained platform haptic at the causal moment.
+8. Design interruption resilience explicitly:
+   - Preserve draft/progress across app switch, Back, rotation, split-screen changes, offline/slow states.
+   - Announce completion/errors to VoiceOver/TalkBack and keep keyboard focus predictable.
 
 ## 5. Intentional parity matrix
 
-| Area | Shared across platforms | iOS / iPadOS adaptation | Android adaptation |
+| Area | Shared across platforms | iOS adaptation | Android adaptation |
 |---|---|---|---|
-| Product flow | Task complete, verify, preserve progress | Native stack/sheets where appropriate | Material hierarchy, Back-aware flow |
-| Content hierarchy | Same task fields, status, evidence, review order | iOS typography/material mapping | Material type/color/elevation mapping |
-| Navigation | Same destinations and analytics semantics | Stack, tab/sidebar, edge-swipe Back | System/predictive Back, nav bar/rail/drawer |
-| Controls | Same domain meaning and states | UIKit/iOS-native switches, pickers, SF Symbols | Material controls, dialogs, sheets, symbols |
-| Accessibility outcomes | VO/TalkBack labels, scaling, keyboard traversal | VoiceOver traits/actions, Dynamic Type | TalkBack roles/state descriptions, font scale |
-| Theming | Semantic token roles | System colors/materials, high contrast | Material ColorScheme/Dynamic Color fallback |
-| Motion | Completion feedback and state clarity | Reduce Motion cross-fade/reduced travel | Remove animations immediate/cross-fade path |
-| Adaptivity | Compact vs expanded information architecture | iPad size classes/Split View | Window size classes, multi-window/foldables |
+| Product flow | Same task states, verification model, save/progress semantics | iOS-native hierarchy and gestures | Android-native hierarchy and Back model |
+| Navigation | Same destinations and information architecture | Navigation stack, tab/sidebar as size class fits | Top app bar, nav bar/rail/drawer, predictive Back |
+| Layout | Same content priority and review hierarchy | iPhone compact; iPad Split View/sidebars | Phone compact; tablet/foldable/multi-window panes/rails |
+| Controls | Same semantic actions and labels | Native iOS controls, sheets, context menus, SF Symbols | Material controls, dialogs/sheets/snackbars, Material Symbols |
+| Type | Same content hierarchy | Dynamic Type text styles | Material type roles with `sp` and font scale |
+| Color | Same semantic token roles | iOS system colors/materials where suitable | Material color roles, tonal elevation, Dynamic Color if adopted |
+| Motion | Same state meaning: start, save, complete, error | iOS-consistent push/sheet/fade; Reduce Motion | Material transitions/fade-through; Remove animations |
+| Accessibility | Same release outcomes | VoiceOver, Switch/keyboard, iPad keyboard traversal | TalkBack, keyboard/D-pad, predictive Back accessibility |
 
-## 6. Verified versus unverified claims
+## 6. Verified vs unverified claims
 
-**Verified only from supplied static description, assuming it is accurate:**
-
-- Forced `width: 390` centered tablet screen.
-- Custom top bar and JavaScript back.
-- Empty `BackHandler` consuming Android Back.
+**Verified only from supplied static description:**
+- Forced `width: 390` and centered tablet layout.
+- Custom top bar / JavaScript back button.
+- Empty Android `BackHandler` consuming Back.
 - `40x40` pressables.
 - Fixed `fontSize: 14` with font scaling disabled.
 - Raw `#777777` and `#FFFFFF`.
 - Same Cupertino-shaped switch and web icon set on both platforms.
-- Bottom tab bar unchanged across phone/tablet platforms.
-- `500ms` overshooting spring without Reduced Motion/Remove animations alternative.
+- Bottom tab bar unchanged across phone/tablet.
+- 500ms overshooting completion spring without reduced/remove alternative.
+- Product and design constraints as stated in the prompt.
 
 **Unverified:**
-
-- Actual source paths, implementation details, navigation library, token files, or build configuration.
-- Real iOS/iPadOS or Android rendering.
-- VoiceOver, TalkBack, accessibility tree, focus order, labels, traits, state announcements.
-- Dynamic Type/font-scale behavior, keyboard traversal, switch access, D-pad traversal.
-- Contrast across all states/themes.
-- Rotation, iPad Split View, Android multi-window, foldable posture, IME/insets.
-- Gesture feel, predictive Back preview, haptics, frame rate, interruption recovery, autosave/draft persistence.
-- Simulator, emulator, or real-device behavior.
+- Actual source paths, component ownership, and code branches.
+- Visual hierarchy, density, contrast ratios, screenshots, and dark-mode output.
+- VoiceOver/TalkBack labels, traits, traversal, announcements, and custom actions.
+- Dynamic Type/font-scale clipping behavior.
+- External keyboard traversal.
+- Safe-area, IME, hinge, orientation, split-screen, and foldable behavior.
+- Whether progress is actually lost on interruption.
+- Native builds, runtime behavior, haptics, perceived smoothness, or performance.
+- iOS Simulator, Android Emulator, and real-device behavior.
 
 ## 7. Minimal validation plan
 
-**Source/static validation**
+1. **Source review**
+   - Inspect `PRODUCT.md`, `DESIGN.md`, navigation setup, `BackHandler` usage, style definitions, token usage, platform branches, accessibility props, motion settings, and layout/window-size logic.
 
-1. Inspect `PRODUCT.md`, `DESIGN.md`, theme/token files, navigation setup, screen layout, shared components, icons, switches, pressables, typography, and motion utilities.
-2. Search for fixed dimensions, `allowFontScaling={false}`, raw hex colors, `BackHandler`, custom back buttons, hard-coded tab bars, and spring configs.
-3. Check component state matrix: pressed, disabled, loading, error, success, focus/keyboard, accessibility labels/roles/values.
+2. **Build/static checks**
+   - Run project typecheck/lint/test scripts if present.
+   - iOS: run appropriate `xcodebuild` compile/test target if available.
+   - Android: run Gradle assemble/lint/test target if available.
 
-**Build/static gates**
+3. **iOS runtime — missing**
+   - **iOS Simulator: unverified locally / not performed.**
+   - Needed: iPhone compact + iPad/Split View, Dynamic Type, Reduce Motion, VoiceOver or Accessibility Inspector, keyboard traversal, safe areas, orientation, interruption recovery.
 
-1. Run project type check and lint.
-2. iOS: run the project’s Xcode build/test command where available.
-3. Android: run Gradle assemble/lint/test where available.
+4. **Android runtime — missing**
+   - **Android Emulator: unverified locally / not performed.**
+   - Needed: phone + tablet/foldable or multi-window profile, font scale, Remove animations, TalkBack, keyboard/D-pad, predictive Back, IME/insets, interruption recovery.
 
-**Runtime validation required before release**
+5. **Physical hardware — missing**
+   - **Real-device evidence: not performed for iOS or Android.**
+   - Required before release claims for gesture feel, haptics, OEM Android behavior, one-handed reach, sustained performance, and real accessibility-device behavior.
 
-- **iOS Simulator: unverified locally.** Validate iPhone compact and iPad/Split View, Dynamic Type accessibility sizes, Reduce Motion, VoiceOver traversal, keyboard traversal, safe areas, rotation, and interrupted task recovery.
-- **Android Emulator: unverified locally.** Validate phone, tablet, multi-window/foldable profile, font scale, Remove animations, TalkBack traversal, predictive Back, gesture navigation, IME/insets, and interrupted task recovery.
-- **Real-device evidence: missing.** Required before final claims for gesture feel, haptics, predictive Back behavior on hardware, OEM Android differences, sustained performance, and one-handed ergonomics.
-
-Rules/skill used: `design-craft`, frontend rule, and native adaptive references for iOS, Android, accessibility, design-system, motion, and validation.
+Applied `design-craft` in native adaptive critique mode; this is a read-only benchmark review, not simulator/emulator/device validation.

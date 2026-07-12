@@ -5,7 +5,7 @@
 - Status: unverified
 - Reason: Claude Code `2.1.116` reports a valid OAuth login after the runner was
   repaired to retain user authentication and expose only read-only tools.
-  Controlled `opus/max` and `sonnet/high` requests repeatedly ended with
+  The current-source `sonnet/high` request and prior `opus/max` attempt ended with
   `API Error: Unable to connect to API (ECONNRESET)`, so no output or run
   manifest was admitted.
 

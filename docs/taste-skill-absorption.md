@@ -82,3 +82,9 @@ Stitch, brand-kit, and output-policy Skills remain deliberately independent.
 The range after `06d6028b5c623016c59ce8536f578e5a1127b499` changes README
 sponsorship and image assets only, so its latest-range status is
 `provenance-only` rather than a statement that the upstream was never absorbed.
+
+Current independent blind evidence is recorded in
+`evals/comparative/taste-visual-critique-ablation/`: `design-craft` 99,
+focused taste upstream 98, no-skill baseline 93. The first controlled run
+exposed an incomplete move-budget rule; the Skill was repaired and the final
+evidence was rerun rather than editing the judge result.

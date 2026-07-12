@@ -104,3 +104,7 @@ duplicative live/provider/package runtime is intentionally not vendored. The
 range from `da99645a58400ed7acb201e6904f9413efd89c6e` to the reviewed head
 changes GitHub sheriff stale-clock automation only, so its latest-range status
 is repository operations rather than new design behavior.
+
+Current independent blind evidence is recorded in
+`evals/comparative/impeccable-production-ablation/`: `design-craft` 98,
+focused Impeccable upstream 95, no-skill baseline 94.

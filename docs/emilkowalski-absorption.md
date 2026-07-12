@@ -131,3 +131,10 @@ The absorption is intentionally not a 100 percent verbatim copy. High-value
 capabilities are local; narrow promotional text, aggressive review posture,
 host-policy conflicts, decorative recipes, and technically overbroad claims
 remain `intentionally-rejected`, `partial`, or `provenance-only`.
+
+Current independent blind evidence is recorded in two cases:
+
+- `emil-motion-ablation`: `design-craft` 99, focused Emil upstream 98,
+  no-skill baseline 94.
+- `emil-motion-planning-ablation`: `design-craft` 94, focused Emil upstream 93,
+  no-skill baseline 86.

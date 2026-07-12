@@ -33,10 +33,13 @@ Codex, Pi, Cursor, and Claude independently: a host must provide both a real
 output and score JSON, or retain an explicit unverified note. A partial pair is
 rejected, and a stale unverified note is rejected after evidence is recorded.
 
-As of 2026-07-12, all four hosts are explicitly unverified for the active v3
-score/run-v2 contract. Environment preflights are status only, not observed
-benchmark output. Do not restore historical outputs to active directories or
-edit their hashes; rerun the controlled host instead.
+As of 2026-07-12, Codex and Pi have current-source v3 score/run-v2 evidence for
+all three active tasks, bound to Skill source commit `f04e105`. Cursor remains
+unverified because its installed CLI is not logged in. Claude remains
+unverified because its valid OAuth session still returns `ECONNRESET` during a
+controlled read-only request. Environment preflights are status only, not
+observed benchmark output. Do not restore historical outputs to active
+directories or edit their hashes; rerun the controlled host instead.
 
 Validate the recorded runs with:
 

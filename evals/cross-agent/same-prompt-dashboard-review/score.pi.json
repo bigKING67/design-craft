@@ -14,34 +14,34 @@
   "scorecard_sha256": "b9edd8c7b2859a983f2e132b57ee593f2225631473be392cb3d9a53f87bf77e1",
   "contract_sha256": "4037c3cf05d7cbb1fa968da25c0ae1f8a322dac49129b98070435f2ce6340c3d",
   "run_manifest_path": "run.pi.json",
-  "run_manifest_sha256": "cec884d181ecf6f2721eef8a19bb33b1ef5a1ce9da3e88265e3b5b0d073b4cbc",
+  "run_manifest_sha256": "6f045f84ae03eb079ad911716713806924a27be40a20aefe6894bb2381a21239",
   "skill_version": "0.5.0",
-  "skill_source_commit": "871ff13eb63ca15ee1bcf1d5da018f51c59220f3",
+  "skill_source_commit": "f04e1050f63f2ed0a3d9970935d04129b771efca",
   "skill_source_dirty": false,
   "repo_dirty": true,
   "release_state": "unknown",
-  "skill_tree_sha256": "fa3adddb54ff35fb5b2a7f5b15831005d94664382c90e195cd10971f533d54b4",
+  "skill_tree_sha256": "c165a78d91eed7392b33659633efb756acbe03c1a0a06b16c8889604854f72f8",
   "skill_path": "$BENCHMARK_WORKSPACE/.pi/skills/design-craft",
   "provenance_skill_path": "$DESIGN_CRAFT_HOME/skills/design-craft",
   "command_summary": "pi --print --no-session --no-skills --skill '$BENCHMARK_SKILL' --no-context-files --tools read,grep,find,ls --model codex/gpt-5.5 --thinking high",
   "output_path": "pi-output.md",
-  "output_sha256": "552babe530997708d4344c7f564b8ec9a9d222c5bd1d06366da567f345e288c6",
+  "output_sha256": "8d79febef370933f78374a45a0afa941ba19b806259ee1bc8e2c76b4d36057f2",
   "score": 100,
   "criteria": {
     "style_authority": {
       "passed": true,
       "earned": 15,
-      "note": "Uses the calm restrained enterprise-console authority and centers the operator's next-hour attention decision."
+      "note": "Preserves the calm restrained enterprise-console authority and centers the operator's next-hour attention decision."
     },
     "reference_selection": {
       "passed": true,
       "earned": 15,
-      "note": "Selects dashboard hierarchy, taste, design-move, token, accessibility, resilient-state, and validation guidance at the needed depth."
+      "note": "Selects dashboard hierarchy, taste, design-move, token, state, accessibility, and validation guidance at the needed depth."
     },
     "anti_generic_redesign": {
       "passed": true,
       "earned": 15,
-      "note": "Rejects equal cards, decorative area-chart treatment, and generic tips for an exception-first operational priority surface."
+      "note": "Rejects equal cards, decorative charting, and generic tips for an exception-first operational surface."
     },
     "evidence_level": {
       "passed": true,
@@ -56,12 +56,12 @@
     "design_moves": {
       "passed": true,
       "earned": 15,
-      "note": "Gives lead-support-queue hierarchy, task-first table, diagnostic chart, contextual operations support, semantic color, and resilient states."
+      "note": "Provides command context, attention state, supporting strip, exception queue, diagnostic evidence, task-first table, and explicit contextual actions."
     },
     "scope_control": {
       "passed": true,
       "earned": 10,
-      "note": "Stays concise at 104 lines, read-only, dashboard-specific, prioritized, and within the requested budget."
+      "note": "Stays concise at 108 lines, read-only, prioritized, and within the requested dashboard budget."
     }
   }
 }

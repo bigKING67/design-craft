@@ -14,54 +14,54 @@
   "scorecard_sha256": "ba56e288dc04a5c411768339f7969ee1b2e6403ca82b4ef551fab675f969978b",
   "contract_sha256": "4037c3cf05d7cbb1fa968da25c0ae1f8a322dac49129b98070435f2ce6340c3d",
   "run_manifest_path": "run.pi.json",
-  "run_manifest_sha256": "a9ef4f67741bc560d9d11c79ac6e454a38e9fbdce0b2ff2b43ee3994a6e7aecc",
+  "run_manifest_sha256": "ad650158dc8b40a1883a989cbb4305f693658138508c24c6a79d80303ef5f85f",
   "skill_version": "0.5.0",
-  "skill_source_commit": "871ff13eb63ca15ee1bcf1d5da018f51c59220f3",
+  "skill_source_commit": "f04e1050f63f2ed0a3d9970935d04129b771efca",
   "skill_source_dirty": false,
   "repo_dirty": true,
   "release_state": "unknown",
-  "skill_tree_sha256": "fa3adddb54ff35fb5b2a7f5b15831005d94664382c90e195cd10971f533d54b4",
+  "skill_tree_sha256": "c165a78d91eed7392b33659633efb756acbe03c1a0a06b16c8889604854f72f8",
   "skill_path": "$BENCHMARK_WORKSPACE/.pi/skills/design-craft",
   "provenance_skill_path": "$DESIGN_CRAFT_HOME/skills/design-craft",
   "command_summary": "pi --print --no-session --no-skills --skill '$BENCHMARK_SKILL' --no-context-files --tools read,grep,find,ls --model codex/gpt-5.5 --thinking high",
   "output_path": "pi-output.md",
-  "output_sha256": "813af111d9f8d8cc7efda58c4309540898d341b8feb396c3114b38cacf68343d",
+  "output_sha256": "7f362daaa463c5c0191fda88e604639e044f6a50d5f9a1fa5ecd76e431475490",
   "score": 100,
   "criteria": {
     "style_authority": {
       "passed": true,
       "earned": 15,
-      "note": "Anchors motion to calm high-frequency operational use, direct manipulation, context preservation, and predictable state changes."
+      "note": "Reads the sheet as a calm high-frequency operations control and preserves causal direct manipulation."
     },
     "reference_selection": {
       "passed": true,
       "earned": 15,
-      "note": "Uses the relevant motion-quality, interaction-physics, performance, accessibility, and validation contracts only."
+      "note": "Selects motion, interaction-physics, accessibility, property-cost, and runtime-validation guidance only."
     },
     "anti_generic_redesign": {
       "passed": true,
       "earned": 15,
-      "note": "Limits motion to pointer feedback, direct tracking, causal settle, and state continuity rather than adding generic smoothing or spectacle."
+      "note": "Rejects decorative scale and delayed travel while preserving feedback that clarifies drag and snap state."
     },
     "evidence_level": {
       "passed": true,
       "earned": 15,
-      "note": "Calls the review static-source-only and avoids claiming observed smoothness, frame rate, touch feel, or Reduced Motion behavior."
+      "note": "Explicitly labels the review static-source only and avoids smoothness, frame-rate, browser, touch-feel, or device claims."
     },
     "verified_boundary": {
       "passed": true,
       "earned": 15,
-      "note": "Lists exact code facts separately from runtime hypotheses for lag, WAAPI/CSS interaction, touch, container coordinates, and responsiveness."
+      "note": "Separates visible code facts from unverified pointer traces, computed presentation values, browser behavior, and Reduced Motion runtime."
     },
     "design_moves": {
       "passed": true,
       "earned": 15,
-      "note": "Provides grab-offset tracking, transform ownership, presentation-value interruption, CSS px/s velocity handoff, projected snaps, soft bounds, and Reduced Motion."
+      "note": "Specifies capture, coordinate mapping, transform ownership, interruption, velocity in CSS px/s, bounded projection, snap behavior, and reduced motion."
     },
     "scope_control": {
       "passed": true,
       "earned": 10,
-      "note": "Stays focused, actionable, read-only, and within the 150-line budget at 133 lines."
+      "note": "Stays read-only, focused, and within the requested budget at 139 lines."
     }
   }
 }
