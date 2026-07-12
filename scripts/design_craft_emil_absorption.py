@@ -108,6 +108,7 @@ def git_head(path: Path) -> str:
 
 def validate() -> dict:
     errors: list[str] = []
+    matrix_relative = MATRIX_PATH.relative_to(ROOT).as_posix()
     lock = read_json(LOCK_PATH)
     meta = lock.get("upstreams", {}).get("emilkowalski-skills", {})
     inventory = meta.get("skill_inventory", {})
@@ -156,10 +157,8 @@ def validate() -> dict:
         errors.append("reviewed_commit must match the checked compatibility commit")
     if meta.get("coverage_contract") != SCHEMA:
         errors.append(f"coverage_contract must be {SCHEMA}")
-    if meta.get("coverage_matrix") != str(MATRIX_PATH.relative_to(ROOT)):
-        errors.append(
-            f"coverage_matrix must be {MATRIX_PATH.relative_to(ROOT)}"
-        )
+    if meta.get("coverage_matrix") != matrix_relative:
+        errors.append(f"coverage_matrix must be {matrix_relative}")
 
     compatibility = read_json(COMPATIBILITY_PATH)
     contract = compatibility.get("maintenance_contracts", {}).get("emil_absorption")
@@ -225,7 +224,7 @@ def validate() -> dict:
             "non_markdown_files": observed_non_markdown,
         },
         "coverage": coverage_payload,
-        "matrix": str(MATRIX_PATH.relative_to(ROOT)),
+        "matrix": matrix_relative,
         "errors": errors,
     }
 
