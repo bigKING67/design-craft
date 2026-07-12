@@ -28,9 +28,14 @@ This document is the local release and maintenance checklist for
   routing.
 - Keep helper scripts deterministic and cheap enough to run before real
   UI/UX/design/frontend work.
-- Keep OS support explicit: repository automation is verified on macOS/Linux.
-  A Windows Git Bash lane is defined, but native Windows remains pending until
-  a current-source remote run succeeds; WSL is a fallback, not separate proof.
+- Keep the product route Web-first: ordinary desktop/browser work defaults to
+  `platform=web`. Load iOS, Android, and adaptive references only when source or
+  product evidence establishes a native target. Mobile Web and WebView shells
+  must not turn native runtime or device evidence into a daily Web blocker.
+- Keep OS support explicit: repository automation is verified on macOS/Linux,
+  and the current-source Windows Git Bash portability lane has succeeded. This
+  does not claim a native Windows UI runtime; WSL is a fallback, not separate
+  product proof.
 - Keep the deterministic release gate independent of mutable upstream remote
   heads. Remote freshness is a separate release-readiness and scheduled audit.
 - Keep GitHub Actions pinned to full reviewed SHAs. Dependabot may propose
@@ -179,6 +184,9 @@ Expected result:
 - Upstream absorption report runs without fetching or modifying submodules; the
   optional `--remote` check reports remote drift with `git ls-remote`.
 - Upstream lock commits match checked-out submodule commits.
+- Taste, Impeccable, and Emil absorption matrices validate their complete
+  entrypoint inventories, local coverage, cumulative state, latest reviewed
+  range, and intentional rejection boundaries.
 - Installed canonical skill matches the source and carries valid version,
   source commit, dirty-state, exact tree digest, install-time, and source-repo
   provenance.
@@ -248,8 +256,11 @@ required workflow.
    ```
 
    The helper updates only the compatibility `commit` field. Set
-   `reviewed_commit`, `absorbed_commit`, `reviewed_at`, `decision`, and
-   `notes` manually after the absorption review.
+   `cumulative_status`, `reviewed_through_commit`,
+   `behavior_absorbed_through_commit`, `latest_range_base_commit`,
+   `latest_range_head_commit`, `latest_range_status`, `reviewed_at`, `notes`,
+   and the compatibility aliases `reviewed_commit`, `absorbed_commit`, and
+   `decision` manually after the absorption review.
 
 4. Generate a local absorption report:
 
@@ -262,17 +273,18 @@ required workflow.
    `repository_operations_only` means upstream CI or repository automation,
    and `manual_review` requires human judgment before changing the fusion layer.
 
-   For the Emil upstream, validate the complete five-Skill inventory and local
-   capability mapping separately:
+   Validate all three complete inventories, local capability mappings, and
+   intentional rejection boundaries separately:
 
    ```bash
-   make emil-absorption-check
+   make upstream-absorption-check
    ```
 
-   The contract fails if a Skill, auxiliary Markdown file, or non-Markdown
-   implementation file appears without an explicit inventory decision. Update
-   `docs/emilkowalski-absorption.md`, the fusion references, attribution, and
-   `upstreams.lock.json` together after review.
+   The contracts fail if a taste Skill, Impeccable command/runtime boundary,
+   Emil Skill, auxiliary file, or implementation surface appears without an
+   explicit inventory decision. Update the matching matrix under `docs/`, the
+   fusion references, attribution, and `upstreams.lock.json` together after
+   review.
 
 5. Review upstream licenses and attribution if upstream content changed:
 
@@ -393,12 +405,14 @@ Agent Skills-compatible client applies the same `design-craft` prompt.
 
 Do not claim cross-agent stability until real outputs are recorded. Template
 cases define prompts and scorecards only. Legacy v2 dashboard, gesture-motion,
-and native-adaptive Codex/Pi artifacts are historical baseline evidence;
-all four hosts remain explicitly unverified for the active contract. Certified
-0.5.0 evidence must use isolated run-manifest v2 plus score schema v3, binding the current skill,
-prompt, scorecard, output, runner/adapter contract, host version, and worktree
-fingerprints. Host/model/command fields are derived from the controlled run,
-not trusted from manual recorder flags.
+and native-adaptive Codex/Pi artifacts are historical baseline evidence.
+Current evidence must use isolated run-manifest v2 plus score schema v3,
+binding the current Skill, prompt, scorecard, output, runner/adapter contract,
+host version, and worktree fingerprints. Codex/Pi satisfy the desktop profile
+when current; Cursor/Claude remain independent optional release-certification
+hosts and must keep explicit unverified notes when auth or transport prevents a
+run. Host/model/command fields are derived from the controlled run, not trusted
+from manual recorder flags.
 
 ## Codex route-pack portability
 

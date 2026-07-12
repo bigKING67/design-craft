@@ -13,6 +13,12 @@ import tempfile
 from dataclasses import asdict, dataclass
 from pathlib import Path
 
+from design_craft_absorption_common import (
+    CUMULATIVE_STATUSES,
+    LATEST_RANGE_STATUSES,
+    LEGACY_DECISION_BY_CUMULATIVE_STATUS,
+)
+
 
 SCHEMA = "design-craft.maturity.v1"
 ROOT = Path(__file__).resolve().parents[1]
@@ -259,14 +265,32 @@ def upstream_metadata_gate() -> Gate:
         payload = {}
     failures: list[str] = []
     for name, meta in payload.get("upstreams", {}).items():
-        if meta.get("reviewed_commit") != meta.get("commit"):
+        reviewed = meta.get("reviewed_through_commit")
+        absorbed = meta.get("behavior_absorbed_through_commit")
+        cumulative = meta.get("cumulative_status")
+        latest = meta.get("latest_range_status")
+        if reviewed != meta.get("commit") or meta.get("reviewed_commit") != reviewed:
             failures.append(f"{name}:reviewed")
-        if meta.get("decision") not in {"absorbed", "partial", "provenance_only", "deferred"}:
+        if cumulative not in CUMULATIVE_STATUSES:
+            failures.append(f"{name}:cumulative")
+        if latest not in LATEST_RANGE_STATUSES:
+            failures.append(f"{name}:latest-range")
+        if meta.get("decision") != LEGACY_DECISION_BY_CUMULATIVE_STATUS.get(cumulative):
             failures.append(f"{name}:decision")
         if not meta.get("reviewed_at") or not meta.get("notes"):
             failures.append(f"{name}:metadata")
-        if meta.get("decision") != "deferred" and not meta.get("absorbed_commit"):
+        if cumulative != "deferred" and not absorbed:
             failures.append(f"{name}:absorbed")
+        if meta.get("absorbed_commit") != absorbed:
+            failures.append(f"{name}:absorbed-alias")
+        if meta.get("latest_range_base_commit") != absorbed:
+            failures.append(f"{name}:range-base")
+        if meta.get("latest_range_head_commit") != meta.get("commit"):
+            failures.append(f"{name}:range-head")
+        if not meta.get("coverage_contract") or not meta.get("coverage_matrix"):
+            failures.append(f"{name}:coverage")
+    if payload.get("schema") != "design-craft.upstreams-lock.v2":
+        failures.append("lock-schema")
     if set(payload.get("upstreams", {})) != {"taste-skill", "impeccable", "emilkowalski-skills"}:
         failures.append("upstream-set")
     return make_gate(

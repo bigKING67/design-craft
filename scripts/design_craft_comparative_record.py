@@ -12,13 +12,14 @@ from design_craft_comparative_common import (
     BLIND_LABELS,
     BLIND_MAP_SCHEMA,
     JUDGE_RUN_SCHEMA,
-    REQUIRED_VARIANTS,
     RESULT_SCHEMA,
     RUN_SCHEMA,
+    VARIANTS_SCHEMA,
     load_scorecard,
     sha256_file,
     validate_judgment,
     validate_judgment_schema,
+    variant_ids,
 )
 from design_craft_cross_agent_run import publish_files
 
@@ -60,7 +61,16 @@ def main() -> int:
         mapping = json.loads(map_path.read_text(encoding="utf-8"))
         judgment = json.loads(judgment_path.read_text(encoding="utf-8"))
         judge_run = json.loads(judge_run_path.read_text(encoding="utf-8"))
+        variants_payload = json.loads(
+            (case_dir / "variants.json").read_text(encoding="utf-8")
+        )
     except (OSError, json.JSONDecodeError) as exc:
+        parser.error(str(exc))
+    if variants_payload.get("schema") != VARIANTS_SCHEMA:
+        parser.error(f"variants.json must use {VARIANTS_SCHEMA}")
+    try:
+        required_variants = variant_ids(variants_payload)
+    except ValueError as exc:
         parser.error(str(exc))
 
     weights, errors = load_scorecard(case_dir)
@@ -123,7 +133,7 @@ def main() -> int:
         if isinstance(item, dict)
     }
     if set(label_map) != set(BLIND_LABELS) or set(label_map.values()) != set(
-        REQUIRED_VARIANTS
+        required_variants
     ):
         parser.error("blind map must assign A, B, and C to every comparative variant")
 
@@ -171,6 +181,7 @@ def main() -> int:
     payload = {
         "schema": RESULT_SCHEMA,
         "case_id": case_dir.name,
+        "focused_variant": variants_payload["focused_variant"],
         "recorded_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
         "judge": {
             "host": judge_run.get("host"),

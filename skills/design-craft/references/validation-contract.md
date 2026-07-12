@@ -24,8 +24,10 @@ Pick the smallest command set that covers the change:
 - Build-system or route change: type-check, lint, build.
 - Data behavior: relevant unit/integration tests plus type-check.
 - Visual/report/dashboard work: type/lint/build as relevant plus browser smoke.
-- Native UI work: platform build/static checks plus simulator/emulator or real
-  device validation when the toolchain exists.
+- Native UI work only when the resolved target is `ios`, `android`, or
+  `adaptive`: platform build/static checks plus simulator/emulator or real
+  device validation when the toolchain exists. Native gates are not part of an
+  ordinary Web/desktop task.
 - Performance work: baseline and after measurement when possible.
 
 Prefer project scripts in `package.json`. Do not invent commands when the repo
@@ -154,7 +156,8 @@ interaction states unless separate state evidence is captured.
 ## Native runtime validation
 
 For `ios`, `android`, or `adaptive`, static source scan is a floor rather than a
-runtime verdict.
+runtime verdict. Skip this section for `web`; a mobile viewport or WebView shell
+does not create a native validation requirement.
 
 Report route fields:
 
@@ -250,9 +253,17 @@ runtime scripts, source/install parity, reviewed upstreams, CI, observed evals,
 degraded route/detector behavior, and native runtime evidence. A score above 90
 requires forward evals and real task evidence, not only file presence.
 
-For 0.4.0, native simulator/emulator behavior is not locally observed, so the
-honest maturity cap is `95`. Scores `96-100` require observed iOS and Android
-runtime evidence, including at least one real-device validation path.
+Operational maturity is profile-specific:
+
+- `desktop` covers the daily computer-based Web/frontend workflow and can reach
+  100 without iOS/Android runtime or Cursor/Claude evidence.
+- `portable` and normal release readiness use a 95-point boundary while keeping
+  optional host/native proof visible rather than silently promoting it.
+- certified release maturity 100 requires all four current-source host runs and
+  current-source iOS Simulator, Android Emulator, and physical-device evidence.
+
+Do not use the certification profile to declare ordinary Web development
+incomplete, and do not use the desktop profile to claim native release proof.
 
 The 100-point score in `product-ui-taste-review.md` is different: it grades one
 specific UI surface. When reporting both, name them explicitly as

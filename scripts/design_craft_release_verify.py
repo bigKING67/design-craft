@@ -77,10 +77,16 @@ def validate(*, certify: bool, require_tag: bool, require_remote: bool) -> dict:
         "sync_status": "design-craft.sync-status.v2",
         "release_assets": "design-craft.release-assets.v1",
         "native_release_bundle": "design-craft.native-release-bundle.v1",
+        "upstream_absorption_state": "design-craft.upstream-absorption-state.v2",
+        "taste_absorption": "design-craft.taste-absorption.v1",
+        "impeccable_absorption": "design-craft.impeccable-absorption.v1",
+        "emil_absorption": "design-craft.emil-absorption.v1",
         "cross_agent_run": "design-craft.cross-agent-run.v2",
-        "comparative_run": "design-craft.comparative-run.v2",
+        "comparative_variants": "design-craft.comparative-variants.v2",
+        "comparative_run": "design-craft.comparative-run.v3",
+        "comparative_blind_map": "design-craft.comparative-blind-map.v3",
         "comparative_judge_run": "design-craft.comparative-judge-run.v1",
-        "comparative_result": "design-craft.comparative-result.v2",
+        "comparative_result": "design-craft.comparative-result.v3",
     }
     for key, expected in expected_maintenance.items():
         if maintenance_contracts.get(key) != expected:

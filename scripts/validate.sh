@@ -74,6 +74,8 @@ required_files=(
   ".gitattributes"
   ".gitmodules"
   "docs/maintenance.md"
+  "docs/taste-skill-absorption.md"
+  "docs/impeccable-absorption.md"
   "docs/emilkowalski-absorption.md"
   "THIRD_PARTY_NOTICES.md"
   "upstreams.lock.json"
@@ -235,6 +237,18 @@ required_files=(
   "evals/comparative/emil-motion-planning-ablation/scorecard.json"
   "evals/comparative/emil-motion-planning-ablation/expected-findings.md"
   "evals/comparative/emil-motion-planning-ablation/judgment.schema.json"
+  "evals/comparative/taste-visual-critique-ablation/prompt.md"
+  "evals/comparative/taste-visual-critique-ablation/variants.json"
+  "evals/comparative/taste-visual-critique-ablation/scorecard.md"
+  "evals/comparative/taste-visual-critique-ablation/scorecard.json"
+  "evals/comparative/taste-visual-critique-ablation/expected-findings.md"
+  "evals/comparative/taste-visual-critique-ablation/judgment.schema.json"
+  "evals/comparative/impeccable-production-ablation/prompt.md"
+  "evals/comparative/impeccable-production-ablation/variants.json"
+  "evals/comparative/impeccable-production-ablation/scorecard.md"
+  "evals/comparative/impeccable-production-ablation/scorecard.json"
+  "evals/comparative/impeccable-production-ablation/expected-findings.md"
+  "evals/comparative/impeccable-production-ablation/judgment.schema.json"
   "evals/native-runtime/README.md"
   "evals/native-runtime/history/README.md"
   "evals/native-runtime/history/2026-07-11-v2/ios-observed.json"
@@ -297,6 +311,9 @@ required_files=(
   "scripts/design_craft_active_scope_validate.py"
   "scripts/design_craft_detect.sh"
   "scripts/design_craft_doctor.sh"
+  "scripts/design_craft_absorption_common.py"
+  "scripts/design_craft_taste_absorption.py"
+  "scripts/design_craft_impeccable_absorption.py"
   "scripts/design_craft_emil_absorption.py"
   "scripts/design_craft_init_agent.sh"
   "scripts/design_craft_l4_capture.py"
@@ -556,6 +573,8 @@ for path in \
   "scripts/design_craft_active_scope_validate.py" \
   "scripts/design_craft_detect.sh" \
   "scripts/design_craft_doctor.sh" \
+  "scripts/design_craft_taste_absorption.py" \
+  "scripts/design_craft_impeccable_absorption.py" \
   "scripts/design_craft_emil_absorption.py" \
   "scripts/design_craft_init_agent.sh" \
   "scripts/design_craft_l4_capture.py" \
@@ -696,7 +715,10 @@ make -n release-certify >/dev/null
 make -n release-tag-verify >/dev/null
 make -n sync-status >/dev/null
 make -n motion-plan-dry-run >/dev/null
+make -n taste-absorption-check >/dev/null
+make -n impeccable-absorption-check >/dev/null
 make -n emil-absorption-check >/dev/null
+make -n upstream-absorption-check >/dev/null
 make -n sync-status-check >/dev/null
 make -n release-assets-check >/dev/null
 make -n native-release-bundle-check >/dev/null
@@ -743,6 +765,9 @@ PY
 
 for path in \
   scripts/design_craft_score.py \
+  scripts/design_craft_absorption_common.py \
+  scripts/design_craft_taste_absorption.py \
+  scripts/design_craft_impeccable_absorption.py \
   scripts/design_craft_active_scope_validate.py \
   scripts/design_craft_browser_evidence.py \
   scripts/design_craft_codex_route_pack.py \
@@ -793,6 +818,9 @@ for path in \
 done
 
 python3 scripts/upstream_absorption_report.py --check
+python3 scripts/design_craft_taste_absorption.py --check --strict >/dev/null
+python3 scripts/design_craft_impeccable_absorption.py --check --strict >/dev/null
+python3 scripts/design_craft_emil_absorption.py --check --strict >/dev/null
 python3 scripts/design_craft_lint.py --check >/dev/null
 python3 scripts/design_craft_maturity.py --check
 python3 scripts/design_craft_native_runtime_validate.py --check
@@ -1422,21 +1450,59 @@ payload = json.loads(Path("upstreams.lock.json").read_text(encoding="utf-8"))
 errors = []
 upstreams = payload.get("upstreams", {})
 expected = {"taste-skill", "impeccable", "emilkowalski-skills"}
+legacy_by_cumulative = {
+    "absorbed": "absorbed",
+    "selective_absorbed": "partial",
+    "provenance_only": "provenance_only",
+    "deferred": "deferred",
+}
+latest_statuses = {
+    "absorbed",
+    "partial",
+    "provenance_only",
+    "repository_operations_only",
+    "deferred",
+}
+if payload.get("schema") != "design-craft.upstreams-lock.v2":
+    errors.append("upstream lock schema must be design-craft.upstreams-lock.v2")
 if set(upstreams) != expected:
     errors.append(f"upstream set must be {sorted(expected)}")
 for name, meta in upstreams.items():
     path = meta["path"]
     want = meta["commit"]
-    for field in ("commit", "reviewed_commit", "absorbed_commit"):
+    for field in (
+        "commit",
+        "reviewed_commit",
+        "absorbed_commit",
+        "reviewed_through_commit",
+        "behavior_absorbed_through_commit",
+        "latest_range_base_commit",
+        "latest_range_head_commit",
+    ):
         value = meta.get(field, "")
         if not re.fullmatch(r"[0-9a-f]{40}", value):
             errors.append(f"{name}: {field} must be a full lowercase Git SHA")
-    if meta.get("reviewed_commit") != want:
-        errors.append(f"{name}: reviewed_commit must match compatibility commit")
-    if meta.get("decision") not in {"absorbed", "partial", "provenance_only", "deferred"}:
-        errors.append(f"{name}: invalid review decision")
+    reviewed = meta.get("reviewed_through_commit")
+    absorbed = meta.get("behavior_absorbed_through_commit")
+    cumulative = meta.get("cumulative_status")
+    if reviewed != want or meta.get("reviewed_commit") != reviewed:
+        errors.append(f"{name}: reviewed aliases must match compatibility commit")
+    if meta.get("absorbed_commit") != absorbed:
+        errors.append(f"{name}: absorbed_commit must alias behavior_absorbed_through_commit")
+    if meta.get("latest_range_base_commit") != absorbed:
+        errors.append(f"{name}: latest range base must match behavior absorption boundary")
+    if meta.get("latest_range_head_commit") != want:
+        errors.append(f"{name}: latest range head must match compatibility commit")
+    if cumulative not in legacy_by_cumulative:
+        errors.append(f"{name}: invalid cumulative_status")
+    elif meta.get("decision") != legacy_by_cumulative[cumulative]:
+        errors.append(f"{name}: legacy decision does not match cumulative_status")
+    if meta.get("latest_range_status") not in latest_statuses:
+        errors.append(f"{name}: invalid latest_range_status")
     if not meta.get("reviewed_at") or not meta.get("notes"):
         errors.append(f"{name}: reviewed_at and notes are required")
+    if not meta.get("coverage_contract") or not meta.get("coverage_matrix"):
+        errors.append(f"{name}: coverage contract and matrix are required")
     got = subprocess.check_output(["git", "-C", path, "rev-parse", "HEAD"], text=True).strip()
     if got != want:
         errors.append(f"{name}: lock commit {want} != working commit {got}")
@@ -1444,8 +1510,6 @@ if errors:
     print("\n".join(errors), file=sys.stderr)
     sys.exit(1)
 PY
-
-python3 scripts/design_craft_emil_absorption.py --check --strict >/dev/null
 
 python3 - <<'PY'
 import json

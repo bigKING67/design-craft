@@ -1,13 +1,15 @@
 # design-craft
 
-Portable product design engineering, UI/UX, visual taste, motion, and
-implementation-quality workflow across web, iOS, Android, and adaptive products.
+Web-first product design engineering, UI/UX, visual taste, motion, and
+implementation-quality workflow for desktop and browser products, with
+optional iOS, Android, and adaptive guidance when the target is genuinely
+native.
 
 `design-craft` is the canonical local fusion layer for high-quality product
 experience work on this machine. It supersedes the former `frontend-craft`
 name because the workflow now covers more than frontend code: product context,
-UI/UX judgment, design-system contracts, motion craft, product taste, native
-platform fit, implementation quality, runtime evidence, and long-term project
+UI/UX judgment, design-system contracts, motion craft, product taste,
+implementation quality, runtime evidence, and long-term project
 structure. It keeps scoped project rules, optional `PRODUCT.md`, project
 `DESIGN.md`, and live runtime evidence above generic guidance, then folds in:
 
@@ -20,8 +22,9 @@ structure. It keeps scoped project rules, optional `PRODUCT.md`, project
 - Emil Kowalski-style motion purpose, frequency, timing/easing, physicality,
   interruptibility, gesture, performance, reduced-motion, and animation
   vocabulary checks.
-- iOS HIG/native-trust, Android Material 3/predictive Back/inset, and adaptive
-  shared-versus-platform-specific implementation checks.
+- Optional iOS HIG/native-trust, Android Material 3/predictive Back/inset, and
+  adaptive shared-versus-platform-specific checks, loaded only for native
+  targets.
 - Bundled original light/dark `DESIGN.md` seed templates for new or weakly
   specified developer-product surfaces.
 - Project quality gates for architecture, performance, code elegance, validation,
@@ -30,6 +33,11 @@ structure. It keeps scoped project rules, optional `PRODUCT.md`, project
 The skill is intentionally personal and local-first. For dashboards, special
 reports, and similar business surfaces, scoped project rules, live
 runtime behavior, and project `DESIGN.md` always outrank generic visual rules.
+Ordinary computer development therefore follows the Web/desktop path. Native
+references exist so the same design-engineering baseline can handle a real
+iOS, Android, React Native, Flutter, or Kotlin Multiplatform product without
+mistaking mobile Web for native; they do not add a device requirement to daily
+Web work.
 The canonical package is still portable: agent-specific integration belongs in
 `adapters/`, while `skills/design-craft/` remains the single source skill.
 The `0.5.0` development contract keeps ordinary portable/local operation at
@@ -67,10 +75,11 @@ product/platform context and must provide `DESIGN.md` or an explicit
 
 ## Install locally
 
-Repository automation is verified on macOS and Linux. A Windows Git Bash lane
-is now part of `Validate`, but current-source remote success is still pending;
-do not call native Windows certified until that run succeeds. WSL remains a
-compatible fallback rather than a separately certified runtime.
+Repository automation is verified on macOS and Linux. The current-source
+Windows Git Bash portability lane is also part of `Validate` and has completed
+successfully; this proves the repository scripts, not a native Windows UI
+runtime. WSL remains a compatible fallback rather than a separate product
+platform claim.
 
 ```bash
 bash scripts/install_local.sh
@@ -492,11 +501,12 @@ python3 scripts/design_craft_cross_agent_validate.py \
 ```
 
 Legacy v2 Codex/Pi dashboard, gesture-motion, and native-adaptive artifacts are
-historical 95/100 baseline evidence only. Certified `0.5.0` evidence requires a
-fresh isolated run-manifest v2 plus score schema v3 for Codex, Pi, Cursor, and
-Claude. All four active hosts remain explicitly unverified until those runs
-exist; the old self-contained snapshots live under
-`evals/cross-agent/history/2026-07-11-v2/`.
+historical baseline evidence only. Current evidence requires an isolated
+run-manifest v2 plus score schema v3 bound to the current Skill tree. Codex and
+Pi can satisfy the normal desktop profile independently; Cursor and Claude are
+additional release-certification hosts and remain explicitly unverified when
+their local authentication or API transport cannot complete. Historical
+self-contained snapshots live under `evals/cross-agent/history/2026-07-11-v2/`.
 
 Run the host first, then score only the transactionally published output and
 its run manifest. Fill a criteria JSON copied from
@@ -560,18 +570,25 @@ recommendation without changing submodule checkouts:
 python3 scripts/upstream_absorption_report.py --remote-details
 ```
 
-Verify that Emil's reviewed repository still has the expected five Skill
-entrypoints and that every high-value capability remains mapped into the local
-fusion layer:
+Verify the reviewed inventory, cumulative absorption state, latest-range
+decision, local capability mapping, and explicit rejection boundary for all
+three upstreams:
 
 ```bash
-make emil-absorption-check
+make upstream-absorption-check
 ```
 
-The human-readable capability and rejection matrix is
-`docs/emilkowalski-absorption.md`. The current upstream Skill tree contains
-Markdown instructions and code snippets, not a component/runtime source
-library; the contract records that inventory explicitly.
+The human-readable matrices are:
+
+- `docs/taste-skill-absorption.md`
+- `docs/impeccable-absorption.md`
+- `docs/emilkowalski-absorption.md`
+
+The taste and Emil Skill trees contain instructions and snippets rather than a
+component/runtime source library. Impeccable includes a substantial live and
+provider runtime; its matrix records why design-craft absorbs the workflow,
+detector, hardening, and native quality behavior without vendoring that second
+browser/package boundary.
 
 Score source completeness and operational maturity separately:
 
@@ -608,16 +625,18 @@ bash scripts/sync_upstreams.sh \
 ```
 
 The sync helper advances one explicit submodule and only the compatibility
-`commit` field. It never advances `reviewed_commit`, `absorbed_commit`, or
+`commit` field. It never advances `reviewed_through_commit`,
+`behavior_absorbed_through_commit`, `latest_range_*`, their legacy aliases, or
 the decision metadata. Before absorbing upstream changes, run:
 
 ```bash
 python3 scripts/upstream_absorption_report.py --remote-details --fail-on-unreviewed
 ```
 
-For `emilkowalski-skills`, also run `make emil-absorption-check`. A new Skill,
-auxiliary reference, or non-Markdown implementation file is treated as review
-drift rather than silently ignored.
+Run `make upstream-absorption-check` for every reviewed update. New Skill or
+command entrypoints, auxiliary references, detector/runtime surfaces, or
+non-Markdown implementation files are treated as review drift rather than
+silently ignored.
 
 ## Licensing
 
@@ -651,7 +670,7 @@ certified 100/100 must instead pass the stricter non-bypassable contract:
 make release-certify
 ```
 
-It requires the blind no-skill/Emil/design-craft ablation, all four
+It requires every active blind no-skill/focused-upstream/design-craft ablation, all four
 current-source v3 host runs, current-source Simulator, Emulator, and
 physical-device evidence, a dated release section, a clean worktree, local
 maturity 100/100, and install provenance parity. After pushing and tagging,

@@ -1,7 +1,7 @@
 {
   "schema": "design-craft.comparative-variants.v2",
   "host": "pi",
-  "focused_variant": "emil",
+  "focused_variant": "impeccable",
   "variants": [
     {
       "id": "baseline",
@@ -9,12 +9,10 @@
       "skill_paths": []
     },
     {
-      "id": "emil",
-      "label": "Emil focused upstream",
+      "id": "impeccable",
+      "label": "Focused production-quality upstream",
       "skill_paths": [
-        "upstreams/emilkowalski-skills/skills/apple-design",
-        "upstreams/emilkowalski-skills/skills/review-animations",
-        "upstreams/emilkowalski-skills/skills/improve-animations"
+        "upstreams/impeccable/.agents/skills/impeccable"
       ]
     },
     {

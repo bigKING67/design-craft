@@ -5,9 +5,13 @@ from __future__ import annotations
 
 import argparse
 import json
-import subprocess
 import sys
 from pathlib import Path
+
+from design_craft_absorption_common import (
+    validate_matrix_vocabulary,
+    validate_review_state,
+)
 
 
 SCHEMA = "design-craft.emil-absorption.v1"
@@ -95,17 +99,6 @@ def read_json(path: Path) -> dict:
     return json.loads(path.read_text(encoding="utf-8"))
 
 
-def git_head(path: Path) -> str:
-    result = subprocess.run(
-        ["git", "-C", str(path), "rev-parse", "HEAD"],
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        text=True,
-        check=False,
-    )
-    return result.stdout.strip() if result.returncode == 0 else ""
-
-
 def validate() -> dict:
     errors: list[str] = []
     matrix_relative = MATRIX_PATH.relative_to(ROOT).as_posix()
@@ -113,6 +106,10 @@ def validate() -> dict:
     meta = lock.get("upstreams", {}).get("emilkowalski-skills", {})
     inventory = meta.get("skill_inventory", {})
     upstream = ROOT / meta.get("path", "upstreams/emilkowalski-skills")
+    state, state_errors = validate_review_state(
+        "emilkowalski-skills", meta, upstream
+    )
+    errors.extend(state_errors)
 
     expected_skills = inventory.get("skills", [])
     expected_auxiliary = inventory.get("auxiliary_markdown", [])
@@ -148,13 +145,6 @@ def validate() -> dict:
             f"observed {observed_non_markdown}"
         )
 
-    observed_commit = git_head(upstream)
-    if observed_commit != meta.get("commit"):
-        errors.append(
-            f"upstream checkout {observed_commit or 'unavailable'} does not match lock {meta.get('commit')}"
-        )
-    if meta.get("reviewed_commit") != meta.get("commit"):
-        errors.append("reviewed_commit must match the checked compatibility commit")
     if meta.get("coverage_contract") != SCHEMA:
         errors.append(f"coverage_contract must be {SCHEMA}")
     if meta.get("coverage_matrix") != matrix_relative:
@@ -166,15 +156,7 @@ def validate() -> dict:
         errors.append(f"COMPATIBILITY.json must declare {SCHEMA}")
 
     matrix_text = MATRIX_PATH.read_text(encoding="utf-8") if MATRIX_PATH.is_file() else ""
-    for label in (
-        "absorbed",
-        "partial",
-        "missing-high-value",
-        "intentionally-rejected",
-        "provenance-only",
-    ):
-        if f"`{label}`" not in matrix_text:
-            errors.append(f"absorption matrix is missing status vocabulary: {label}")
+    errors.extend(validate_matrix_vocabulary(matrix_text))
 
     coverage_payload = {}
     for skill, spec in COVERAGE.items():
@@ -214,7 +196,8 @@ def validate() -> dict:
         "schema": SCHEMA,
         "ok": not errors,
         "upstream": {
-            "commit": observed_commit,
+            **state,
+            "commit": state["current_commit"],
             "locked_commit": meta.get("commit"),
             "skill_count": len(observed_skills),
             "skills": observed_skills,

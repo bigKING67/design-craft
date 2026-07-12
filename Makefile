@@ -3,7 +3,7 @@ SKILL_CREATOR_QUICK_VALIDATE ?= $(HOME)/.codex/skills/.system/skill-creator/scri
 INSTALL_ARGS ?=
 export PYTHONDONTWRITEBYTECODE := 1
 
-.PHONY: validate validate-portable lint contract-tests package-check public-repo-check workflow-check skill-quick-validate score maturity-portable maturity-local maturity-desktop pass audit critique motion motion-plan-dry-run taste-review seed-dry-run route-smoke doctor platform-scan-check native-runtime-probe native-runtime-check native-release-bundle-check native-release-bundle-build native-release-bundle-verify codex-route-pack-check init-dry-run active-scope-check cross-agent-check cross-agent-observed-check cross-agent-four-host-check cross-agent-motion-observed-check cross-agent-native-observed-check comparative-check comparative-observed-check l4-capture-check historical-l4-metadata-check real-l4-check smell-smoke static-review-smoke upstream-report emil-absorption-check upstream-freshness-audit upstream-remote-report sync-status-check sync-status sync-status-remote install install-with-legacy install-verify legacy-alias-smoke release-contract-check release-assets-check release-assets-build release-assets-verify github-release-check github-governance-contract-check github-governance-check github-governance-apply release-final-verify release-gate-source publish-local release-gate-local release-gate release-readiness certification-install-check release-certify-prepublish release-certify-publish release-certify-internal release-certify release-tag-verify
+.PHONY: validate validate-portable lint contract-tests package-check public-repo-check workflow-check skill-quick-validate score maturity-portable maturity-local maturity-desktop pass audit critique motion motion-plan-dry-run taste-review seed-dry-run route-smoke doctor platform-scan-check native-runtime-probe native-runtime-check native-release-bundle-check native-release-bundle-build native-release-bundle-verify codex-route-pack-check init-dry-run active-scope-check cross-agent-check cross-agent-observed-check cross-agent-four-host-check cross-agent-motion-observed-check cross-agent-native-observed-check comparative-check comparative-observed-check l4-capture-check historical-l4-metadata-check real-l4-check smell-smoke static-review-smoke upstream-report upstream-absorption-check taste-absorption-check impeccable-absorption-check emil-absorption-check upstream-freshness-audit upstream-remote-report sync-status-check sync-status sync-status-remote install install-with-legacy install-verify legacy-alias-smoke release-contract-check release-assets-check release-assets-build release-assets-verify github-release-check github-governance-contract-check github-governance-check github-governance-apply release-final-verify release-gate-source publish-local release-gate-local release-gate release-readiness certification-install-check release-certify-prepublish release-certify-publish release-certify-internal release-certify release-tag-verify
 
 validate:
 	bash scripts/validate.sh
@@ -179,8 +179,16 @@ static-review-smoke:
 upstream-report:
 	python3 scripts/upstream_absorption_report.py
 
+taste-absorption-check:
+	python3 scripts/design_craft_taste_absorption.py --check --strict
+
+impeccable-absorption-check:
+	python3 scripts/design_craft_impeccable_absorption.py --check --strict
+
 emil-absorption-check:
 	python3 scripts/design_craft_emil_absorption.py --check --strict
+
+upstream-absorption-check: taste-absorption-check impeccable-absorption-check emil-absorption-check
 
 upstream-freshness-audit:
 	python3 scripts/upstream_absorption_report.py --remote-details --fail-on-unreviewed
@@ -222,7 +230,7 @@ release-assets-build:
 release-assets-verify:
 	python3 scripts/design_craft_release_assets.py --validate --output-dir "$${RELEASE_ASSET_DIR:-dist/release}"
 
-release-gate-source: validate-portable lint contract-tests package-check public-repo-check workflow-check skill-quick-validate score maturity-portable pass audit critique motion motion-plan-dry-run taste-review seed-dry-run route-smoke doctor platform-scan-check native-release-bundle-check codex-route-pack-check init-dry-run active-scope-check cross-agent-check cross-agent-observed-check comparative-check l4-capture-check historical-l4-metadata-check smell-smoke upstream-report emil-absorption-check legacy-alias-smoke release-assets-check github-governance-contract-check release-contract-check
+release-gate-source: validate-portable lint contract-tests package-check public-repo-check workflow-check skill-quick-validate score maturity-portable pass audit critique motion motion-plan-dry-run taste-review seed-dry-run route-smoke doctor platform-scan-check native-release-bundle-check codex-route-pack-check init-dry-run active-scope-check cross-agent-check cross-agent-observed-check comparative-check l4-capture-check historical-l4-metadata-check smell-smoke upstream-report upstream-absorption-check legacy-alias-smoke release-assets-check github-governance-contract-check release-contract-check
 
 publish-local: release-gate-source
 	bash scripts/install_local.sh $(INSTALL_ARGS)

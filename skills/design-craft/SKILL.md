@@ -1,14 +1,20 @@
 ---
 name: design-craft
-description: "Use for web, iOS, Android, and adaptive product UI/UX design engineering: product context, visual critique, design systems, UI polish, motion and interaction, accessibility, responsive behavior, and frontend/native implementation quality. Do not use for backend-only, database-only, algorithm-only, or CLI-only work."
+description: "Use primarily for web and desktop product UI/UX design engineering: product context, visual critique, design systems, UI polish, motion and interaction, accessibility, responsive behavior, and frontend implementation quality. When the target is explicitly native, also covers iOS, Android, and adaptive quality. Do not use for backend-only, database-only, algorithm-only, or CLI-only work."
 ---
 
 # Design Craft
 
-Production-grade design engineering work for this machine: product UI, UX,
-visual taste, motion, design systems, web and native implementation,
-performance, architecture, project quality, and directory governance in one
-workflow.
+Production-grade, web-first design engineering for this machine: product UI,
+UX, visual taste, motion, design systems, frontend implementation, performance,
+architecture, project quality, and directory governance in one workflow. iOS,
+Android, and adaptive references are optional extensions loaded only when the
+resolved target is genuinely native or cross-platform.
+
+Default to `platform=web` for ordinary desktop/browser work. A mobile viewport,
+responsive page, PWA, Capacitor/Cordova shell, or WebView does not by itself
+make the target native. Native quality gates must not block the desktop Web
+profile when no native product is in scope.
 
 ## When not to use
 
@@ -45,6 +51,8 @@ system, data density, report grammar, or runtime truth.
    `AGENTS.md`, optional `PRODUCT.md`, `DESIGN.md`, route files, package/build
    scripts, existing components, platform targets, style tokens, and similar
    implementations.
+   Resolve the platform from source and product evidence; use Web by default
+   unless real iOS, Android, or cross-platform targets establish otherwise.
 2. For L1+ frontend implementation tasks, run the local route planner when
    available:
    `bash ~/.codex/tools/frontend_route_plan.sh --surface <surface> --intent <intent> --scope <scope> [--platform <auto|web|ios|android|adaptive>] [--product-context-path <abs PRODUCT.md>] [--style-authority-path <abs DESIGN.md>] --output compact-json`.
@@ -193,7 +201,7 @@ paths, `project-structure.md` for structural changes, `report-quality.md` for
 reports/dashboards, and `intent-map.md` for subjective briefs. Do not load the
 entire reference library merely because the request is broad.
 
-For native or cross-platform tasks, also read `product-context.md`,
+Only for native or cross-platform tasks, also read `product-context.md`,
 `product-design-principles.md`, the matching platform reference(s),
 `interaction-physics.md` when gestures are involved, and
 `validation-contract.md`.

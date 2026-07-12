@@ -336,6 +336,20 @@ def build_score(root: Path, run_smoke: bool) -> list[Dimension]:
                 (has(root, "skills/design-craft/references/source-map.md"), "source map exists", "Add source-map reference."),
                 (has(root, "scripts/upstream_absorption_report.py"), "upstream absorption report exists", "Add upstream absorption report script."),
                 ("--remote-details" in read_text(root / "scripts/upstream_absorption_report.py"), "actionable remote upstream drift check exists", "Add remote commit/path detail reporting."),
+                (
+                    has(root, "docs/taste-skill-absorption.md")
+                    and has(root, "scripts/design_craft_taste_absorption.py")
+                    and has(root, "docs/impeccable-absorption.md")
+                    and has(root, "scripts/design_craft_impeccable_absorption.py"),
+                    "taste-skill and impeccable absorption matrices are machine-validated",
+                    "Add strict capability and rejection matrices for both non-Emil upstreams.",
+                ),
+                (
+                    "cumulative_status" in read_text(root / "upstreams.lock.json")
+                    and "latest_range_status" in read_text(root / "upstreams.lock.json"),
+                    "upstream cumulative and latest-range decisions are separated",
+                    "Separate cumulative absorption from the latest reviewed commit range.",
+                ),
                 ("Open or update review issue" in read_text(root / ".github/workflows/upstream-audit.yml"), "daily upstream review issue workflow exists", "Add actionable scheduled upstream review notifications."),
                 (has(root, "adapters/codex/README.md"), "Codex adapter docs exist", "Add Codex adapter docs."),
                 (has(root, "adapters/codex/route-pack/README.md"), "Codex route-pack docs exist", "Add docs for Codex frontend route-pack portability."),
@@ -396,10 +410,12 @@ def build_score(root: Path, run_smoke: bool) -> list[Dimension]:
                 (
                     has(root, "evals/comparative/emil-motion-ablation/variants.json")
                     and has(root, "evals/comparative/emil-motion-planning-ablation/variants.json")
+                    and has(root, "evals/comparative/taste-visual-critique-ablation/variants.json")
+                    and has(root, "evals/comparative/impeccable-production-ablation/variants.json")
                     and has(root, "scripts/design_craft_comparative_judge.py")
                     and has(root, "scripts/design_craft_comparative_validate.py"),
-                    "blind no-skill/current-Emil/design-craft critique and planning ablations exist",
-                    "Add same-host blind critique and audit-to-plan ablations with a controlled independent judge.",
+                    "blind no-skill/focused-upstream/design-craft ablations cover all three upstreams",
+                    "Add same-host blind focused-upstream ablations with a controlled independent judge.",
                 ),
                 ("--require-current-source" in read_text(root / "scripts/design_craft_native_runtime_validate.py"), "current-source native evidence binding exists", "Bind native evidence to current skill and fixture trees."),
                 ("focus-visible" in design_system.lower(), "focus-visible guidance present", "Cover keyboard focus states."),

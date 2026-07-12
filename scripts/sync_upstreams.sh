@@ -12,7 +12,8 @@ Usage:
 
 Fetches and checks out one explicit upstream commit, then updates only the
 compatibility `commit` field in upstreams.lock.json. Review metadata and
-`absorbed_commit` are intentionally never advanced automatically.
+`reviewed_through_commit`, `behavior_absorbed_through_commit`, `latest_range_*`,
+and their legacy aliases are intentionally never advanced automatically.
 EOF
 }
 

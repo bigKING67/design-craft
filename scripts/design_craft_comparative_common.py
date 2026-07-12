@@ -5,20 +5,25 @@ from __future__ import annotations
 
 import hashlib
 import json
+import re
 from pathlib import Path
 
 from design_craft_evidence_common import files_sha256
 
 
 ROOT = Path(__file__).resolve().parents[1]
-VARIANTS_SCHEMA = "design-craft.comparative-variants.v1"
+VARIANTS_SCHEMA = "design-craft.comparative-variants.v2"
 SCORECARD_SCHEMA = "design-craft.comparative-scorecard.v1"
-RUN_SCHEMA = "design-craft.comparative-run.v2"
-BLIND_MAP_SCHEMA = "design-craft.comparative-blind-map.v2"
+RUN_SCHEMA = "design-craft.comparative-run.v3"
+BLIND_MAP_SCHEMA = "design-craft.comparative-blind-map.v3"
 JUDGE_RUN_SCHEMA = "design-craft.comparative-judge-run.v1"
-RESULT_SCHEMA = "design-craft.comparative-result.v2"
-REQUIRED_VARIANTS = ("baseline", "emil", "design-craft")
+RESULT_SCHEMA = "design-craft.comparative-result.v3"
 BLIND_LABELS = ("A", "B", "C")
+SOURCE_BRAND_PATTERN = re.compile(
+    r"\bdesign-craft\b|\bemil(?:\s*kowalski)?\b|animations\.dev|"
+    r"\btaste-skill\b|\bleonxlnx\b|\bimpeccable\b|\bpbakaus\b",
+    re.I,
+)
 CONTRACT_FILES = (
     "scripts/design_craft_comparative_common.py",
     "scripts/design_craft_comparative_run.py",
@@ -40,6 +45,15 @@ def sha256_file(path: Path) -> str:
 
 def contract_sha256() -> str:
     return files_sha256(ROOT, CONTRACT_FILES)
+
+
+def variant_ids(payload: dict) -> tuple[str, str, str]:
+    focused = payload.get("focused_variant")
+    if not isinstance(focused, str) or not re.fullmatch(r"[a-z0-9][a-z0-9-]*", focused):
+        raise ValueError("focused_variant must be a lowercase slug")
+    if focused in {"baseline", "design-craft"}:
+        raise ValueError("focused_variant must differ from baseline and design-craft")
+    return ("baseline", focused, "design-craft")
 
 
 def load_scorecard(case_dir: Path) -> tuple[dict[str, int], list[str]]:

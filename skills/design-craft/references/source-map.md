@@ -25,8 +25,13 @@ upstream files directly.
   `2026-06-21T00:54:21+02:00 docs(readme): remove sponsor table and tighten logo-to-text spacing`
 - Current reviewed commit:
   `b17742737e796305d829b3ad39eda3add0d79060`
-- 2026-07-10 decision: `provenance_only`; the reviewed range changes README
-  sponsorship and image assets, with no behavior imported into design-craft.
+- Cumulative status: `selective_absorbed`; behavior through the initial
+  `06d6028b5c623016c59ce8536f578e5a1127b499` snapshot is represented in the
+  local visual-judgment, product-taste, design-move, and design-system layers.
+- Latest-range status: `provenance_only`; the range after `06d6028b` changes
+  README sponsorship and image assets only.
+- Contract: `docs/taste-skill-absorption.md`, validated by
+  `scripts/design_craft_taste_absorption.py` in the canonical repository.
 - Primary material to inspect:
   - `skills/taste-skill/SKILL.md`
   - `skills/redesign-skill/SKILL.md`
@@ -52,6 +57,13 @@ preflight thinking.
   `da99645a58400ed7acb201e6904f9413efd89c6e`
 - Current reviewed commit:
   `630fc2682a5bd39b25a8e61f74b6b3f14f2b1e21`
+- Cumulative status: `selective_absorbed` through
+  `da99645a58400ed7acb201e6904f9413efd89c6e` for the command taxonomy,
+  detector/native guidance, hardening, measurement, and evidence contracts.
+- Latest-range status: `repository_operations_only` for the sheriff stale-clock
+  change from `da99645a` to `630fc268`.
+- Contract: `docs/impeccable-absorption.md`, validated by
+  `scripts/design_craft_impeccable_absorption.py` in the canonical repository.
 - 2026-06-30 absorption note:
   remote updates were reviewed and selectively absorbed for critique method
   provenance, explicit degraded/single-context reporting, `.impeccable`
@@ -90,6 +102,10 @@ production-readiness flows.
   `b57fc72f8415d84db1e9cfb43270466bf12ac6e2`
 - Current reviewed commit:
   `7bb7061b5cf7de15ea1aeaf00fbd9e6592a20fce`
+- Cumulative status: `absorbed` through
+  `b57fc72f8415d84db1e9cfb43270466bf12ac6e2`.
+- Latest-range status: `provenance_only` for the newsletter and typo-only
+  README changes through `7bb7061`.
 - 2026-07-10 decision: `absorbed`; original design-craft references now cover
   product-design principles, Apple-style direct manipulation,
   presentation-value interruption, spring response/damping, velocity handoff,
@@ -231,7 +247,9 @@ When updating upstreams:
 4. Inspect upstream changelogs and key skill/command files.
 5. Update this source map only after deciding what the fusion layer should
    absorb.
-6. Never overwrite `skills/design-craft` automatically from upstream.
+6. Update the matching absorption matrix and strict validator. Keep cumulative
+   behavior state separate from the latest reviewed commit range.
+7. Never overwrite `skills/design-craft` automatically from upstream.
 
 ## Attribution rule
 

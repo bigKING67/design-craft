@@ -7,23 +7,18 @@ import argparse
 import hashlib
 import json
 import random
-import re
 from pathlib import Path
 
 from design_craft_comparative_common import (
     BLIND_LABELS,
     BLIND_MAP_SCHEMA,
-    REQUIRED_VARIANTS,
     RUN_SCHEMA,
+    SOURCE_BRAND_PATTERN,
+    VARIANTS_SCHEMA,
     load_scorecard,
     sha256_file,
     validate_judgment_schema,
-)
-
-
-BRAND_PATTERN = re.compile(
-    r"\bdesign-craft\b|\bemil(?:kowalski)?\b|animations\.dev",
-    re.I,
+    variant_ids,
 )
 
 
@@ -43,7 +38,16 @@ def main() -> int:
     schema_errors = validate_judgment_schema(case_dir, weights) if weights else []
     if scorecard_errors or schema_errors:
         parser.error("; ".join([*scorecard_errors, *schema_errors]))
-    for variant in REQUIRED_VARIANTS:
+    try:
+        variants_payload = json.loads(
+            (case_dir / "variants.json").read_text(encoding="utf-8")
+        )
+        if variants_payload.get("schema") != VARIANTS_SCHEMA:
+            parser.error(f"variants.json must use {VARIANTS_SCHEMA}")
+        required_variants = variant_ids(variants_payload)
+    except (OSError, json.JSONDecodeError, ValueError) as exc:
+        parser.error(f"invalid variants.json: {exc}")
+    for variant in required_variants:
         output_path = case_dir / f"output.{variant}.md"
         run_path = case_dir / f"run.{variant}.json"
         if not output_path.is_file() or not run_path.is_file():
@@ -55,13 +59,13 @@ def main() -> int:
         if run_payload.get("schema") != RUN_SCHEMA:
             parser.error(f"run.{variant}.json must use {RUN_SCHEMA}")
         output_text = output_path.read_text(encoding="utf-8")
-        match = BRAND_PATTERN.search(output_text)
+        match = SOURCE_BRAND_PATTERN.search(output_text)
         if match:
             parser.error(
                 f"output.{variant}.md reveals a skill/source brand near {match.group(0)!r}"
             )
 
-    shuffled = list(REQUIRED_VARIANTS)
+    shuffled = list(required_variants)
     random.Random(args.seed).shuffle(shuffled)
     mapping = dict(zip(BLIND_LABELS, shuffled, strict=True))
     prompt = (case_dir / "prompt.md").read_text(encoding="utf-8")
@@ -101,6 +105,7 @@ def main() -> int:
     payload = {
         "schema": BLIND_MAP_SCHEMA,
         "case_id": case_dir.name,
+        "focused_variant": variants_payload["focused_variant"],
         "seed_sha256": hashlib.sha256(args.seed.encode("utf-8")).hexdigest(),
         "prompt_sha256": sha256_file(case_dir / "prompt.md"),
         "scorecard_sha256": sha256_file(case_dir / "scorecard.md"),

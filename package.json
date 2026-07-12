@@ -1,7 +1,7 @@
 {
   "name": "design-craft",
   "version": "0.5.0",
-  "description": "Portable agent skill package for product UI, UX, visual taste, motion, and design engineering across web, iOS, Android, and adaptive products.",
+  "description": "Web-first agent skill package for product UI, UX, visual taste, motion, and design engineering, with optional iOS, Android, and adaptive guidance.",
   "license": "MIT",
   "keywords": [
     "pi-package",

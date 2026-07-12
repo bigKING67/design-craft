@@ -1,6 +1,7 @@
 {
-  "schema": "design-craft.comparative-variants.v1",
+  "schema": "design-craft.comparative-variants.v2",
   "host": "pi",
+  "focused_variant": "emil",
   "variants": [
     {
       "id": "baseline",

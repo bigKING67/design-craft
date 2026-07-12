@@ -16,12 +16,12 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from design_craft_comparative_common import (
-    REQUIRED_VARIANTS,
     RUN_SCHEMA,
     VARIANTS_SCHEMA,
     contract_sha256,
     sha256_bytes,
     sha256_file,
+    variant_ids,
 )
 from design_craft_evidence_common import (
     command_version,
@@ -44,9 +44,10 @@ def load_variants(case_dir: Path) -> dict:
     items = payload.get("variants")
     if not isinstance(items, list):
         raise ValueError("variants.json variants must be an array")
+    required = variant_ids(payload)
     observed_ids = [item.get("id") for item in items if isinstance(item, dict)]
-    if sorted(observed_ids) != sorted(REQUIRED_VARIANTS):
-        raise ValueError(f"variants must be {list(REQUIRED_VARIANTS)}")
+    if sorted(observed_ids) != sorted(required) or len(observed_ids) != len(required):
+        raise ValueError(f"variants must be {list(required)} exactly once")
     return payload
 
 

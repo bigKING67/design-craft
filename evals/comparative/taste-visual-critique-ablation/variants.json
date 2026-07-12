@@ -1,7 +1,7 @@
 {
   "schema": "design-craft.comparative-variants.v2",
   "host": "pi",
-  "focused_variant": "emil",
+  "focused_variant": "taste",
   "variants": [
     {
       "id": "baseline",
@@ -9,12 +9,11 @@
       "skill_paths": []
     },
     {
-      "id": "emil",
-      "label": "Emil focused upstream",
+      "id": "taste",
+      "label": "Focused visual-taste upstream",
       "skill_paths": [
-        "upstreams/emilkowalski-skills/skills/apple-design",
-        "upstreams/emilkowalski-skills/skills/review-animations",
-        "upstreams/emilkowalski-skills/skills/improve-animations"
+        "upstreams/taste-skill/skills/taste-skill",
+        "upstreams/taste-skill/skills/redesign-skill"
       ]
     },
     {

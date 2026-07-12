@@ -16,24 +16,21 @@ from design_craft_comparative_common import (
     BLIND_LABELS,
     BLIND_MAP_SCHEMA,
     JUDGE_RUN_SCHEMA,
-    REQUIRED_VARIANTS,
     RESULT_SCHEMA,
     RUN_SCHEMA,
+    SOURCE_BRAND_PATTERN,
     VARIANTS_SCHEMA,
     contract_sha256,
     load_scorecard,
     sha256_file,
     validate_judgment,
     validate_judgment_schema,
+    variant_ids,
 )
 from design_craft_evidence_common import tree_sha256
 
 
 ROOT = Path(__file__).resolve().parents[1]
-BRAND_PATTERN = re.compile(
-    r"\bdesign-craft\b|\bemil(?:kowalski)?\b|animations\.dev",
-    re.I,
-)
 REQUIRED_DEFINITION_FILES = (
     "prompt.md",
     "variants.json",
@@ -76,9 +73,14 @@ def load_variants(case_dir: Path) -> tuple[dict, list[str]]:
     if payload.get("host") != "pi":
         errors.append(f"{path}: comparative host must be pi")
     items = payload.get("variants")
+    try:
+        required = variant_ids(payload)
+    except ValueError as exc:
+        errors.append(f"{path}: {exc}")
+        required = ("baseline", "invalid-focused", "design-craft")
     ids = [item.get("id") for item in items if isinstance(item, dict)] if isinstance(items, list) else []
-    if sorted(ids) != sorted(REQUIRED_VARIANTS) or len(ids) != len(REQUIRED_VARIANTS):
-        errors.append(f"{path}: variants must be {list(REQUIRED_VARIANTS)} exactly once")
+    if sorted(ids) != sorted(required) or len(ids) != len(required):
+        errors.append(f"{path}: variants must be {list(required)} exactly once")
     for item in items if isinstance(items, list) else []:
         paths = item.get("skill_paths")
         if not isinstance(paths, list) or not all(isinstance(value, str) for value in paths):
@@ -132,7 +134,7 @@ def validate_run(
     output_text = output.read_text(encoding="utf-8")
     if len(output_text.strip()) < 200:
         errors.append(f"{output}: observed output is too sparse")
-    match = BRAND_PATTERN.search(output_text)
+    match = SOURCE_BRAND_PATTERN.search(output_text)
     if match:
         errors.append(f"{output}: reveals a skill/source brand near {match.group(0)!r}")
     try:
@@ -239,7 +241,9 @@ def validate_judge_evidence(
     return manifest, judgment, errors
 
 
-def validate_blind_map(case_dir: Path) -> tuple[dict, list[str]]:
+def validate_blind_map(
+    case_dir: Path, required_variants: tuple[str, str, str]
+) -> tuple[dict, list[str]]:
     path = case_dir / "blind-map.json"
     try:
         payload = json.loads(path.read_text(encoding="utf-8"))
@@ -250,6 +254,8 @@ def validate_blind_map(case_dir: Path) -> tuple[dict, list[str]]:
         errors.append(f"{path}: schema must be {BLIND_MAP_SCHEMA}")
     if payload.get("case_id") != case_dir.name:
         errors.append(f"{path}: case_id mismatch")
+    if payload.get("focused_variant") != required_variants[1]:
+        errors.append(f"{path}: focused_variant mismatch")
     hashes = {
         "prompt_sha256": "prompt.md",
         "scorecard_sha256": "scorecard.md",
@@ -276,7 +282,7 @@ def validate_blind_map(case_dir: Path) -> tuple[dict, list[str]]:
                 target = case_dir / str(item.get(file_field, ""))
                 if not target.is_file() or item.get(field) != sha256_file(target):
                     errors.append(f"{path}: output {label} {field} mismatch")
-        if variants != set(REQUIRED_VARIANTS):
+        if variants != set(required_variants):
             errors.append(f"{path}: blind labels must map every variant exactly once")
     return payload, errors
 
@@ -288,6 +294,7 @@ def validate_result(
     judge_manifest: dict,
     judgment: dict,
     runs: dict[str, dict],
+    required_variants: tuple[str, str, str],
 ) -> list[str]:
     path = case_dir / "comparison.json"
     try:
@@ -297,6 +304,8 @@ def validate_result(
     errors: list[str] = []
     if payload.get("schema") != RESULT_SCHEMA or payload.get("case_id") != case_dir.name:
         errors.append(f"{path}: schema/case_id mismatch")
+    if payload.get("focused_variant") != required_variants[1]:
+        errors.append(f"{path}: focused_variant mismatch")
     hashes = {
         "prompt_sha256": "prompt.md",
         "scorecard_sha256": "scorecard.md",
@@ -329,7 +338,7 @@ def validate_result(
         if judge != expected_judge:
             errors.append(f"{path}: judge metadata must derive from run.judge.json")
     results = payload.get("results")
-    if not isinstance(results, dict) or set(results) != set(REQUIRED_VARIANTS):
+    if not isinstance(results, dict) or set(results) != set(required_variants):
         errors.append(f"{path}: results must cover every variant")
     else:
         scores = {
@@ -339,15 +348,18 @@ def validate_result(
         if not all(isinstance(value, int) and not isinstance(value, bool) for value in scores.values()):
             errors.append(f"{path}: every variant score must be an integer")
         elif not (
-            scores["design-craft"] > scores["emil"]
-            and scores["design-craft"] > scores["baseline"]
+            all(
+                scores["design-craft"] > scores[variant]
+                for variant in required_variants
+                if variant != "design-craft"
+            )
             and payload.get("winner") == "design-craft"
         ):
             errors.append(f"{path}: certification requires design-craft to win the blind ablation")
     if payload.get("rationale") != judgment.get("rationale"):
         errors.append(f"{path}: rationale must match the admitted judgment")
     variant_runs = payload.get("variant_runs")
-    if not isinstance(variant_runs, dict) or set(variant_runs) != set(REQUIRED_VARIANTS):
+    if not isinstance(variant_runs, dict) or set(variant_runs) != set(required_variants):
         errors.append(f"{path}: variant_runs must cover every variant")
     else:
         for variant, run_payload in runs.items():
@@ -379,6 +391,10 @@ def validate_case(case_dir: Path, *, require_observed: bool) -> list[str]:
     variants, weights, errors = validate_definition(case_dir)
     if errors:
         return errors
+    try:
+        required_variants = variant_ids(variants)
+    except ValueError as exc:
+        return [f"{case_dir}/variants.json: {exc}"]
     observed_any = any(case_dir.glob("output.*.md")) or any(
         case_dir.glob("run.*.json")
     ) or any(case_dir.joinpath(name).exists() for name in REQUIRED_OBSERVED_FILES)
@@ -391,7 +407,7 @@ def validate_case(case_dir: Path, *, require_observed: bool) -> list[str]:
         if isinstance(item, dict)
     }
     runs: dict[str, dict] = {}
-    for variant_id in REQUIRED_VARIANTS:
+    for variant_id in required_variants:
         payload, run_errors = validate_run(
             case_dir,
             variant_id,
@@ -406,7 +422,7 @@ def validate_case(case_dir: Path, *, require_observed: bool) -> list[str]:
             errors.append(f"{case_dir}: missing observed comparative artifact {name}")
     if errors:
         return errors
-    blind_map, map_errors = validate_blind_map(case_dir)
+    blind_map, map_errors = validate_blind_map(case_dir, required_variants)
     errors.extend(map_errors)
     judge_manifest, judgment, judge_errors = validate_judge_evidence(case_dir, weights)
     errors.extend(judge_errors)
@@ -418,6 +434,7 @@ def validate_case(case_dir: Path, *, require_observed: bool) -> list[str]:
                 judge_manifest=judge_manifest,
                 judgment=judgment,
                 runs=runs,
+                required_variants=required_variants,
             )
         )
     return errors
@@ -537,9 +554,12 @@ def run_self_check() -> list[str]:
             )
             return errors
         blind_map = json.loads((case / "blind-map.json").read_text(encoding="utf-8"))
+        focused_variant = variants["focused_variant"]
         points_by_variant = {
             "baseline": {key: max(0, value - 5) for key, value in weights.items()},
-            "emil": {key: max(0, value - 2) for key, value in weights.items()},
+            focused_variant: {
+                key: max(0, value - 2) for key, value in weights.items()
+            },
             "design-craft": dict(weights),
         }
         results = []
