@@ -3,9 +3,11 @@
 - Host: Claude
 - Date: 2026-07-12
 - Status: unverified
-- Reason: the active native-adaptive prompt, scorecard, isolated runner, and score
-  contract changed after the historical v2 snapshot. No clean current-source
-  run-manifest v2 plus score schema v3 has been recorded for this host.
+- Reason: Claude Code `2.1.116` reports a valid OAuth login after the runner was
+  repaired to retain user authentication and expose only read-only tools.
+  Controlled `opus/max` and `sonnet/high` requests repeatedly ended with
+  `API Error: Unable to connect to API (ECONNRESET)`, so no output or run
+  manifest was admitted.
 
 Do not count Claude as verified until the controlled runner publishes a new
 output/run manifest and the recorder derives a valid v3 score from that run.
