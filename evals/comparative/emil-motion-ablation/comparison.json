@@ -1,44 +1,44 @@
 {
-  "blind_map_sha256": "65795918732da260103cfabfbd400d379a0f0023ae16cbda46140fdac22b36d5",
-  "blind_packet_sha256": "94f2d68f13718cdfaffda475f758aa384315debceabf9f9d8d594c8ac1649703",
+  "blind_map_sha256": "6ddfa0203cf71a4df6f568a9856f170316c6863a3fc6aade8bd3aff85f3bd8ff",
+  "blind_packet_sha256": "89323dbf24796d08a1e306bf51d5e1fc573ad525a8a155a3642b18a87580f587",
   "case_id": "emil-motion-ablation",
   "judge": {
     "host": "codex",
     "model": "gpt-5.6-sol",
     "model_observation": "requested_by_cli",
     "raw_output_path": "judge-output.raw.txt",
-    "raw_output_sha256": "7073ebdb14abf736a9586f156a2d7705739283c462b01cc73a721a8f82ca2841",
+    "raw_output_sha256": "657feefef2f766521fd224f82cb4fd3e84516ae9591302316171ee9fb0f7470e",
     "reasoning": "max",
     "reasoning_observation": "requested_by_cli",
     "run_path": "run.judge.json",
-    "run_sha256": "e612f8384de3f4eb055449dcd10a83db65c74814b655b6ea7de2a12b7f9c889a",
+    "run_sha256": "c4fea330fe8242b69e6729b50662ff3690044e5b43384a86aad7e18e41d73d67",
     "runner_os": "macOS-15.7.7-arm64-arm-64bit-Mach-O",
     "version": "codex-cli 0.144.1"
   },
   "judgment_path": "blind-judgment.json",
   "judgment_schema_sha256": "6fc7376df30d7cff1ac8faf21ce6bcd63c76f72365458cfe0812ec88b16cd701",
-  "judgment_sha256": "2295a16ae9a4dc132bbd140d78dc0ea2df44f9b0126174460d2f10264c662dd2",
+  "judgment_sha256": "2a7da947888fa8f2e2df4f04d51a6bbfea42109b06e8a36190dfa51229d4f002",
   "prompt_sha256": "32a158dae9908cefce2747965d6451cf024eb3a877438295898a75412e11e0c8",
-  "rationale": "A 最完整地满足了全部评分证据：不仅识别输入锁定，还明确要求从当前 presentation value 无跳变中断并重定向动画；同时给出 CSS px/s 速度单位、投影端点、基于当前速度的 settle、持久状态提交以及紧凑的运行时验证计划。B 与其非常接近，但速度单位和释放速度向 settle 的连续传递不够明确。C 的主要实质缺口是取消动画前没有规定读取当前屏幕值，可能在重新抓取时跳变，且验证计划未覆盖这一关键路径。",
-  "recorded_at": "2026-07-12T09:46:41Z",
+  "rationale": "B 最完整且最精确地满足机器评分卡，尤其明确了从当前 presentation value 中断、CSS px/s 速度单位、单调时间采样、有界投影端点、吸附点选择和速度交接。C 几乎同等完整，但速度单位未明示；A 的中断接管与速度模型描述相对不够严格。",
+  "recorded_at": "2026-07-12T10:53:43Z",
   "results": {
     "baseline": {
-      "blind_label": "C",
+      "blind_label": "A",
       "criteria": {
         "accessibility": 10,
         "actionability": 9,
-        "direct_manipulation": 15,
+        "direct_manipulation": 14,
         "evidence_honesty": 15,
-        "interruption": 8,
+        "interruption": 12,
         "motion_necessity": 10,
         "performance": 10,
         "velocity_projection": 12
       },
-      "score": 89,
-      "summary": "覆盖了抓取偏移、指针生命周期、位置投影、三态吸附、属性选择和 Reduced Motion，但只要求取消运行中的动画，没有明确先读取并延续当前屏幕呈现值，也缺少动画中途重新抓取的专项验证；速度单位和速度传递同样不完整。"
+      "score": 92,
+      "summary": "静态证据边界、抓取偏移、指针捕获、性能属性、Reduced Motion 和验证计划均较完整；但没有明确要求从当前 presentation value 接管动画，也未定义速度单位及速度向收敛动画的完整交接。"
     },
     "design-craft": {
-      "blind_label": "A",
+      "blind_label": "B",
       "criteria": {
         "accessibility": 10,
         "actionability": 10,
@@ -50,22 +50,22 @@
         "velocity_projection": 15
       },
       "score": 100,
-      "summary": "静态证据边界清楚，完整覆盖抓取偏移、指针捕获、动画中断、当前呈现值连续性、以 CSS px/s 表示的释放速度、投影选点、合成属性纪律和 Reduced Motion，并给出范围受控的最小验证计划。"
+      "summary": "完整覆盖全部评分点：明确输入锁定、抓取偏移、指针捕获和一比一跟踪，要求从当前屏幕呈现值无跳变中断，并给出 CSS px/s、单调时间采样、有界投影、吸附选择和速度交接。"
     },
     "emil": {
-      "blind_label": "B",
+      "blind_label": "C",
       "criteria": {
         "accessibility": 10,
-        "actionability": 9,
+        "actionability": 10,
         "direct_manipulation": 15,
         "evidence_honesty": 15,
         "interruption": 15,
         "motion_necessity": 10,
         "performance": 10,
-        "velocity_projection": 13
+        "velocity_projection": 14
       },
-      "score": 97,
-      "summary": "直接操控、动画中断、性能和 Reduced Motion 处理都很强，也明确要求从当前视觉位置无跳变地重新接管；主要缺口是未明确速度单位，也未明确把释放速度作为 settle 的初始速度持续传入，整体略显冗长。"
+      "score": 99,
+      "summary": "直接操控、中断接管、性能属性冲突、非前庭 Reduced Motion 路径和最小运行验证计划都非常完整；唯一明显缺口是没有明确规定释放速度的单位。"
     }
   },
   "schema": "design-craft.comparative-result.v2",
@@ -78,9 +78,9 @@
       "host_version": "0.80.3",
       "model": "codex/gpt-5.5",
       "output_path": "output.baseline.md",
-      "output_sha256": "a7f1b19a6b5ddc9ff0c63ced137b3020d750a6205c2ee6cdf06bec7b8982838e",
+      "output_sha256": "cc6dc34bded23d8a42339c088890141eede9e560dbb0035b8fe4cf3488002752",
       "run_path": "run.baseline.json",
-      "run_sha256": "bb68a27615935ef52f54e9fbebcb31d15c8a8fdf7038cfb04ff8774185520c22",
+      "run_sha256": "9fa33a585abc7c8b24640496886e2947eb461925930e2b5eb8f56634c00069cd",
       "skill_trees": {},
       "thinking": "high"
     },
@@ -90,11 +90,11 @@
       "host_version": "0.80.3",
       "model": "codex/gpt-5.5",
       "output_path": "output.design-craft.md",
-      "output_sha256": "fa309cf567e5780ae055ad367ebdc90582769c04a8747b6b91e4c037d0abf9f0",
+      "output_sha256": "a0f80d9e4dec7b48b664aaf59f8abdaa5bb790cc003e625ffb1a256be8a7254b",
       "run_path": "run.design-craft.json",
-      "run_sha256": "f2bf33b05cff0d13238bc1b681d9cde0a5b6c4cb9428b2bb324e055076810c99",
+      "run_sha256": "33788d4793be81aa7042461958124d52c58d4e46c0a68c1ce3a97f38fedc7023",
       "skill_trees": {
-        "skills/design-craft": "c9dbf2c1b84a8f49364c61483af8ecf1cfd204c665d51891d6dfc8f623afcc59"
+        "skills/design-craft": "0daf1a3b29699b5e35176bab07ddca1256a791385c87b6a29e4670fcb09129f5"
       },
       "thinking": "high"
     },
@@ -104,9 +104,9 @@
       "host_version": "0.80.3",
       "model": "codex/gpt-5.5",
       "output_path": "output.emil.md",
-      "output_sha256": "ad17272eb131d35d087fbac58ad50aebd560ae5418af36fc36ef13d03d150070",
+      "output_sha256": "fc234ff336d3d1be315f73397e0229f781cb5b6ffbf75fffe4e57dac5110c8b7",
       "run_path": "run.emil.json",
-      "run_sha256": "2bf6a478c4bccf114349704eec1d3d860a1b1717627b67c78c24dd727f1cc4c1",
+      "run_sha256": "7ab17f7fb8c064454ec280576248a0eef300be22911fd646e8a69070024e0525",
       "skill_trees": {
         "upstreams/emilkowalski-skills/skills/apple-design": "84ebad0905bc9274fc22eb0b100778adaee20e6d479a69168b5f3a2f018e19de",
         "upstreams/emilkowalski-skills/skills/improve-animations": "b4813f60575f3e1e3d916bb76def2b5821e91194fc6896e6d47177cc22a9e488",

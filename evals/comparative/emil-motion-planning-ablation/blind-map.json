@@ -5,30 +5,30 @@
     "A": {
       "path": "output.emil.md",
       "run_path": "run.emil.json",
-      "run_sha256": "65454015f31991d1994f80752f46de3610eac07719ac6ee47fa8e35ce165e48a",
-      "sha256": "cef3c84f77abca51bd36943c44791866043daf686a98ac2e06a75a41c4390c5f",
+      "run_sha256": "3a681c8f445babc129d9d7fb94fba876675ff048f0f8c2670a1782e749a88add",
+      "sha256": "e6e310a2d62477810ad4349d5144798231ff553c88c43b5e4c4c49faba3b2a5b",
       "variant": "emil"
     },
     "B": {
-      "path": "output.baseline.md",
-      "run_path": "run.baseline.json",
-      "run_sha256": "45df81b25eebe3387e5b6c15839f78d2da776502dffb72d73835194b00558a7f",
-      "sha256": "c347f2058b3f21de285d438402f7457d5f9668edbd371628d02662c1dfe8b9a8",
-      "variant": "baseline"
-    },
-    "C": {
       "path": "output.design-craft.md",
       "run_path": "run.design-craft.json",
-      "run_sha256": "9ad5c28fe9499a20a29709b142710085ac77150ac65bfdc06ef49028ca46eed2",
-      "sha256": "d32d73b354fdb61b03124f4e70239c2e11f2266df0a6ab8a7715ab4eb8d6f5a5",
+      "run_sha256": "b7165a448826809a244a2643647b0a716b12980db0c00de96fb1ad291f8e713b",
+      "sha256": "d84736fe8a4409437ceeecbe377ea4ffbabef8790bb16e882aa723df5a59e490",
       "variant": "design-craft"
+    },
+    "C": {
+      "path": "output.baseline.md",
+      "run_path": "run.baseline.json",
+      "run_sha256": "f6ebf92c2277d56f0700ab066c714c13a9d367c3646eddae1601a4449df83da8",
+      "sha256": "bae27c8f67729d44198cb79c44829565a86c980fce1ebd3c13c988998c13eeb8",
+      "variant": "baseline"
     }
   },
   "packet_path": "blind-packet.md",
-  "packet_sha256": "e9a5c2bdc36db350505f5c568a0d172ec50fdd24d2fc9a3354a7e58cf3bbd50e",
+  "packet_sha256": "02763606fe680b00c2918eb13182397789057a740cf3cae9765852c23f1c1252",
   "prompt_sha256": "81453e8d19e3de0d27bf7603b60f045cedaafa90b1a6fd7ee6dcc7249ca639ba",
   "schema": "design-craft.comparative-blind-map.v2",
   "scorecard_json_sha256": "a06d975f9da69fa9bea87362ee0e4f90bdc790e552561e6b6ac96f650bb53a88",
   "scorecard_sha256": "b6d4e57b1800cf71f9cc91c5dacda55169279634d8f9346544354d9d5afbc2b0",
-  "seed_sha256": "bef1896b582bde794cc1262f21e52aa9b450241f518194431e807de258da9970"
+  "seed_sha256": "3a7487539759938ddb428c5ec29efd554733eaaa5d6f9924a57927454fe4135b"
 }

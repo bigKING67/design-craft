@@ -1,6 +1,21 @@
 {
-  "rationale": "A 最完整地满足了全部评分证据：不仅识别输入锁定，还明确要求从当前 presentation value 无跳变中断并重定向动画；同时给出 CSS px/s 速度单位、投影端点、基于当前速度的 settle、持久状态提交以及紧凑的运行时验证计划。B 与其非常接近，但速度单位和释放速度向 settle 的连续传递不够明确。C 的主要实质缺口是取消动画前没有规定读取当前屏幕值，可能在重新抓取时跳变，且验证计划未覆盖这一关键路径。",
+  "rationale": "B 最完整且最精确地满足机器评分卡，尤其明确了从当前 presentation value 中断、CSS px/s 速度单位、单调时间采样、有界投影端点、吸附点选择和速度交接。C 几乎同等完整，但速度单位未明示；A 的中断接管与速度模型描述相对不够严格。",
   "results": [
+    {
+      "criteria": {
+        "accessibility": 10,
+        "actionability": 9,
+        "direct_manipulation": 14,
+        "evidence_honesty": 15,
+        "interruption": 12,
+        "motion_necessity": 10,
+        "performance": 10,
+        "velocity_projection": 12
+      },
+      "label": "A",
+      "summary": "静态证据边界、抓取偏移、指针捕获、性能属性、Reduced Motion 和验证计划均较完整；但没有明确要求从当前 presentation value 接管动画，也未定义速度单位及速度向收敛动画的完整交接。",
+      "total": 92
+    },
     {
       "criteria": {
         "accessibility": 10,
@@ -12,40 +27,25 @@
         "performance": 10,
         "velocity_projection": 15
       },
-      "label": "A",
-      "summary": "静态证据边界清楚，完整覆盖抓取偏移、指针捕获、动画中断、当前呈现值连续性、以 CSS px/s 表示的释放速度、投影选点、合成属性纪律和 Reduced Motion，并给出范围受控的最小验证计划。",
+      "label": "B",
+      "summary": "完整覆盖全部评分点：明确输入锁定、抓取偏移、指针捕获和一比一跟踪，要求从当前屏幕呈现值无跳变中断，并给出 CSS px/s、单调时间采样、有界投影、吸附选择和速度交接。",
       "total": 100
     },
     {
       "criteria": {
         "accessibility": 10,
-        "actionability": 9,
+        "actionability": 10,
         "direct_manipulation": 15,
         "evidence_honesty": 15,
         "interruption": 15,
         "motion_necessity": 10,
         "performance": 10,
-        "velocity_projection": 13
-      },
-      "label": "B",
-      "summary": "直接操控、动画中断、性能和 Reduced Motion 处理都很强，也明确要求从当前视觉位置无跳变地重新接管；主要缺口是未明确速度单位，也未明确把释放速度作为 settle 的初始速度持续传入，整体略显冗长。",
-      "total": 97
-    },
-    {
-      "criteria": {
-        "accessibility": 10,
-        "actionability": 9,
-        "direct_manipulation": 15,
-        "evidence_honesty": 15,
-        "interruption": 8,
-        "motion_necessity": 10,
-        "performance": 10,
-        "velocity_projection": 12
+        "velocity_projection": 14
       },
       "label": "C",
-      "summary": "覆盖了抓取偏移、指针生命周期、位置投影、三态吸附、属性选择和 Reduced Motion，但只要求取消运行中的动画，没有明确先读取并延续当前屏幕呈现值，也缺少动画中途重新抓取的专项验证；速度单位和速度传递同样不完整。",
-      "total": 89
+      "summary": "直接操控、中断接管、性能属性冲突、非前庭 Reduced Motion 路径和最小运行验证计划都非常完整；唯一明显缺口是没有明确规定释放速度的单位。",
+      "total": 99
     }
   ],
-  "winner": "A"
+  "winner": "B"
 }
