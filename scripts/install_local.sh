@@ -179,7 +179,7 @@ tree = hashlib.sha256()
 for path in sorted(target_path.rglob("*")):
     if not path.is_file() or "__pycache__" in path.parts or path.name in {".DS_Store", ".design-craft-install.json"} or path.suffix in {".pyc", ".pyo"}:
         continue
-    relative = str(path.relative_to(target_path))
+    relative = path.relative_to(target_path).as_posix()
     file_digest = hashlib.sha256(path.read_bytes()).hexdigest()
     tree.update(relative.encode("utf-8"))
     tree.update(b"\0")

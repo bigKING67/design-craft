@@ -47,7 +47,7 @@ def snapshot(root: Path) -> dict[str, str]:
         if not path.is_file() or ignored(path):
             continue
         digest = hashlib.sha256(path.read_bytes()).hexdigest()
-        values[str(path.relative_to(root))] = digest
+        values[path.relative_to(root).as_posix()] = digest
     return values
 
 
@@ -294,6 +294,8 @@ def run_self_check() -> None:
         source.mkdir(parents=True)
         (source / "SKILL.md").write_text("# Fixture skill\n", encoding="utf-8")
         (source / "VERSION").write_text("0.0.0\n", encoding="utf-8")
+        (source / "references").mkdir()
+        (source / "references/example.md").write_text("# Example\n", encoding="utf-8")
         (repo / "CHANGELOG.md").write_text(
             "# Changelog\n\n## 0.0.0 - Unreleased\n\n- Fixture.\n",
             encoding="utf-8",
