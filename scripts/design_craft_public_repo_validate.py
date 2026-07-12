@@ -109,6 +109,8 @@ def history_errors() -> list[str]:
         stdout=subprocess.DEVNULL,
         stderr=subprocess.PIPE,
         text=True,
+        encoding="utf-8",
+        errors="replace",
         check=False,
     )
     if baseline.returncode != 0:
@@ -130,6 +132,8 @@ def history_errors() -> list[str]:
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
         text=True,
+        encoding="utf-8",
+        errors="replace",
         check=False,
     )
     if diff.returncode != 0:

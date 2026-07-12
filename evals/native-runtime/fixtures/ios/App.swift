@@ -2,20 +2,25 @@ import UIKit
 
 private enum RuntimeInteraction {
     static func handle(_ url: URL, statusLabel: UILabel? = nil) -> Bool {
-        print("DESIGN_CRAFT_RUNTIME_URL_RECEIVED:\(url.absoluteString)")
-        guard url.scheme == "designcraft-evidence", url.host == "confirm" else {
+        NSLog("DESIGN_CRAFT_RUNTIME_URL_RECEIVED:%@", url.absoluteString)
+        recordEvent("url-received:\(url.absoluteString)")
+        let pathTarget = url.path.trimmingCharacters(
+            in: CharacterSet(charactersIn: "/")
+        )
+        guard url.scheme == "designcraft-evidence",
+              url.host == "confirm" || pathTarget == "confirm" else {
             return false
         }
         return confirm(statusLabel: statusLabel)
     }
 
+    static func recordLaunch() {
+        recordEvent("launched")
+    }
+
     static func confirm(statusLabel: UILabel? = nil) -> Bool {
         statusLabel?.text = "Runtime interaction confirmed"
-        guard let documents = FileManager.default.urls(
-            for: .documentDirectory,
-            in: .userDomainMask
-        ).first else {
-            print("DESIGN_CRAFT_RUNTIME_INTERACTION_FAILED:no-documents-directory")
+        guard let documents = documentsDirectory() else {
             return false
         }
         do {
@@ -24,11 +29,53 @@ private enum RuntimeInteraction {
                 atomically: true,
                 encoding: .utf8
             )
-            print("DESIGN_CRAFT_RUNTIME_INTERACTION_CONFIRMED")
+            recordEvent("interaction-confirmed")
+            NSLog("DESIGN_CRAFT_RUNTIME_INTERACTION_CONFIRMED")
             return true
         } catch {
-            print("DESIGN_CRAFT_RUNTIME_INTERACTION_FAILED:\(error)")
+            recordEvent("interaction-failed:\(error)")
+            NSLog("DESIGN_CRAFT_RUNTIME_INTERACTION_FAILED:%@", String(describing: error))
             return false
+        }
+    }
+
+    private static func documentsDirectory() -> URL? {
+        guard let documents = FileManager.default.urls(
+            for: .documentDirectory,
+            in: .userDomainMask
+        ).first else {
+            NSLog("DESIGN_CRAFT_RUNTIME_INTERACTION_FAILED:no-documents-directory")
+            return nil
+        }
+        do {
+            try FileManager.default.createDirectory(
+                at: documents,
+                withIntermediateDirectories: true
+            )
+            return documents
+        } catch {
+            NSLog(
+                "DESIGN_CRAFT_RUNTIME_INTERACTION_FAILED:create-documents:%@",
+                String(describing: error)
+            )
+            return nil
+        }
+    }
+
+    private static func recordEvent(_ event: String) {
+        guard let documents = documentsDirectory() else {
+            return
+        }
+        let eventLog = documents.appendingPathComponent("runtime-events.txt")
+        let existing = (try? String(contentsOf: eventLog, encoding: .utf8)) ?? ""
+        do {
+            try (existing + event + "\n").write(
+                to: eventLog,
+                atomically: true,
+                encoding: .utf8
+            )
+        } catch {
+            NSLog("DESIGN_CRAFT_RUNTIME_EVENT_LOG_FAILED:%@", String(describing: error))
         }
     }
 }
@@ -118,7 +165,8 @@ final class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         window.rootViewController = controller
         window.makeKeyAndVisible()
         self.window = window
-        print("DESIGN_CRAFT_RUNTIME_LAUNCHED")
+        RuntimeInteraction.recordLaunch()
+        NSLog("DESIGN_CRAFT_RUNTIME_LAUNCHED")
 
         if let url = connectionOptions.urlContexts.first?.url {
             _ = RuntimeInteraction.handle(url, statusLabel: statusLabel)
