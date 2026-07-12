@@ -14,54 +14,54 @@
   "scorecard_sha256": "63faaf6243b51c83504c91f777e1e44416d719cc66fcd7601708ad3b77c91aca",
   "contract_sha256": "4037c3cf05d7cbb1fa968da25c0ae1f8a322dac49129b98070435f2ce6340c3d",
   "run_manifest_path": "run.codex.json",
-  "run_manifest_sha256": "044c928abba57edac1bb95801c6cc8a2ef3de176f79002b21ee22c1f1114fdd6",
+  "run_manifest_sha256": "65f7c0b0953134f890c3e38f32b73aaf6a93824f8dc0a7609907b93dfd1ad2d8",
   "skill_version": "0.5.0",
-  "skill_source_commit": "49f98dc1eaf4b8b7cf57955899b315ce8baeab8f",
+  "skill_source_commit": "871ff13eb63ca15ee1bcf1d5da018f51c59220f3",
   "skill_source_dirty": false,
-  "repo_dirty": false,
-  "release_state": "development",
-  "skill_tree_sha256": "a37f5b9c4b7c947c3cfe612a19c84b38396f52883a42bede9d92aa64dc560259",
+  "repo_dirty": true,
+  "release_state": "unknown",
+  "skill_tree_sha256": "fa3adddb54ff35fb5b2a7f5b15831005d94664382c90e195cd10971f533d54b4",
   "skill_path": "$BENCHMARK_WORKSPACE/.agents/skills/design-craft",
-  "provenance_skill_path": "~/.agents/skills/design-craft",
+  "provenance_skill_path": "$DESIGN_CRAFT_HOME/skills/design-craft",
   "command_summary": "codex exec --ephemeral --sandbox read-only --skip-git-repo-check --ignore-rules -C '$BENCHMARK_WORKSPACE' --model gpt-5.6-sol -c 'model_reasoning_effort=\"max\"' --output-last-message '$BENCHMARK_WORKSPACE/.design-craft-host-output.md' -",
   "output_path": "codex-output.md",
-  "output_sha256": "b79f3e382531580446dfb41d082649207401541bf6cea03fc066005554bfe5ab",
-  "score": 99,
+  "output_sha256": "808e1a6dbdb5354fe5c7da683295cc8d1a5d70dd89d255e7194265166c261cde",
+  "score": 100,
   "criteria": {
     "style_authority": {
       "passed": true,
       "earned": 15,
-      "note": "Separates shared semantic roles and content hierarchy from platform-native navigation, controls, icons, materials, and motion."
+      "note": "Separates adaptive product context and shared semantic roles from platform-native navigation, controls, icons, materials, and motion."
     },
     "reference_selection": {
       "passed": true,
       "earned": 15,
-      "note": "Applies product context, iOS, Android, adaptive layout, accessibility, interaction, motion, and validation guidance."
+      "note": "Applies product context, iOS, Android, adaptive layout, accessibility, interaction, motion, design-system, and validation guidance."
     },
     "anti_generic_redesign": {
       "passed": true,
       "earned": 15,
-      "note": "Repairs native trust and task flow without proposing identical mockups, decorative cards, glass, gradients, or marketing treatment."
+      "note": "Repairs native trust, task flow, and adaptive structure without proposing identical mockups or decorative generic styling."
     },
     "evidence_level": {
       "passed": true,
       "earned": 15,
-      "note": "Labels the input prompt-attested static description and explicitly denies source, build, simulator, emulator, device, and performance proof."
+      "note": "Labels the review L0 static/prose-only and explicitly denies source, build, simulator, emulator, device, accessibility-tree, and performance proof."
     },
     "verified_boundary": {
       "passed": true,
       "earned": 15,
-      "note": "Separates described implementation violations from unknown source details, target geometry, accessibility trees, adaptivity, gestures, and runtime results."
+      "note": "Separates described violations from unknown source details, targets, hit slop, accessibility trees, windowing, gestures, persistence, and runtime results."
     },
     "design_moves": {
       "passed": true,
       "earned": 15,
-      "note": "Gives platform navigation, size-class layouts, targets, scalable type, semantic theming, native controls, motion accessibility, and a parity matrix."
+      "note": "Gives platform navigation, size-class layouts, target sizes, scalable type, native controls, semantic theming, accessible motion, recovery, and a parity matrix."
     },
     "scope_control": {
       "passed": true,
-      "earned": 9,
-      "note": "Stays within 150 lines and native-product scope, with a small amount of extra persistence/state-machine implementation detail."
+      "earned": 10,
+      "note": "Stays read-only, native-conformance focused, prioritized, and within the requested 150-line budget at 139 lines."
     }
   }
 }

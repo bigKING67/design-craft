@@ -14,18 +14,18 @@
   "scorecard_sha256": "63faaf6243b51c83504c91f777e1e44416d719cc66fcd7601708ad3b77c91aca",
   "contract_sha256": "4037c3cf05d7cbb1fa968da25c0ae1f8a322dac49129b98070435f2ce6340c3d",
   "run_manifest_path": "run.pi.json",
-  "run_manifest_sha256": "fa0b74e05b427d74142d40b55028254eb6faedf4acdce184f73d7f629761ce1b",
+  "run_manifest_sha256": "1e9da4389d87abe999edbdb794c8e2caed03954eb9d6dbfe2d3ab6bce3ac4d0a",
   "skill_version": "0.5.0",
-  "skill_source_commit": "49f98dc1eaf4b8b7cf57955899b315ce8baeab8f",
+  "skill_source_commit": "871ff13eb63ca15ee1bcf1d5da018f51c59220f3",
   "skill_source_dirty": false,
-  "repo_dirty": false,
-  "release_state": "development",
-  "skill_tree_sha256": "a37f5b9c4b7c947c3cfe612a19c84b38396f52883a42bede9d92aa64dc560259",
+  "repo_dirty": true,
+  "release_state": "unknown",
+  "skill_tree_sha256": "fa3adddb54ff35fb5b2a7f5b15831005d94664382c90e195cd10971f533d54b4",
   "skill_path": "$BENCHMARK_WORKSPACE/.pi/skills/design-craft",
-  "provenance_skill_path": "~/.agents/skills/design-craft",
+  "provenance_skill_path": "$DESIGN_CRAFT_HOME/skills/design-craft",
   "command_summary": "pi --print --no-session --no-skills --skill '$BENCHMARK_SKILL' --no-context-files --tools read,grep,find,ls --model codex/gpt-5.5 --thinking high",
   "output_path": "pi-output.md",
-  "output_sha256": "e6bed348cfaf97e2ac570f990490ab68149b2f69f1b0612dd37b5bd59461d610",
+  "output_sha256": "31fb6b76dbd352822e39b719db523ab83fe05982a877dd71639141f79583a92c",
   "score": 100,
   "criteria": {
     "style_authority": {
@@ -36,12 +36,12 @@
     "reference_selection": {
       "passed": true,
       "earned": 15,
-      "note": "Correctly selects iOS, Android, adaptive, accessibility, theming, motion, and validation guidance."
+      "note": "Correctly selects iOS, Android, adaptive, accessibility, theming, motion, interaction, and validation guidance."
     },
     "anti_generic_redesign": {
       "passed": true,
       "earned": 15,
-      "note": "Focuses on native navigation, adaptivity, controls, accessibility, and trust rather than decorative redesign."
+      "note": "Focuses on native navigation, adaptivity, controls, accessibility, recovery, and trust rather than decorative redesign."
     },
     "evidence_level": {
       "passed": true,
@@ -51,17 +51,17 @@
     "verified_boundary": {
       "passed": true,
       "earned": 15,
-      "note": "Cleanly separates prompt-stated implementation facts from all unverified source locations, rendering, accessibility, windowing, gesture, and runtime behavior."
+      "note": "Cleanly separates prompt-stated facts from unverified source locations, rendering, accessibility, windowing, gestures, and runtime behavior."
     },
     "design_moves": {
       "passed": true,
       "earned": 15,
-      "note": "Provides platform-specific navigation, size classes, targets, scalable type, semantic themes, native controls, accessible motion, and parity matrix."
+      "note": "Provides platform-specific navigation, size adaptation, targets, scalable type, semantic themes, native controls, accessible motion, and parity matrix."
     },
     "scope_control": {
       "passed": true,
       "earned": 10,
-      "note": "Stays concise at 119 lines, read-only, native-conformance focused, and within the requested limits."
+      "note": "Stays concise at 122 lines, read-only, native-conformance focused, and within the requested limits."
     }
   }
 }

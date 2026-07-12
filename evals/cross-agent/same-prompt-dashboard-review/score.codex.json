@@ -14,54 +14,54 @@
   "scorecard_sha256": "b9edd8c7b2859a983f2e132b57ee593f2225631473be392cb3d9a53f87bf77e1",
   "contract_sha256": "4037c3cf05d7cbb1fa968da25c0ae1f8a322dac49129b98070435f2ce6340c3d",
   "run_manifest_path": "run.codex.json",
-  "run_manifest_sha256": "465cce2b18c57fe8446e7ed725dc8846908e7cf09394c4a20fdb4506672e3c90",
+  "run_manifest_sha256": "6a44e5df7f978ff61a01c72fcfedb3d5cbb307a3af027197863e6d659aacd807",
   "skill_version": "0.5.0",
-  "skill_source_commit": "49f98dc1eaf4b8b7cf57955899b315ce8baeab8f",
+  "skill_source_commit": "871ff13eb63ca15ee1bcf1d5da018f51c59220f3",
   "skill_source_dirty": false,
-  "repo_dirty": false,
-  "release_state": "development",
-  "skill_tree_sha256": "a37f5b9c4b7c947c3cfe612a19c84b38396f52883a42bede9d92aa64dc560259",
+  "repo_dirty": true,
+  "release_state": "unknown",
+  "skill_tree_sha256": "fa3adddb54ff35fb5b2a7f5b15831005d94664382c90e195cd10971f533d54b4",
   "skill_path": "$BENCHMARK_WORKSPACE/.agents/skills/design-craft",
-  "provenance_skill_path": "~/.agents/skills/design-craft",
+  "provenance_skill_path": "$DESIGN_CRAFT_HOME/skills/design-craft",
   "command_summary": "codex exec --ephemeral --sandbox read-only --skip-git-repo-check --ignore-rules -C '$BENCHMARK_WORKSPACE' --model gpt-5.6-sol -c 'model_reasoning_effort=\"max\"' --output-last-message '$BENCHMARK_WORKSPACE/.design-craft-host-output.md' -",
   "output_path": "codex-output.md",
-  "output_sha256": "3da1628db6cbcff615c9e2f543c6bceeca59dc390faca57cf50a8a0dd8488e8d",
-  "score": 98,
+  "output_sha256": "ce85ae2695840b0a03735929480be4c778f9b2f17cf304b9d7ca81b0b223dc35",
+  "score": 99,
   "criteria": {
     "style_authority": {
       "passed": true,
       "earned": 15,
-      "note": "Preserves the restrained dense enterprise authority and optimizes for next-hour operator triage rather than a marketing dashboard."
+      "note": "Preserves the restrained dense enterprise-console authority and optimizes for the operator's next-hour exception-triage job."
     },
     "reference_selection": {
       "passed": true,
       "earned": 15,
-      "note": "Applies product UI taste, dashboard surface, design-move, token, state, and validation guidance without unrelated domains."
+      "note": "Applies dashboard hierarchy, product UI taste, design moves, semantic tokens, state coverage, and validation guidance without unrelated domains."
     },
     "anti_generic_redesign": {
       "passed": true,
       "earned": 15,
-      "note": "Diagnoses equal-card soup and replaces decorative overview chrome with an exception-first operational decision surface."
+      "note": "Rejects equal KPI card soup, decorative charting, and generic tips in favor of a decision surface with lead risk, support metrics, and an exception queue."
     },
     "evidence_level": {
       "passed": true,
       "earned": 15,
-      "note": "Labels the review L0 static, gives a bounded score band, and explicitly denies screenshot, DOM, responsive, and browser proof."
+      "note": "Labels the review L0 static, bounds the score band, and explicitly denies screenshot, DOM, responsive, state, and browser proof."
     },
     "verified_boundary": {
       "passed": true,
       "earned": 15,
-      "note": "Separates prompt-attested structure from unverified rendering, token compliance, interaction states, accessibility, responsiveness, and performance."
+      "note": "Separates prompt-attested structure and design inference from unverified rendering, tokens, data semantics, interaction, accessibility, responsiveness, and performance."
     },
     "design_moves": {
       "passed": true,
       "earned": 15,
-      "note": "Provides lead risk, supporting strip, exception queue, diagnostic chart, task-first table, contextual rail, and state-contract moves."
+      "note": "Provides lead-risk, support-strip, exception-queue, diagnostic-chart, task-first-table, contextual-inspector, semantic-state, and acceptance moves."
     },
     "scope_control": {
       "passed": true,
-      "earned": 8,
-      "note": "Remains read-only and dashboard-focused, but 260 lines materially exceed the requested 150-line budget."
+      "earned": 9,
+      "note": "Remains read-only and dashboard-specific with decisive validation, but 170 lines modestly exceed the requested 150-line budget."
     }
   }
 }

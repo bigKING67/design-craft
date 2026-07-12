@@ -14,54 +14,54 @@
   "scorecard_sha256": "ba56e288dc04a5c411768339f7969ee1b2e6403ca82b4ef551fab675f969978b",
   "contract_sha256": "4037c3cf05d7cbb1fa968da25c0ae1f8a322dac49129b98070435f2ce6340c3d",
   "run_manifest_path": "run.codex.json",
-  "run_manifest_sha256": "ce26cebfd223dd1d8d6d30a0f7fb9cedf562a126cb4fbfaaca37b1dbf6102628",
+  "run_manifest_sha256": "67f85ce812cdd55c90451fbe24e370fde8638404d145af9fd33d3d07268b4c09",
   "skill_version": "0.5.0",
-  "skill_source_commit": "49f98dc1eaf4b8b7cf57955899b315ce8baeab8f",
+  "skill_source_commit": "871ff13eb63ca15ee1bcf1d5da018f51c59220f3",
   "skill_source_dirty": false,
-  "repo_dirty": false,
-  "release_state": "development",
-  "skill_tree_sha256": "a37f5b9c4b7c947c3cfe612a19c84b38396f52883a42bede9d92aa64dc560259",
+  "repo_dirty": true,
+  "release_state": "unknown",
+  "skill_tree_sha256": "fa3adddb54ff35fb5b2a7f5b15831005d94664382c90e195cd10971f533d54b4",
   "skill_path": "$BENCHMARK_WORKSPACE/.agents/skills/design-craft",
-  "provenance_skill_path": "~/.agents/skills/design-craft",
+  "provenance_skill_path": "$DESIGN_CRAFT_HOME/skills/design-craft",
   "command_summary": "codex exec --ephemeral --sandbox read-only --skip-git-repo-check --ignore-rules -C '$BENCHMARK_WORKSPACE' --model gpt-5.6-sol -c 'model_reasoning_effort=\"max\"' --output-last-message '$BENCHMARK_WORKSPACE/.design-craft-host-output.md' -",
   "output_path": "codex-output.md",
-  "output_sha256": "cd4b4adb438b162fc3b88b0063738fca2dd11984dea0f63c8d646c4487b55c59",
-  "score": 98,
+  "output_sha256": "0cb6258134ca8977eb4b07972103572a19e4384d71c80950612716b46994683b",
+  "score": 99,
   "criteria": {
     "style_authority": {
       "passed": true,
       "earned": 15,
-      "note": "Uses the calm high-frequency operations context to preserve causal motion while rejecting delay, spectacle, and input lockout."
+      "note": "Uses the calm high-frequency operations context to preserve causal direct manipulation while rejecting spectacle, delay, and input lockout."
     },
     "reference_selection": {
       "passed": true,
       "earned": 15,
-      "note": "Correctly applies motion quality, interaction physics, design-system ownership, accessibility, performance, and validation guidance."
+      "note": "Correctly applies motion quality, interaction physics, transform ownership, accessibility, performance, and runtime-validation guidance."
     },
     "anti_generic_redesign": {
       "passed": true,
       "earned": 15,
-      "note": "Questions which motion should exist and avoids adding decorative animation or generic smoothing."
+      "note": "Explicitly decides which motion should exist and removes decorative scaling, broad transitions, and non-causal travel."
     },
     "evidence_level": {
       "passed": true,
       "earned": 15,
-      "note": "Labels static source evidence and treats lag, frame rate, compositing, touch feel, and browser behavior as unverified risks."
+      "note": "Labels the evidence static source and treats lag, frame rate, visual jumps, touch conflict, and device feel as unverified."
     },
     "verified_boundary": {
       "passed": true,
       "earned": 15,
-      "note": "Separates directly visible code defects from runtime-only coordinate, transition, scrolling, refresh-rate, and device behavior."
+      "note": "Separates visible code defects from runtime-only geometry, positioning, event arbitration, Reduced Motion, browser, and refresh-rate behavior."
     },
     "design_moves": {
       "passed": true,
       "earned": 15,
-      "note": "Covers pointer ownership, grab offset, 1:1 transforms, presentation-value interruption, px/s velocity, projection, soft bounds, and Reduced Motion."
+      "note": "Covers capture, grab offset, local coordinates, 1:1 transforms, presentation-value interruption, CSS px/s velocity, projection, hysteresis, soft bounds, and Reduced Motion."
     },
     "scope_control": {
       "passed": true,
-      "earned": 8,
-      "note": "Remains motion-specific and decisive, but 182 lines exceed the requested 150-line budget."
+      "earned": 9,
+      "note": "Remains motion-specific and decisive, but 167 lines modestly exceed the requested 150-line budget."
     }
   }
 }

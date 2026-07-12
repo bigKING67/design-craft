@@ -14,18 +14,18 @@
   "scorecard_sha256": "b9edd8c7b2859a983f2e132b57ee593f2225631473be392cb3d9a53f87bf77e1",
   "contract_sha256": "4037c3cf05d7cbb1fa968da25c0ae1f8a322dac49129b98070435f2ce6340c3d",
   "run_manifest_path": "run.pi.json",
-  "run_manifest_sha256": "8952bb120ffc2f055f67263beabbe7f641a5538db54ddbd9a157613ab410dfd8",
+  "run_manifest_sha256": "cec884d181ecf6f2721eef8a19bb33b1ef5a1ce9da3e88265e3b5b0d073b4cbc",
   "skill_version": "0.5.0",
-  "skill_source_commit": "49f98dc1eaf4b8b7cf57955899b315ce8baeab8f",
+  "skill_source_commit": "871ff13eb63ca15ee1bcf1d5da018f51c59220f3",
   "skill_source_dirty": false,
-  "repo_dirty": false,
-  "release_state": "development",
-  "skill_tree_sha256": "a37f5b9c4b7c947c3cfe612a19c84b38396f52883a42bede9d92aa64dc560259",
+  "repo_dirty": true,
+  "release_state": "unknown",
+  "skill_tree_sha256": "fa3adddb54ff35fb5b2a7f5b15831005d94664382c90e195cd10971f533d54b4",
   "skill_path": "$BENCHMARK_WORKSPACE/.pi/skills/design-craft",
-  "provenance_skill_path": "~/.agents/skills/design-craft",
+  "provenance_skill_path": "$DESIGN_CRAFT_HOME/skills/design-craft",
   "command_summary": "pi --print --no-session --no-skills --skill '$BENCHMARK_SKILL' --no-context-files --tools read,grep,find,ls --model codex/gpt-5.5 --thinking high",
   "output_path": "pi-output.md",
-  "output_sha256": "388f6dee2181183c160fcd06397f20f8be55eb4c9c32fea827df875e1803cf58",
+  "output_sha256": "552babe530997708d4344c7f564b8ec9a9d222c5bd1d06366da567f345e288c6",
   "score": 100,
   "criteria": {
     "style_authority": {
@@ -36,32 +36,32 @@
     "reference_selection": {
       "passed": true,
       "earned": 15,
-      "note": "Selects dashboard hierarchy, taste, design-move, token, accessibility, state, and validation guidance at the needed depth."
+      "note": "Selects dashboard hierarchy, taste, design-move, token, accessibility, resilient-state, and validation guidance at the needed depth."
     },
     "anti_generic_redesign": {
       "passed": true,
       "earned": 15,
-      "note": "Rejects equal KPI card soup, decorative charting, and generic tips in favor of an operational priority surface."
+      "note": "Rejects equal cards, decorative area-chart treatment, and generic tips for an exception-first operational priority surface."
     },
     "evidence_level": {
       "passed": true,
       "earned": 15,
-      "note": "Correctly labels the evidence L0 prose-only and avoids browser, DOM, screenshot, responsive, or runtime claims."
+      "note": "Correctly labels the evidence L0 prompt-only and avoids browser, DOM, screenshot, responsive, and runtime claims."
     },
     "verified_boundary": {
       "passed": true,
       "earned": 15,
-      "note": "Clearly separates prompt facts, reasonable structural critique, and all unverified visual, interaction, accessibility, state, and performance behavior."
+      "note": "Clearly separates prompt facts from unverified visual, interaction, accessibility, token, state, data-scale, and performance behavior."
     },
     "design_moves": {
       "passed": true,
       "earned": 15,
-      "note": "Gives a lead-support-queue layout, task-first table, diagnostic chart, contextual inspector, semantic color, controls, and state contract."
+      "note": "Gives lead-support-queue hierarchy, task-first table, diagnostic chart, contextual operations support, semantic color, and resilient states."
     },
     "scope_control": {
       "passed": true,
       "earned": 10,
-      "note": "Stays concise at 112 lines, read-only, dashboard-specific, prioritized, and within the requested limits."
+      "note": "Stays concise at 104 lines, read-only, dashboard-specific, prioritized, and within the requested budget."
     }
   }
 }

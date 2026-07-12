@@ -1,71 +1,65 @@
 ## 1. Evidence level and score band
 
-**Evidence level: L0 static / prose-only.**  
-The prompt provides product context and a structural description, but no screenshot, DOM, token evidence, responsive run, focus walk, or state verification. This is **not browser-validated**.
+**Evidence level: L0 — prompt-only / description-only.**  
+No screenshot, DOM, responsive behavior, focus order, hover, loading, empty, error, or token implementation was verified.
 
-**Score band: 60–74 / functional but ordinary.**  
-Likely in the **low-to-mid 60s** if the described hierarchy is literal. I would cap it below 75 because the concept sounds like dashboard “card soup”: many equal KPI cards, decorative charting, dense table, and generic advice instead of an operational priority surface.
+**Provisional score band: 60–74 / 100 — functional but ordinary.**  
+If the described structure is accurate, this likely sits in the low-to-mid part of that band because the dashboard has the classic **dashboard card soup** problem: many modules, weak operational priority, and decoration competing with decision support. It should not be scored above 84 without fixing the flat hierarchy and validating real content/states.
 
 ---
 
-## 2. Design read
+## 2. Design read: what job the dashboard should optimize for
 
-Reading this as: **a restrained enterprise revenue-ops command dashboard for ecommerce operators, optimized for deciding which account or campaign needs attention in the next hour.**
+Reading this as: **a restrained, dense enterprise revenue-ops command center for internal ecommerce operators, optimized for deciding “which account or campaign needs attention in the next hour, why, and what action should I take?”**
 
-The job is not to summarize everything evenly. It should answer, fast:
-
-- What needs attention now?
-- Why is it urgent?
-- What is the revenue/spend impact?
-- Who or what is affected?
-- What action should the operator take next?
+The dashboard should behave less like an executive overview and more like an **exception triage surface**: priority, impact, confidence, owner, and next action should dominate.
 
 ---
 
 ## 3. Top hierarchy / product-fit issues
 
-1. **Equal KPI grid weakens operational priority.**  
-   Twelve same-weight KPI cards force the operator to interpret the page instead of being guided to the next action.
+1. **P1 — Twelve equal KPI cards flatten operational priority.**  
+   Equal size/surface weight implies equal importance. For a next-hour operator, the UI must distinguish blockers, anomalies, revenue risk, and routine totals.
 
-2. **Decorative area chart is a product mismatch.**  
-   A chart on this surface must answer a triage question: anomaly, trend break, budget burn, ROAS drop, revenue at risk. If it is only decorative, it steals attention from action.
+2. **P1 — Decorative area chart is not tied to a decision question.**  
+   A chart that does not answer “what changed, where, and what should I inspect?” becomes visual noise in a dense console.
 
-3. **Dense table risks becoming a data dump.**  
-   For this user, table anatomy should start with account/campaign identity, status, severity, impact, cause, owner, and next action — not schema-order metrics.
+3. **P1 — Dense account table risks becoming a data dump.**  
+   If identity, status, risk, impact, trend, owner, and next action are not first-class columns, the table supports lookup more than triage.
 
-4. **Generic tips rail is low-value for expert internal operators.**  
-   A right rail should be contextual: selected-row inspector, anomaly explanation, action checklist, recent changes, or escalation notes. Generic advice makes the console feel less operational.
+4. **P1 — Generic right-rail tips are poor product fit.**  
+   Generic advice competes with live operational signals. In this context, the rail should be contextual: exceptions, recommended actions, runbook links, or watchlist notes.
 
-5. **Missing decision context: thresholds, comparison, time scope, and state semantics.**  
-   KPI values need “compared to what?”, time range, freshness, benchmarks, and semantic status. Without that, the dashboard cannot reliably support hour-by-hour decisions.
+5. **P2/P1 risk — State and token discipline are unproven.**  
+   For a revenue dashboard, loading, stale data, empty segments, API errors, permission limits, threshold definitions, and semantic status colors are part of the product contract, not polish.
 
 ---
 
 ## 4. Concrete design moves
 
-1. **Replace “12 equal cards” with a `lead + support + queue` layout.**  
-   Promote one lead operational object: “Revenue at risk,” “Accounts needing action,” or “Campaigns breaching threshold.” Move secondary KPIs into a compact supporting strip.
+1. **Replace “12 equal KPI cards” with a `lead + support + action queue` layout.**  
+   One lead operational state: e.g. “Revenue at risk now,” “Accounts requiring action,” or “Campaigns outside threshold.” Supporting KPIs become a compact metric strip.
 
-2. **Create an exception queue above the table.**  
-   Show top urgent accounts/campaigns with severity, impact, likely cause, owner, last updated, and recommended next action.
+2. **Convert the top area into a decision header.**  
+   Include time range, data freshness, comparison baseline, threshold logic, and primary filter scope. Every emphasized number should answer: **compared to what?**
 
-3. **Make the table task-first.**  
-   First columns: account/campaign, status, severity, impact, driver, next action. Group diagnostic metrics later. Right-align numbers and use tabular numerals.
+3. **Turn the chart from decorative to diagnostic.**  
+   Use it to show anomaly timing, forecast variance, spend/revenue divergence, or threshold breach. Add direct labels, event markers, and a clear takeaway caption.
 
-4. **Turn the area chart into a diagnostic chart.**  
-   Tie it to the selected issue or top queue item. Add threshold lines, annotations, direct labels, and a clear analytical question.
+4. **Promote an exception queue above or beside the table.**  
+   Show the top 3–5 accounts/campaigns needing action with severity, estimated impact, cause, owner, and next step.
 
-5. **Convert the right rail into a contextual inspector.**  
-   When a row is selected: show explanation, recent changes, suggested action, dependencies, and escalation path. If nothing is selected: show only the top blockers or collapse it.
+5. **Redesign the table as a task-first table.**  
+   First columns: account/campaign identity, status/severity, revenue impact, change vs baseline, suspected cause, owner/SLA, next action. Secondary metadata can be grouped later.
 
-6. **Use semantic token-backed color only.**  
-   Reserve color for state: danger, warning, success, info, neutral. Avoid decorative chart fills or arbitrary KPI accents.
+6. **Use restrained enterprise density, not marketing hierarchy.**  
+   Prefer compact type, tabular numbers, subtle dividers, quiet surfaces, and semantic status color only. Avoid hero cards, gradients, oversized chart drama, and decorative elevation.
 
-7. **Add a scope/control band close to affected data.**  
-   Time range, marketplace/account filters, saved views like “Needs action,” “Spend spike,” “ROAS drop,” and “Budget capped.” Active states should be visible beyond color.
+7. **Replace the generic right rail with contextual operations support.**  
+   Examples: “Why this is flagged,” “Recommended runbook,” “Recent changes,” “Owner notes,” “Suppressed alerts,” or “Watchlist.” If not contextual, remove it.
 
-8. **Design the state contract before implementation.**  
-   Loading, empty, stale data, error, permissions, long labels, zero values, delayed metrics, and keyboard/focus states need first-class treatment.
+8. **Define resilient states before implementation.**  
+   Loading skeletons for KPIs/table/chart, stale-data warning, empty “no exceptions” state, API error with retry/recovery, permission-limited rows, long account names, and keyboard/focus states.
 
 ---
 
@@ -73,40 +67,38 @@ The job is not to summarize everything evenly. It should answer, fast:
 
 **Verified from prompt only:**
 
-- Surface is an internal ecommerce revenue-ops dashboard.
-- Primary user is an operator making next-hour attention decisions.
-- Current structure is described as 12 equal KPI cards, decorative area chart, dense account table, and generic tips rail.
-- Style authority is restrained enterprise console, dense but calm, token-backed color only.
-- No screenshot, DOM, responsive behavior, focus, hover, loading, or error states were verified.
+- Intended surface: internal ecommerce revenue-ops dashboard.
+- Primary user: operator deciding account/campaign attention in the next hour.
+- Current concept: 12 equal KPI cards, decorative area chart, dense account table, generic tips rail.
+- Style authority: restrained enterprise console, dense but calm, token-backed color only.
+- No browser, screenshot, DOM, responsive, hover, focus, loading, or error evidence exists.
 
-**Reasonable critique based on provided structure:**
+**Unverified / must not be claimed:**
 
-- The concept likely under-prioritizes triage.
-- Equal cards likely reduce hierarchy.
-- Decorative charting likely hurts product fit.
-- Generic tips likely mismatch expert internal workflow.
-
-**Unverified and not claimed:**
-
-- Actual visual polish, spacing, contrast, typography, or token compliance.
-- Whether the table is truly poorly ordered.
-- Whether the chart has useful tooltips, labels, axes, or thresholds.
-- Responsive behavior.
-- Accessibility, keyboard flow, focus-visible states.
-- Loading, empty, error, stale, or permission states.
-- Browser performance or runtime behavior.
+- Actual visual quality, spacing, typography, contrast, color use, or token compliance.
+- Whether the chart is truly decorative in rendered form.
+- Whether the table has sorting, filters, sticky columns, row actions, or accessible semantics.
+- Whether the dashboard works on narrow screens or with long real ecommerce data.
+- Whether hover, focus, keyboard, loading, empty, error, stale-data, or permission states exist.
+- Any browser validation or screenshot validation.
 
 ---
 
 ## 6. Minimal validation plan before implementation
 
-1. **Obtain visual artifact or route:** screenshot, Figma, or running page.
-2. **Confirm decision model:** what counts as urgent, what thresholds matter, and which metric is source-of-truth.
-3. **Run a 3-second hierarchy check:** can an operator identify the top account/campaign needing action?
-4. **Validate table anatomy with real data:** long names, many accounts, zero/negative values, missing metrics, stale rows.
-5. **Browser-check desktop and narrow viewport:** layout, overflow, sticky controls, chart readability, rail behavior.
-6. **Verify state coverage:** loading, empty, error, stale data, permission-limited, and no-urgent-items states.
-7. **Check accessibility basics:** contrast, keyboard order, visible focus, non-color-only severity, labels for controls/charts.
-8. **Inspect token use:** color, spacing, radius, typography, and state styles should come from the design system, not one-off values.
+1. **Clarify the decision model.**  
+   Define the top operator question, severity thresholds, revenue-risk formula, time window, and what qualifies as “needs attention now.”
 
-No files were edited and no browser validation was performed.
+2. **Inventory real data fields.**  
+   Confirm available account/campaign fields: impact, trend, owner, status, cause, budget/spend, ROAS/CAC, inventory constraints, campaign changes, and freshness timestamp.
+
+3. **Create one low-fidelity hierarchy pass.**  
+   Validate lead metric, support strip, exception queue, diagnostic chart, task-first table, and contextual rail before visual polish.
+
+4. **Test with realistic rows.**  
+   Use long names, missing metrics, zero-data accounts, high/low severity, stale data, permission-limited rows, and more rows than fit onscreen.
+
+5. **Run visual/accessibility validation only after a build exists.**  
+   Required checks: desktop and narrow viewport layout, keyboard focus walk, table scanability, color contrast, semantic status not color-only, loading/empty/error states, chart labels/tooltips, and token usage.
+
+Rules/skill used: **design-craft critique mode** and the **frontend rule**. No files were edited and no browser validation was performed.

@@ -2,7 +2,7 @@
 
 | Host | Status | Score | Requested runtime | Evidence |
 | --- | --- | ---: | --- | --- |
-| Codex | verified | 99 | `gpt-5.6-sol` / `max` | `codex-output.md`, `run.codex.json`, `score.codex.json` |
+| Codex | verified | 100 | `gpt-5.6-sol` / `max` | `codex-output.md`, `run.codex.json`, `score.codex.json` |
 | Pi | verified | 100 | `codex/gpt-5.5` / `high` | `pi-output.md`, `run.pi.json`, `score.pi.json` |
 | Cursor | unverified | - | unavailable | Cursor Agent is installed but not authenticated. |
 | Claude | unverified | - | `opus` and `sonnet` attempted | Authentication is visible after adapter repair, but repeated API calls ended with `ECONNRESET`; no output or run manifest was admitted. |
