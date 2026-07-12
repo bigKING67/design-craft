@@ -129,6 +129,11 @@ def wrapper_gate() -> Gate:
         text = read(wrapper)
         if "skills/design-craft" not in text and '"skills" / "design-craft"' not in text:
             failures.append(f"not-delegating:{name}")
+        if wrapper.suffix == ".py":
+            if "os.execv(" in text:
+                failures.append(f"non-portable-exec:{name}")
+            if "subprocess.run(" not in text or ".returncode" not in text:
+                failures.append(f"exit-code-not-forwarded:{name}")
     return make_gate(
         "root_wrapper_contract",
         not failures,

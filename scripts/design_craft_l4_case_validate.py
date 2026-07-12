@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import os
+import subprocess
 import sys
 from pathlib import Path
 
@@ -13,4 +14,5 @@ SCRIPT = ROOT / "skills" / "design-craft" / "scripts" / "design_craft_l4_case_va
 os.environ.setdefault("DESIGN_CRAFT_SOURCE_ROOT", str(ROOT))
 if not SCRIPT.is_file():
     raise SystemExit(f"portable runtime is missing: {SCRIPT}")
-os.execv(sys.executable, [sys.executable, str(SCRIPT), *sys.argv[1:]])
+result = subprocess.run([sys.executable, str(SCRIPT), *sys.argv[1:]], check=False)
+raise SystemExit(result.returncode)

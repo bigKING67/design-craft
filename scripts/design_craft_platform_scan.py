@@ -3,7 +3,7 @@
 
 from __future__ import annotations
 
-import os
+import subprocess
 import sys
 from pathlib import Path
 
@@ -13,4 +13,5 @@ SCRIPT = Path(__file__).resolve().parents[1] / "skills/design-craft/scripts/desi
 if not SCRIPT.is_file():
     raise SystemExit(f"portable platform scanner is missing: {SCRIPT}")
 
-os.execv(sys.executable, [sys.executable, str(SCRIPT), *sys.argv[1:]])
+result = subprocess.run([sys.executable, str(SCRIPT), *sys.argv[1:]], check=False)
+raise SystemExit(result.returncode)

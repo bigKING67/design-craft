@@ -3,10 +3,11 @@
 
 from __future__ import annotations
 
-import os
+import subprocess
 import sys
 from pathlib import Path
 
 
 target = Path(__file__).resolve().parents[1] / "scripts" / "design_craft_score.py"
-os.execv(sys.executable, [sys.executable, str(target), *sys.argv[1:]])
+result = subprocess.run([sys.executable, str(target), *sys.argv[1:]], check=False)
+raise SystemExit(result.returncode)
