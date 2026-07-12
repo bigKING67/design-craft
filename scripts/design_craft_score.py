@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import subprocess
 import sys
 from dataclasses import dataclass
@@ -128,9 +129,14 @@ def infer_root(target: Path) -> Path:
 
 
 def check_command(command: list[str], cwd: Path) -> bool:
+    resolved_command = list(command)
+    if resolved_command and resolved_command[0] == "bash":
+        configured_bash = os.environ.get("DESIGN_CRAFT_BASH", "").strip()
+        if configured_bash:
+            resolved_command[0] = configured_bash
     try:
         result = subprocess.run(
-            command,
+            resolved_command,
             cwd=str(cwd),
             stdout=subprocess.DEVNULL,
             stderr=subprocess.DEVNULL,
