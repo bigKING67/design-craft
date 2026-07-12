@@ -13,6 +13,11 @@ All notable local changes to `design-craft` are recorded here.
   and the previously omitted spring, ambient-motion, and animation-principle
   vocabulary while explicitly rejecting overbroad static performance claims,
   forced delegation/read-only policy, and promotional response text.
+- Fixed remote portability validation by resolving the platform-specific npm
+  executable and fetching the privacy-history baseline in portable/Windows CI.
+  Hardened iOS runtime evidence around a fresh ephemeral Simulator and a fully
+  declared URL scheme so stale hosted-runner migration state cannot invalidate
+  the deep-link interaction proof.
 - Added a root MIT license, preserved upstream Apache/MIT license and notice
   text, and documented the separate Vercel snapshot redistribution boundary.
 - Restricted the Pi/npm payload to the canonical skill plus required legal

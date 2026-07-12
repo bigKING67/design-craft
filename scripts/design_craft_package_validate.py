@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 import json
 import re
+import shutil
 import subprocess
 import sys
 from pathlib import Path
@@ -147,6 +148,7 @@ def package_errors(
             "sync_status": "design-craft.sync-status.v2",
             "release_assets": "design-craft.release-assets.v1",
             "native_release_bundle": "design-craft.native-release-bundle.v1",
+            "emil_absorption": "design-craft.emil-absorption.v1",
             "cross_agent_run": "design-craft.cross-agent-run.v2",
             "comparative_run": "design-craft.comparative-run.v2",
             "comparative_judge_run": "design-craft.comparative-judge-run.v1",
@@ -206,8 +208,11 @@ def public_path_errors(paths: set[str]) -> list[str]:
 
 
 def npm_pack() -> tuple[dict[str, Any], list[str]]:
+    npm = shutil.which("npm")
+    if npm is None:
+        return {}, ["npm is required to validate the publishable package"]
     completed = subprocess.run(
-        ["npm", "pack", "--dry-run", "--json", "--ignore-scripts"],
+        [npm, "pack", "--dry-run", "--json", "--ignore-scripts"],
         cwd=ROOT,
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
@@ -304,6 +309,7 @@ def self_check() -> list[str]:
             "sync_status": "design-craft.sync-status.v2",
             "release_assets": "design-craft.release-assets.v1",
             "native_release_bundle": "design-craft.native-release-bundle.v1",
+            "emil_absorption": "design-craft.emil-absorption.v1",
             "cross_agent_run": "design-craft.cross-agent-run.v2",
             "comparative_run": "design-craft.comparative-run.v2",
             "comparative_judge_run": "design-craft.comparative-judge-run.v1",

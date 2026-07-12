@@ -27,7 +27,7 @@ if [[ "${DESIGN_CRAFT_NATIVE_BUILD_ONLY:-0}" == "1" ]]; then
   exit 0
 fi
 
-udid="$(xcrun simctl list devices available -j | python3 -c '
+selection="$(xcrun simctl list devices available -j | python3 -c '
 import json
 import re
 import sys
@@ -40,13 +40,28 @@ for runtime, devices in payload.get("devices", {}).items():
         continue
     version = tuple(int(part) for part in match.group(1).split("-"))
     for device in devices:
-        if device.get("isAvailable") and str(device.get("name", "")).startswith("iPhone"):
-            candidates.append((version, str(device.get("name", "")), device["udid"]))
+        name = str(device.get("name", ""))
+        device_type = str(device.get("deviceTypeIdentifier", ""))
+        if device.get("isAvailable") and name.startswith("iPhone") and device_type:
+            preferred = int("Pro" in name and "Max" not in name)
+            candidates.append((version, preferred, name, runtime, device_type))
 if not candidates:
     raise SystemExit("No available iPhone Simulator")
-print(max(candidates)[2])
+selected = max(candidates)
+print(f"{selected[3]}\t{selected[4]}")
 ')"
-xcrun simctl boot "${udid}" || true
+IFS=$'\t' read -r runtime_identifier device_type_identifier <<< "${selection}"
+simulator_name="Design Craft Evidence ${GITHUB_RUN_ID:-$$}"
+udid="$(xcrun simctl create \
+  "${simulator_name}" \
+  "${device_type_identifier}" \
+  "${runtime_identifier}")"
+cleanup_simulator() {
+  xcrun simctl shutdown "${udid}" >/dev/null 2>&1 || true
+  xcrun simctl delete "${udid}" >/dev/null 2>&1 || true
+}
+trap cleanup_simulator EXIT
+xcrun simctl boot "${udid}"
 xcrun simctl bootstatus "${udid}" -b
 xcrun simctl install "${udid}" "${APP_DIR}"
 xcrun simctl launch "${udid}" dev.designcraft.runtime-evidence > "${EVIDENCE_DIR}/launch.txt"

@@ -30,6 +30,20 @@ def action_pin_errors(workflow: Path, text: str) -> list[str]:
     return errors
 
 
+def workflow_job_block(text: str, job_name: str) -> str:
+    start_match = re.search(rf"(?m)^  {re.escape(job_name)}:\s*$", text)
+    if start_match is None:
+        return ""
+    next_match = re.search(
+        r"(?m)^  [A-Za-z0-9_-]+:\s*$",
+        text[start_match.end() :],
+    )
+    if next_match is None:
+        return text[start_match.start() :]
+    end = start_match.end() + next_match.start()
+    return text[start_match.start() : end]
+
+
 def validate() -> dict:
     errors: list[str] = []
     native_workflow_path = ROOT / ".github/workflows/native-runtime.yml"
@@ -97,6 +111,12 @@ def validate() -> dict:
     )
     if validate_workflow.count("timeout-minutes:") != 5:
         errors.append(".github/workflows/validate.yml must set a timeout on all five jobs")
+    for job_name in ("portable", "windows-portable"):
+        block = workflow_job_block(validate_workflow, job_name)
+        if "submodules: recursive" not in block or "fetch-depth: 0" not in block:
+            errors.append(
+                f".github/workflows/validate.yml {job_name} must fetch recursive submodules and full history"
+            )
     if native_workflow.count("timeout-minutes:") != 2:
         errors.append(
             ".github/workflows/native-runtime.yml must set a timeout on both jobs"
@@ -171,6 +191,9 @@ def validate() -> dict:
         plist = plistlib.loads((ROOT / "evals/native-runtime/fixtures/ios/Info.plist").read_bytes())
         if plist.get("CFBundleIdentifier") != "dev.designcraft.runtime-evidence":
             errors.append("iOS fixture bundle identifier is invalid")
+        url_types = plist.get("CFBundleURLTypes", [])
+        if not url_types or url_types[0].get("CFBundleTypeRole") != "Viewer":
+            errors.append("iOS fixture URL type must declare the Viewer role")
         scene_manifest = plist.get("UIApplicationSceneManifest", {})
         scene_configs = scene_manifest.get("UISceneConfigurations", {})
         if scene_manifest.get("UIApplicationSupportsMultipleScenes") is not False:
@@ -201,6 +224,21 @@ def self_check() -> list[str]:
         errors.append("workflow validator did not reject an unpinned action")
     if action_pin_errors(fake, "- uses: actions/checkout@" + "a" * 40):
         errors.append("workflow validator rejected a full-SHA action pin")
+    fixture = (
+        "jobs:\n"
+        "  portable:\n"
+        "    steps:\n"
+        "      - with:\n"
+        "          fetch-depth: 0\n"
+        "  windows-portable:\n"
+        "    steps: []\n"
+    )
+    portable = workflow_job_block(fixture, "portable")
+    windows = workflow_job_block(fixture, "windows-portable")
+    if "fetch-depth: 0" not in portable or "windows-portable" in portable:
+        errors.append("workflow job-block parser did not isolate the portable job")
+    if "steps: []" not in windows:
+        errors.append("workflow job-block parser did not isolate the final job")
     return errors
 
 

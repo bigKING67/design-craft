@@ -1,5 +1,38 @@
 import UIKit
 
+private enum RuntimeInteraction {
+    static func handle(_ url: URL, statusLabel: UILabel? = nil) -> Bool {
+        print("DESIGN_CRAFT_RUNTIME_URL_RECEIVED:\(url.absoluteString)")
+        guard url.scheme == "designcraft-evidence", url.host == "confirm" else {
+            return false
+        }
+        return confirm(statusLabel: statusLabel)
+    }
+
+    static func confirm(statusLabel: UILabel? = nil) -> Bool {
+        statusLabel?.text = "Runtime interaction confirmed"
+        guard let documents = FileManager.default.urls(
+            for: .documentDirectory,
+            in: .userDomainMask
+        ).first else {
+            print("DESIGN_CRAFT_RUNTIME_INTERACTION_FAILED:no-documents-directory")
+            return false
+        }
+        do {
+            try "Runtime interaction confirmed\n".write(
+                to: documents.appendingPathComponent("runtime-interaction.txt"),
+                atomically: true,
+                encoding: .utf8
+            )
+            print("DESIGN_CRAFT_RUNTIME_INTERACTION_CONFIRMED")
+            return true
+        } catch {
+            print("DESIGN_CRAFT_RUNTIME_INTERACTION_FAILED:\(error)")
+            return false
+        }
+    }
+}
+
 @main
 final class AppDelegate: UIResponder, UIApplicationDelegate {
     func application(
@@ -13,6 +46,14 @@ final class AppDelegate: UIResponder, UIApplicationDelegate {
         )
         configuration.delegateClass = SceneDelegate.self
         return configuration
+    }
+
+    func application(
+        _ application: UIApplication,
+        open url: URL,
+        options: [UIApplication.OpenURLOptionsKey: Any] = [:]
+    ) -> Bool {
+        RuntimeInteraction.handle(url)
     }
 }
 
@@ -53,7 +94,7 @@ final class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         button.accessibilityIdentifier = "evidence-action"
         button.heightAnchor.constraint(greaterThanOrEqualToConstant: 44).isActive = true
         button.addAction(UIAction { [weak self] _ in
-            _ = self?.confirmRuntimeInteraction()
+            _ = RuntimeInteraction.confirm(statusLabel: self?.statusLabel)
         }, for: .touchUpInside)
 
         let stack = UIStackView(arrangedSubviews: [title, status, button])
@@ -80,7 +121,7 @@ final class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         print("DESIGN_CRAFT_RUNTIME_LAUNCHED")
 
         if let url = connectionOptions.urlContexts.first?.url {
-            _ = handleRuntimeURL(url)
+            _ = RuntimeInteraction.handle(url, statusLabel: statusLabel)
         }
     }
 
@@ -88,37 +129,6 @@ final class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         guard let url = urlContexts.first?.url else {
             return
         }
-        _ = handleRuntimeURL(url)
-    }
-
-    private func handleRuntimeURL(_ url: URL) -> Bool {
-        print("DESIGN_CRAFT_RUNTIME_URL_RECEIVED:\(url.absoluteString)")
-        guard url.scheme == "designcraft-evidence", url.host == "confirm" else {
-            return false
-        }
-        return confirmRuntimeInteraction()
-    }
-
-    private func confirmRuntimeInteraction() -> Bool {
-        statusLabel?.text = "Runtime interaction confirmed"
-        guard let documents = FileManager.default.urls(
-            for: .documentDirectory,
-            in: .userDomainMask
-        ).first else {
-            print("DESIGN_CRAFT_RUNTIME_INTERACTION_FAILED:no-documents-directory")
-            return false
-        }
-        do {
-            try "Runtime interaction confirmed\n".write(
-                to: documents.appendingPathComponent("runtime-interaction.txt"),
-                atomically: true,
-                encoding: .utf8
-            )
-            print("DESIGN_CRAFT_RUNTIME_INTERACTION_CONFIRMED")
-            return true
-        } catch {
-            print("DESIGN_CRAFT_RUNTIME_INTERACTION_FAILED:\(error)")
-            return false
-        }
+        _ = RuntimeInteraction.handle(url, statusLabel: statusLabel)
     }
 }
