@@ -1,0 +1,27 @@
+{
+  "schema": "design-craft.comparative-variants.v1",
+  "host": "pi",
+  "variants": [
+    {
+      "id": "baseline",
+      "label": "No skill",
+      "skill_paths": []
+    },
+    {
+      "id": "emil",
+      "label": "Emil focused upstream",
+      "skill_paths": [
+        "upstreams/emilkowalski-skills/skills/apple-design",
+        "upstreams/emilkowalski-skills/skills/review-animations",
+        "upstreams/emilkowalski-skills/skills/improve-animations"
+      ]
+    },
+    {
+      "id": "design-craft",
+      "label": "design-craft",
+      "skill_paths": [
+        "skills/design-craft"
+      ]
+    }
+  ]
+}

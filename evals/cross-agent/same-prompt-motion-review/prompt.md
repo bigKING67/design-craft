@@ -65,3 +65,6 @@ Return:
    soft boundaries, and Reduced Motion.
 5. Verified versus unverified claims.
 6. Minimal browser/device validation plan before implementation approval.
+
+Keep the response at 150 lines or fewer. Prioritize at most five blocking
+findings and eight concrete moves; do not restate the full reference library.

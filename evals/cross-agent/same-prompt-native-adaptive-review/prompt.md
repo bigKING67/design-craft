@@ -47,3 +47,6 @@ Return:
 5. Verified versus unverified claims.
 6. Minimal source/build/runtime validation plan, explicitly naming any missing
    iOS Simulator, Android Emulator, and real-device evidence.
+
+Keep the response at 150 lines or fewer. Prioritize at most five blocking
+findings and eight concrete moves; do not restate the full reference library.

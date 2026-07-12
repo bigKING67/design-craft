@@ -7,6 +7,12 @@ thing", "the cards appear one by one", or "an image turns into a card".
 This reference is for naming and prompting. Do not turn a naming question into
 an implementation plan unless the user asks for implementation.
 
+## Contents
+
+- [Output rule](#output-rule)
+- [Glossary](#glossary)
+- [Disambiguation examples](#disambiguation-examples)
+
 ## Output rule
 
 Lead with the best term:

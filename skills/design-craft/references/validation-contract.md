@@ -2,6 +2,19 @@
 
 Use this before calling frontend work complete.
 
+## Contents
+
+- [Minimal command ladder](#minimal-command-ladder)
+- [Route planner argument hygiene](#route-planner-argument-hygiene)
+- [Browser validation](#browser-validation)
+- [Screenshot evidence](#screenshot-evidence)
+- [Native runtime validation](#native-runtime-validation)
+- [Design-system validation](#design-system-validation)
+- [Route summary fields](#route-summary-fields)
+- [Quality score](#quality-score)
+- [Cross-agent validation](#cross-agent-validation)
+- [Unverified work](#unverified-work)
+
 ## Minimal command ladder
 
 Pick the smallest command set that covers the change:
@@ -31,7 +44,7 @@ For the `design-craft` source repo itself, use:
   findings plus local design-craft review signals; use `--json-only` only when
   raw upstream detector compatibility is required.
 - `scripts/design_craft_seed_design.sh --target <project-dir>` when a new or
-  weak developer-product surface needs the bundled Vercel Geist `DESIGN.md`
+  weak developer-product surface needs the bundled original `DESIGN.md`
   pair as its initial design-system authority.
 - `scripts/design_craft_taste_review.sh --target <screenshot-or-project>`
   when a product UI taste score or screenshot critique needs a stable review
@@ -178,7 +191,7 @@ Check and report:
 
 - Whether the design-system contract was enforced, evolved, inferred from code,
   or not applicable.
-- Whether the bundled Vercel Geist seed templates were used as the initial
+- Whether the bundled developer-product seed templates were used as the initial
   baseline, and whether the project had a stronger style authority.
 - New hard-coded colors, arbitrary spacing, arbitrary radii, arbitrary shadows,
   font sizes, or timing values, and why they are justified.
@@ -218,7 +231,8 @@ report:
 - `performance_review_required`
 - `runtime_validation_required`, `runtime_validation_kind`,
   `native_validation_required`, and `preferred_runtime_tool`
-- `vercel_geist_seed_applicable` and reason
+- `developer_product_seed_applicable` and reason; legacy route payloads may also
+  expose `vercel_geist_seed_applicable` as a compatibility alias
 
 Never say a subagent was enabled unless it actually spawned. Never say browser
 validation passed unless a browser tool verified the target.

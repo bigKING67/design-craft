@@ -23,3 +23,6 @@ Return:
 4. Concrete design moves, using design-craft vocabulary where relevant.
 5. Verified versus unverified claims.
 6. Minimal validation plan required before implementation.
+
+Keep the response at 150 lines or fewer. Prioritize at most five blocking
+findings and eight concrete moves; do not restate the full reference library.

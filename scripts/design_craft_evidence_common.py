@@ -65,6 +65,17 @@ def tree_sha256(
     )
 
 
+def files_sha256(root: Path, relative_paths: list[str] | tuple[str, ...]) -> str:
+    """Hash a named contract without making unrelated repository files decisive."""
+    values: dict[str, str] = {}
+    for relative in sorted(relative_paths):
+        path = root / relative
+        if not path.is_file():
+            raise FileNotFoundError(f"contract file is missing: {path}")
+        values[relative] = sha256_file(path)
+    return digest_snapshot(values)
+
+
 def git_output(root: Path, *args: str) -> str:
     return subprocess.check_output(
         ["git", "-C", str(root), *args],
@@ -198,6 +209,18 @@ def read_version(skill_root: Path) -> str:
 
 def redacted_path(path: Path) -> str:
     resolved = path.expanduser().resolve()
+    try:
+        repository = git_root(resolved)
+    except (OSError, RuntimeError, subprocess.CalledProcessError):
+        repository = None
+    if repository is not None and (repository / "skills/design-craft/SKILL.md").is_file():
+        try:
+            relative = resolved.relative_to(repository)
+        except ValueError:
+            pass
+        else:
+            suffix = relative.as_posix()
+            return "$DESIGN_CRAFT_HOME" if suffix == "." else f"$DESIGN_CRAFT_HOME/{suffix}"
     home = Path.home().resolve()
     try:
         relative = resolved.relative_to(home)
@@ -229,6 +252,14 @@ def skill_provenance(skill_root: Path) -> dict[str, object]:
         repo_dirty = payload.get("repo_dirty")
         if schema == "design-craft.install.v2" and not isinstance(repo_dirty, bool):
             raise ValueError(f"installation metadata has invalid repo dirty state: {metadata_path}")
+        release_state = payload.get("release_state")
+        if schema == "design-craft.install.v2" and release_state not in {
+            "development",
+            "release_candidate",
+            "released",
+            "unknown",
+        }:
+            raise ValueError(f"installation metadata has invalid release state: {metadata_path}")
         source_commit = str(payload.get("source_commit", ""))
         if not re.fullmatch(r"[0-9a-f]{40}", source_commit):
             raise ValueError(f"installation metadata has invalid source commit: {metadata_path}")
@@ -256,6 +287,7 @@ def skill_provenance(skill_root: Path) -> dict[str, object]:
             "skill_source_commit": source_commit,
             "skill_source_dirty": skill_source_dirty,
             "repo_dirty": repo_dirty,
+            "release_state": release_state,
             "skill_tree_sha256": digest,
             "skill_path": redacted_path(skill_root),
         }
@@ -266,6 +298,7 @@ def skill_provenance(skill_root: Path) -> dict[str, object]:
         "skill_source_commit": git_head(root),
         "skill_source_dirty": git_dirty(root, skill_root),
         "repo_dirty": git_dirty(root),
+        "release_state": "unknown",
         "skill_tree_sha256": digest,
         "skill_path": redacted_path(skill_root),
     }

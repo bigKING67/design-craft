@@ -17,6 +17,7 @@ from design_craft_native_runtime_validate import (
     EVIDENCE_SCHEMA,
     REQUIRED_ARTIFACT_ROLES,
     REQUIRED_ASSERTIONS,
+    native_contract_sha256,
     validate_evidence,
 )
 
@@ -135,6 +136,7 @@ def main() -> int:
             fixture_root,
             ignored_dirs={"build", ".gradle"},
         ),
+        "contract_sha256": native_contract_sha256(args.platform),
         "capture_context": (
             f"{os.environ.get('GITHUB_SERVER_URL')}/{os.environ.get('GITHUB_REPOSITORY')}/actions/runs/{os.environ.get('GITHUB_RUN_ID')}"
             if os.environ.get("GITHUB_ACTIONS") == "true"

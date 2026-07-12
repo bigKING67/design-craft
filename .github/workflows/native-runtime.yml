@@ -9,6 +9,10 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: native-runtime-${{ github.ref }}
+  cancel-in-progress: false
+
 jobs:
   ios-simulator:
     runs-on: macos-latest
@@ -27,7 +31,7 @@ jobs:
           name: native-runtime-ios-${{ github.run_id }}
           path: ${{ runner.temp }}/native-runtime-ios
           if-no-files-found: error
-          retention-days: 30
+          retention-days: 90
 
   android-emulator:
     runs-on: ubuntu-latest
@@ -63,4 +67,4 @@ jobs:
           name: native-runtime-android-${{ github.run_id }}
           path: ${{ runner.temp }}/native-runtime-android
           if-no-files-found: error
-          retention-days: 30
+          retention-days: 90

@@ -8,7 +8,15 @@ import json
 import shutil
 import subprocess
 import sys
+import tempfile
 from pathlib import Path
+
+from design_craft_native_release_bundle import (
+    asset_names as native_asset_names,
+    validate as validate_native_release_bundle,
+    validate_run_observation,
+)
+from design_craft_release_assets import asset_names, validate as validate_release_assets
 
 
 SCHEMA = "design-craft.github-checks.v1"
@@ -128,6 +136,11 @@ def run_self_check() -> None:
     if latest != tag_success or errors:
         raise RuntimeError("latest successful tag run did not validate")
 
+    package_assets = set(asset_names("0.5.0"))
+    native_assets = set(native_asset_names("0.5.0"))
+    if len(package_assets | native_assets) != 6 or package_assets & native_assets:
+        raise RuntimeError("GitHub Release contract must require six distinct assets")
+
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
@@ -136,6 +149,11 @@ def main() -> int:
         "--require-tag-run",
         action="store_true",
         help="Require the latest v<VERSION> tag-push run for every workflow.",
+    )
+    parser.add_argument(
+        "--require-release-assets",
+        action="store_true",
+        help="Require a published GitHub Release and validated package plus native-runtime bundle assets.",
     )
     parser.add_argument("--check", action="store_true")
     args = parser.parse_args()
@@ -172,6 +190,88 @@ def main() -> int:
         if tag_result.returncode != 0 or tag_result.stdout.strip() != head:
             errors.append(f"tag {required_branch} must exist and point to current HEAD")
 
+    release_payload: dict[str, object] | None = None
+    release_assets_validation: dict[str, object] | None = None
+    if args.require_release_assets:
+        version = (ROOT / "VERSION").read_text(encoding="utf-8").strip()
+        release_tag = f"v{version}"
+        if not repo:
+            errors.append("cannot verify GitHub Release without a repository")
+        else:
+            release_result = run(
+                ["gh", "api", f"repos/{repo}/releases/tags/{release_tag}"]
+            )
+            if release_result.returncode != 0:
+                errors.append(
+                    release_result.stderr.strip()
+                    or f"GitHub Release {release_tag} does not exist"
+                )
+            else:
+                try:
+                    release_payload = json.loads(release_result.stdout)
+                except json.JSONDecodeError as exc:
+                    errors.append(f"invalid GitHub Release payload: {exc}")
+                else:
+                    if release_payload.get("draft") is True:
+                        errors.append(f"GitHub Release {release_tag} must not be a draft")
+                    if release_payload.get("prerelease") is True:
+                        errors.append(f"GitHub Release {release_tag} must not be a prerelease")
+                    if release_payload.get("tag_name") != release_tag:
+                        errors.append(f"GitHub Release tag must be {release_tag}")
+                    package_names = asset_names(version)
+                    native_names = native_asset_names(version)
+                    expected_assets = {*package_names, *native_names}
+                    observed_assets = {
+                        item.get("name")
+                        for item in release_payload.get("assets", [])
+                        if isinstance(item, dict)
+                    }
+                    missing_assets = sorted(expected_assets - observed_assets)
+                    if missing_assets:
+                        errors.append(
+                            "GitHub Release is missing required assets: "
+                            + ", ".join(missing_assets)
+                        )
+                    else:
+                        with tempfile.TemporaryDirectory(
+                            prefix="design-craft-release-download-"
+                        ) as tmp_value:
+                            download = run(
+                                [
+                                    "gh",
+                                    "release",
+                                    "download",
+                                    release_tag,
+                                    "--repo",
+                                    repo,
+                                    "--dir",
+                                    tmp_value,
+                                    *[
+                                        argument
+                                        for name in (*package_names, *native_names)
+                                        for argument in ("--pattern", name)
+                                    ],
+                                ]
+                            )
+                            if download.returncode != 0:
+                                errors.append(
+                                    download.stderr.strip()
+                                    or "cannot download GitHub Release assets"
+                                )
+                            else:
+                                package_validation = validate_release_assets(Path(tmp_value))
+                                native_validation = validate_native_release_bundle(
+                                    Path(tmp_value),
+                                    verify_remote_run=False,
+                                    require_current_source=True,
+                                )
+                                release_assets_validation = {
+                                    "package": package_validation,
+                                    "native": native_validation,
+                                }
+                                errors.extend(package_validation.get("errors", []))
+                                errors.extend(native_validation.get("errors", []))
+
     if repo and head:
         for workflow in WORKFLOWS:
             result = run(
@@ -188,7 +288,7 @@ def main() -> int:
                     "--limit",
                     "20",
                     "--json",
-                    "databaseId,status,conclusion,headSha,headBranch,url,event,createdAt",
+                    "attempt,databaseId,status,conclusion,headSha,headBranch,url,event,createdAt,workflowName",
                 ]
             )
             if result.returncode != 0:
@@ -212,6 +312,26 @@ def main() -> int:
             selected_runs[workflow] = latest
             errors.extend(run_errors)
 
+    if args.require_release_assets:
+        native_validation = (
+            release_assets_validation.get("native")
+            if isinstance(release_assets_validation, dict)
+            else None
+        )
+        selected_native = selected_runs.get("native-runtime.yml")
+        if not isinstance(native_validation, dict):
+            errors.append("native release asset validation is unavailable")
+        elif not isinstance(selected_native, dict):
+            errors.append("cannot bind native release assets to the selected tag run")
+        else:
+            manifest_run = native_validation.get("github_run")
+            if not isinstance(manifest_run, dict):
+                errors.append("native release manifest does not contain github_run")
+            else:
+                errors.extend(
+                    validate_run_observation(manifest_run, expected_run=selected_native)
+                )
+
     payload = {
         "schema": SCHEMA,
         "root": str(ROOT),
@@ -221,6 +341,8 @@ def main() -> int:
         "required_branch": required_branch,
         "workflows": results,
         "selected_runs": selected_runs,
+        "release": release_payload,
+        "release_assets_validation": release_assets_validation,
         "ok": not errors,
         "errors": errors,
     }

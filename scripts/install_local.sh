@@ -132,8 +132,10 @@ write_metadata() {
   fi
 
   python3 - "${target}" "${name}" "${version}" "${ROOT_DIR}" "${commit}" "${repo}" "${repo_dirty}" "${skill_source_dirty}" <<'PY'
-import json
 import hashlib
+import json
+import re
+import subprocess
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
@@ -147,6 +149,32 @@ if "://" in repo:
         host = f"{host}:{parsed.port}"
     repo = urlunsplit((parsed.scheme, host, parsed.path, "", ""))
 target_path = Path(target)
+source_root_path = Path(source_root)
+
+
+def release_state() -> str:
+    changelog_path = source_root_path / "CHANGELOG.md"
+    if not changelog_path.is_file():
+        return "unknown"
+    changelog = changelog_path.read_text(encoding="utf-8")
+    match = re.search(rf"^## {re.escape(version)} - (?P<label>[^\n]+)$", changelog, flags=re.M)
+    if not match:
+        return "unknown"
+    label = match.group("label").strip()
+    if label == "Unreleased":
+        return "development"
+    if not re.fullmatch(r"[0-9]{4}-[0-9]{2}-[0-9]{2}", label):
+        return "unknown"
+    tag_result = subprocess.run(
+        ["git", "-C", str(source_root_path), "rev-list", "-n", "1", f"v{version}"],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.DEVNULL,
+        text=True,
+        check=False,
+    )
+    return "released" if tag_result.stdout.strip() == commit else "release_candidate"
+
+
 tree = hashlib.sha256()
 for path in sorted(target_path.rglob("*")):
     if not path.is_file() or "__pycache__" in path.parts or path.name in {".DS_Store", ".design-craft-install.json"} or path.suffix in {".pyc", ".pyo"}:
@@ -162,6 +190,7 @@ payload = {
     "installer_version": 3,
     "skill_name": name,
     "version": version,
+    "release_state": release_state(),
     "source_root": source_root,
     "source_path": str(Path(source_root) / "skills" / name),
     "source_repo": repo,

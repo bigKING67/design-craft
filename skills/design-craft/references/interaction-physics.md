@@ -4,6 +4,16 @@ Use this for drag, swipe, sheet, drawer, carousel, scrubber, reordering,
 momentum, rubber-band, interruptible transition, or direct-manipulation work.
 For ordinary hover/color transitions, `motion-quality.md` is sufficient.
 
+## Contents
+
+- [Direct response](#direct-response)
+- [Presentation-value interruption](#presentation-value-interruption)
+- [Spring language](#spring-language)
+- [Velocity handoff and projection](#velocity-handoff-and-projection)
+- [Soft boundaries and hysteresis](#soft-boundaries-and-hysteresis)
+- [Performance and accessibility](#performance-and-accessibility)
+- [Verification packet](#verification-packet)
+
 ## Direct response
 
 - Show press feedback on pointer/touch down, not only on click/up.

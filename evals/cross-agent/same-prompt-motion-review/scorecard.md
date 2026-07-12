@@ -11,4 +11,4 @@ generic-agent runs. It is not itself an agent output.
 | Evidence level labeling | 15 | Labels whether timing/performance claims are static, browser-observed, or unverified. | Claims smoothness or runtime performance without browser evidence. |
 | Verified/unverified boundary | 15 | Separates inspected CSS/behavior from unverified hover, focus, reduced-motion, and interruption states. | Claims interaction states without testing them. |
 | Concrete design moves | 15 | Recommends transform-based 1:1 tracking, presentation-value interruption, velocity handoff/projection, soft boundaries, and a reduced-motion path. | Gives vague "make it smoother" advice or suggests `transition-all`. |
-| Scope control and unrelated changes | 10 | Keeps recommendations scoped to motion behavior and UI validation. | Suggests unrelated layout or data changes to solve animation issues. |
+| Scope control and unrelated changes | 10 | Keeps recommendations scoped to motion behavior, respects the 150-line budget, and surfaces decisive validation. | Suggests unrelated changes, restates the whole library, or buries priorities in an overlong review. |

@@ -40,6 +40,8 @@ REQUIRED_PACKED_PATHS = {
     "skills/design-craft/SKILL.md",
     "skills/design-craft/VERSION",
     "skills/design-craft/COMPATIBILITY.json",
+    "skills/design-craft/templates/developer-product/design.md",
+    "skills/design-craft/templates/developer-product/design.dark.md",
 }
 
 ALLOWED_PATHS = {
@@ -121,6 +123,7 @@ def package_errors(
     if compatibility is not None:
         route = compatibility.get("codex_route_pack", {})
         evidence = compatibility.get("evidence_contracts", {})
+        maintenance = compatibility.get("maintenance_contracts", {})
         expected = {
             "schema": "design-craft.codex-route-pack.v2",
             "manifest_schema": "codex.frontend-route-pack.manifest.v1",
@@ -132,13 +135,25 @@ def package_errors(
         ):
             errors.append("COMPATIBILITY.json must pin the route-pack v2 contracts")
         expected_evidence = {
-            "cross_agent": "design-craft.cross-agent-score.v2",
-            "native_runtime": "design-craft.native-runtime-evidence.v2",
+            "cross_agent": "design-craft.cross-agent-score.v3",
+            "native_runtime": "design-craft.native-runtime-evidence.v3",
             "release_verification": "design-craft.release-verification.v1",
             "github_checks": "design-craft.github-checks.v1",
         }
         if any(evidence.get(key) != value for key, value in expected_evidence.items()):
             errors.append("COMPATIBILITY.json must pin the release evidence contracts")
+        expected_maintenance = {
+            "install": "design-craft.install.v2",
+            "sync_status": "design-craft.sync-status.v2",
+            "release_assets": "design-craft.release-assets.v1",
+            "native_release_bundle": "design-craft.native-release-bundle.v1",
+            "cross_agent_run": "design-craft.cross-agent-run.v2",
+            "comparative_run": "design-craft.comparative-run.v2",
+            "comparative_judge_run": "design-craft.comparative-judge-run.v1",
+            "comparative_result": "design-craft.comparative-result.v2",
+        }
+        if any(maintenance.get(key) != value for key, value in expected_maintenance.items()):
+            errors.append("COMPATIBILITY.json must pin the maintenance contracts")
     return errors
 
 
@@ -279,10 +294,20 @@ def self_check() -> list[str]:
             "routing_version": 2,
         },
         "evidence_contracts": {
-            "cross_agent": "design-craft.cross-agent-score.v2",
-            "native_runtime": "design-craft.native-runtime-evidence.v2",
+            "cross_agent": "design-craft.cross-agent-score.v3",
+            "native_runtime": "design-craft.native-runtime-evidence.v3",
             "release_verification": "design-craft.release-verification.v1",
             "github_checks": "design-craft.github-checks.v1",
+        },
+        "maintenance_contracts": {
+            "install": "design-craft.install.v2",
+            "sync_status": "design-craft.sync-status.v2",
+            "release_assets": "design-craft.release-assets.v1",
+            "native_release_bundle": "design-craft.native-release-bundle.v1",
+            "cross_agent_run": "design-craft.cross-agent-run.v2",
+            "comparative_run": "design-craft.comparative-run.v2",
+            "comparative_judge_run": "design-craft.comparative-judge-run.v1",
+            "comparative_result": "design-craft.comparative-result.v2",
         },
     }
     if package_errors(valid_package, valid_lock, valid_compatibility, "0.5.0"):

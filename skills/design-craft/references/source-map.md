@@ -4,6 +4,14 @@ This project keeps upstream repositories as pristine submodules under
 `upstreams/`. The installed skill is a curated fusion layer; do not edit
 upstream files directly.
 
+## Contents
+
+- [Upstreams](#upstreams)
+- [External design references](#external-design-references)
+- [Local calibration artifacts](#local-calibration-artifacts)
+- [Maintenance rule](#maintenance-rule)
+- [Attribution rule](#attribution-rule)
+
 ## Upstreams
 
 ### Leonxlnx/taste-skill
@@ -79,57 +87,71 @@ production-readiness flows.
 - Initial commit note:
   `2026-06-29T15:30:16+02:00 Update README.md`
 - Current absorbed commit:
-  `f76beceb7d3fc8c43309cefad5a095a206103a4e`
+  `b57fc72f8415d84db1e9cfb43270466bf12ac6e2`
 - Current reviewed commit:
-  `220e8607c90b17337d210125777b7b695f26c221`
+  `7bb7061b5cf7de15ea1aeaf00fbd9e6592a20fce`
 - 2026-07-10 decision: `absorbed`; original design-craft references now cover
   product-design principles, Apple-style direct manipulation,
   presentation-value interruption, spring response/damping, velocity handoff,
   momentum projection, rubber-banding, accessibility variants, and optical
   typography.
-- 2026-07-11 review note: the new range changes one README apostrophe only;
-  no additional design or motion guidance was imported.
+- 2026-07-11 audit-to-plan absorption note: selectively absorbed the new
+  `improve-animations` recon, frequency mapping, eight-dimension audit, finding
+  vetting, impact/effort prioritization, self-contained plan, and reconciliation
+  workflow into original design-craft guidance and templates. Absolute upstream
+  heuristics remain calibrated by project authority and runtime evidence.
+- 2026-07-11 provenance note: the following `b024c8b` commit changes only README
+  newsletter copy; no additional behavior was imported.
+- 2026-07-12 provenance note: `4691d39` and merge commit `7bb7061` correct two
+  README typos only; no additional behavior was imported.
 - Primary material to inspect:
   - `skills/emil-design-eng/SKILL.md`
+  - `skills/apple-design/SKILL.md`
   - `skills/review-animations/SKILL.md`
   - `skills/review-animations/STANDARDS.md`
+  - `skills/improve-animations/SKILL.md`
+  - `skills/improve-animations/AUDIT.md`
+  - `skills/improve-animations/PLAN-TEMPLATE.md`
   - `skills/animation-vocabulary/SKILL.md`
 
 Use this upstream for motion purpose, frequency-based animation decisions,
 easing and duration standards, origin-aware physicality, interruptibility,
 gesture craft, animation performance, reduced-motion behavior, strict motion
-reviews, and animation vocabulary. Do not absorb its standalone greeting or
-tone; keep the local `design-craft` voice evidence-led and project-aware.
+reviews, codebase-wide audit-to-plan workflows, and animation vocabulary. Do
+not absorb standalone tone or unqualified framework/performance claims; keep
+the local `design-craft` voice evidence-led, measured, and project-aware.
 
 ## External design references
 
-### Vercel Geist `design.md`
+### Vercel design references and clean-room replacement
 
 - URLs:
   - `https://vercel.com/design.md`
   - `https://vercel.com/design.dark.md`
 - Review note: inspected as public design-system references on 2026-06-24.
-- Vendored templates:
+- Historical package paths:
   - `templates/vercel-geist/design.md`
   - `templates/vercel-geist/design.dark.md`
+- Current original templates:
+  - `templates/developer-product/design.md`
+  - `templates/developer-product/design.dark.md`
 - Workflow absorption:
   - `references/design-system-contract.md`
 
-Use the vendored files as the default initial template for new or weakly
-specified developer-product, SaaS, dashboard, admin, infra, docs, and tooling
-surfaces. They provide a strong complete baseline: structured tokens plus
-human-readable rationale, identical light/dark token names with theme-specific
-values, role-based color scales, component state coverage, motion limits, focus
-rules, and UI copy discipline.
+The Vercel endpoints were reviewed as design-system research. The current
+package no longer redistributes their verbatim snapshots. It ships an original
+design-craft developer-product pair with structured semantic tokens, matched
+light/dark roles, component states, motion limits, focus rules, and UI copy
+discipline.
 
-Use `scripts/design_craft_seed_design.sh` to copy the vendored pair into a
+Use `scripts/design_craft_seed_design.sh` to copy the original pair into a
 target project as `DESIGN.md` and `DESIGN.dark.md`. The route wrapper reports
-`vercel_geist_seed_applicable` so a new or weak developer-product surface does
+`developer_product_seed_applicable` so a new or weak developer-product surface does
 not rely on an implicit style-authority guess.
 
 When a project already has a credible `DESIGN.md`, token system, brand guide, or
 strong runtime visual language, keep the project authority first and use the
-Geist templates as a comparison baseline for missing system pieces.
+developer-product templates as a comparison baseline for missing system pieces.
 
 ## Local calibration artifacts
 

@@ -2,7 +2,7 @@
 set -euo pipefail
 
 SKILL_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-TEMPLATE_DIR="${SKILL_ROOT}/templates/vercel-geist"
+TEMPLATE_DIR="${SKILL_ROOT}/templates/developer-product"
 
 TARGET="."
 FORCE=0
@@ -18,7 +18,7 @@ Options:
   --force                 Overwrite existing DESIGN.md / DESIGN.dark.md.
   --dry-run               Print planned writes without changing files.
 
-Copies the bundled Vercel Geist seed templates to:
+Copies the original design-craft developer-product seed templates to:
   <project-dir>/DESIGN.md
   <project-dir>/DESIGN.dark.md
 EOF
@@ -109,5 +109,5 @@ write_template "${DARK_TEMPLATE}" "${DARK_TARGET}"
 if [[ "${DRY_RUN}" == "1" ]]; then
   echo "dry_run: no files changed"
 else
-  echo "seeded Vercel Geist DESIGN.md pair"
+  echo "seeded design-craft developer-product DESIGN.md pair"
 fi

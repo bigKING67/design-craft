@@ -62,15 +62,29 @@ def validate(*, certify: bool, require_tag: bool, require_remote: bool) -> dict:
         errors.append("skills/design-craft/VERSION must match VERSION")
 
     evidence_contracts = compatibility.get("evidence_contracts", {})
+    maintenance_contracts = compatibility.get("maintenance_contracts", {})
     expected_contracts = {
-        "cross_agent": "design-craft.cross-agent-score.v2",
-        "native_runtime": "design-craft.native-runtime-evidence.v2",
+        "cross_agent": "design-craft.cross-agent-score.v3",
+        "native_runtime": "design-craft.native-runtime-evidence.v3",
         "release_verification": SCHEMA,
         "github_checks": "design-craft.github-checks.v1",
     }
     for key, expected in expected_contracts.items():
         if evidence_contracts.get(key) != expected:
             errors.append(f"COMPATIBILITY.json evidence_contracts.{key} must be {expected}")
+    expected_maintenance = {
+        "install": "design-craft.install.v2",
+        "sync_status": "design-craft.sync-status.v2",
+        "release_assets": "design-craft.release-assets.v1",
+        "native_release_bundle": "design-craft.native-release-bundle.v1",
+        "cross_agent_run": "design-craft.cross-agent-run.v2",
+        "comparative_run": "design-craft.comparative-run.v2",
+        "comparative_judge_run": "design-craft.comparative-judge-run.v1",
+        "comparative_result": "design-craft.comparative-result.v2",
+    }
+    for key, expected in expected_maintenance.items():
+        if maintenance_contracts.get(key) != expected:
+            errors.append(f"COMPATIBILITY.json maintenance_contracts.{key} must be {expected}")
 
     changelog = read(ROOT / "CHANGELOG.md")
     section = release_section(changelog, version)
@@ -93,13 +107,20 @@ def validate(*, certify: bool, require_tag: bool, require_remote: bool) -> dict:
 
     head = run_git("rev-parse", "HEAD").stdout.strip()
     tag = f"v{version}"
+    tag_type = None
     if require_tag:
         tag_result = run_git("rev-list", "-n", "1", tag)
         if tag_result.returncode != 0 or tag_result.stdout.strip() != head:
             errors.append(f"tag {tag} must exist and point to current HEAD")
+        type_result = run_git("cat-file", "-t", tag)
+        tag_type = type_result.stdout.strip() if type_result.returncode == 0 else None
+        if tag_type != "tag":
+            errors.append(f"tag {tag} must be an annotated tag object")
 
     upstream_ahead = None
     upstream_behind = None
+    remote_branch_head = None
+    remote_tag_head = None
     if require_remote:
         counts = run_git("rev-list", "--left-right", "--count", "@{upstream}...HEAD")
         if counts.returncode != 0:
@@ -114,6 +135,44 @@ def validate(*, certify: bool, require_tag: bool, require_remote: bool) -> dict:
                     errors.append(
                         f"current branch must match upstream (ahead={upstream_ahead}, behind={upstream_behind})"
                     )
+        branch = run_git("symbolic-ref", "--quiet", "--short", "HEAD").stdout.strip()
+        remote_name = run_git("config", "--get", f"branch.{branch}.remote").stdout.strip()
+        merge_ref = run_git("config", "--get", f"branch.{branch}.merge").stdout.strip()
+        if not remote_name or not merge_ref:
+            errors.append("current branch must have a configured remote and merge ref")
+        else:
+            branch_remote = subprocess.run(
+                ["git", "ls-remote", remote_name, merge_ref],
+                cwd=ROOT,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=True,
+                check=False,
+            )
+            for line in branch_remote.stdout.splitlines():
+                fields = line.split()
+                if len(fields) == 2 and fields[1] == merge_ref:
+                    remote_branch_head = fields[0]
+                    break
+            if branch_remote.returncode != 0 or remote_branch_head != head:
+                errors.append(f"live {remote_name} {merge_ref} must point to current HEAD")
+
+            tag_remote = subprocess.run(
+                ["git", "ls-remote", "--tags", remote_name, f"refs/tags/{tag}", f"refs/tags/{tag}^{{}}"],
+                cwd=ROOT,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=True,
+                check=False,
+            )
+            peeled_ref = f"refs/tags/{tag}^{{}}"
+            for line in tag_remote.stdout.splitlines():
+                fields = line.split()
+                if len(fields) == 2 and fields[1] == peeled_ref:
+                    remote_tag_head = fields[0]
+                    break
+            if tag_remote.returncode != 0 or remote_tag_head != head:
+                errors.append(f"remote annotated tag {tag} must resolve to current HEAD")
 
     return {
         "schema": SCHEMA,
@@ -121,11 +180,14 @@ def validate(*, certify: bool, require_tag: bool, require_remote: bool) -> dict:
         "version": version,
         "head": head,
         "tag": tag,
+        "tag_type": tag_type,
         "certify": certify,
         "require_tag": require_tag,
         "require_remote": require_remote,
         "upstream_ahead": upstream_ahead,
         "upstream_behind": upstream_behind,
+        "remote_branch_head": remote_branch_head,
+        "remote_tag_head": remote_tag_head,
         "ok": not errors,
         "errors": errors,
     }

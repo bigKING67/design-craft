@@ -324,7 +324,7 @@ def certified_four_host_status() -> tuple[bool, list[str]]:
                 "cursor",
                 "--require-host",
                 "claude",
-                "--require-schema-v2",
+                "--require-current-schema",
                 "--require-current-source",
             ],
             timeout=90,
@@ -591,7 +591,7 @@ def build_gates(profile: str, native_gate: Gate) -> list[Gate]:
         text_gate(
             "portable_ci",
             ".github/workflows/validate.yml",
-            ["ubuntu-latest", "macos-latest", '"22"', '"24"', '"3.11"', '"3.12"', '"3.13"', "submodules: recursive", "--profile portable", "--min-score 95"],
+            ["ubuntu-latest", "macos-latest", "windows-latest", '"22"', '"24"', '"3.11"', '"3.12"', '"3.13"', "submodules: recursive", "--profile portable", "--min-score 95"],
             "portable CI covers Ubuntu/macOS, Node 22/24, Python 3.11/3.12/3.13, recursive submodules, and maturity 95",
             "portable CI matrix is incomplete",
         ),
@@ -643,7 +643,7 @@ def certification_cap(
         )
     if not four_host_certified:
         reasons.append(
-            "current-source v2 Codex/Pi/Cursor/Claude evidence is incomplete"
+            "current-source v3 Codex/Pi/Cursor/Claude evidence is incomplete"
         )
     return (100 if not reasons else 95), reasons
 

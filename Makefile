@@ -3,13 +3,29 @@ SKILL_CREATOR_QUICK_VALIDATE ?= $(HOME)/.codex/skills/.system/skill-creator/scri
 INSTALL_ARGS ?=
 export PYTHONDONTWRITEBYTECODE := 1
 
-.PHONY: validate validate-portable package-check public-repo-check workflow-check skill-quick-validate score maturity-portable maturity-local maturity-desktop pass audit critique motion taste-review seed-dry-run route-smoke doctor platform-scan-check native-runtime-probe native-runtime-check codex-route-pack-check init-dry-run active-scope-check cross-agent-check cross-agent-observed-check cross-agent-four-host-check cross-agent-motion-observed-check cross-agent-native-observed-check l4-capture-check historical-l4-metadata-check real-l4-check smell-smoke static-review-smoke upstream-report upstream-freshness-audit upstream-remote-report sync-status sync-status-remote install install-with-legacy install-verify legacy-alias-smoke release-contract-check github-release-check release-gate-source publish-local release-gate-local release-gate release-readiness certification-install-check release-certify-prepublish release-certify-publish release-certify-internal release-certify release-tag-verify
+.PHONY: validate validate-portable lint contract-tests package-check public-repo-check workflow-check skill-quick-validate score maturity-portable maturity-local maturity-desktop pass audit critique motion motion-plan-dry-run taste-review seed-dry-run route-smoke doctor platform-scan-check native-runtime-probe native-runtime-check native-release-bundle-check native-release-bundle-build native-release-bundle-verify codex-route-pack-check init-dry-run active-scope-check cross-agent-check cross-agent-observed-check cross-agent-four-host-check cross-agent-motion-observed-check cross-agent-native-observed-check comparative-check comparative-observed-check l4-capture-check historical-l4-metadata-check real-l4-check smell-smoke static-review-smoke upstream-report upstream-freshness-audit upstream-remote-report sync-status-check sync-status sync-status-remote install install-with-legacy install-verify legacy-alias-smoke release-contract-check release-assets-check release-assets-build release-assets-verify github-release-check github-governance-contract-check github-governance-check github-governance-apply release-final-verify release-gate-source publish-local release-gate-local release-gate release-readiness certification-install-check release-certify-prepublish release-certify-publish release-certify-internal release-certify release-tag-verify
 
 validate:
 	bash scripts/validate.sh
 
 validate-portable:
 	bash scripts/validate.sh --portable
+
+lint:
+	python3 scripts/design_craft_lint.py --check
+
+contract-tests:
+	python3 scripts/design_craft_cross_agent_run.py --check
+	python3 scripts/design_craft_cross_agent_validate.py --check
+	python3 scripts/design_craft_comparative_run.py --check
+	python3 scripts/design_craft_comparative_judge.py --check
+	python3 scripts/design_craft_comparative_validate.py --check
+	python3 scripts/design_craft_native_runtime_validate.py --check
+	python3 scripts/design_craft_native_release_bundle.py --check
+	python3 scripts/design_craft_github_checks.py --check
+	python3 scripts/design_craft_github_governance.py --check
+	python3 scripts/design_craft_release_assets.py --check
+	python3 scripts/design_craft_workflow_validate.py --check --validate
 
 package-check:
 	python3 scripts/design_craft_package_validate.py --check --validate
@@ -47,6 +63,9 @@ critique:
 
 motion:
 	bash scripts/design_craft_pass.sh --target skills/design-craft --mode motion --skip-route --skip-score
+
+motion-plan-dry-run:
+	@tmp_dir="$$(mktemp -d -t design-craft-motion-plan.XXXXXX)" && trap 'rm -rf "$$tmp_dir"' EXIT && python3 scripts/design_craft_motion_plan.py --target "$$tmp_dir" --title "Retarget the sheet from its presentation value" --severity P1 --category interruptibility --dry-run >/dev/null
 
 taste-review:
 	bash scripts/design_craft_taste_review.sh --target skills/design-craft --context "release smoke" --evidence-level L0 >/dev/null
@@ -87,6 +106,16 @@ native-runtime-probe:
 native-runtime-check:
 	python3 scripts/design_craft_native_runtime_validate.py --validate --require ios --require android --require-real-device --require-current-source --json
 
+native-release-bundle-check:
+	python3 scripts/design_craft_native_release_bundle.py --check
+
+native-release-bundle-build:
+	@: "$${NATIVE_RUN_ID:?Set NATIVE_RUN_ID to the successful v$$(cat VERSION) native-runtime tag run}"
+	python3 scripts/design_craft_native_release_bundle.py --build --force --run-id "$$NATIVE_RUN_ID" --real-device-root "$${NATIVE_REAL_DEVICE_ROOT:-evals/native-runtime}" --output-dir "$${RELEASE_ASSET_DIR:-dist/release}"
+
+native-release-bundle-verify:
+	python3 scripts/design_craft_native_release_bundle.py --validate --verify-run --output-dir "$${RELEASE_ASSET_DIR:-dist/release}"
+
 codex-route-pack-check:
 	python3 scripts/design_craft_codex_route_pack.py --check >/dev/null
 	python3 scripts/design_craft_codex_route_pack.py --strict >/dev/null
@@ -112,13 +141,21 @@ cross-agent-observed-check:
 	python3 scripts/design_craft_cross_agent_validate.py --observed-task evals/cross-agent/same-prompt-native-adaptive-review >/dev/null
 
 cross-agent-four-host-check:
-	@set -e; for task in same-prompt-dashboard-review same-prompt-motion-review same-prompt-native-adaptive-review; do python3 scripts/design_craft_cross_agent_validate.py --observed-task "evals/cross-agent/$$task" --require-host codex --require-host pi --require-host cursor --require-host claude --require-schema-v2 --require-current-source; done
+	@set -e; for task in same-prompt-dashboard-review same-prompt-motion-review same-prompt-native-adaptive-review; do python3 scripts/design_craft_cross_agent_validate.py --observed-task "evals/cross-agent/$$task" --require-host codex --require-host pi --require-host cursor --require-host claude --require-current-schema --require-current-source; done
 
 cross-agent-motion-observed-check:
 	python3 scripts/design_craft_cross_agent_validate.py --observed-task evals/cross-agent/same-prompt-motion-review >/dev/null
 
 cross-agent-native-observed-check:
 	python3 scripts/design_craft_cross_agent_validate.py --observed-task evals/cross-agent/same-prompt-native-adaptive-review >/dev/null
+
+comparative-check:
+	python3 scripts/design_craft_comparative_run.py --check
+	python3 scripts/design_craft_comparative_judge.py --check
+	python3 scripts/design_craft_comparative_validate.py --check
+
+comparative-observed-check:
+	python3 scripts/design_craft_comparative_validate.py --require-observed
 
 l4-capture-check:
 	python3 scripts/design_craft_l4_capture.py --check >/dev/null
@@ -128,8 +165,7 @@ historical-l4-metadata-check:
 	python3 scripts/design_craft_l4_case_validate.py --case-dir "$$case_dir" --strict >/dev/null
 
 real-l4-check:
-	@case_dir="evals/product-ui-taste/before-after/data""hub-live""-center-review-workbench"; \
-	python3 scripts/design_craft_l4_case_validate.py --case-dir "$$case_dir" --strict --require-existing-files >/dev/null
+	python3 scripts/design_craft_l4_case_validate.py --case-dir evals/product-ui-taste/before-after/generic-review-workbench-local-l4 --strict --require-existing-files >/dev/null
 
 smell-smoke:
 	python3 scripts/design_craft_css_smell_scan.py --target evals/fixtures/css-smells --json >/dev/null
@@ -154,6 +190,9 @@ sync-status:
 sync-status-remote:
 	python3 scripts/design_craft_sync_status.py --remote
 
+sync-status-check:
+	python3 scripts/design_craft_sync_status.py --check
+
 install:
 	bash scripts/install_local.sh $(INSTALL_ARGS)
 
@@ -171,7 +210,16 @@ legacy-alias-smoke:
 release-contract-check:
 	python3 scripts/design_craft_release_verify.py
 
-release-gate-source: validate-portable package-check public-repo-check workflow-check skill-quick-validate score maturity-portable pass audit critique motion taste-review seed-dry-run route-smoke doctor platform-scan-check codex-route-pack-check init-dry-run active-scope-check cross-agent-check cross-agent-observed-check l4-capture-check historical-l4-metadata-check smell-smoke upstream-report legacy-alias-smoke release-contract-check
+release-assets-check:
+	python3 scripts/design_craft_release_assets.py --check
+
+release-assets-build:
+	python3 scripts/design_craft_release_assets.py --build --force --output-dir "$${RELEASE_ASSET_DIR:-dist/release}"
+
+release-assets-verify:
+	python3 scripts/design_craft_release_assets.py --validate --output-dir "$${RELEASE_ASSET_DIR:-dist/release}"
+
+release-gate-source: validate-portable lint contract-tests package-check public-repo-check workflow-check skill-quick-validate score maturity-portable pass audit critique motion motion-plan-dry-run taste-review seed-dry-run route-smoke doctor platform-scan-check native-release-bundle-check codex-route-pack-check init-dry-run active-scope-check cross-agent-check cross-agent-observed-check comparative-check l4-capture-check historical-l4-metadata-check smell-smoke upstream-report legacy-alias-smoke sync-status-check release-assets-check github-governance-contract-check release-contract-check
 
 publish-local: release-gate-source
 	bash scripts/install_local.sh $(INSTALL_ARGS)
@@ -194,6 +242,7 @@ release-certify-prepublish:
 	$(MAKE) release-gate-source
 	python3 scripts/upstream_absorption_report.py --remote-details --fail-on-unreviewed
 	$(MAKE) real-l4-check
+	$(MAKE) comparative-observed-check
 	$(MAKE) cross-agent-four-host-check
 	$(MAKE) native-runtime-check
 	$(MAKE) certification-install-check
@@ -213,5 +262,19 @@ release-certify:
 github-release-check:
 	python3 scripts/design_craft_github_checks.py
 
+github-governance-contract-check:
+	python3 scripts/design_craft_github_governance.py --check
+
+github-governance-check:
+	python3 scripts/design_craft_github_governance.py
+
+github-governance-apply:
+	python3 scripts/design_craft_github_governance.py --apply --confirm-external-write
+
 release-tag-verify:
 	bash scripts/design_craft_release_certify.sh tag
+
+release-final-verify:
+	bash scripts/design_craft_release_certify.sh tag
+	python3 scripts/design_craft_github_checks.py --require-tag-run --require-release-assets
+	python3 scripts/design_craft_github_governance.py

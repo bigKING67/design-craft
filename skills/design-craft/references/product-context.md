@@ -5,6 +5,14 @@ Use this when a project has, needs, or can benefit from an optional
 `DESIGN.md` remains the only authority for visual language, tokens,
 components, themes, and motion.
 
+## Contents
+
+- [Separation of authority](#separation-of-authority)
+- [Recommended shape](#recommended-shape)
+- [Discovery and confidence](#discovery-and-confidence)
+- [Platform meaning](#platform-meaning)
+- [Review checklist](#review-checklist)
+
 ## Separation of authority
 
 `PRODUCT.md` owns:

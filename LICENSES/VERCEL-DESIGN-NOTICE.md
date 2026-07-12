@@ -1,7 +1,7 @@
-# Vercel design reference notice
+# Vercel design reference history
 
-The files below are source snapshots fetched from Vercel's public design
-endpoints on 2026-06-24:
+Historical commits before `0.5.0` contained source snapshots fetched from
+Vercel's public design endpoints on 2026-06-24 at these compatibility paths:
 
 - `skills/design-craft/templates/vercel-geist/design.md`
 - `skills/design-craft/templates/vercel-geist/design.dark.md`
@@ -11,7 +11,16 @@ Source URLs:
 - https://vercel.com/design.md
 - https://vercel.com/design.dark.md
 
-They remain attributable to Vercel. The MIT license for design-craft does not
-relicense Vercel-authored material. No separate redistribution license was
-identified in the fetched files, so consumers should verify the applicable
-Vercel terms before redistributing those snapshots outside this package.
+Those historical snapshots remain attributable to Vercel. No separate
+redistribution license was identified in the fetched files, so the current
+package no longer contains their verbatim contents.
+
+The active seed templates are original design-craft material under the project
+MIT license:
+
+- `skills/design-craft/templates/developer-product/design.md`
+- `skills/design-craft/templates/developer-product/design.dark.md`
+
+The legacy `templates/vercel-geist/` files now contain migration notices only.
+The source URLs remain listed for provenance and research; they are not bundled
+as current package content.

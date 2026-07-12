@@ -5,13 +5,13 @@ from __future__ import annotations
 
 import argparse
 import json
-import platform
 from datetime import date
 from pathlib import Path
 
 from design_craft_cross_agent_validate import (
     OBSERVED_REQUIRED_CRITERIA,
-    OBSERVED_SCHEMA_V2,
+    OBSERVED_SCHEMA_V3,
+    cross_agent_contract_sha256,
     read_text,
     scorecard_weights,
     sha256_text,
@@ -26,10 +26,10 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--task-dir", required=True)
     parser.add_argument("--agent", required=True, choices=("codex", "pi", "cursor", "claude"))
-    parser.add_argument("--agent-version", required=True)
-    parser.add_argument("--model", required=True)
-    parser.add_argument("--reasoning-profile", required=True)
-    parser.add_argument("--runner-os", default=platform.platform())
+    parser.add_argument("--agent-version", help="Deprecated assertion; derived from --run-manifest.")
+    parser.add_argument("--model", help="Deprecated assertion; derived from --run-manifest.")
+    parser.add_argument("--reasoning-profile", help="Deprecated assertion; derived from --run-manifest.")
+    parser.add_argument("--runner-os", help="Deprecated assertion; derived from --run-manifest.")
     parser.add_argument(
         "--skill-root",
         required=True,
@@ -47,8 +47,9 @@ def main() -> int:
         default=str(ROOT / "skills/design-craft"),
         help="Current canonical source tree used to validate an installed skill copy.",
     )
-    parser.add_argument("--command-summary", required=True)
+    parser.add_argument("--command-summary", help="Deprecated assertion; derived from --run-manifest.")
     parser.add_argument("--criteria-json", required=True)
+    parser.add_argument("--run-manifest", required=True)
     parser.add_argument("--output")
     parser.add_argument("--score-output")
     parser.add_argument("--date", default=date.today().isoformat())
@@ -74,12 +75,14 @@ def main() -> int:
         else task_dir / f"score.{args.agent}.json"
     )
     criteria_path = Path(args.criteria_json).expanduser().resolve()
+    run_manifest_path = Path(args.run_manifest).expanduser().resolve()
 
     for path, label in (
         (task_dir / "prompt.md", "prompt"),
         (task_dir / "scorecard.md", "scorecard"),
         (output, "agent output"),
         (criteria_path, "criteria JSON"),
+        (run_manifest_path, "run manifest"),
     ):
         if not path.is_file():
             parser.error(f"{label} does not exist: {path}")
@@ -95,7 +98,7 @@ def main() -> int:
         parser.error(
             "observed host skill tree does not match the clean provenance skill tree"
         )
-    provenance["skill_path"] = redacted_path(skill_root)
+    provenance_skill_path = redacted_path(provenance_skill_root)
     if provenance.get("skill_source_dirty") is not False and not args.allow_dirty_source:
         parser.error("refusing to record certified evidence from a dirty skill source")
 
@@ -105,6 +108,55 @@ def main() -> int:
         parser.error(f"invalid criteria JSON: {exc}")
     if not isinstance(criteria, dict):
         parser.error("criteria JSON must contain an object")
+    try:
+        run_manifest = json.loads(run_manifest_path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError as exc:
+        parser.error(f"invalid run manifest JSON: {exc}")
+    if run_manifest.get("schema") != "design-craft.cross-agent-run.v2":
+        parser.error("run manifest must use design-craft.cross-agent-run.v2")
+    if run_manifest.get("host") != args.agent:
+        parser.error("run manifest host must match --agent")
+    asserted_values = {
+        "--agent-version": (args.agent_version, run_manifest.get("host_version")),
+        "--model": (args.model, run_manifest.get("model")),
+        "--reasoning-profile": (
+            args.reasoning_profile,
+            run_manifest.get("reasoning_profile"),
+        ),
+        "--runner-os": (args.runner_os, run_manifest.get("runner_os")),
+        "--command-summary": (args.command_summary, run_manifest.get("command")),
+    }
+    for label, (asserted, observed) in asserted_values.items():
+        if asserted is not None and asserted != observed:
+            parser.error(f"{label} must match the observed run manifest")
+    if run_manifest.get("prompt_sha256") != sha256_text(read_text(task_dir / "prompt.md")):
+        parser.error("run manifest prompt hash must match prompt.md")
+    if run_manifest.get("output_sha256") != sha256_file(output):
+        parser.error("run manifest output hash must match the observed output")
+    if run_manifest.get("output_path") != output.name:
+        parser.error("run manifest output_path must match the observed output")
+    if run_manifest.get("skill_tree_sha256") != observed_tree:
+        parser.error("run manifest skill tree must match the observed/provenance tree")
+    if run_manifest.get("skill_install_mode") != "isolated_project_copy":
+        parser.error("run manifest must use an isolated project skill copy")
+    if run_manifest.get("workspace_kind") != "repo_external_isolated_project":
+        parser.error("run manifest workspace must be repo-external and isolated")
+    if run_manifest.get("returncode") != 0 or run_manifest.get("worktree_unchanged") is not True:
+        parser.error("run manifest must record a successful, non-mutating host run")
+    if run_manifest.get("worktree_before_sha256") != run_manifest.get("worktree_after_sha256"):
+        parser.error("run manifest worktree fingerprints must match")
+    for key in (
+        "host_version",
+        "model",
+        "model_observation",
+        "reasoning_profile",
+        "reasoning_observation",
+        "runner_os",
+        "skill_path",
+        "command",
+    ):
+        if not isinstance(run_manifest.get(key), str) or not run_manifest[key].strip():
+            parser.error(f"run manifest {key} must be a non-empty string")
 
     weights = scorecard_weights(task_dir / "scorecard.md")
     if set(weights) != set(OBSERVED_REQUIRED_CRITERIA):
@@ -137,21 +189,32 @@ def main() -> int:
         output_relative = output.relative_to(task_dir).as_posix()
     except ValueError:
         parser.error("agent output must be stored inside the task directory")
+    try:
+        run_manifest_relative = run_manifest_path.relative_to(task_dir).as_posix()
+    except ValueError:
+        parser.error("run manifest must be stored inside the task directory")
 
     payload = {
-        "schema": OBSERVED_SCHEMA_V2,
+        "schema": OBSERVED_SCHEMA_V3,
         "task_id": task_dir.name,
         "agent": args.agent,
         "verified": True,
-        "agent_version": args.agent_version,
-        "model": args.model,
-        "reasoning_profile": args.reasoning_profile,
-        "runner_os": args.runner_os,
+        "agent_version": run_manifest["host_version"],
+        "model": run_manifest["model"],
+        "model_observation": run_manifest["model_observation"],
+        "reasoning_profile": run_manifest["reasoning_profile"],
+        "reasoning_observation": run_manifest["reasoning_observation"],
+        "runner_os": run_manifest["runner_os"],
         "date": args.date,
         "prompt_sha256": sha256_text(read_text(task_dir / "prompt.md")),
         "scorecard_sha256": sha256_file(task_dir / "scorecard.md"),
+        "contract_sha256": cross_agent_contract_sha256(),
+        "run_manifest_path": run_manifest_relative,
+        "run_manifest_sha256": sha256_file(run_manifest_path),
         **provenance,
-        "command_summary": args.command_summary,
+        "skill_path": run_manifest["skill_path"],
+        "provenance_skill_path": provenance_skill_path,
+        "command_summary": run_manifest["command"],
         "output_path": output_relative,
         "output_sha256": sha256_file(output),
         "score": score,
@@ -168,6 +231,7 @@ def main() -> int:
         skill_root=canonical_skill_root,
         score_path=score_output,
         require_schema_v2=True,
+        require_current_schema=True,
         require_current_source=not args.allow_dirty_source,
     ))
     if errors:

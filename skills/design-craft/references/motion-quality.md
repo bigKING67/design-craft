@@ -6,11 +6,25 @@ when the user says motion feels weird, slow, flashy, dizzy, or janky.
 
 For direct manipulation, drag/swipe, interruptible sheets, momentum, or
 rubber-banding, also read `interaction-physics.md`.
+For a whole-codebase motion inventory and implementation-plan workflow, read
+`motion-audit-planning.md` instead of expanding a single-interaction review.
 
 This is a local `design-craft` fusion of Emil Kowalski-style design engineering
 motion rules with the existing project-authority workflow. It is not a universal
 animation aesthetic. Live runtime behavior, scoped project rules, product
 context, and `DESIGN.md` still win.
+
+## Contents
+
+- [Should this animate?](#first-question-should-this-animate)
+- [Timing and easing](#timing-and-easing)
+- [Physicality](#physicality)
+- [Interruptibility](#interruptibility)
+- [Gesture craft](#gesture-craft)
+- [Performance](#performance)
+- [Accessibility](#accessibility)
+- [Review format](#review-format)
+- [Debugging checklist](#debugging-checklist)
 
 ## First question: should this animate?
 
@@ -26,8 +40,8 @@ Frequency decides restraint:
 
 | Frequency | Decision |
 | --- | --- |
-| 100+ times/day, keyboard shortcuts, command palette toggles | No animation. |
-| Tens/day, hover effects, list navigation | Remove or drastically reduce. |
+| 100+ times/day, keyboard shortcuts, command palette toggles | Default to no travel or delay; keep only immediate causal feedback when it improves comprehension. |
+| Tens/day, hover effects, list navigation | Usually remove or sharply reduce decorative motion. |
 | Occasional, modals, drawers, toasts | Standard animation. |
 | Rare or first-time, onboarding, feedback, celebrations | Delight is allowed. |
 
@@ -69,8 +83,9 @@ more bounce.
 
 ## Physicality
 
-- Never enter from `scale(0)`. Start from `scale(0.9-0.97)` plus opacity so the
-  element feels present before it grows.
+- Avoid `scale(0)` for ordinary product UI entrances. Start around
+  `scale(0.9-0.97)` plus opacity unless a project-authorized expressive motion
+  language and runtime evidence justify a different treatment.
 - Popovers, dropdowns, and tooltips should scale from their trigger, not the
   center. Use framework transform-origin variables when available.
 - Modals are the exception: centered overlays can keep `transform-origin:
@@ -139,7 +154,11 @@ Rapidly-triggered UI should retarget smoothly.
 
 ## Review format
 
-For a motion review, use:
+For a normal motion review, lead with one verdict, no more than five blocking
+findings, and no more than eight concrete moves. Target 150 lines or fewer;
+expand into a full property-by-property audit only when requested.
+
+Use:
 
 | Before | After | Why |
 | --- | --- | --- |
@@ -149,9 +168,10 @@ For a motion review, use:
 
 Then give a verdict:
 
-- **Block**: feel-breaking regression, animation on high-frequency/keyboard
-  action, `scale(0)`, `ease-in` UI motion, obvious layout-property animation, or
-  missing reduced-motion behavior on movement.
+- **Block**: feel-breaking regression, motion that delays a high-frequency or
+  keyboard action, unjustified `scale(0)`, `ease-in` UI response, costly
+  layout-property animation on a hot path, or missing reduced-motion behavior
+  on meaningful movement.
 - **Approve**: purpose is clear, frequency is appropriate, timing/easing are
   within bounds, motion is interruptible where needed, performance risk is
   controlled, and accessibility is handled.

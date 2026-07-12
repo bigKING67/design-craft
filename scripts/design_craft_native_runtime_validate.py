@@ -17,6 +17,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from design_craft_evidence_common import (
+    files_sha256,
     git_is_ancestor,
     git_root,
     git_tree_sha256,
@@ -26,7 +27,8 @@ from design_craft_evidence_common import (
 
 
 PROBE_SCHEMA = "design-craft.native-runtime-probe.v1"
-EVIDENCE_SCHEMA = "design-craft.native-runtime-evidence.v2"
+EVIDENCE_SCHEMA_V2 = "design-craft.native-runtime-evidence.v2"
+EVIDENCE_SCHEMA = "design-craft.native-runtime-evidence.v3"
 VALIDATION_SCHEMA = "design-craft.native-runtime-validation.v1"
 ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_SKILL_ROOT = ROOT / "skills/design-craft"
@@ -109,6 +111,28 @@ ARTIFACT_ROLE_SUFFIXES = {
     "interaction_marker": {".txt"},
     "launch_log": {".txt", ".log"},
 }
+NATIVE_CONTRACT_FILES = {
+    "ios": (
+        "scripts/design_craft_evidence_common.py",
+        "scripts/design_craft_native_runtime_record.py",
+        "scripts/design_craft_native_runtime_validate.py",
+        "scripts/native_runtime_ci_ios.sh",
+        ".github/workflows/native-runtime.yml",
+    ),
+    "android": (
+        "scripts/design_craft_evidence_common.py",
+        "scripts/design_craft_native_runtime_record.py",
+        "scripts/design_craft_native_runtime_validate.py",
+        "scripts/native_runtime_android_common.sh",
+        "scripts/native_runtime_ci_android.sh",
+        "scripts/native_runtime_device_android.sh",
+        ".github/workflows/native-runtime.yml",
+    ),
+}
+
+
+def native_contract_sha256(platform_name: str) -> str:
+    return files_sha256(ROOT, NATIVE_CONTRACT_FILES[platform_name])
 PNG_SIGNATURE = b"\x89PNG\r\n\x1a\n"
 
 
@@ -242,8 +266,9 @@ def validate_evidence(
         return {}, [f"invalid evidence JSON {path}: {exc}"]
 
     errors: list[str] = []
-    if payload.get("schema") != EVIDENCE_SCHEMA:
-        errors.append(f"{path}: schema must be {EVIDENCE_SCHEMA}")
+    evidence_schema = payload.get("schema")
+    if evidence_schema not in {EVIDENCE_SCHEMA_V2, EVIDENCE_SCHEMA}:
+        errors.append(f"{path}: schema must be {EVIDENCE_SCHEMA_V2} or {EVIDENCE_SCHEMA}")
     if payload.get("platform") != expected_platform:
         errors.append(f"{path}: platform must be {expected_platform}")
     if payload.get("verified") is not True:
@@ -282,7 +307,10 @@ def validate_evidence(
         errors.append(f"{path}: repo_dirty must be boolean")
     if not isinstance(payload.get("skill_version"), str) or not payload["skill_version"].strip():
         errors.append(f"{path}: skill_version is required")
-    for key in ("skill_tree_sha256", "fixture_tree_sha256"):
+    digest_keys = ["skill_tree_sha256", "fixture_tree_sha256"]
+    if evidence_schema == EVIDENCE_SCHEMA:
+        digest_keys.append("contract_sha256")
+    for key in digest_keys:
         if not re.fullmatch(r"[0-9a-f]{64}", str(payload.get(key, ""))):
             errors.append(f"{path}: {key} must be 64 lowercase hex characters")
     if not isinstance(payload.get("capture_context"), str) or not payload["capture_context"].strip():
@@ -360,6 +388,8 @@ def validate_evidence(
             errors.append(f"{path}: artifacts are missing required roles: {missing_roles}")
 
     if require_current_source:
+        if evidence_schema != EVIDENCE_SCHEMA:
+            errors.append(f"{path}: certified native evidence must use {EVIDENCE_SCHEMA}")
         source_commit = str(payload.get("source_commit", ""))
         expected_skill_tree = tree_sha256(skill_root)
         expected_fixture_tree = tree_sha256(
@@ -377,6 +407,10 @@ def validate_evidence(
         if payload.get("fixture_tree_sha256") != expected_fixture_tree:
             errors.append(
                 f"{path}: fixture_tree_sha256 must match the current {expected_platform} fixture tree"
+            )
+        if evidence_schema == EVIDENCE_SCHEMA and payload.get("contract_sha256") != native_contract_sha256(expected_platform):
+            errors.append(
+                f"{path}: contract_sha256 must match the current {expected_platform} runtime contract"
             )
         if re.fullmatch(r"[0-9a-f]{40}", source_commit):
             try:
@@ -500,6 +534,7 @@ def run_self_check() -> list[str]:
             "skill_version": "0.0.0",
             "skill_tree_sha256": "b" * 64,
             "fixture_tree_sha256": "c" * 64,
+            "contract_sha256": "e" * 64,
             "capture_context": "fixture",
             "commands": ["xcrun simctl boot fixture"],
             "assertions": {
@@ -553,28 +588,66 @@ def run_self_check() -> list[str]:
             errors.append("self-check failed to reject a missing required artifact role")
         valid["artifacts"].append(removed_artifact)
 
-        valid["skill_version"] = read_version(DEFAULT_SKILL_ROOT)
-        valid["skill_tree_sha256"] = tree_sha256(DEFAULT_SKILL_ROOT)
+        source_repo = root / "source-repo"
+        source_skill = source_repo / "skills/design-craft"
+        source_fixtures = source_repo / "evals/native-runtime/fixtures"
+        shutil.copytree(DEFAULT_SKILL_ROOT, source_skill)
+        shutil.copytree(DEFAULT_FIXTURE_ROOT / "ios", source_fixtures / "ios")
+        for command in (
+            ("git", "init", "-q"),
+            ("git", "config", "user.email", "fixture@example.invalid"),
+            ("git", "config", "user.name", "Fixture"),
+            ("git", "add", "."),
+            ("git", "commit", "-qm", "native evidence fixture"),
+        ):
+            subprocess.run(command, cwd=source_repo, check=True)
+
+        valid["skill_version"] = read_version(source_skill)
+        valid["skill_tree_sha256"] = tree_sha256(source_skill)
         valid["fixture_tree_sha256"] = tree_sha256(
-            DEFAULT_FIXTURE_ROOT / "ios",
+            source_fixtures / "ios",
             ignored_dirs={"build", ".gradle"},
         )
-        try:
-            valid["source_commit"] = subprocess.check_output(
-                ["git", "rev-parse", "HEAD"],
-                cwd=ROOT,
-                text=True,
-            ).strip()
-        except subprocess.CalledProcessError:
-            valid["source_commit"] = "a" * 40
+        valid["contract_sha256"] = native_contract_sha256("ios")
+        valid["source_commit"] = subprocess.check_output(
+            ["git", "rev-parse", "HEAD"], cwd=source_repo, text=True
+        ).strip()
         path.write_text(json.dumps(valid), encoding="utf-8")
-        _, current_errors = validate_evidence(path, "ios", require_current_source=True)
+        _, current_errors = validate_evidence(
+            path,
+            "ios",
+            require_current_source=True,
+            skill_root=source_skill,
+            fixture_root=source_fixtures,
+        )
         errors.extend(current_errors)
         valid["fixture_tree_sha256"] = "d" * 64
         path.write_text(json.dumps(valid), encoding="utf-8")
-        _, stale_errors = validate_evidence(path, "ios", require_current_source=True)
+        _, stale_errors = validate_evidence(
+            path,
+            "ios",
+            require_current_source=True,
+            skill_root=source_skill,
+            fixture_root=source_fixtures,
+        )
         if not any("fixture_tree_sha256" in item for item in stale_errors):
             errors.append("self-check failed to reject stale fixture-bound evidence")
+        valid["fixture_tree_sha256"] = tree_sha256(
+            source_fixtures / "ios",
+            ignored_dirs={"build", ".gradle"},
+        )
+        valid["contract_sha256"] = "f" * 64
+        path.write_text(json.dumps(valid), encoding="utf-8")
+        _, contract_errors = validate_evidence(
+            path,
+            "ios",
+            require_current_source=True,
+            skill_root=source_skill,
+            fixture_root=source_fixtures,
+        )
+        if not any("contract_sha256" in item for item in contract_errors):
+            errors.append("self-check failed to reject stale runtime-contract evidence")
+        valid["contract_sha256"] = native_contract_sha256("ios")
 
         device_root = root / "device"
         device_root.mkdir()
@@ -606,6 +679,7 @@ def run_self_check() -> list[str]:
             "platform": "android",
             "runtime_kind": "android_device",
             "fixture_tree_sha256": "e" * 64,
+            "contract_sha256": native_contract_sha256("android"),
             "assertions": {
                 assertion: True for assertion in REQUIRED_ASSERTIONS["android_device"]
             },

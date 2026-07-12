@@ -159,6 +159,7 @@ def build_score(root: Path, run_smoke: bool) -> list[Dimension]:
     foundational_principles = read_text(root / "skills/design-craft/references/foundational-visual-principles.md")
     design_moves = read_text(root / "skills/design-craft/references/design-move-library.md")
     motion_quality = read_text(root / "skills/design-craft/references/motion-quality.md")
+    motion_planning = read_text(root / "skills/design-craft/references/motion-audit-planning.md")
     motion_vocabulary = read_text(root / "skills/design-craft/references/motion-vocabulary.md")
     browser_evidence_helper = runtime_text(root, "design_craft_browser_evidence.py")
     route_helper = runtime_text(root, "design_craft_route.sh")
@@ -172,6 +173,7 @@ def build_score(root: Path, run_smoke: bool) -> list[Dimension]:
     pass_smoke = False
     critique_smoke = False
     motion_smoke = False
+    motion_plan_smoke = False
     seed_smoke = False
     taste_review_smoke = False
     if run_smoke:
@@ -193,6 +195,22 @@ def build_score(root: Path, run_smoke: bool) -> list[Dimension]:
         )
         motion_smoke = check_command(
             ["bash", "scripts/design_craft_pass.sh", "--target", "skills/design-craft", "--mode", "motion", "--skip-route", "--skip-score"],
+            root,
+        )
+        motion_plan_smoke = check_command(
+            [
+                sys.executable,
+                "scripts/design_craft_motion_plan.py",
+                "--target",
+                str(root),
+                "--title",
+                "Retarget the sheet from its presentation value",
+                "--severity",
+                "P1",
+                "--category",
+                "interruptibility",
+                "--dry-run",
+            ],
             root,
         )
         seed_smoke = check_command(
@@ -224,6 +242,9 @@ def build_score(root: Path, run_smoke: bool) -> list[Dimension]:
                 ("Evidence levels" in taste_calibration, "taste evidence levels calibrated", "Define evidence levels for screenshot/browser taste scores."),
                 (has(root, "skills/design-craft/references/intent-map.md"), "intent map reference exists", "Add an intent map for subjective frontend requests."),
                 (has(root, "skills/design-craft/references/motion-quality.md"), "motion quality reference exists", "Add a motion-quality reference."),
+                (has(root, "skills/design-craft/references/motion-audit-planning.md"), "motion audit-to-plan reference exists", "Add a codebase-wide motion audit and plan workflow."),
+                ("Phase 1: motion recon" in motion_planning and "Phase 4: write executable plans" in motion_planning, "motion recon-to-plan workflow present", "Document recon, vetted prioritization, and executable motion plans."),
+                (has(root, "skills/design-craft/templates/motion-plan/plan.md"), "motion implementation-plan template exists", "Add a self-contained motion plan template."),
                 (has(root, "skills/design-craft/references/motion-vocabulary.md"), "motion vocabulary reference exists", "Add a motion-vocabulary reference."),
                 ("scale(0)" in motion_quality and "transition-all" in motion_quality, "motion anti-patterns encoded", "Encode motion anti-patterns such as scale(0) and transition-all."),
                 ("Origin-aware animation" in motion_vocabulary, "origin-aware motion vocabulary present", "Add origin-aware animation vocabulary."),
@@ -240,32 +261,32 @@ def build_score(root: Path, run_smoke: bool) -> list[Dimension]:
                 ("candidate_skills" in skill, "route candidate semantics present", "Separate route candidates from selected skills."),
                 (has(root, "skills/design-craft/references/design-system-contract.md"), "design-system contract exists", "Add design-system contract reference."),
                 (
-                    has(root, "skills/design-craft/templates/vercel-geist/design.md")
-                    and has(root, "skills/design-craft/templates/vercel-geist/design.dark.md"),
-                    "Vercel Geist seed templates vendored",
-                    "Vendor the default Vercel Geist seed templates.",
+                    has(root, "skills/design-craft/templates/developer-product/design.md")
+                    and has(root, "skills/design-craft/templates/developer-product/design.dark.md"),
+                    "original developer-product seed templates bundled",
+                    "Bundle original light/dark developer-product seed templates.",
                 ),
                 (
-                    "templates/vercel-geist/design.md" in skill
-                    and "templates/vercel-geist/design.dark.md" in skill,
-                    "Vercel Geist seed routed from SKILL.md",
-                    "Route the Vercel Geist seed templates from SKILL.md.",
+                    "templates/developer-product/design.md" in skill
+                    and "templates/developer-product/design.dark.md" in skill,
+                    "developer-product seed routed from SKILL.md",
+                    "Route the original developer-product seed templates from SKILL.md.",
                 ),
                 (
-                    "default seed" in design_system.lower() and "Vercel Geist" in design_system,
+                    "default seed" in design_system.lower() and "developer-product" in design_system.lower(),
                     "default seed policy documented",
-                    "Document when to use the bundled Vercel Geist seed.",
+                    "Document when to use the bundled original developer-product seed.",
                 ),
                 (
                     has(root, "scripts/design_craft_seed_design.sh"),
-                    "Vercel Geist seed helper exists",
-                    "Add a helper for seeding DESIGN.md from the bundled Geist templates.",
+                    "developer-product seed helper exists",
+                    "Add a helper for seeding DESIGN.md from the bundled original templates.",
                 ),
                 (
-                    "vercel_geist_seed_applicable" in route_helper
-                    or "templates/vercel-geist" in route_helper,
-                    "route summary reports Vercel seed applicability",
-                    "Make route summaries say when the Geist seed is applicable.",
+                    "developer_product_seed_applicable" in route_helper
+                    or "templates/developer-product" in route_helper,
+                    "route summary reports developer-product seed applicability",
+                    "Make route summaries say when the original seed is applicable.",
                 ),
                 ("theme parity" in design_system.lower(), "theme parity guidance present", "Cover light/dark token parity."),
                 ("token layers" in design_system.lower(), "token layer guidance present", "Cover token role separation."),
@@ -321,7 +342,7 @@ def build_score(root: Path, run_smoke: bool) -> list[Dimension]:
                 (has(root, "skills/design-craft/COMPATIBILITY.json"), "route-pack compatibility contract exists", "Add a portable route-pack compatibility contract."),
                 (has(root, "scripts/design_craft_sync_status.py"), "source/install and route-pack sync status exists", "Add a non-mutating sync status command."),
                 (has(root, "scripts/design_craft_release_verify.py"), "release certification contract exists", "Add a version, clean-tree, tag, and remote release verifier."),
-                ("templates/vercel-geist/design.md" in source_map, "Vercel Geist source map present", "Map vendored Vercel templates in source-map."),
+                ("templates/developer-product/design.md" in source_map, "developer-product seed source map present", "Map the original developer-product templates in source-map."),
                 (("data flow" in read_text(root / "skills/design-craft/references/architecture-quality.md").lower()) or ("data-flow" in read_text(root / "skills/design-craft/references/architecture-quality.md").lower()), "data-flow guidance present", "Add data-flow guidance."),
                 ("migration" in read_text(root / "skills/design-craft/references/architecture-quality.md").lower(), "migration risk covered", "Add migration/compatibility guidance."),
             ],
@@ -340,6 +361,7 @@ def build_score(root: Path, run_smoke: bool) -> list[Dimension]:
                 (has(root, "scripts/design_craft_package_validate.py"), "publishable package boundary validator exists", "Add a Pi/npm package size and path validator."),
                 (has(root, "scripts/design_craft_public_repo_validate.py"), "public repository privacy validator exists", "Add a repository-wide user-home path and license validator."),
                 (has(root, "scripts/design_craft_workflow_validate.py"), "workflow and native runner contract validator exists", "Add a dedicated workflow pinning and native runner validator."),
+                (has(root, "scripts/design_craft_lint.py") and "contract-tests:" in read_text(root / "Makefile"), "dependency-free lint and contract-test lanes exist", "Add dedicated syntax/data lint and isolated contract-test targets."),
                 (has(root, "scripts/design_craft_certification_install_check.sh"), "certification uses an isolated install root", "Verify install parity in a temporary root before publishing live."),
                 (
                     set(json.loads(read_text(root / "package.json")).get("files", []))
@@ -361,16 +383,26 @@ def build_score(root: Path, run_smoke: bool) -> list[Dimension]:
                 (has(root, "scripts/design_craft_score.py"), "score script exists", "Add deterministic score script."),
                 (has(root, "scripts/design_craft_native_runtime_validate.py"), "native runtime evidence validator exists", "Add strict native runtime evidence validation."),
                 (has(root, "scripts/design_craft_native_runtime_record.py") and "reactivecircus/android-emulator-runner@" in read_text(root / ".github/workflows/native-runtime.yml"), "native Simulator/Emulator evidence CI exists", "Add reproducible native runtime fixtures, recording, and CI."),
+                (has(root, "scripts/design_craft_native_release_bundle.py") and "native_release_bundle" in read_text(root / "skills/design-craft/COMPATIBILITY.json"), "deterministic native Release bundle contract exists", "Bind Simulator, Emulator, and physical-device evidence into a deterministic Release asset."),
+                ("native_asset_names" in read_text(root / "scripts/design_craft_github_checks.py") and "bypass_actors must be empty" in read_text(root / "scripts/design_craft_github_governance.py"), "six-asset and no-bypass GitHub release governance exists", "Require all six Release assets and empty branch/tag bypass lists."),
                 ("HOSTS = (\"codex\", \"pi\", \"cursor\", \"claude\")" in read_text(root / "scripts/design_craft_cross_agent_validate.py"), "four-host observed evidence contract exists", "Validate Cursor and Claude independently from Codex and Pi."),
-                ("design-craft.cross-agent-score.v2" in read_text(root / "scripts/design_craft_cross_agent_validate.py") and has(root, "scripts/design_craft_cross_agent_record.py"), "current-source cross-agent evidence binding exists", "Bind cross-agent scores to skill, prompt, scorecard, and output hashes."),
+                ("design-craft.cross-agent-score.v3" in read_text(root / "scripts/design_craft_cross_agent_validate.py") and has(root, "scripts/design_craft_cross_agent_record.py"), "current-source cross-agent evidence binding exists", "Bind cross-agent scores to skill, prompt, scorecard, output, and runner-contract hashes."),
+                (
+                    has(root, "evals/comparative/emil-motion-ablation/variants.json")
+                    and has(root, "evals/comparative/emil-motion-planning-ablation/variants.json")
+                    and has(root, "scripts/design_craft_comparative_judge.py")
+                    and has(root, "scripts/design_craft_comparative_validate.py"),
+                    "blind no-skill/current-Emil/design-craft critique and planning ablations exist",
+                    "Add same-host blind critique and audit-to-plan ablations with a controlled independent judge.",
+                ),
                 ("--require-current-source" in read_text(root / "scripts/design_craft_native_runtime_validate.py"), "current-source native evidence binding exists", "Bind native evidence to current skill and fixture trees."),
                 ("focus-visible" in design_system.lower(), "focus-visible guidance present", "Cover keyboard focus states."),
                 ("component state matrix" in design_system.lower(), "component state matrix present", "Cover shared component states."),
                 (("voice" in design_system.lower()) and ("content" in design_system.lower()), "voice/content guidance present", "Cover action, error, toast, and empty-state copy."),
                 (
-                    "vercel geist seed templates" in validation.lower(),
-                    "Geist seed validation contract present",
-                    "Require delivery to report whether the Geist seed was used.",
+                    "developer-product seed templates" in validation.lower(),
+                    "developer-product seed validation contract present",
+                    "Require delivery to report whether the original seed was used.",
                 ),
                 ("product UI taste score" in validation, "product UI score is distinct from source score", "Distinguish UI taste scores from the workflow source score."),
                 (has(root, "scripts/design_craft_taste_review.sh"), "taste review wrapper exists", "Add a stable product UI taste review wrapper."),
@@ -394,7 +426,8 @@ def build_score(root: Path, run_smoke: bool) -> list[Dimension]:
                 (pass_smoke or not run_smoke, "pass wrapper smoke passes", "Fix pass wrapper smoke."),
                 (critique_smoke or not run_smoke, "critique smoke passes", "Fix critique mode smoke."),
                 (motion_smoke or not run_smoke, "motion pass smoke passes", "Fix motion pass smoke."),
-                (seed_smoke or not run_smoke, "seed helper smoke passes", "Fix Vercel Geist seed helper smoke."),
+                (motion_plan_smoke or not run_smoke, "motion plan scaffold smoke passes", "Fix motion-plan scaffold smoke."),
+                (seed_smoke or not run_smoke, "seed helper smoke passes", "Fix developer-product seed helper smoke."),
                 (taste_review_smoke or not run_smoke, "taste review wrapper smoke passes", "Fix taste review wrapper smoke."),
             ],
         ),

@@ -22,8 +22,8 @@ structure. It keeps scoped project rules, optional `PRODUCT.md`, project
   vocabulary checks.
 - iOS HIG/native-trust, Android Material 3/predictive Back/inset, and adaptive
   shared-versus-platform-specific implementation checks.
-- Bundled Vercel Geist `design.md` / `design.dark.md` seed templates for new or
-  weakly specified developer-product surfaces.
+- Bundled original light/dark `DESIGN.md` seed templates for new or weakly
+  specified developer-product surfaces.
 - Project quality gates for architecture, performance, code elegance, validation,
   and file/directory structure governance.
 
@@ -33,7 +33,7 @@ runtime behavior, and project `DESIGN.md` always outrank generic visual rules.
 The canonical package is still portable: agent-specific integration belongs in
 `adapters/`, while `skills/design-craft/` remains the single source skill.
 The `0.5.0` development contract keeps ordinary portable/local operation at
-95/100 while reserving certified 100/100 for current-source v2 evidence from
+95/100 while reserving certified 100/100 for current-source v3 evidence from
 Codex, Pi, Cursor, and Claude plus observed iOS Simulator, Android Emulator,
 and real-device evidence. Evidence hashes bind the skill tree, fixtures,
 prompt, scorecard, and agent output instead of treating file presence as proof.
@@ -67,9 +67,10 @@ product/platform context and must provide `DESIGN.md` or an explicit
 
 ## Install locally
 
-Repository automation is verified on macOS and Linux. Native Windows shells are
-not currently certified; Windows users should use WSL or a compatible Git Bash
-environment and treat that path as unverified until a Windows CI lane exists.
+Repository automation is verified on macOS and Linux. A Windows Git Bash lane
+is now part of `Validate`, but current-source remote success is still pending;
+do not call native Windows certified until that run succeeds. WSL remains a
+compatible fallback rather than a separately certified runtime.
 
 ```bash
 bash scripts/install_local.sh
@@ -77,8 +78,9 @@ bash scripts/install_local.sh
 
 The installer stages and validates the complete skill, takes an install lock,
 atomically replaces the active copy, restores the previous target on failure,
-records `.design-craft-install.json` version/commit/tree-digest provenance plus
-separate `skill_source_dirty` and `repo_dirty` states, and retains the newest
+records `.design-craft-install.json` version/commit/tree-digest provenance,
+explicit `development | release_candidate | released` state, separate
+`skill_source_dirty` and `repo_dirty` states, and retains the newest
 ten backups by default. Install parity is scoped to the installed skill tree,
 so unrelated benchmark WIP or later ancestor commits do not invalidate an
 unchanged installation. The verifier also reconstructs the skill tree at the
@@ -91,6 +93,14 @@ It syncs:
 skills/design-craft -> ${DESIGN_CRAFT_SKILL_ROOT:-$HOME/.agents/skills}/design-craft
 ```
 
+This checkout is the canonical source for the active
+`~/.agents/skills/design-craft` copy. The installed copy is deliberately not a
+symlink and there is no background watcher or automatic hot update. The safe
+sync sequence is: detect upstream drift, review and pin/absorb it, commit a
+clean source tree, pass the gates, then run the atomic installer. `make
+sync-status` detects a stale install without modifying it; do not install a
+dirty development tree merely to make the status green.
+
 Verify source parity and install provenance:
 
 ```bash
@@ -102,12 +112,13 @@ python3 scripts/design_craft_install_verify.py \
   --require-metadata
 ```
 
-Check the source/install copy and the separate Codex route-pack authority
-without changing either one:
+Check the canonical checkout, cached/live GitHub origin, canonical install,
+optional legacy alias, separate Codex route-pack authority, and reviewed
+external upstreams without changing them:
 
 ```bash
 make sync-status
-make sync-status-remote # also checks mutable upstream heads
+make sync-status-remote # also checks live origin and mutable upstream heads
 ```
 
 `skills/frontend-craft` is a legacy compatibility alias only. New route and
@@ -167,10 +178,14 @@ GitHub Actions and npm metadata updates are tracked separately through
 `.github/dependabot.yml`; action executions remain pinned to reviewed full
 commit SHAs.
 
-Validate workflow pins, native fixture manifests, real iOS deep-link routing,
-Android dialog recovery, and compile-smoke coverage independently with:
+Validate workflow pins, concurrency/timeouts, native fixture manifests, real
+iOS deep-link routing, Android dialog recovery, and compile-smoke coverage
+independently. The dedicated dependency-free lint and contract-test lanes are
+also runnable locally:
 
 ```bash
+make lint
+make contract-tests
 make workflow-check
 ```
 
@@ -230,11 +245,11 @@ Route-pack details live under `adapters/codex/route-pack/`.
 ## Default design seed
 
 For new or weakly specified developer-product, SaaS, dashboard, admin, infra,
-docs, and tooling surfaces, start from the bundled Vercel Geist templates:
+docs, and tooling surfaces, start from the bundled original templates:
 
 ```text
-skills/design-craft/templates/vercel-geist/design.md
-skills/design-craft/templates/vercel-geist/design.dark.md
+skills/design-craft/templates/developer-product/design.md
+skills/design-craft/templates/developer-product/design.dark.md
 ```
 
 When a project already has a credible `DESIGN.md`, token system, brand guide, or
@@ -439,15 +454,17 @@ python3 scripts/design_craft_l4_case_validate.py \
   --strict
 ```
 
-To claim that the referenced PNG artifacts are available on the current
-machine, add `--require-existing-files`. The certified release path does this
-through `make real-l4-check`; the normal portable/local 95-point gate uses
-`make historical-l4-metadata-check` and does not imply artifact availability.
+To claim that referenced PNG artifacts are available, add
+`--require-existing-files`. The certified release path runs
+`make real-l4-check` against the committed, project-neutral generic workbench
+artifacts, so this part of certification is reproducible outside the original
+capture machine. `make historical-l4-metadata-check` separately validates older
+real-project metadata without claiming its private artifacts still exist.
 
 Current project-neutral completed L4 cases are:
 
 - `generic-review-workbench-local-l4`: a local review-workbench fixture with
-  before/after viewport screenshots and responsive metadata.
+  committed before/after viewport screenshots and responsive metadata.
 - `ops-dashboard-decision-surface-l4`: a local operations dashboard fixture
   that demonstrates the `Dashboard card soup -> decision surface` design move.
 - `evals/fixtures/l4-pages/gesture-sheet-interaction/`: deterministic
@@ -459,8 +476,8 @@ Historical real-project L4 provenance is retained for local verification:
 - One historical real application workbench before/after case records
   desktop/mobile screenshot metadata, validation commands, and bounded
   unverified states. `make historical-l4-metadata-check` validates the durable
-  metadata, while `make real-l4-check` additionally requires every referenced
-  artifact to exist locally. Public portable examples remain project-neutral.
+  metadata. Public release certification no longer depends on those private
+  artifact paths; the durable generic case is the existing-file proof.
 
 Run the cross-agent dashboard benchmark validators:
 
@@ -474,32 +491,37 @@ python3 scripts/design_craft_cross_agent_validate.py \
   --observed-task evals/cross-agent/same-prompt-native-adaptive-review
 ```
 
-Legacy v1 Codex/Pi dashboard, gesture-motion, and native-adaptive outputs remain
-valid as the 95/100 baseline. Certified `0.5.0` evidence must be regenerated as
-v2 against the current skill tree for all four hosts; Cursor and Claude remain
-explicitly unverified until those real runs exist.
+Legacy v2 Codex/Pi dashboard, gesture-motion, and native-adaptive artifacts are
+historical 95/100 baseline evidence only. Certified `0.5.0` evidence requires a
+fresh isolated run-manifest v2 plus score schema v3 for Codex, Pi, Cursor, and
+Claude. Cursor and Claude remain explicitly unverified until those runs exist.
 
-Record a v2 score only after preserving the exact host output and filling a
-criteria JSON copied from `evals/cross-agent/_template/criteria.json`:
+Run the host first, then score only the transactionally published output and
+its run manifest. Fill a criteria JSON copied from
+`evals/cross-agent/_template/criteria.json`:
 
 ```bash
+python3 scripts/design_craft_cross_agent_run.py \
+  --task-dir evals/cross-agent/same-prompt-motion-review \
+  --host codex \
+  --model <model> \
+  --reasoning-profile <profile> \
+  --skill-root skills/design-craft
+
 python3 scripts/design_craft_cross_agent_record.py \
   --task-dir evals/cross-agent/same-prompt-motion-review \
   --agent codex \
-  --agent-version "codex-cli <version>" \
-  --model "<observed-model>" \
-  --reasoning-profile "<observed-profile>" \
   --skill-root skills/design-craft \
-  --command-summary "<redacted runner summary>" \
+  --run-manifest evals/cross-agent/same-prompt-motion-review/run.codex.json \
   --criteria-json /path/to/criteria.json
 ```
 
-The recorder computes the headline score from criterion-earned points and binds
-the output, prompt, scorecard, version, source commit, and skill tree hashes.
-For a host-specific copy such as `~/.claude/skills/design-craft` or a project
-`.cursor/skills/design-craft`, pass that exact directory as `--skill-root` and
-use `--provenance-skill-root ~/.agents/skills/design-craft` for clean install
-metadata. Recording fails unless both trees are byte-for-byte equivalent.
+The recorder derives host version, requested model/profile, command, runner OS,
+copied skill path/tree, and worktree fingerprints from the controlled manifest;
+deprecated CLI fields are assertions only. It recomputes the headline score
+from criterion-earned points and binds the output, prompt, scorecard, version,
+source commit, skill tree, run manifest, and runner/adapter contract hashes.
+See `evals/cross-agent/README.md` for the full four-host procedure.
 
 Run static UI smell scanners. These are review signals, not a replacement for
 design judgment or browser evidence:
@@ -582,10 +604,10 @@ python3 scripts/upstream_absorption_report.py --remote-details --fail-on-unrevie
 
 Original design-craft code and documentation are distributed under the MIT
 License in `LICENSE`. Required upstream license and notice text is preserved in
-`LICENSES/` and summarized in `THIRD_PARTY_NOTICES.md`. The Vercel design
-snapshots remain attributable to Vercel and are not relicensed by the
-design-craft MIT license; see `LICENSES/VERCEL-DESIGN-NOTICE.md` before
-redistributing those files outside this package.
+`LICENSES/` and summarized in `THIRD_PARTY_NOTICES.md`. Historical Vercel
+snapshot provenance remains documented, but the current package ships original
+design-craft developer-product templates instead of redistributing the verbatim
+snapshots; see `LICENSES/VERCEL-DESIGN-NOTICE.md`.
 
 ## Local release gate
 
@@ -610,11 +632,30 @@ certified 100/100 must instead pass the stricter non-bypassable contract:
 make release-certify
 ```
 
-It requires all four current-source v2 host runs, current-source Simulator,
-Emulator, and physical-device evidence, a dated release section, a clean
-worktree, local maturity 100/100, and install provenance parity. After pushing
-and tagging, verify tag/HEAD/upstream parity plus successful `Validate` and
+It requires the blind no-skill/Emil/design-craft ablation, all four
+current-source v3 host runs, current-source Simulator, Emulator, and
+physical-device evidence, a dated release section, a clean worktree, local
+maturity 100/100, and install provenance parity. After pushing and tagging,
+verify annotated-tag/live-remote parity plus successful `Validate` and
 `Native runtime evidence` workflow runs with `make release-tag-verify`.
+
+Build the package triplet in an ignored directory. After the annotated tag's
+successful `Native runtime evidence` run and physical-device evidence exist,
+build the separately bound native-runtime triplet from that exact latest tag
+run:
+
+```bash
+make release-assets-build
+make release-assets-verify
+NATIVE_RUN_ID=<successful-tag-run-id> make native-release-bundle-build
+make native-release-bundle-verify
+```
+
+Upload all six assets: package, package checksum, package manifest, native
+bundle, native checksum, and native manifest. Then run
+`make release-final-verify`. It downloads and revalidates both triplets,
+requires the native manifest run id to match the selected latest successful tag
+run, and requires the repository branch/tag governance rulesets.
 
 Certification is intentionally two-phase. `release-certify-prepublish` runs
 all source, remote, L4, four-host, native, and 100-point gates and verifies the
@@ -653,6 +694,12 @@ artifacts must still be reviewed before `ios-observed.json` and
 `android-observed.json` are admitted as durable evidence. A separate physical
 device run must provide `real-device-observed.json`; workflow existence is not
 itself runtime proof.
+
+The release bundle validator packages all three evidence JSON files and their
+declared artifacts only. It rejects undeclared files, duplicate members,
+links/devices, path traversal, non-normalized archive metadata, stale source
+hashes, and a run other than the latest completed successful `v<VERSION>` tag
+push. Its offline self-check also verifies byte-identical double builds.
 
 Runtime evidence stores only a SHA-256-derived runtime identifier. Raw
 Simulator UDIDs, iOS device identifiers, and Android serials must not be

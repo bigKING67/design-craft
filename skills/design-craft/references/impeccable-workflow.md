@@ -3,6 +3,17 @@
 Use this for command selection and quality passes inspired by Impeccable while
 remaining inside this user's local Codex workflow.
 
+## Contents
+
+- [Mode selection](#mode-selection)
+- [Shape brief](#shape-brief)
+- [Critique pass](#critique-pass)
+- [Audit dimensions](#audit-dimensions)
+- [Polish pass](#polish-pass)
+- [Harden pass](#harden-pass)
+- [Optimize pass](#optimize-pass)
+- [Detector usage](#detector-usage)
+
 ## Mode selection
 
 - `shape`: plan UX/UI before code. Use when the feature is vague, the audience

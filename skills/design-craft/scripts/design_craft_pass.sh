@@ -15,7 +15,7 @@ Examples:
   scripts/design_craft_pass.sh --target /path/to/project --mode harden
 
 Supported modes are delegated to design_craft_audit.sh:
-  critique|audit|polish|motion|harden|optimize|structure|architecture
+  critique|audit|polish|motion|motion-plan|harden|optimize|structure|architecture
 EOF
   exit 0
 fi

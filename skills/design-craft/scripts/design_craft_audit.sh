@@ -29,7 +29,7 @@ Usage:
 
 Options:
   --target <path>     Project, folder, or file to audit.
-  --mode <mode>       critique|audit|polish|motion|harden|optimize|structure|architecture.
+  --mode <mode>       critique|audit|polish|motion|motion-plan|harden|optimize|structure|architecture.
   --surface <value>   Route planner surface, default auto.
   --intent <value>    Route planner intent, default auto.
   --scope <value>     Route planner scope, default auto.
@@ -118,7 +118,7 @@ while [[ $# -gt 0 ]]; do
 done
 
 case "${MODE}" in
-  critique|audit|polish|motion|harden|optimize|structure|architecture) ;;
+  critique|audit|polish|motion|motion-plan|harden|optimize|structure|architecture) ;;
   *)
     echo "Unknown mode: ${MODE}" >&2
     usage >&2
@@ -258,6 +258,18 @@ EOF
 - Prefer transform/opacity, CSS/WAAPI for predetermined motion, transitions/springs for interruptible gesture or rapidly-triggered UI.
 - Verify presentation-value interruption, velocity handoff, projected endpoints, hysteresis, and reduced-motion alternatives for gesture UI.
 - Verdict tiers: feel-breaking regressions, missed simplifications, performance, interruptibility/timing, origin/physicality/cohesion, accessibility.
+EOF
+    ;;
+  motion-plan)
+    cat <<'EOF'
+- Read references/motion-audit-planning.md, then the relevant sections of motion-quality.md and interaction-physics.md.
+- Keep the audit read-only until the user explicitly selects plans for implementation.
+- Start with stack, motion locations, local tokens, product personality, interaction frequency, and evidence-level recon.
+- Audit purpose/frequency, timing/easing, origin/physicality, interruption, performance, accessibility, cohesion/tokens, and missed opportunities.
+- Re-read every cited location; reject duplicates, intentional exceptions, dead code, and unsupported runtime claims.
+- Rank by user impact x frequency x confidence / implementation cost and default to the top three to five findings when non-interactive.
+- Scaffold one self-contained plan per selected finding with scripts/design_craft_motion_plan.py; include exact files, current excerpts, target behavior, boundaries, validation, feel checks, and drift stop conditions.
+- Reconcile plans as proposed, in_progress, complete, stale, or retired; never mark implementation complete from plan existence alone.
 EOF
     ;;
   harden)

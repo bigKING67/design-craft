@@ -26,12 +26,12 @@
       "repo": "https://github.com/emilkowalski/skills.git",
       "path": "upstreams/emilkowalski-skills",
       "license": "MIT",
-      "commit": "220e8607c90b17337d210125777b7b695f26c221",
-      "reviewed_commit": "220e8607c90b17337d210125777b7b695f26c221",
-      "absorbed_commit": "f76beceb7d3fc8c43309cefad5a095a206103a4e",
-      "reviewed_at": "2026-07-11",
+      "commit": "7bb7061b5cf7de15ea1aeaf00fbd9e6592a20fce",
+      "reviewed_commit": "7bb7061b5cf7de15ea1aeaf00fbd9e6592a20fce",
+      "absorbed_commit": "b57fc72f8415d84db1e9cfb43270466bf12ac6e2",
+      "reviewed_at": "2026-07-12",
       "decision": "absorbed",
-      "notes": "Previously absorbed Apple-style direct manipulation, presentation-value interruption, spring response/damping, velocity handoff, momentum projection, rubber-banding, accessibility variants, optical typography, and product design principles. The 2026-07-11 range changes one README apostrophe only, so no additional content was imported."
+      "notes": "Previously absorbed Apple-style direct manipulation, presentation-value interruption, spring response/damping, velocity handoff, momentum projection, rubber-banding, accessibility variants, optical typography, and product design principles. The later 2026-07-11 range added improve-animations; design-craft selectively absorbed its recon, frequency-map, eight-dimension audit, vetted prioritization, self-contained plan, and reconciliation workflow while keeping absolute heuristics subordinate to project authority and runtime evidence. The following b024c8b newsletter edit and 4691d39/7bb7061 README typo-only range are provenance-only."
     }
   }
 }

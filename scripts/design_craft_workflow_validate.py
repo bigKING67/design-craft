@@ -72,6 +72,8 @@ def validate() -> dict:
                 "native_runtime_ci_android.sh",
                 "Enable KVM access",
                 "-no-metrics",
+                "concurrency:",
+                "cancel-in-progress: false",
             ),
             ".github/workflows/native-runtime.yml",
         )
@@ -79,10 +81,26 @@ def validate() -> dict:
     errors.extend(
         require_tokens(
             validate_workflow,
-            ("DESIGN_CRAFT_NATIVE_BUILD_ONLY", "android-fixture-build", 'tags: ["v*"]'),
+            (
+                "DESIGN_CRAFT_NATIVE_BUILD_ONLY",
+                "android-fixture-build",
+                'tags: ["v*"]',
+                "concurrency:",
+                "cancel-in-progress: true",
+                "name: lint",
+                "name: contract-tests",
+                "make lint",
+                "make contract-tests",
+            ),
             ".github/workflows/validate.yml",
         )
     )
+    if validate_workflow.count("timeout-minutes:") != 5:
+        errors.append(".github/workflows/validate.yml must set a timeout on all five jobs")
+    if native_workflow.count("timeout-minutes:") != 2:
+        errors.append(
+            ".github/workflows/native-runtime.yml must set a timeout on both jobs"
+        )
     errors.extend(
         require_tokens(
             ios_runner,

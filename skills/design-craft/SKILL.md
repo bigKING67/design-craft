@@ -1,6 +1,6 @@
 ---
 name: design-craft
-description: "Use for product UI/UX and design-engineering quality across web, iOS, Android, and adaptive cross-platform products: product-context shaping, visual taste critique, design-system enforcement, UI polish, interaction physics, motion review, responsive/adaptive validation, accessibility, and frontend/native craft. Do not use for backend-only logic, database-only migrations, pure algorithms, CLI-only tools, or non-visual refactors unless product UI quality is affected."
+description: "Use for web, iOS, Android, and adaptive product UI/UX design engineering: product context, visual critique, design systems, UI polish, motion and interaction, accessibility, responsive behavior, and frontend/native implementation quality. Do not use for backend-only, database-only, algorithm-only, or CLI-only work."
 ---
 
 # Design Craft
@@ -31,7 +31,7 @@ Use this order when evidence conflicts:
 3. Project `PRODUCT.md` for product/platform/user/accessibility context.
 4. Project `DESIGN.md` or equivalent visual style authority.
 5. Local frontend route planner output.
-6. Bundled Vercel Geist seed templates for new or weak web developer-product
+6. Bundled original developer-product seed templates for new or weak web
    systems.
 7. `design-craft` references.
 8. Upstream generic visual or Impeccable guidance.
@@ -72,7 +72,9 @@ system, data density, report grammar, or runtime truth.
    optimize/structure/architecture passes,
    `scripts/design_craft_pass.sh` as the preferred neutral wrapper,
    `scripts/design_craft_seed_design.sh` for seeding `DESIGN.md` and
-   `DESIGN.dark.md` from the bundled Vercel Geist templates,
+   `DESIGN.dark.md` from the bundled original developer-product templates,
+   `scripts/design_craft_motion_plan.py` for source-stamped motion implementation
+   plan scaffolds,
    `scripts/design_craft_detect.sh` for detector and local design-craft signals,
    `scripts/design_craft_taste_review.sh` for stable product UI taste-review
    packets,
@@ -120,8 +122,8 @@ Read only the references needed for the current task:
   `references/product-design-principles.md`.
 - New or weakly specified developer-product, SaaS, dashboard, admin, infra,
   docs, or tooling surfaces without a stronger style authority:
-  `templates/vercel-geist/design.md` and
-  `templates/vercel-geist/design.dark.md` as the default initial seed.
+  `templates/developer-product/design.md` and
+  `templates/developer-product/design.dark.md` as the default initial seed.
 - Product UI taste scoring, "why not 100", screenshot/product-page review,
   concrete top issues, and acceptance criteria:
   `references/product-ui-taste-review.md`; add
@@ -140,6 +142,10 @@ Read only the references needed for the current task:
   popovers, drawers, gestures, perceived animation performance, or reduced
   motion:
   `references/motion-quality.md`.
+- Whole-codebase animation improvement, motion inventory, prioritized audit,
+  implementation-ready motion plans, or plan reconciliation:
+  `references/motion-audit-planning.md`; scaffold individual plans from
+  `templates/motion-plan/plan.md`.
 - Gesture-driven motion, direct manipulation, interruption, springs, velocity
   handoff, projection, hysteresis, and rubber-banding:
   `references/interaction-physics.md`.
@@ -236,5 +242,14 @@ For frontend implementation work, summarize:
 - Screenshot validation tool, target, artifact path/hash/dimensions, or why it
   was skipped.
 - Performance impact and remaining risks.
+
+Default critique and audit budget:
+
+- one-sentence diagnosis;
+- at most five blocking findings and five secondary findings;
+- at most eight concrete design moves;
+- the smallest validation plan that can change the decision;
+- target 150 lines or fewer unless the user explicitly requests an exhaustive
+  review, full scorecard, or report artifact.
 
 Keep output concise, evidence-backed, and honest about anything not verified.

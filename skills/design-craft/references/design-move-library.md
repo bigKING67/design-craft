@@ -4,6 +4,23 @@ Use this after diagnosis, when a critique must become a concrete UI direction or
 implementation plan. Moves are not style presets. Apply them under the project's
 runtime behavior, `DESIGN.md`, components, data model, and product job.
 
+## Contents
+
+- [Treatment variants](#treatment-variants)
+- [Before/after anatomy patterns](#beforeafter-anatomy-patterns)
+- [Generic AI landing page to product-specific proof sequence](#generic-ai-landing-page--product-specific-proof-sequence)
+- [Dashboard card soup to decision surface](#dashboard-card-soup--decision-surface)
+- [Flat KPI grid to priority hierarchy](#flat-kpi-grid--priority-hierarchy)
+- [Table as data dump to task-first table](#table-as-data-dump--task-first-table)
+- [Rough form/settings to guided configuration](#rough-formsettings--guided-configuration)
+- [Modal without decision to focused dialog](#modal-without-decision--focused-dialog)
+- [Navigation scope mix to clear wayfinding](#navigation-scope-mix--clear-wayfinding)
+- [Over-cardified list to composed content surface](#over-cardified-list--composed-content-surface)
+- [Formal report page to evidence-first narrative](#formal-report-page--evidence-first-narrative)
+- [Mobile stacked to mobile decision flow](#mobile-stacked-but-not-prioritized--mobile-decision-flow)
+- [Decorative motion to causal motion](#decorative-motion--causal-motion)
+- [Missing states to resilient product surface](#missing-states--resilient-product-surface)
+
 ## Treatment variants
 
 Pick the product mood before applying a move. The same structure should not look

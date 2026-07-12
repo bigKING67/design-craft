@@ -86,6 +86,7 @@ required_files=(
   "skills/design-craft/references/impeccable-workflow.md"
   "skills/design-craft/references/intent-map.md"
   "skills/design-craft/references/motion-quality.md"
+  "skills/design-craft/references/motion-audit-planning.md"
   "skills/design-craft/references/motion-vocabulary.md"
   "skills/design-craft/references/engineering-quality.md"
   "skills/design-craft/references/performance-quality.md"
@@ -94,6 +95,11 @@ required_files=(
   "skills/design-craft/references/report-quality.md"
   "skills/design-craft/references/surface-playbooks.md"
   "skills/design-craft/references/validation-contract.md"
+  "skills/design-craft/templates/developer-product/README.md"
+  "skills/design-craft/templates/developer-product/design.md"
+  "skills/design-craft/templates/developer-product/design.dark.md"
+  "skills/design-craft/templates/motion-plan/README.md"
+  "skills/design-craft/templates/motion-plan/plan.md"
   "skills/design-craft/templates/vercel-geist/README.md"
   "skills/design-craft/templates/vercel-geist/design.md"
   "skills/design-craft/templates/vercel-geist/design.dark.md"
@@ -112,6 +118,7 @@ required_files=(
   "skills/design-craft/scripts/design_craft_l4_case_validate.py"
   "skills/design-craft/scripts/design_craft_l4_eval_case.sh"
   "skills/design-craft/scripts/design_craft_l4_evidence_manifest.py"
+  "skills/design-craft/scripts/design_craft_motion_plan.py"
   "skills/design-craft/scripts/design_craft_pass.sh"
   "skills/design-craft/scripts/design_craft_platform_scan.py"
   "skills/design-craft/scripts/design_craft_route.sh"
@@ -183,6 +190,19 @@ required_files=(
   "evals/cross-agent/same-prompt-native-adaptive-review/comparison.md"
   "evals/cross-agent/same-prompt-native-adaptive-review/cursor-unverified.md"
   "evals/cross-agent/same-prompt-native-adaptive-review/claude-unverified.md"
+  "evals/comparative/README.md"
+  "evals/comparative/emil-motion-ablation/prompt.md"
+  "evals/comparative/emil-motion-ablation/variants.json"
+  "evals/comparative/emil-motion-ablation/scorecard.md"
+  "evals/comparative/emil-motion-ablation/scorecard.json"
+  "evals/comparative/emil-motion-ablation/expected-findings.md"
+  "evals/comparative/emil-motion-ablation/judgment.schema.json"
+  "evals/comparative/emil-motion-planning-ablation/prompt.md"
+  "evals/comparative/emil-motion-planning-ablation/variants.json"
+  "evals/comparative/emil-motion-planning-ablation/scorecard.md"
+  "evals/comparative/emil-motion-planning-ablation/scorecard.json"
+  "evals/comparative/emil-motion-planning-ablation/expected-findings.md"
+  "evals/comparative/emil-motion-planning-ablation/judgment.schema.json"
   "evals/native-runtime/README.md"
   "evals/native-runtime/environment-probe.json"
   "evals/native-runtime/fixtures/ios/App.swift"
@@ -243,22 +263,33 @@ required_files=(
   "scripts/design_craft_l4_case_validate.py"
   "scripts/design_craft_l4_eval_case.sh"
   "scripts/design_craft_l4_evidence_manifest.py"
+  "scripts/design_craft_motion_plan.py"
   "scripts/design_craft_maturity.py"
+  "scripts/design_craft_lint.py"
   "scripts/design_craft_package_validate.py"
   "scripts/design_craft_public_repo_validate.py"
   "scripts/design_craft_workflow_validate.py"
   "scripts/design_craft_native_runtime_validate.py"
   "scripts/design_craft_native_runtime_record.py"
+  "scripts/design_craft_native_release_bundle.py"
   "scripts/design_craft_platform_scan.py"
   "scripts/design_craft_browser_evidence.py"
   "scripts/design_craft_certification_install_check.sh"
   "scripts/design_craft_codex_route_pack.py"
   "scripts/design_craft_cross_agent_validate.py"
   "scripts/design_craft_cross_agent_record.py"
+  "scripts/design_craft_cross_agent_run.py"
+  "scripts/design_craft_comparative_run.py"
+  "scripts/design_craft_comparative_common.py"
+  "scripts/design_craft_comparative_validate.py"
+  "scripts/design_craft_comparative_blind.py"
+  "scripts/design_craft_comparative_judge.py"
+  "scripts/design_craft_comparative_record.py"
   "scripts/design_craft_evidence_common.py"
   "scripts/design_craft_css_smell_scan.py"
   "scripts/design_craft_focus_audit.py"
   "scripts/design_craft_github_checks.py"
+  "scripts/design_craft_github_governance.py"
   "scripts/design_craft_static_review.py"
   "scripts/design_craft_token_audit.py"
   "scripts/design_craft_pass.sh"
@@ -268,6 +299,7 @@ required_files=(
   "scripts/design_craft_score.py"
   "scripts/design_craft_install_verify.py"
   "scripts/design_craft_release_verify.py"
+  "scripts/design_craft_release_assets.py"
   "scripts/design_craft_release_certify.sh"
   "scripts/design_craft_sync_status.py"
   "scripts/native_runtime_ci_ios.sh"
@@ -326,8 +358,8 @@ if ! grep -q "Apache-2.0" THIRD_PARTY_NOTICES.md; then
   exit 1
 fi
 
-if ! grep -q "Vercel Geist" THIRD_PARTY_NOTICES.md; then
-  echo "THIRD_PARTY_NOTICES.md is missing Vercel Geist notice" >&2
+if ! grep -q "Vercel design reference history" THIRD_PARTY_NOTICES.md; then
+  echo "THIRD_PARTY_NOTICES.md is missing Vercel reference history" >&2
   exit 1
 fi
 
@@ -345,6 +377,15 @@ if ! cmp -s VERSION skills/design-craft/VERSION; then
   echo "skills/design-craft/VERSION must match root VERSION" >&2
   exit 1
 fi
+
+python3 - <<'PY'
+from pathlib import Path
+
+for path in sorted(Path("skills/design-craft/references").glob("*.md")):
+    text = path.read_text(encoding="utf-8")
+    if len(text.splitlines()) > 100 and "## Contents" not in text:
+        raise SystemExit(f"long reference must provide a Contents section: {path}")
+PY
 
 python3 scripts/design_craft_package_validate.py --check --validate >/dev/null
 python3 scripts/design_craft_public_repo_validate.py --check --validate >/dev/null
@@ -481,6 +522,13 @@ for path in \
 	"scripts/design_craft_workflow_validate.py" \
 	"scripts/design_craft_native_runtime_validate.py" \
 	"scripts/design_craft_native_runtime_record.py" \
+  "scripts/design_craft_motion_plan.py" \
+  "scripts/design_craft_comparative_common.py" \
+  "scripts/design_craft_comparative_run.py" \
+  "scripts/design_craft_comparative_validate.py" \
+  "scripts/design_craft_comparative_blind.py" \
+  "scripts/design_craft_comparative_judge.py" \
+  "scripts/design_craft_comparative_record.py" \
   "scripts/design_craft_platform_scan.py" \
   "scripts/design_craft_browser_evidence.py" \
   "scripts/design_craft_codex_route_pack.py" \
@@ -502,6 +550,8 @@ for path in \
 	"scripts/design_craft_cross_agent_record.py" \
 	"scripts/design_craft_evidence_common.py" \
 	"scripts/design_craft_github_checks.py" \
+	"scripts/design_craft_native_release_bundle.py" \
+	"scripts/design_craft_lint.py" \
 	"scripts/native_runtime_ci_ios.sh" \
 	"scripts/native_runtime_ci_android.sh" \
 	"scripts/native_runtime_android_common.sh" \
@@ -515,6 +565,7 @@ for path in \
   "skills/design-craft/scripts/design_craft_l4_case_validate.py" \
   "skills/design-craft/scripts/design_craft_l4_eval_case.sh" \
   "skills/design-craft/scripts/design_craft_l4_evidence_manifest.py" \
+  "skills/design-craft/scripts/design_craft_motion_plan.py" \
   "skills/design-craft/scripts/design_craft_pass.sh" \
   "skills/design-craft/scripts/design_craft_platform_scan.py" \
   "skills/design-craft/scripts/design_craft_route.sh" \
@@ -578,22 +629,33 @@ for path in \
 done
 
 make -n validate >/dev/null
+make -n lint >/dev/null
+make -n contract-tests >/dev/null
 make -n release-gate >/dev/null
 make -n release-readiness >/dev/null
 make -n release-certify >/dev/null
 make -n release-tag-verify >/dev/null
 make -n sync-status >/dev/null
+make -n motion-plan-dry-run >/dev/null
+make -n sync-status-check >/dev/null
+make -n release-assets-check >/dev/null
+make -n native-release-bundle-check >/dev/null
+make -n native-release-bundle-build >/dev/null
+make -n native-release-bundle-verify >/dev/null
+make -n release-final-verify >/dev/null
+make -n comparative-check >/dev/null
+make -n github-governance-contract-check >/dev/null
 
 python3 - <<'PY'
 from pathlib import Path
 
 makefile = Path("Makefile").read_text(encoding="utf-8")
 four_host_recipe = makefile.split("cross-agent-four-host-check:", 1)[1].split("\n\n", 1)[0]
-for needle in ("set -e", "--require-schema-v2", "--require-current-source"):
+for needle in ("set -e", "--require-current-schema", "--require-current-source"):
     if needle not in four_host_recipe:
         raise SystemExit(f"cross-agent-four-host-check missing {needle!r}")
 prepublish_recipe = makefile.split("release-certify-prepublish:", 1)[1].split("\n\n", 1)[0]
-for needle in ("real-l4-check", "cross-agent-four-host-check", "native-runtime-check", "certification-install-check"):
+for needle in ("real-l4-check", "comparative-observed-check", "cross-agent-four-host-check", "native-runtime-check", "certification-install-check"):
     if needle not in prepublish_recipe:
         raise SystemExit(f"release-certify-prepublish missing {needle!r}")
 publish_recipe = makefile.split("release-certify-publish:", 1)[1].split("\n\n", 1)[0]
@@ -625,11 +687,20 @@ for path in \
   scripts/design_craft_l4_case_validate.py \
   scripts/design_craft_l4_evidence_manifest.py \
 	scripts/design_craft_maturity.py \
+	scripts/design_craft_lint.py \
 	scripts/design_craft_package_validate.py \
 	scripts/design_craft_public_repo_validate.py \
 	scripts/design_craft_workflow_validate.py \
 	scripts/design_craft_native_runtime_validate.py \
 	scripts/design_craft_native_runtime_record.py \
+	scripts/design_craft_native_release_bundle.py \
+  scripts/design_craft_motion_plan.py \
+  scripts/design_craft_comparative_common.py \
+  scripts/design_craft_comparative_run.py \
+  scripts/design_craft_comparative_validate.py \
+  scripts/design_craft_comparative_blind.py \
+  scripts/design_craft_comparative_judge.py \
+  scripts/design_craft_comparative_record.py \
   scripts/design_craft_platform_scan.py \
   scripts/design_craft_css_smell_scan.py \
   scripts/design_craft_focus_audit.py \
@@ -647,6 +718,7 @@ for path in \
   skills/design-craft/scripts/design_craft_l4_capture.py \
   skills/design-craft/scripts/design_craft_l4_case_validate.py \
   skills/design-craft/scripts/design_craft_l4_evidence_manifest.py \
+  skills/design-craft/scripts/design_craft_motion_plan.py \
   skills/design-craft/scripts/design_craft_platform_scan.py \
   skills/design-craft/scripts/design_craft_static_review.py \
   skills/design-craft/scripts/design_craft_token_audit.py; do
@@ -654,10 +726,15 @@ for path in \
 done
 
 python3 scripts/upstream_absorption_report.py --check
+python3 scripts/design_craft_lint.py --check >/dev/null
 python3 scripts/design_craft_maturity.py --check
 python3 scripts/design_craft_native_runtime_validate.py --check
+python3 scripts/design_craft_native_release_bundle.py --check >/dev/null
 python3 scripts/design_craft_github_checks.py --check >/dev/null
 python3 scripts/design_craft_workflow_validate.py --check --validate >/dev/null
+python3 scripts/design_craft_comparative_run.py --check >/dev/null
+python3 scripts/design_craft_comparative_judge.py --check >/dev/null
+python3 scripts/design_craft_comparative_validate.py --check >/dev/null
 
 (
   tmp_native_dir="$(mktemp -d -t design-craft-native-record.XXXXXX)"
@@ -801,7 +878,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path("scripts").resolve()))
 
 from design_craft_cross_agent_validate import scorecard_weights
-from design_craft_evidence_common import tree_sha256
+from design_craft_evidence_common import sha256_file, tree_sha256
 
 source = Path("skills/design-craft").resolve()
 task_source = Path("evals/cross-agent/same-prompt-motion-review").resolve()
@@ -822,6 +899,7 @@ with tempfile.TemporaryDirectory(prefix="design-craft-cross-agent-record-") as t
         "schema": "design-craft.install.v2",
         "installer_version": 3,
         "version": (source / "VERSION").read_text(encoding="utf-8").strip(),
+        "release_state": "development",
         "source_commit": head,
         "source_dirty": False,
         "skill_source_dirty": False,
@@ -842,6 +920,37 @@ with tempfile.TemporaryDirectory(prefix="design-craft-cross-agent-record-") as t
     }
     criteria_path = tmp / "criteria.json"
     criteria_path.write_text(json.dumps(criteria, indent=2) + "\n", encoding="utf-8")
+    run_manifest_path = task / "run.codex.json"
+    run_manifest_path.write_text(
+        json.dumps(
+            {
+                "schema": "design-craft.cross-agent-run.v2",
+                "host": "codex",
+                "host_version": "test-runner",
+                "model": "test-model",
+                "model_observation": "requested_by_cli",
+                "reasoning_profile": "test-profile",
+                "reasoning_observation": "requested_by_cli",
+                "runner_os": "portable-test",
+                "prompt_sha256": sha256_file(task / "prompt.md"),
+                "output_path": "codex-output.md",
+                "output_sha256": sha256_file(task / "codex-output.md"),
+                "skill_path": "$BENCHMARK_WORKSPACE/.agents/skills/design-craft",
+                "skill_tree_sha256": tree_sha256(observed_skill),
+                "skill_install_mode": "isolated_project_copy",
+                "workspace_kind": "repo_external_isolated_project",
+                "cwd": "$BENCHMARK_WORKSPACE",
+                "command": "deterministic recorder provenance separation self-check",
+                "returncode": 0,
+                "worktree_before_sha256": "a" * 64,
+                "worktree_after_sha256": "a" * 64,
+                "worktree_unchanged": True,
+            },
+            indent=2,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
     score_path = task / "score.custom.json"
     command = [
         sys.executable,
@@ -868,6 +977,8 @@ with tempfile.TemporaryDirectory(prefix="design-craft-cross-agent-record-") as t
         "deterministic recorder provenance separation self-check",
         "--criteria-json",
         str(criteria_path),
+        "--run-manifest",
+        str(run_manifest_path),
         "--score-output",
         str(score_path),
     ]
@@ -1127,6 +1238,7 @@ python3 scripts/design_craft_l4_evidence_manifest.py \
 bash scripts/design_craft_pass.sh --target skills/design-craft --mode audit --skip-route --skip-score >/dev/null
 bash scripts/design_craft_pass.sh --target skills/design-craft --mode critique --skip-route --skip-score >/dev/null
 bash scripts/design_craft_pass.sh --target skills/design-craft --mode motion --skip-route --skip-score >/dev/null
+bash scripts/design_craft_pass.sh --target skills/design-craft --mode motion-plan --skip-route --skip-score >/dev/null
 bash scripts/design_craft_audit.sh --target skills/design-craft --mode audit --skip-route --skip-score >/dev/null
 bash scripts/design_craft_audit.sh --target skills/design-craft --mode critique --skip-route --skip-score >/dev/null
 source_audit_output="$(bash scripts/design_craft_audit.sh --target . --mode audit --skip-route --skip-detector)"
@@ -1135,6 +1247,7 @@ if [[ "${source_audit_output}" != *"design-craft source completeness: 100/100"* 
   exit 1
 fi
 bash scripts/design_craft_seed_design.sh --target skills/design-craft --dry-run >/dev/null
+python3 scripts/design_craft_motion_plan.py --target "${tmp_init_dir}" --title "Retarget the sheet" --severity P1 --category interruptibility --dry-run >/dev/null
 bash scripts/design_craft_taste_review.sh --target skills/design-craft --context "validation smoke" --evidence-level L0 >/dev/null
 
 bash scripts/frontend_craft_pass.sh --target skills/design-craft --mode motion --skip-route --skip-score >/dev/null
@@ -1143,8 +1256,8 @@ python3 scripts/frontend_craft_score.py --self --no-smoke --json >/dev/null
 tmp_design_seed_dir="$(mktemp -d -t design-craft-seed.XXXXXX)"
 trap 'rm -rf "${tmp_design_seed_dir:-}" "${tmp_init_dir:-}"' EXIT
 bash scripts/design_craft_seed_design.sh --target "${tmp_design_seed_dir}" >/dev/null
-cmp skills/design-craft/templates/vercel-geist/design.md "${tmp_design_seed_dir}/DESIGN.md" >/dev/null
-cmp skills/design-craft/templates/vercel-geist/design.dark.md "${tmp_design_seed_dir}/DESIGN.dark.md" >/dev/null
+cmp skills/design-craft/templates/developer-product/design.md "${tmp_design_seed_dir}/DESIGN.md" >/dev/null
+cmp skills/design-craft/templates/developer-product/design.dark.md "${tmp_design_seed_dir}/DESIGN.dark.md" >/dev/null
 
 for ref in \
   "product-context.md" \
@@ -1158,6 +1271,7 @@ for ref in \
   "impeccable-workflow.md" \
   "intent-map.md" \
   "motion-quality.md" \
+  "motion-audit-planning.md" \
   "interaction-physics.md" \
   "motion-vocabulary.md" \
   "ios-quality.md" \
@@ -1177,9 +1291,14 @@ for ref in \
   fi
 done
 
+if ! grep -q "templates/motion-plan/plan.md" skills/design-craft/SKILL.md; then
+  echo "SKILL.md does not route template: templates/motion-plan/plan.md" >&2
+  exit 1
+fi
+
 for template in \
-  "templates/vercel-geist/design.md" \
-  "templates/vercel-geist/design.dark.md"; do
+  "templates/developer-product/design.md" \
+  "templates/developer-product/design.dark.md"; do
   if ! grep -q "${template}" skills/design-craft/SKILL.md; then
     echo "SKILL.md does not route template: ${template}" >&2
     exit 1

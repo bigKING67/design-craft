@@ -8,6 +8,17 @@ anti-slop and brief-inference ideas absorbed from upstream taste guidance, but
 it is not a legacy skill entrypoint and must stay subordinate to live runtime
 truth, scoped project rules, and project `DESIGN.md`.
 
+## Contents
+
+- [Design read first](#design-read-first)
+- [Anti-default discipline](#anti-default-discipline)
+- [Three operating dials](#three-operating-dials)
+- [Typography](#typography)
+- [Color](#color)
+- [Layout and material](#layout-and-material)
+- [Motion](#motion)
+- [Final visual self-check](#final-visual-self-check)
+
 ## Design read first
 
 Infer before styling:
