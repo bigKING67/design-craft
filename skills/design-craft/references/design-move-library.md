@@ -8,6 +8,7 @@ runtime behavior, `DESIGN.md`, components, data model, and product job.
 
 - [Treatment variants](#treatment-variants)
 - [Before/after anatomy patterns](#beforeafter-anatomy-patterns)
+- [Move-budget coverage](#move-budget-coverage)
 - [Generic AI landing page to product-specific proof sequence](#generic-ai-landing-page--product-specific-proof-sequence)
 - [Dashboard card soup to decision surface](#dashboard-card-soup--decision-surface)
 - [Flat KPI grid to priority hierarchy](#flat-kpi-grid--priority-hierarchy)
@@ -60,6 +61,32 @@ runtime evidence still outrank the variant.
   mobile top task first, advanced controls disclosed, sticky behavior audited,
   no hover-only affordances.
 
+## Move-budget coverage
+
+When the user caps the response at a small number of moves, spend that budget
+across the broken decision chain instead of using multiple moves on adjacent
+symptoms. Prefer one move for each decisive layer:
+
+1. page command/context band;
+2. lead versus supporting information hierarchy;
+3. primary queue/table/work object placement;
+4. chart, insight, or evidence role;
+5. row/action/status scanability;
+6. typography, color, and surface system;
+7. empty/loading/error/permission/long-content states;
+8. responsive, keyboard, and accessibility behavior.
+
+Combine closely related repairs when needed. For example, fold a distracting
+global CTA into the command-band move, and fix status labels, action labels,
+and identity truncation in one task-first-table move. Do not spend a scarce move
+on a secondary control while a generic insight module, unexplained chart, core
+state, or primary workflow remains unaddressed.
+
+Before finalizing, reconcile every blocking finding against the move list. Each
+blocker must be removed, merged into a named move, or explicitly deferred with
+a reason. A diagnosis-to-move gap is incomplete even when every individual
+recommendation is tasteful.
+
 ## Generic AI landing page -> product-specific proof sequence
 
 Problem: The page looks like a polished SaaS template rather than a product with
@@ -103,6 +130,9 @@ Design move:
 - Convert supporting KPIs into a compact strip.
 - Put exception queue, anomaly list, or next-action panel near the top.
 - Move explanatory or historical charts below the decision surface.
+- Remove generic insight cards. Keep an insight only when it names the entity
+  or segment, observed change/threshold, business impact, and next action or
+  owner; otherwise it is decoration disguised as analysis.
 
 Frontend implementation:
 - Create a `lead + support + action queue` layout instead of an equal grid.
@@ -112,6 +142,8 @@ Frontend implementation:
 Acceptance criteria:
 - A user can identify the top action or risk within three seconds.
 - Operational blockers appear before low-risk overview metrics.
+- Every retained chart answers a named operational question, and every retained
+  insight identifies evidence plus an action, owner, or decision.
 - The dashboard still works with long labels, empty data, and narrow viewport.
 
 ## Flat KPI grid -> priority hierarchy

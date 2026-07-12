@@ -277,6 +277,14 @@ Default reviews should stop after the score, one-sentence diagnosis, design
 direction, at most five blocking issues, at most five secondary issues, and the
 smallest acceptance checklist. Target 150 lines or fewer.
 
+When the user caps concrete recommendations, allocate the move budget across
+the full decision chain. Do not produce two KPI/card moves while leaving a
+blocking chart, generic insight copy, primary table/action problem, missing
+state family, or responsive/accessibility risk without an implementing move.
+Fold secondary CTA or shell refinements into the nearest structural move unless
+they directly block the primary job. Before delivery, map each blocking finding
+to a move or an explicit deferral.
+
 When the user explicitly asks for an exhaustive review or full scorecard, use
 this expanded structure:
 
