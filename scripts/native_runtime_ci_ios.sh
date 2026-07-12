@@ -6,6 +6,10 @@ cd "${ROOT_DIR}"
 
 EVIDENCE_DIR="${DESIGN_CRAFT_NATIVE_EVIDENCE_DIR:-${RUNNER_TEMP:-${TMPDIR:-/tmp}}/native-runtime-ios}"
 APP_DIR="${EVIDENCE_DIR}/DesignCraftEvidence.app"
+AXE_VERSION="1.7.1"
+AXE_ARCHIVE_SHA256="26a64009c09a3ae980b1f1b4b377bd2a2dd96cbbde24821935e47352cb71cc69"
+AXE_TOOL_DIR="${RUNNER_TEMP:-${TMPDIR:-/tmp}}/design-craft-axe-v${AXE_VERSION}"
+AXE_BIN="${AXE_TOOL_DIR}/axe"
 mkdir -p "${APP_DIR}"
 cp evals/native-runtime/fixtures/ios/Info.plist "${APP_DIR}/Info.plist"
 
@@ -81,8 +85,9 @@ copy_runtime_events() {
   fi
 }
 wait_for_interaction() {
+  local max_attempts="${1:-15}"
   local attempt
-  for attempt in {1..15}; do
+  for ((attempt = 1; attempt <= max_attempts; attempt++)); do
     if [[ -f "${interaction_marker}" ]] \
       && grep -q "Runtime interaction confirmed" "${interaction_marker}"; then
       return 0
@@ -91,31 +96,72 @@ wait_for_interaction() {
   done
   return 1
 }
+ensure_axe() {
+  local archive="${AXE_TOOL_DIR}/AXe-macOS-v${AXE_VERSION}-universal.tar.gz"
+  local actual_sha256
+  if [[ ! -x "${AXE_BIN}" ]]; then
+    mkdir -p "${AXE_TOOL_DIR}"
+    curl --fail --location --retry 3 --retry-all-errors \
+      "https://github.com/cameroncooke/AXe/releases/download/v${AXE_VERSION}/AXe-macOS-v${AXE_VERSION}-universal.tar.gz" \
+      --output "${archive}"
+    actual_sha256="$(shasum -a 256 "${archive}" | awk '{print $1}')"
+    if [[ "${actual_sha256}" != "${AXE_ARCHIVE_SHA256}" ]]; then
+      echo "AXe archive checksum mismatch: ${actual_sha256}" >&2
+      return 1
+    fi
+    tar -xzf "${archive}" -C "${AXE_TOOL_DIR}"
+  fi
+  "${AXE_BIN}" --version > "${EVIDENCE_DIR}/axe-version.txt" 2>&1
+}
+system_confirmation=""
+attempt_deep_link() {
+  local phase="$1"
+  local url="$2"
+  local output="$3"
+  system_confirmation=""
+  if ! xcrun simctl openurl "${udid}" "${url}" > "${output}" 2>&1; then
+    return 1
+  fi
+  if wait_for_interaction 3; then
+    return 0
+  fi
+
+  xcrun simctl io "${udid}" screenshot \
+    "${EVIDENCE_DIR}/ios-${phase}-open-confirmation.png" \
+    >/dev/null 2>&1 || true
+  if ensure_axe \
+    && "${AXE_BIN}" tap --label "Open" --element-type Button \
+      --wait-timeout 5 --udid "${udid}" \
+      > "${EVIDENCE_DIR}/axe-${phase}-tap.log" 2>&1 \
+    && wait_for_interaction 12; then
+    system_confirmation="${phase}:AXe-v${AXE_VERSION}"
+    return 0
+  fi
+
+  xcrun simctl io "${udid}" screenshot \
+    "${EVIDENCE_DIR}/ios-${phase}-deep-link-timeout.png" \
+    >/dev/null 2>&1 || true
+  return 1
+}
 
 interaction_path=""
-if xcrun simctl openurl \
-  "${udid}" \
+if attempt_deep_link \
+  live \
   "designcraft-evidence://confirm" \
-  > "${EVIDENCE_DIR}/openurl-live.txt" 2>&1 \
-  && wait_for_interaction; then
+  "${EVIDENCE_DIR}/openurl-live.txt"; then
   interaction_path="live-deep-link"
 else
-  xcrun simctl io "${udid}" screenshot \
-    "${EVIDENCE_DIR}/ios-live-deep-link-timeout.png" \
-    >/dev/null 2>&1 || true
   xcrun simctl terminate "${udid}" dev.designcraft.runtime-evidence || true
   rm -f "${interaction_marker}"
-  if xcrun simctl openurl \
-    "${udid}" \
+  if attempt_deep_link \
+    cold \
     "designcraft-evidence:///confirm" \
-    > "${EVIDENCE_DIR}/openurl-cold.txt" 2>&1 \
-    && wait_for_interaction; then
+    "${EVIDENCE_DIR}/openurl-cold.txt"; then
     interaction_path="cold-deep-link"
-  else
-    xcrun simctl io "${udid}" screenshot \
-      "${EVIDENCE_DIR}/ios-cold-deep-link-timeout.png" \
-      >/dev/null 2>&1 || true
   fi
+fi
+if [[ -n "${interaction_path}" && -n "${system_confirmation}" ]]; then
+  interaction_path="${interaction_path}-system-confirmed"
 fi
 
 copy_runtime_events
@@ -130,6 +176,7 @@ copy_runtime_events
   fi
   printf '%s\n' '[application events]'
   cat "${EVIDENCE_DIR}/runtime-events.txt" 2>/dev/null || true
+  printf '%s\n' "[system confirmation] ${system_confirmation:-not-required}"
   printf '%s\n' "[confirmed interaction path] ${interaction_path:-none}"
 } > "${EVIDENCE_DIR}/runtime-launch.log"
 
@@ -147,10 +194,11 @@ python3 scripts/design_craft_native_runtime_record.py \
   --platform ios \
   --runtime-kind ios_simulator \
   --runtime-id "${udid}" \
-  --tool "xcodebuild/xcrun simctl" \
+  --tool "xcrun simctl/AXe v${AXE_VERSION}" \
   --command "xcrun swiftc iOS fixture" \
   --command "xcrun simctl boot/install/launch" \
-  --command "xcrun simctl openurl live/cold deep-link interaction and marker assertion" \
+  --command "xcrun simctl openurl plus pinned AXe system confirmation when required" \
+  --command "live/cold deep-link interaction and marker assertion" \
   --command "xcrun simctl io before/after screenshots" \
   --assertion build_succeeded=true \
   --assertion install_and_launch_succeeded=true \

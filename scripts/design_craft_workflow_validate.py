@@ -52,6 +52,7 @@ def validate() -> dict:
     ios_runner_path = ROOT / "scripts/native_runtime_ci_ios.sh"
     android_runner_path = ROOT / "scripts/native_runtime_ci_android.sh"
     android_common_path = ROOT / "scripts/native_runtime_android_common.sh"
+    portable_validator_path = ROOT / "scripts/validate.sh"
     ios_fixture_path = ROOT / "evals/native-runtime/fixtures/ios/App.swift"
 
     required_paths = (
@@ -61,6 +62,7 @@ def validate() -> dict:
         ios_runner_path,
         android_runner_path,
         android_common_path,
+        portable_validator_path,
         ios_fixture_path,
     )
     for path in required_paths:
@@ -75,6 +77,7 @@ def validate() -> dict:
     ios_runner = ios_runner_path.read_text(encoding="utf-8")
     android_runner = android_runner_path.read_text(encoding="utf-8")
     android_common = android_common_path.read_text(encoding="utf-8")
+    portable_validator = portable_validator_path.read_text(encoding="utf-8")
     ios_fixture = ios_fixture_path.read_text(encoding="utf-8")
 
     errors.extend(
@@ -133,6 +136,11 @@ def validate() -> dict:
                 "before_screenshot=",
                 "interaction_marker=",
                 "launch_log=",
+                "simulator-selection.txt",
+                "runtime-events.txt",
+                "open-confirmation.png",
+                'tap --label "Open"',
+                "26a64009c09a3ae980b1f1b4b377bd2a2dd96cbbde24821935e47352cb71cc69",
             ),
             "scripts/native_runtime_ci_ios.sh",
         )
@@ -141,6 +149,20 @@ def validate() -> dict:
         errors.append("iOS certification must not use a test-only --confirm-runtime path")
     if "DESIGN_CRAFT_RUNTIME_URL_RECEIVED" not in ios_fixture:
         errors.append("iOS fixture must log receipt of the real runtime URL")
+    if "createDirectory" not in ios_fixture or "runtime-events.txt" not in ios_fixture:
+        errors.append("iOS fixture must preserve observable URL and marker-write diagnostics")
+
+    errors.extend(
+        require_tokens(
+            portable_validator,
+            (
+                "command -v rg",
+                "grep -R -n -E",
+                '"${BASH}" -n',
+            ),
+            "scripts/validate.sh",
+        )
+    )
 
     errors.extend(
         require_tokens(

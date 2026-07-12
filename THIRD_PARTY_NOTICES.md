@@ -102,6 +102,21 @@ preserved MIT notice below.
 The preserved distribution license is available at:
 `LICENSES/MIT-upstreams.txt`.
 
+## cameroncooke/AXe
+
+- Repository: https://github.com/cameroncooke/AXe
+- License: MIT
+- CI tool version: `v1.7.1`
+- Pinned release asset SHA-256:
+  `26a64009c09a3ae980b1f1b4b377bd2a2dd96cbbde24821935e47352cb71cc69`
+
+The native-runtime workflow downloads this pinned tool only on the ephemeral
+macOS runner when a current iOS Simulator presents its system URL-opening
+confirmation. AXe taps the real `Open` control by accessibility label; the
+fixture must still receive the URL callback and write the interaction marker.
+The AXe binary is not stored in this repository, included in the npm package,
+or redistributed in release assets.
+
 ## Fusion-layer policy
 
 - Keep upstream directories pristine.

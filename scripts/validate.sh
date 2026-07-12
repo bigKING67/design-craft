@@ -528,7 +528,12 @@ if [[ -n "${legacy_extra_files}" ]]; then
   exit 1
 fi
 
-if rg -n "\\[TODO|TODO:" "skills/design-craft"; then
+if command -v rg >/dev/null 2>&1; then
+  todo_search=(rg -n "\\[TODO|TODO:" "skills/design-craft")
+else
+  todo_search=(grep -R -n -E "\\[TODO|TODO:" "skills/design-craft")
+fi
+if "${todo_search[@]}"; then
   echo "Canonical skill still contains TODO markers" >&2
   exit 1
 fi
@@ -656,7 +661,7 @@ for path in \
   scripts/frontend_craft_route.sh \
   scripts/frontend_craft_seed_design.sh \
   scripts/frontend_craft_taste_review.sh; do
-  bash -n "${path}"
+  "${BASH}" -n "${path}"
 done
 
 make -n validate >/dev/null
