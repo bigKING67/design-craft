@@ -674,6 +674,19 @@ for path in \
   "${BASH}" -n "${path}"
 done
 
+for path in \
+  scripts/design_craft_doctor.sh \
+  scripts/design_craft_init_agent.sh \
+  skills/design-craft/scripts/design_craft_audit.sh \
+  skills/design-craft/scripts/design_craft_detect.sh \
+  skills/design-craft/scripts/design_craft_route.sh \
+  skills/design-craft/scripts/design_craft_seed_design.sh; do
+  if ! grep -Fq 'cygpath -u "${resolved}"' "${path}"; then
+    echo "Shell path resolver must normalize Windows Python paths: ${path}" >&2
+    exit 1
+  fi
+done
+
 make -n validate >/dev/null
 make -n lint >/dev/null
 make -n contract-tests >/dev/null

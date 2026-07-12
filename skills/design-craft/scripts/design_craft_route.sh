@@ -47,15 +47,23 @@ EOF
 }
 
 abspath() {
-  python3 - "$1" <<'PY'
+  local resolved
+  resolved="$(python3 - "$1" <<'PY'
 import sys
 from pathlib import Path
 print(Path(sys.argv[1]).expanduser().resolve())
 PY
+  )"
+  if command -v cygpath >/dev/null 2>&1; then
+    cygpath -u "${resolved}"
+  else
+    printf '%s\n' "${resolved}"
+  fi
 }
 
 find_upward() {
-  python3 - "$1" "$2" <<'PY'
+  local resolved
+  resolved="$(python3 - "$1" "$2" <<'PY'
 import sys
 from pathlib import Path
 
@@ -69,6 +77,15 @@ for directory in (start, *start.parents):
         print(candidate)
         break
 PY
+  )"
+  if [[ -z "${resolved}" ]]; then
+    return 0
+  fi
+  if command -v cygpath >/dev/null 2>&1; then
+    cygpath -u "${resolved}"
+  else
+    printf '%s\n' "${resolved}"
+  fi
 }
 
 while [[ $# -gt 0 ]]; do
