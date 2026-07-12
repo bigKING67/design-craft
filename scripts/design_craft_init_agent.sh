@@ -34,6 +34,7 @@ from pathlib import Path
 print(Path(sys.argv[1]).expanduser().resolve())
 PY
   )"
+  resolved="${resolved//$'\r'/}"
   if command -v cygpath >/dev/null 2>&1; then
     cygpath -u "${resolved}"
   else

@@ -1341,6 +1341,7 @@ bash scripts/design_craft_audit.sh --target skills/design-craft --mode critique 
 source_audit_output="$(bash scripts/design_craft_audit.sh --target . --mode audit --skip-route --skip-detector)"
 if [[ "${source_audit_output}" != *"design-craft source completeness: 100/100"* ]]; then
   echo "Root audit wrapper did not run the source-completeness scorer" >&2
+  printf '%s\n' "${source_audit_output}" >&2
   exit 1
 fi
 bash scripts/design_craft_seed_design.sh --target skills/design-craft --dry-run >/dev/null
