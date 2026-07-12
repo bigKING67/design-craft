@@ -1,71 +1,71 @@
 {
-  "blind_map_sha256": "9249ac0cba994e8b344c897571252f5d71101b860cded86fd028ef71c540ed47",
-  "blind_packet_sha256": "d23e11c4c7978a90041e7451adc7344503019167d62efb95288a14d6c3578f80",
+  "blind_map_sha256": "62f155bfdb09ca8f8d567f210fef2075d0b60b5da121440ad763f61b23b2cb69",
+  "blind_packet_sha256": "ab76aed87c111cb038192fc3e5168adadcf6f42a7bda806f20fcb801048c7edf",
   "case_id": "emil-motion-ablation",
   "judge": {
     "host": "codex",
     "model": "gpt-5.6-sol",
     "model_observation": "requested_by_cli",
     "raw_output_path": "judge-output.raw.txt",
-    "raw_output_sha256": "0e09c8237d59021eca45dc26e2bb6a4e3dfefe1ff2c87d1ace59183dd87967ff",
+    "raw_output_sha256": "4da7b2bf83ce210c4f369e5bb5e386cc6490ebf6980a1fce0870bd984c1f79bf",
     "reasoning": "max",
     "reasoning_observation": "requested_by_cli",
     "run_path": "run.judge.json",
-    "run_sha256": "d5c6b9e59e0a7653ba535716d8224b5927c7c6f0affb89f99a8838edf58f2170",
+    "run_sha256": "891ac334cb07500760528899e62c4b1f43961f020b8c097c8b422bf258cde7d5",
     "runner_os": "macOS-15.7.7-arm64-arm-64bit-Mach-O",
     "version": "codex-cli 0.144.1"
   },
   "judgment_path": "blind-judgment.json",
   "judgment_schema_sha256": "6fc7376df30d7cff1ac8faf21ce6bcd63c76f72365458cfe0812ec88b16cd701",
-  "judgment_sha256": "1fa7dcc5e3f7cc7f0d4f411b0f1413ecf13755a32e027d0de155d1a58a7c58f8",
+  "judgment_sha256": "bbe5e6bb44442904369daea6d4b77d9d65c026fdd6acda85e7803293d89f2dcf",
   "prompt_sha256": "32a158dae9908cefce2747965d6451cf024eb3a877438295898a75412e11e0c8",
-  "rationale": "A 是唯一完整满足全部满分证据的输出：它既准确区分静态事实、产品风险和未验证运行时表现，也同时覆盖动画期间输入处理不一致、指针捕获、抓取偏移、一比一跟随、从当前呈现值中断、CSS px/s 释放速度、投影吸附、transform 所有权分层以及保留状态反馈的 Reduced Motion 路径。C 在中断和投影方面优于 B，但存在静态事实误述并超出行数预算；B 更简洁，却未充分定义无跳变中断和完整的速度投影链路。",
-  "recorded_at": "2026-07-12T03:46:45Z",
+  "rationale": "C 以 98 分胜出。它与 B 都完整覆盖直接操作和无障碍要求，但 C 对 WAAPI 当前呈现值、fill-forwards 状态漂移、无跳变中断以及独立包装层管理 transform 的说明更精确，同时验证计划更紧凑并明确声明未做浏览器、设备和性能验证。B 的速度与投影处理最完整，但在 transform 所有权和输出范围上略逊；A 内容全面，但静态证据措辞、中断接管细节和速度单位/传递均明显弱于另外两项。",
+  "recorded_at": "2026-07-12T04:35:45Z",
   "results": {
     "baseline": {
-      "blind_label": "B",
-      "criteria": {
-        "accessibility": 10,
-        "actionability": 10,
-        "direct_manipulation": 15,
-        "evidence_honesty": 14,
-        "interruption": 10,
-        "motion_necessity": 9,
-        "performance": 10,
-        "velocity_projection": 10
-      },
-      "score": 88,
-      "summary": "直接操控、性能属性、Reduced Motion 和验证计划均具体且简洁，也准确发现动画期间 pointerdown 与 pointermove 的不一致。但中断方案先取消动画再测量位置，没有明确保留当前屏幕呈现值，可能产生跳变；速度方案缺少明确单位、投影端点和向后续动画传递释放速度。部分被标为已验证的卡顿或竞争效果实际上仍属于运行时风险。"
-    },
-    "design-craft": {
       "blind_label": "A",
       "criteria": {
         "accessibility": 10,
         "actionability": 10,
         "direct_manipulation": 15,
-        "evidence_honesty": 15,
-        "interruption": 15,
+        "evidence_honesty": 12,
+        "interruption": 11,
         "motion_necessity": 10,
         "performance": 10,
-        "velocity_projection": 15
+        "velocity_projection": 12
       },
-      "score": 100,
-      "summary": "完整标注静态证据、产品风险和运行时未验证边界；准确覆盖无拖拽门控、动画期间输入处理不一致、指针捕获、抓取偏移和一比一跟随。明确要求从当前屏幕呈现值无跳变地中断，并给出 CSS px/s 速度单位、端点投影、吸附选择、transform 分层所有权、非前庭 Reduced Motion 路径及紧凑运行时验证计划。"
+      "score": 90,
+      "summary": "覆盖了静态代码中的主要缺陷，优先级、直接操作改法、无障碍路径和最小验证计划都很完整。主要失分在于开头直接断言会“jumpy、laggy”，且中断方案只要求取消动画，没有明确规定先读取并固化当前屏幕呈现值；速度方案也缺少 px/s 单位和释放速度向 settle 动画的传递。"
     },
-    "emil": {
+    "design-craft": {
       "blind_label": "C",
       "criteria": {
         "accessibility": 10,
-        "actionability": 7,
-        "direct_manipulation": 13,
-        "evidence_honesty": 12,
+        "actionability": 10,
+        "direct_manipulation": 15,
+        "evidence_honesty": 14,
         "interruption": 15,
-        "motion_necessity": 9,
+        "motion_necessity": 10,
         "performance": 10,
         "velocity_projection": 14
       },
-      "score": 90,
-      "summary": "中断和速度链路很强，明确要求读取当前视觉位置、采样位置与时间、投影端点并传递释放速度；同时正确拒绝 top、transition-all 和整张 sheet 的缩放反馈。主要扣分来自把输入描述为完全锁死而忽略未受门控的 pointermove，且将当前 transform 冲突表述得过于确定；速度单位未说明，整体篇幅也明显超过 150 行限制。"
+      "score": 98,
+      "summary": "证据标签、未验证边界和未执行验证声明最完整；直接操作方案明确从当前 presentation Y 接管，避免中断跳变，并具体解决 top、transition-all 及 scale/translate transform 所有权冲突。速度部分给出了 CSS px/s、投影端点和 snap 选择，但“preserve or reset velocity intentionally”不如明确要求把释放速度传入 settle 动画，因此未给满分。"
+    },
+    "emil": {
+      "blind_label": "B",
+      "criteria": {
+        "accessibility": 10,
+        "actionability": 9,
+        "direct_manipulation": 15,
+        "evidence_honesty": 14,
+        "interruption": 15,
+        "motion_necessity": 10,
+        "performance": 9,
+        "velocity_projection": 15
+      },
+      "score": 97,
+      "summary": "静态证据边界清楚，完整覆盖输入锁定、指针捕获、抓取偏移、1:1 跟踪、当前视觉位置中断、px/s 速度、投影端点、释放速度传递和 Reduced Motion。略弱之处是没有像 C 那样明确规定用独立包装层解决 translate 与 scale 的 transform 所有权冲突，且整体清单较长，不完全符合“最小”验证范围和严格行数预算。"
     }
   },
   "schema": "design-craft.comparative-result.v2",
@@ -73,40 +73,40 @@
   "scorecard_sha256": "4e6fc43fa81eccdc74cb468c01451b751f9c871290729d09bda67542fd98d038",
   "variant_runs": {
     "baseline": {
-      "contract_sha256": "bfcc78ccdc0cc78f114b747ceba9734e822469cdbe46343a8cea1d6750a9a41a",
+      "contract_sha256": "f45b36f993f2ab2e016816b87c127e8cba5952b3428ab14e8737402998ff818e",
       "host": "pi",
       "host_version": "0.80.3",
       "model": "codex/gpt-5.5",
       "output_path": "output.baseline.md",
-      "output_sha256": "532fb52067c1768c96df0ae4795afe603877a2a9dababe1ee9bfdfeb0b139d93",
+      "output_sha256": "0d17806266dfa842b60265f7eb091e8d8319d91fa08dc2ff56fe6413a88be99c",
       "run_path": "run.baseline.json",
-      "run_sha256": "4a2d38e4c4c2d7f6d0018af5bdd6fd0ccdd51cf127ab5739559f465dc4453762",
+      "run_sha256": "e57f398a731fab80775f44f460cd1b6d83454cf1f2e0181186c4ddfa4399e7a6",
       "skill_trees": {},
       "thinking": "high"
     },
     "design-craft": {
-      "contract_sha256": "bfcc78ccdc0cc78f114b747ceba9734e822469cdbe46343a8cea1d6750a9a41a",
+      "contract_sha256": "f45b36f993f2ab2e016816b87c127e8cba5952b3428ab14e8737402998ff818e",
       "host": "pi",
       "host_version": "0.80.3",
       "model": "codex/gpt-5.5",
       "output_path": "output.design-craft.md",
-      "output_sha256": "5c69c0e54672bb3075dd378d4fe186e990715c9c51726e57844e3f059ab16661",
+      "output_sha256": "c564c9ebceeea0d0b0943f96922cf86959afd6956599f829eb4bd682a6753df5",
       "run_path": "run.design-craft.json",
-      "run_sha256": "b035c5360f546ec33a893448c94dd5a3d99bb45f43c8a5942afadc5e44e41cde",
+      "run_sha256": "544bb3c0ad25332fb00b95236aac9642169f2161ca2805b1f97bda884a132aab",
       "skill_trees": {
         "skills/design-craft": "a37f5b9c4b7c947c3cfe612a19c84b38396f52883a42bede9d92aa64dc560259"
       },
       "thinking": "high"
     },
     "emil": {
-      "contract_sha256": "bfcc78ccdc0cc78f114b747ceba9734e822469cdbe46343a8cea1d6750a9a41a",
+      "contract_sha256": "f45b36f993f2ab2e016816b87c127e8cba5952b3428ab14e8737402998ff818e",
       "host": "pi",
       "host_version": "0.80.3",
       "model": "codex/gpt-5.5",
       "output_path": "output.emil.md",
-      "output_sha256": "b683fb41ba4b4661938c1354459ee0eb4991430a582d52152f8390cd4b5f70c5",
+      "output_sha256": "085d6543826c6e1e2cdd02cd5ce57db6aaa8f52bf65a7dd65620a76de15a5b4e",
       "run_path": "run.emil.json",
-      "run_sha256": "6d4a277d2e0303d6d0acf5c580a8641767878b2eced78533ee981d98e93dbfb4",
+      "run_sha256": "43980ae462c0f55ee2519ad17572842d891c8beadd374105d7bf98feda0430fd",
       "skill_trees": {
         "upstreams/emilkowalski-skills/skills/apple-design": "84ebad0905bc9274fc22eb0b100778adaee20e6d479a69168b5f3a2f018e19de",
         "upstreams/emilkowalski-skills/skills/improve-animations": "b4813f60575f3e1e3d916bb76def2b5821e91194fc6896e6d47177cc22a9e488",

@@ -3,32 +3,32 @@
   "judgment_schema_sha256": "b90b0fc1ec877d783cbffba9848944df30f73b9a7270c094a1cab2d7c37d9e71",
   "outputs": {
     "A": {
-      "path": "output.baseline.md",
-      "run_path": "run.baseline.json",
-      "run_sha256": "4ef05cb5f446f8ed86cbce189373c4e4700088b05b40fef42638b081338a60c8",
-      "sha256": "057eebb2ab6419a2d98b882b1eb2e48fe4c9c68894e8f1fb53e8e8f711cbcadc",
-      "variant": "baseline"
-    },
-    "B": {
       "path": "output.design-craft.md",
       "run_path": "run.design-craft.json",
-      "run_sha256": "ea4718d94a3c239bf69bd082b6974ded93baf1b9b10520e87666c177b2cc94f1",
-      "sha256": "8d2a01c4d65978dfdfbd795d500c38720b729c8980e8ded26731b10c0bc973e7",
+      "run_sha256": "21e272261ae494d034dcfd42eda555edf3017b5df305f7f935dcdad6a437cc4d",
+      "sha256": "67872e9e3a8c8b25195d2da2ff0d5cc14735c2e2dfa3359b74e5429056642a28",
       "variant": "design-craft"
+    },
+    "B": {
+      "path": "output.baseline.md",
+      "run_path": "run.baseline.json",
+      "run_sha256": "823e5e131ca5911696f18344f8a277bf2cb4a16456a8f50f36a118c99746998c",
+      "sha256": "1e24d85a07704c8ba032a913a6408b06990028aae02b9a1d106625b414f5a67e",
+      "variant": "baseline"
     },
     "C": {
       "path": "output.emil.md",
       "run_path": "run.emil.json",
-      "run_sha256": "1ca989887a6373c31159375e5337183e48f815a127bba948047f84ae5dfce75b",
-      "sha256": "66299efe61c849680c8e95a18e776200e99a0ee18545e9a8a7c3678cb3f2836d",
+      "run_sha256": "515edf6ab01618567eca6d710e2766ef8e9ddb6fbe5a2e4ba819468b83b22377",
+      "sha256": "4196c15f5d570b7680b094c4cf526e67c374c1dd0c9d85ff2b973e22faddb274",
       "variant": "emil"
     }
   },
   "packet_path": "blind-packet.md",
-  "packet_sha256": "6ccc639972a9e1b8b43614c8499efc4bd190c46c9655bc27506bd8ed08675403",
+  "packet_sha256": "b975206a6137d7ca676baad3c63c6566b7f0029f7331e9f8eee96914a510bc6f",
   "prompt_sha256": "81453e8d19e3de0d27bf7603b60f045cedaafa90b1a6fd7ee6dcc7249ca639ba",
   "schema": "design-craft.comparative-blind-map.v2",
   "scorecard_json_sha256": "a06d975f9da69fa9bea87362ee0e4f90bdc790e552561e6b6ac96f650bb53a88",
   "scorecard_sha256": "b6d4e57b1800cf71f9cc91c5dacda55169279634d8f9346544354d9d5afbc2b0",
-  "seed_sha256": "53cbc106556f365bde882d84b0455b610aa9e6ff11903326f0bcc46b50c1be19"
+  "seed_sha256": "00095cb34a32e30376262271da0ea97590f20d3bfe0cfb76108610bb9fd44be0"
 }
