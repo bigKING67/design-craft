@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import shutil
 import subprocess
 import sys
@@ -68,15 +69,29 @@ def json_errors(paths: list[Path]) -> list[str]:
     return errors
 
 
+def resolve_command(name: str) -> str | None:
+    configured = os.environ.get("DESIGN_CRAFT_BASH") if name == "bash" else None
+    resolved = shutil.which(configured or name)
+    if name == "bash" and resolved and os.name == "nt":
+        normalized = resolved.replace("\\", "/").lower()
+        if normalized.endswith("/windows/system32/bash.exe"):
+            return None
+    return resolved
+
+
 def command_errors(command: list[str], paths: list[Path], label: str) -> list[str]:
     if not paths:
         return []
-    if not shutil.which(command[0]):
-        return [f"{command[0]} is required for {label} lint"]
+    executable = resolve_command(command[0])
+    if not executable:
+        guidance = ""
+        if command[0] == "bash" and os.name == "nt":
+            guidance = "; set DESIGN_CRAFT_BASH to Git for Windows bash.exe"
+        return [f"{command[0]} is required for {label} lint{guidance}"]
     errors: list[str] = []
     for path in paths:
         result = subprocess.run(
-            [*command, str(path)],
+            [executable, *command[1:], str(path)],
             cwd=ROOT,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
@@ -127,6 +142,16 @@ def self_check() -> None:
         pass
     else:
         raise RuntimeError("lint self-check accepted duplicate JSON keys")
+    previous_bash = os.environ.get("DESIGN_CRAFT_BASH")
+    os.environ["DESIGN_CRAFT_BASH"] = sys.executable
+    try:
+        if resolve_command("bash") != shutil.which(sys.executable):
+            raise RuntimeError("lint self-check ignored DESIGN_CRAFT_BASH")
+    finally:
+        if previous_bash is None:
+            os.environ.pop("DESIGN_CRAFT_BASH", None)
+        else:
+            os.environ["DESIGN_CRAFT_BASH"] = previous_bash
 
 
 def main() -> int:

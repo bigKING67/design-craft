@@ -53,6 +53,7 @@ def validate() -> dict:
     android_runner_path = ROOT / "scripts/native_runtime_ci_android.sh"
     android_common_path = ROOT / "scripts/native_runtime_android_common.sh"
     portable_validator_path = ROOT / "scripts/validate.sh"
+    lint_validator_path = ROOT / "scripts/design_craft_lint.py"
     ios_fixture_path = ROOT / "evals/native-runtime/fixtures/ios/App.swift"
 
     required_paths = (
@@ -63,6 +64,7 @@ def validate() -> dict:
         android_runner_path,
         android_common_path,
         portable_validator_path,
+        lint_validator_path,
         ios_fixture_path,
     )
     for path in required_paths:
@@ -78,6 +80,7 @@ def validate() -> dict:
     android_runner = android_runner_path.read_text(encoding="utf-8")
     android_common = android_common_path.read_text(encoding="utf-8")
     portable_validator = portable_validator_path.read_text(encoding="utf-8")
+    lint_validator = lint_validator_path.read_text(encoding="utf-8")
     ios_fixture = ios_fixture_path.read_text(encoding="utf-8")
 
     errors.extend(
@@ -159,8 +162,21 @@ def validate() -> dict:
                 "command -v rg",
                 "grep -R -n -E",
                 '"${BASH}" -n',
+                'cygpath -w "${BASH}"',
+                "export DESIGN_CRAFT_BASH",
             ),
             "scripts/validate.sh",
+        )
+    )
+    errors.extend(
+        require_tokens(
+            lint_validator,
+            (
+                'os.environ.get("DESIGN_CRAFT_BASH")',
+                'normalized.endswith("/windows/system32/bash.exe")',
+                "[executable, *command[1:], str(path)]",
+            ),
+            "scripts/design_craft_lint.py",
         )
     )
 

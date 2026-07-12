@@ -24,6 +24,15 @@ done
 cd "${ROOT_DIR}"
 export PYTHONDONTWRITEBYTECODE=1
 
+if [[ -z "${DESIGN_CRAFT_BASH:-}" ]]; then
+  if command -v cygpath >/dev/null 2>&1; then
+    DESIGN_CRAFT_BASH="$(cygpath -w "${BASH}")"
+  else
+    DESIGN_CRAFT_BASH="${BASH}"
+  fi
+fi
+export DESIGN_CRAFT_BASH
+
 python_syntax_check() {
   python3 - "$1" <<'PY'
 import sys
