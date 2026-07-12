@@ -61,7 +61,10 @@ Apply these before turning a static snippet into a finding or plan:
   velocity handoff separate from target-selection semantics: if the current
   project uses nearest-position, thresholds, or discrete slots, do not turn
   projection into an implementation requirement without explicit authority or
-  runtime evidence for that behavior change.
+  runtime evidence for that behavior change. Still make the candidate chain
+  explicit in critiques and decision checkpoints: velocity units, bounded
+  projected endpoint, clamping, and the authorization gate before using that
+  endpoint to select a snap target.
 - A shorter duration alone does not establish a valid Reduced Motion path.
   State which spatial properties are removed and which opacity, color, focus,
   or static state feedback remains; do not offer contradictory alternatives in

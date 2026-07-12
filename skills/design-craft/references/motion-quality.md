@@ -124,6 +124,9 @@ Rapidly-triggered UI should retarget smoothly.
   targets from a bounded projected endpoint rather than only the release point.
   Otherwise preserve the project-owned target-selection rule and treat
   projection as a separately authorized behavior change, not automatic polish.
+  In either case, make the proposed calculation auditable: state velocity units,
+  projection horizon/decay, clamping, and the separation between computing an
+  endpoint and using it to choose a target.
 - Apply damping or friction beyond natural boundaries instead of hard stops.
 - Capture pointer events once a drag starts.
 - Ignore additional touch points after the initial drag begins.

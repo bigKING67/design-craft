@@ -232,9 +232,10 @@ unverified:
   offset, 1:1 tracking, explicit coordinate space and velocity units,
   interruption from the current presentation value without a jump,
   non-conflicting transform ownership, and a non-vestibular Reduced Motion
-  path. Evaluate velocity handoff and projected-endpoint snap selection, but do
-  not change project-owned target-selection semantics unless product authority,
-  existing behavior, or runtime evidence establishes momentum-based targeting.
+  path. Make the velocity units and bounded projected-endpoint method explicit,
+  but do not change project-owned target-selection semantics unless product
+  authority, existing behavior, or runtime evidence establishes momentum-based
+  targeting.
 - Engineering: clear component boundaries, no needless abstraction, observable
   errors, dependency checks before imports.
 - Performance: measured or reasoned hot paths, no layout thrashing, no unbounded

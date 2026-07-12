@@ -80,6 +80,16 @@ discrete slot rule merely because projection can feel more physical. When the
 semantic contract is unknown, preserve target selection in an implementation
 plan and list projection as a separately authorized hypothesis.
 
+Do not omit the projection chain merely because target selection is
+conditional. In a critique or audit, state the mechanical candidate with its
+units and bounds:
+
+1. measure release velocity in CSS px/s, pt/s, or dp/s;
+2. compute a bounded projected endpoint from the current presentation value;
+3. if momentum targeting is authorized, choose the nearest valid snap point to
+   that endpoint; otherwise retain the existing target rule and use the
+   projection only as a runtime experiment.
+
 For an authorized momentum-based interaction:
 
 ```text
