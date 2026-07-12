@@ -126,6 +126,16 @@ def validate() -> dict:
             errors.append(
                 f".github/workflows/validate.yml {job_name} must fetch recursive submodules and full history"
             )
+    windows_block = workflow_job_block(validate_workflow, "windows-portable")
+    for token in (
+        "shell: bash",
+        "git config --global core.autocrlf false",
+        "git config --global core.eol lf",
+    ):
+        if token not in windows_block:
+            errors.append(
+                f".github/workflows/validate.yml windows-portable missing {token}"
+            )
     if native_workflow.count("timeout-minutes:") != 2:
         errors.append(
             ".github/workflows/native-runtime.yml must set a timeout on both jobs"
