@@ -54,6 +54,7 @@ def validate() -> dict:
     android_common_path = ROOT / "scripts/native_runtime_android_common.sh"
     portable_validator_path = ROOT / "scripts/validate.sh"
     lint_validator_path = ROOT / "scripts/design_craft_lint.py"
+    git_attributes_path = ROOT / ".gitattributes"
     ios_fixture_path = ROOT / "evals/native-runtime/fixtures/ios/App.swift"
 
     required_paths = (
@@ -65,6 +66,7 @@ def validate() -> dict:
         android_common_path,
         portable_validator_path,
         lint_validator_path,
+        git_attributes_path,
         ios_fixture_path,
     )
     for path in required_paths:
@@ -81,6 +83,7 @@ def validate() -> dict:
     android_common = android_common_path.read_text(encoding="utf-8")
     portable_validator = portable_validator_path.read_text(encoding="utf-8")
     lint_validator = lint_validator_path.read_text(encoding="utf-8")
+    git_attributes = git_attributes_path.read_text(encoding="utf-8")
     ios_fixture = ios_fixture_path.read_text(encoding="utf-8")
 
     errors.extend(
@@ -177,6 +180,13 @@ def validate() -> dict:
                 "[executable, *command[1:], str(path)]",
             ),
             "scripts/design_craft_lint.py",
+        )
+    )
+    errors.extend(
+        require_tokens(
+            git_attributes,
+            ("* text=auto eol=lf",),
+            ".gitattributes",
         )
     )
 

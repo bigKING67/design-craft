@@ -71,6 +71,7 @@ required_files=(
   ".github/workflows/native-runtime.yml"
   ".github/dependabot.yml"
   ".github/scripts/upstream_review_issue.cjs"
+  ".gitattributes"
   ".gitmodules"
   "docs/maintenance.md"
   "docs/emilkowalski-absorption.md"
