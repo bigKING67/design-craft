@@ -120,7 +120,10 @@ Rapidly-triggered UI should retarget smoothly.
   threshold.
 - Preserve the grab offset so the object does not snap under the finger.
 - Dismiss by velocity as well as distance; a quick flick should count.
-- Choose snap targets from a projected endpoint, not only the release point.
+- When the product's interaction semantics are momentum-based, choose snap
+  targets from a bounded projected endpoint rather than only the release point.
+  Otherwise preserve the project-owned target-selection rule and treat
+  projection as a separately authorized behavior change, not automatic polish.
 - Apply damping or friction beyond natural boundaries instead of hard stops.
 - Capture pointer events once a drag starts.
 - Ignore additional touch points after the initial drag begins.

@@ -57,7 +57,11 @@ Apply these before turning a static snippet into a finding or plan:
 - When recon finds a drag, swipe, reorder, sheet, or other direct-manipulation
   surface, read `interaction-physics.md` and audit pointer capture, grab offset,
   1:1 tracking, interruption from the presentation value, measured velocity,
-  projected endpoints, and snap selection before deprioritizing it.
+  projected endpoints, and snap selection before deprioritizing it. Keep
+  velocity handoff separate from target-selection semantics: if the current
+  project uses nearest-position, thresholds, or discrete slots, do not turn
+  projection into an implementation requirement without explicit authority or
+  runtime evidence for that behavior change.
 - A shorter duration alone does not establish a valid Reduced Motion path.
   State which spatial properties are removed and which opacity, color, focus,
   or static state feedback remains; do not offer contradictory alternatives in

@@ -230,9 +230,11 @@ unverified:
 - Direct manipulation: for drag, swipe, sheet, drawer, reorder, momentum, or
   scrubbing work, reject input lockout and require pointer/native capture, grab
   offset, 1:1 tracking, explicit coordinate space and velocity units,
-  interruption from the current presentation value without a jump, velocity
-  handoff plus projected-endpoint snap selection, non-conflicting transform
-  ownership, and a non-vestibular Reduced Motion path.
+  interruption from the current presentation value without a jump,
+  non-conflicting transform ownership, and a non-vestibular Reduced Motion
+  path. Evaluate velocity handoff and projected-endpoint snap selection, but do
+  not change project-owned target-selection semantics unless product authority,
+  existing behavior, or runtime evidence establishes momentum-based targeting.
 - Engineering: clear component boundaries, no needless abstraction, observable
   errors, dependency checks before imports.
 - Performance: measured or reasoned hot paths, no layout thrashing, no unbounded

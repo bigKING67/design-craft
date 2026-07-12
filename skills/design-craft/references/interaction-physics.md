@@ -73,7 +73,14 @@ relative velocity:
 relativeVelocity = gestureVelocity / (target - current)
 ```
 
-Choose a snap target from the projected endpoint, not only the release point:
+Use a projected endpoint to choose a snap target only when the product contract,
+existing behavior, or runtime evidence establishes momentum-based targeting.
+Do not silently replace a project-owned nearest-current-position, threshold, or
+discrete slot rule merely because projection can feel more physical. When the
+semantic contract is unknown, preserve target selection in an implementation
+plan and list projection as a separately authorized hypothesis.
+
+For an authorized momentum-based interaction:
 
 ```text
 projection(v, d) = (v / 1000) * d / (1 - d)
@@ -84,6 +91,10 @@ target = nearestSnapPoint(projectedEndpoint)
 Use `d` near `0.998` for scroll-like momentum or closer to `0.99` for a
 snappier result. Clamp unsafe projections and keep destructive actions behind a
 clear commitment threshold.
+
+Velocity handoff and target selection are separate decisions. A settle can
+start from the current presentation value and inherit bounded velocity while
+still using the project's existing target-selection rule.
 
 ## Soft boundaries and hysteresis
 
