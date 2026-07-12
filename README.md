@@ -188,9 +188,9 @@ GitHub Actions and npm metadata updates are tracked separately through
 commit SHAs.
 
 Validate workflow pins, concurrency/timeouts, native fixture manifests, real
-iOS deep-link routing, Android dialog recovery, and compile-smoke coverage
-independently. The dedicated dependency-free lint and contract-test lanes are
-also runnable locally:
+iOS deep-link routing and system-confirmation recovery, Android dialog
+recovery, and compile-smoke coverage independently. The dedicated
+dependency-free lint and contract-test lanes are also runnable locally:
 
 ```bash
 make lint
@@ -726,8 +726,10 @@ python3 scripts/design_craft_native_runtime_validate.py --validate --require ios
 real Android Emulator fixture on manual dispatch and release tags. It builds,
 installs, launches, captures runtime artifacts, exercises the Android control
 and a real iOS `simctl openurl` transition against the running app with a cold
-deep-link fallback,
-hashes the evidence, and validates the generated JSON before upload. Downloaded
+deep-link fallback, pinned AXe semantic confirmation, and a screenshot-derived
+coordinate fallback for Simulator system dialogs. The iOS assertion requires
+both the app's URL-receipt event and its interaction marker. The workflow hashes
+the evidence and validates the generated JSON before upload. Downloaded
 artifacts must still be reviewed before `ios-observed.json` and
 `android-observed.json` are admitted as durable evidence. A separate physical
 device run must provide `real-device-observed.json`; workflow existence is not

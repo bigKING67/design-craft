@@ -89,7 +89,9 @@ wait_for_interaction() {
   local attempt
   for ((attempt = 1; attempt <= max_attempts; attempt++)); do
     if [[ -f "${interaction_marker}" ]] \
-      && grep -q "Runtime interaction confirmed" "${interaction_marker}"; then
+      && grep -q "Runtime interaction confirmed" "${interaction_marker}" \
+      && [[ -f "${runtime_events}" ]] \
+      && grep -q "url-received:designcraft-evidence:" "${runtime_events}"; then
       return 0
     fi
     sleep 2
@@ -113,11 +115,42 @@ ensure_axe() {
   fi
   "${AXE_BIN}" --version > "${EVIDENCE_DIR}/axe-version.txt" 2>&1
 }
+confirmation_tap_point() {
+  local screenshot="$1"
+  python3 - "${screenshot}" <<'PY'
+import struct
+import sys
+
+with open(sys.argv[1], "rb") as stream:
+    header = stream.read(24)
+if len(header) != 24 or header[:8] != b"\x89PNG\r\n\x1a\n":
+    raise SystemExit("confirmation screenshot is not a PNG")
+
+pixel_width, pixel_height = struct.unpack(">II", header[16:24])
+for scale in (3.0, 2.0, 1.0):
+    point_width = pixel_width / scale
+    point_height = pixel_height / scale
+    if 300 <= point_width <= 500 and 550 <= point_height <= 1000:
+        break
+else:
+    raise SystemExit("unsupported Simulator screenshot dimensions")
+
+# The system alert is centered; Open is the right-hand button below its title.
+tap_x = point_width * 0.685
+tap_y = point_height * 0.5 + 37.0
+print(f"{tap_x:.1f}\t{tap_y:.1f}\t{scale:g}")
+PY
+}
 system_confirmation=""
 attempt_deep_link() {
   local phase="$1"
   local url="$2"
   local output="$3"
+  local confirmation_screenshot="${EVIDENCE_DIR}/ios-${phase}-open-confirmation.png"
+  local tap_point=""
+  local tap_x=""
+  local tap_y=""
+  local tap_scale=""
   system_confirmation=""
   if ! xcrun simctl openurl "${udid}" "${url}" > "${output}" 2>&1; then
     return 1
@@ -127,15 +160,31 @@ attempt_deep_link() {
   fi
 
   xcrun simctl io "${udid}" screenshot \
-    "${EVIDENCE_DIR}/ios-${phase}-open-confirmation.png" \
+    "${confirmation_screenshot}" \
     >/dev/null 2>&1 || true
-  if ensure_axe \
-    && "${AXE_BIN}" tap --label "Open" --element-type Button \
+  if ensure_axe; then
+    if "${AXE_BIN}" tap --label "Open" --element-type Button \
       --wait-timeout 5 --udid "${udid}" \
       > "${EVIDENCE_DIR}/axe-${phase}-tap.log" 2>&1 \
-    && wait_for_interaction 12; then
-    system_confirmation="${phase}:AXe-v${AXE_VERSION}"
-    return 0
+      && wait_for_interaction 12; then
+      system_confirmation="${phase}:AXe-v${AXE_VERSION}-label"
+      return 0
+    fi
+
+    if tap_point="$(confirmation_tap_point "${confirmation_screenshot}")"; then
+      IFS=$'\t' read -r tap_x tap_y tap_scale <<< "${tap_point}"
+      printf 'x=%s\ny=%s\nscale=%s\n' \
+        "${tap_x}" "${tap_y}" "${tap_scale}" \
+        > "${EVIDENCE_DIR}/axe-${phase}-coordinate.txt"
+      if "${AXE_BIN}" tap -x "${tap_x}" -y "${tap_y}" \
+        --tap-style simulator --pre-delay 0.5 --post-delay 0.5 \
+        --udid "${udid}" \
+        > "${EVIDENCE_DIR}/axe-${phase}-coordinate-tap.log" 2>&1 \
+        && wait_for_interaction 12; then
+        system_confirmation="${phase}:AXe-v${AXE_VERSION}-coordinate"
+        return 0
+      fi
+    fi
   fi
 
   xcrun simctl io "${udid}" screenshot \
@@ -184,7 +233,7 @@ if [[ -z "${interaction_path}" ]]; then
   xcrun simctl spawn "${udid}" log show --last 3m --info --debug \
     --predicate 'process == "DesignCraftEvidence" OR eventMessage CONTAINS[c] "designcraft" OR eventMessage CONTAINS[c] "openurl"' \
     > "${EVIDENCE_DIR}/interaction-diagnostics.log" 2>&1 || true
-  echo "iOS runtime deep link did not produce the interaction marker" >&2
+  echo "iOS runtime deep link did not produce URL receipt plus the interaction marker" >&2
   exit 1
 fi
 cp "${interaction_marker}" "${EVIDENCE_DIR}/runtime-interaction.txt"
@@ -197,8 +246,8 @@ python3 scripts/design_craft_native_runtime_record.py \
   --tool "xcrun simctl/AXe v${AXE_VERSION}" \
   --command "xcrun swiftc iOS fixture" \
   --command "xcrun simctl boot/install/launch" \
-  --command "xcrun simctl openurl plus pinned AXe system confirmation when required" \
-  --command "live/cold deep-link interaction and marker assertion" \
+  --command "xcrun simctl openurl plus pinned AXe semantic/coordinate system confirmation" \
+  --command "live/cold deep-link interaction, URL receipt, and marker assertion" \
   --command "xcrun simctl io before/after screenshots" \
   --assertion build_succeeded=true \
   --assertion install_and_launch_succeeded=true \
