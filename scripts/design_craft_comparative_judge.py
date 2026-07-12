@@ -25,7 +25,7 @@ from design_craft_comparative_common import (
     validate_judgment,
     validate_judgment_schema,
 )
-from design_craft_cross_agent_run import host_version, publish_files, worktree_fingerprint
+from design_craft_evidence_common import command_version, publish_files, worktree_fingerprint
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -247,7 +247,7 @@ def main() -> int:
             )
             return 0
 
-        before = worktree_fingerprint()
+        before = worktree_fingerprint(ROOT)
         started_at = datetime.now(timezone.utc)
         started = time.monotonic()
         run_command = command if prompt_via_stdin else [*command, packet]
@@ -271,7 +271,7 @@ def main() -> int:
             parser.error(result.stderr.strip() or f"{args.host} judge exited {result.returncode}")
         if not temporary_output.is_file() or temporary_output.stat().st_size < 40:
             parser.error(f"{args.host} judge did not produce substantive output")
-        after = worktree_fingerprint()
+        after = worktree_fingerprint(ROOT)
         if after != before:
             parser.error(f"{args.host} judge changed the source worktree")
         raw_output = temporary_output.read_text(encoding="utf-8")
@@ -289,7 +289,7 @@ def main() -> int:
         manifest = {
             "schema": JUDGE_RUN_SCHEMA,
             "host": args.host,
-            "host_version": host_version(args.host),
+            "host_version": command_version(EXECUTABLES[args.host]),
             "model": args.model,
             "model_observation": "requested_by_cli",
             "reasoning_profile": args.reasoning_profile,

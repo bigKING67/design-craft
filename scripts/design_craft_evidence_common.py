@@ -5,8 +5,10 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
 import re
 import subprocess
+import tempfile
 from pathlib import Path
 
 
@@ -21,6 +23,105 @@ def sha256_bytes(value: bytes) -> str:
 
 def sha256_file(path: Path) -> str:
     return sha256_bytes(path.read_bytes())
+
+
+def command_version(executable: str) -> str:
+    try:
+        result = subprocess.run(
+            [executable, "--version"],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            text=True,
+            timeout=20,
+            check=False,
+        )
+    except (OSError, subprocess.TimeoutExpired) as exc:
+        raise RuntimeError(f"cannot resolve {executable} version: {exc}") from exc
+    value = result.stdout.strip()
+    if result.returncode != 0 or not value:
+        raise RuntimeError(f"cannot resolve {executable} version")
+    return value
+
+
+def run_git_bytes(root: Path, *args: str) -> bytes:
+    result = subprocess.run(
+        ["git", "-C", str(root), *args],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        check=False,
+    )
+    if result.returncode != 0:
+        raise RuntimeError(
+            result.stderr.decode("utf-8", errors="replace").strip()
+            or f"git {' '.join(args)} failed"
+        )
+    return result.stdout
+
+
+def worktree_fingerprint(root: Path) -> str:
+    """Hash tracked diffs plus untracked content, including already-dirty files."""
+
+    digest = hashlib.sha256()
+    for label, args in (
+        (b"status\0", ("status", "--porcelain=v1", "-z", "--untracked-files=all")),
+        (b"diff\0", ("diff", "--binary", "--no-ext-diff")),
+        (b"cached\0", ("diff", "--cached", "--binary", "--no-ext-diff")),
+    ):
+        digest.update(label)
+        digest.update(run_git_bytes(root, *args))
+
+    untracked = run_git_bytes(root, "ls-files", "--others", "--exclude-standard", "-z")
+    for raw_relative in sorted(item for item in untracked.split(b"\0") if item):
+        relative = raw_relative.decode("utf-8", errors="surrogateescape")
+        path = root / relative
+        digest.update(b"untracked\0")
+        digest.update(raw_relative)
+        digest.update(b"\0")
+        if path.is_symlink():
+            digest.update(b"symlink\0")
+            digest.update(os.readlink(path).encode("utf-8", errors="surrogateescape"))
+        elif path.is_file():
+            digest.update(path.read_bytes())
+        else:
+            digest.update(b"missing-or-non-file")
+    return digest.hexdigest()
+
+
+def publish_files(files: dict[Path, bytes]) -> None:
+    """Stage every evidence file before replacing any destination."""
+
+    staged: dict[Path, Path] = {}
+    originals = {path: path.read_bytes() if path.is_file() else None for path in files}
+    try:
+        for destination, content in files.items():
+            destination.parent.mkdir(parents=True, exist_ok=True)
+            descriptor, raw_stage = tempfile.mkstemp(
+                prefix=f".{destination.name}.", dir=destination.parent
+            )
+            stage = Path(raw_stage)
+            with os.fdopen(descriptor, "wb") as handle:
+                handle.write(content)
+                handle.flush()
+                os.fsync(handle.fileno())
+            staged[destination] = stage
+        for destination, stage in staged.items():
+            os.replace(stage, destination)
+    except OSError:
+        for destination, original in originals.items():
+            if original is None:
+                destination.unlink(missing_ok=True)
+            else:
+                descriptor, raw_restore = tempfile.mkstemp(
+                    prefix=f".{destination.name}.restore.", dir=destination.parent
+                )
+                restore = Path(raw_restore)
+                with os.fdopen(descriptor, "wb") as handle:
+                    handle.write(original)
+                os.replace(restore, destination)
+        raise
+    finally:
+        for stage in staged.values():
+            stage.unlink(missing_ok=True)
 
 
 def snapshot_tree(

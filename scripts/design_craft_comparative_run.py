@@ -23,8 +23,12 @@ from design_craft_comparative_common import (
     sha256_bytes,
     sha256_file,
 )
-from design_craft_cross_agent_run import host_version, publish_files, worktree_fingerprint
-from design_craft_evidence_common import tree_sha256
+from design_craft_evidence_common import (
+    command_version,
+    publish_files,
+    tree_sha256,
+    worktree_fingerprint,
+)
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -176,10 +180,10 @@ def main() -> int:
             parser.error("refusing to overwrite comparative evidence: " + ", ".join(existing))
 
     prompt = prompt_path.read_text(encoding="utf-8")
-    before = worktree_fingerprint()
+    before = worktree_fingerprint(ROOT)
     generated: dict[Path, bytes] = {}
     results: list[dict] = []
-    version = "dry-run" if args.dry_run else host_version("pi")
+    version = "dry-run" if args.dry_run else command_version("pi")
     with tempfile.TemporaryDirectory(prefix="design-craft-comparative-run-") as raw:
         temp_root = Path(raw)
         for variant in variants["variants"]:
@@ -231,7 +235,7 @@ def main() -> int:
             output_bytes = run.stdout.encode("utf-8")
             if len(output_bytes) < 40:
                 parser.error(f"variant {variant_id} produced no substantive output")
-            after_variant = worktree_fingerprint()
+            after_variant = worktree_fingerprint(ROOT)
             if after_variant != before:
                 parser.error(f"variant {variant_id} changed the source worktree")
             for source_relative, installed_path in zip(skill_trees, installed, strict=True):
@@ -278,7 +282,7 @@ def main() -> int:
         if args.dry_run:
             print(json.dumps(results, ensure_ascii=False, indent=2, sort_keys=True))
             return 0
-        if worktree_fingerprint() != before:
+        if worktree_fingerprint(ROOT) != before:
             parser.error("source worktree changed before comparative evidence publication")
         publish_files(generated)
     print(json.dumps(results, ensure_ascii=False, indent=2, sort_keys=True))

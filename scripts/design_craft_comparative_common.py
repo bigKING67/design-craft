@@ -26,7 +26,6 @@ CONTRACT_FILES = (
     "scripts/design_craft_comparative_judge.py",
     "scripts/design_craft_comparative_record.py",
     "scripts/design_craft_comparative_validate.py",
-    "scripts/design_craft_cross_agent_run.py",
     "scripts/design_craft_evidence_common.py",
 )
 

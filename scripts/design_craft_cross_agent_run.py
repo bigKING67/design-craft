@@ -4,7 +4,6 @@
 from __future__ import annotations
 
 import argparse
-import hashlib
 import json
 import os
 import platform
@@ -16,7 +15,13 @@ import time
 from datetime import datetime, timezone
 from pathlib import Path
 
-from design_craft_evidence_common import tree_sha256
+from design_craft_evidence_common import (
+    command_version,
+    publish_files,
+    sha256_bytes,
+    tree_sha256,
+    worktree_fingerprint,
+)
 
 
 SCHEMA = "design-craft.cross-agent-run.v2"
@@ -34,72 +39,6 @@ PROJECT_SKILL_PATHS = {
     "cursor": Path(".cursor/skills/design-craft"),
     "claude": Path(".claude/skills/design-craft"),
 }
-
-
-def sha256_bytes(value: bytes) -> str:
-    return hashlib.sha256(value).hexdigest()
-
-
-def run_git_bytes(root: Path, *args: str) -> bytes:
-    result = subprocess.run(
-        ["git", "-C", str(root), *args],
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        check=False,
-    )
-    if result.returncode != 0:
-        raise RuntimeError(
-            result.stderr.decode("utf-8", errors="replace").strip()
-            or f"git {' '.join(args)} failed"
-        )
-    return result.stdout
-
-
-def worktree_fingerprint(root: Path = ROOT) -> str:
-    """Hash tracked diffs plus untracked content, including already-dirty files."""
-
-    digest = hashlib.sha256()
-    for label, args in (
-        (b"status\0", ("status", "--porcelain=v1", "-z", "--untracked-files=all")),
-        (b"diff\0", ("diff", "--binary", "--no-ext-diff")),
-        (b"cached\0", ("diff", "--cached", "--binary", "--no-ext-diff")),
-    ):
-        digest.update(label)
-        digest.update(run_git_bytes(root, *args))
-
-    untracked = run_git_bytes(root, "ls-files", "--others", "--exclude-standard", "-z")
-    for raw_relative in sorted(item for item in untracked.split(b"\0") if item):
-        relative = raw_relative.decode("utf-8", errors="surrogateescape")
-        path = root / relative
-        digest.update(b"untracked\0")
-        digest.update(raw_relative)
-        digest.update(b"\0")
-        if path.is_symlink():
-            digest.update(b"symlink\0")
-            digest.update(os.readlink(path).encode("utf-8", errors="surrogateescape"))
-        elif path.is_file():
-            digest.update(path.read_bytes())
-        else:
-            digest.update(b"missing-or-non-file")
-    return digest.hexdigest()
-
-
-def host_version(host: str) -> str:
-    try:
-        result = subprocess.run(
-            [EXECUTABLES[host], "--version"],
-            stdout=subprocess.PIPE,
-            stderr=subprocess.STDOUT,
-            text=True,
-            timeout=20,
-            check=False,
-        )
-    except (OSError, subprocess.TimeoutExpired) as exc:
-        raise RuntimeError(f"cannot resolve {host} version: {exc}") from exc
-    value = result.stdout.strip()
-    if result.returncode != 0 or not value:
-        raise RuntimeError(f"cannot resolve {host} version")
-    return value
 
 
 def install_project_skill(host: str, source: Path, workspace: Path) -> Path:
@@ -183,11 +122,12 @@ def command_for(
             "--permission-mode",
             "plan",
             "--tools",
-            "",
+            "Read,Grep,Glob",
             "--no-session-persistence",
             "--no-chrome",
+            "--strict-mcp-config",
             "--setting-sources",
-            "project",
+            "user,project",
             "--model",
             model,
             "--effort",
@@ -211,43 +151,6 @@ def public_command(command: list[str], workspace: Path, installed_skill: Path) -
             value = value.replace(source, replacement)
         redacted.append(value)
     return shlex.join(redacted)
-
-
-def publish_files(files: dict[Path, bytes]) -> None:
-    """Stage every evidence file before replacing any destination."""
-
-    staged: dict[Path, Path] = {}
-    originals = {path: path.read_bytes() if path.is_file() else None for path in files}
-    try:
-        for destination, content in files.items():
-            destination.parent.mkdir(parents=True, exist_ok=True)
-            descriptor, raw_stage = tempfile.mkstemp(
-                prefix=f".{destination.name}.", dir=destination.parent
-            )
-            stage = Path(raw_stage)
-            with os.fdopen(descriptor, "wb") as handle:
-                handle.write(content)
-                handle.flush()
-                os.fsync(handle.fileno())
-            staged[destination] = stage
-        for destination, stage in staged.items():
-            os.replace(stage, destination)
-    except OSError:
-        for destination, original in originals.items():
-            if original is None:
-                destination.unlink(missing_ok=True)
-            else:
-                descriptor, raw_restore = tempfile.mkstemp(
-                    prefix=f".{destination.name}.restore.", dir=destination.parent
-                )
-                restore = Path(raw_restore)
-                with os.fdopen(descriptor, "wb") as handle:
-                    handle.write(original)
-                os.replace(restore, destination)
-        raise
-    finally:
-        for stage in staged.values():
-            stage.unlink(missing_ok=True)
 
 
 def run_self_check() -> None:
@@ -289,6 +192,11 @@ def run_self_check() -> None:
                 raise RuntimeError("Codex command is not stdin-bound")
             if host == "pi" and str(host_skill) not in command:
                 raise RuntimeError("Pi command is not bound to the isolated skill")
+            if host == "claude":
+                if "user,project" not in command or "Read,Grep,Glob" not in command:
+                    raise RuntimeError("Claude command must preserve auth and expose read-only tools")
+                if any(tool in command for tool in ("Bash", "Edit", "Write")):
+                    raise RuntimeError("Claude command exposed a mutating tool")
 
         destination = root / "published.md"
         publish_files({destination: b"first\n"})
@@ -377,7 +285,7 @@ def main() -> int:
             )
             return 0
 
-        before = worktree_fingerprint()
+        before = worktree_fingerprint(ROOT)
         started_at = datetime.now(timezone.utc)
         started = time.monotonic()
         run_command = command if prompt_via_stdin else [*command, prompt]
@@ -399,17 +307,21 @@ def main() -> int:
         if args.host != "codex":
             temporary_output.write_text(result.stdout, encoding="utf-8")
         if result.returncode != 0:
-            parser.error(result.stderr.strip() or f"{args.host} exited {result.returncode}")
+            parser.error(
+                result.stderr.strip()
+                or result.stdout.strip()
+                or f"{args.host} exited {result.returncode}"
+            )
         if not temporary_output.is_file() or temporary_output.stat().st_size < 40:
             parser.error(f"{args.host} did not produce a substantive output")
-        after = worktree_fingerprint()
+        after = worktree_fingerprint(ROOT)
         if after != before:
             parser.error(f"{args.host} changed the source worktree despite isolated read-only mode")
         if tree_sha256(installed_skill) != source_skill_tree:
             parser.error(f"{args.host} isolated skill changed during inference")
 
         output_bytes = temporary_output.read_bytes()
-        version = host_version(args.host)
+        version = command_version(EXECUTABLES[args.host])
         manifest = {
             "schema": SCHEMA,
             "host": args.host,
