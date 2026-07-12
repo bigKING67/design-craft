@@ -213,7 +213,11 @@ def validate() -> dict:
     errors.extend(
         require_tokens(
             git_attributes,
-            ("* text=auto eol=lf",),
+            (
+                "* text=auto eol=lf",
+                "evals/comparative/*/blind-packet.md whitespace=-blank-at-eol",
+                "evals/comparative/*/output.*.md whitespace=-blank-at-eol",
+            ),
             ".gitattributes",
         )
     )

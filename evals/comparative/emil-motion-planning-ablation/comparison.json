@@ -1,71 +1,71 @@
 {
-  "blind_map_sha256": "0ef4d75b02b8486e017af5c833cfa7d1847489c693e597e9fef1a2fbb2ad291f",
-  "blind_packet_sha256": "b42cb86bbab0ee59b8756ad3d324bbf9724c16b36b89db0044db98d2a328641e",
+  "blind_map_sha256": "a60cc0be7a9a08db31c92eda810a411e206b0b17cec9f7cbc8f234e248f30316",
+  "blind_packet_sha256": "e9a5c2bdc36db350505f5c568a0d172ec50fdd24d2fc9a3354a7e58cf3bbd50e",
   "case_id": "emil-motion-planning-ablation",
   "judge": {
     "host": "codex",
     "model": "gpt-5.6-sol",
     "model_observation": "requested_by_cli",
     "raw_output_path": "judge-output.raw.txt",
-    "raw_output_sha256": "ddb7f90435c3f4fb9b3adfa4b17d3ae4016299f54f72faae49304d3edadd4060",
+    "raw_output_sha256": "eb72641da52cb816f993b10499c3065069ed540e28e40daa8aa77dd6b9288fe8",
     "reasoning": "max",
     "reasoning_observation": "requested_by_cli",
     "run_path": "run.judge.json",
-    "run_sha256": "70100aa29851846b5f2d7cea4658f6f511670c7077fb7c9dac91156c3cffe07a",
+    "run_sha256": "a442c7f8e0b5310518a7c100a155ca4319c33247cda438021301823c24b994af",
     "runner_os": "macOS-15.7.7-arm64-arm-64bit-Mach-O",
     "version": "codex-cli 0.144.1"
   },
   "judgment_path": "blind-judgment.json",
   "judgment_schema_sha256": "b90b0fc1ec877d783cbffba9848944df30f73b9a7270c094a1cab2d7c37d9e71",
-  "judgment_sha256": "df5266ca7ba99747bab61fcb1b4154f8df6da5139ee48b128effd43378f0f7ea",
+  "judgment_sha256": "b18e8d302ba1fbf6cc37e757395503842b459026f4ce9cddc18c5ba0771d223f",
   "prompt_sha256": "81453e8d19e3de0d27bf7603b60f045cedaafa90b1a6fd7ee6dcc7249ca639ba",
-  "rationale": "B 以两分优势胜出：它在严格标注静态证据边界的同时，对评分表明确要求的 origin、pointer tracking、坐标空间、动画中断和 primitive 取舍覆盖最全面，验证场景也最有针对性。A 更克制且计划最稳健，但关键拖拽与锚点诊断不够深入；C 的计划形式完整，却包含更高风险的 transform 所有权假设。B 的速度投影、计划重复和篇幅违规已在优先级及自包含性上扣分，因此并非满分。",
-  "recorded_at": "2026-07-12T06:23:36Z",
+  "rationale": "C 获胜，因为它在保持静态证据诚实的同时，最完整地覆盖了评分标准明确要求的 property cost、origin、pointer tracking、interruption 以及 keyframe/state-transition 取舍。A 的计划形式很强，但包含未证实且可能单位不兼容的动画 API 示例及危险的原始 clientY transform 写法；B 更稳健，却没有把拖拽中断与重定向机制规划到实现级。C 虽然存在过度展开和行数超限问题，整体仍具有最高的技术准确性、因果连续性设计和可执行验证质量。",
+  "recorded_at": "2026-07-12T09:57:24Z",
   "results": {
     "baseline": {
-      "blind_label": "A",
-      "criteria": {
-        "accessibility_performance": 9,
-        "evidence_recon": 15,
-        "plan_self_containment": 20,
-        "prioritization": 9,
-        "project_conventions": 10,
-        "purpose_frequency": 10,
-        "technical_accuracy": 11,
-        "verification_quality": 9
-      },
-      "score": 93,
-      "summary": "证据边界、现有约定复用和计划自包含性都很强，且对生命周期与未知动画 API 保持了谨慎。主要技术缺口是没有充分处理锚定浮层的 transform-origin、原始 clientY 的坐标语义，以及释放动画的中断与当前呈现值重定向；整体也明显超过 180 行限制。"
-    },
-    "design-craft": {
       "blind_label": "B",
       "criteria": {
         "accessibility_performance": 9,
         "evidence_recon": 15,
-        "plan_self_containment": 19,
+        "plan_self_containment": 17,
+        "prioritization": 8,
+        "project_conventions": 10,
+        "purpose_frequency": 9,
+        "technical_accuracy": 11,
+        "verification_quality": 8
+      },
+      "score": 87,
+      "summary": "证据边界最保守，能够持续区分静态事实、待检查实现和后续运行时验证，并良好复用既有 token、Button precedent 与 80ms Reduced Motion 口径。缺点是命令面板新增 CSS 的确切文件路径和生命周期处理仍未确定；排序队列计划主要缩短固定 tween，却没有充分处理动画中断、重抓取和从当前呈现位置重定向；验证项也缺少慢放、中断和可量化性能检查。输出同样超过要求的 180 行。"
+    },
+    "design-craft": {
+      "blind_label": "C",
+      "criteria": {
+        "accessibility_performance": 9,
+        "evidence_recon": 15,
+        "plan_self_containment": 18,
         "prioritization": 8,
         "project_conventions": 10,
         "purpose_frequency": 10,
         "technical_accuracy": 14,
-        "verification_quality": 10
+        "verification_quality": 9
       },
-      "score": 95,
-      "summary": "技术覆盖最完整，系统涉及了属性成本、锚点 origin、局部坐标、pointer capture、grab offset、当前呈现值、中断验证以及 keyframe 与状态 transition 的取舍。扣分点是速度投影会改变 nearest-slot 的确定性语义，拖拽方案略显过度，第三项 Reduced Motion 计划与前两项重复，且输出超过 180 行。"
+      "score": 93,
+      "summary": "三者中技术诊断最全面：既正确处理 transition: all、布局属性动画和 transform-origin 的证据边界，也覆盖了拖拽坐标空间、grab offset、pointer capture、速度采样、投影落点、动画中断与重新抓取。计划均包含当前路径和摘录、目标、步骤、边界、检查、Reduced Motion 及漂移停止条件。扣分点是排序队列方案相对现有证据偏重，命令面板 CSS 的最终落点仍不精确，没有给出可量化的帧预算或性能面板检查，并且全文超过 180 行限制。"
     },
     "emil": {
-      "blind_label": "C",
+      "blind_label": "A",
       "criteria": {
         "accessibility_performance": 8,
-        "evidence_recon": 15,
-        "plan_self_containment": 20,
-        "prioritization": 9,
+        "evidence_recon": 14,
+        "plan_self_containment": 18,
+        "prioritization": 7,
         "project_conventions": 10,
-        "purpose_frequency": 9,
+        "purpose_frequency": 10,
         "technical_accuracy": 10,
         "verification_quality": 9
       },
-      "score": 90,
-      "summary": "结构完整、路径和摘录精确，执行顺序也较清楚；但直接把拖拽改为 item 内联 transform 可能破坏既有 transform ownership，对父级 CSS 变量失效范围的判断偏推测，并且缺少完整的逐帧节流与动画重定向方案。完全移除 palette 动画也较少考虑状态连续性，输出同样超过 180 行。"
+      "score": 86,
+      "summary": "静态证据盘点、路径引用、键盘高频场景取舍和计划结构都很完整，且明确列出了未验证状态。主要扣分来自拖拽方案的技术风险：直接以原始 clientY 覆盖 transform 可能混淆坐标系并覆盖既有变换，示例中的 spring 参数、0.5 时长单位和 bounce 支持均未由 animateTo 接口证明；popover 还引入了无证据的特定 origin 变量链，Reduced Motion 也缺少对应的明确规则。全文明显超过 180 行限制。"
     }
   },
   "schema": "design-craft.comparative-result.v2",
@@ -78,9 +78,9 @@
       "host_version": "0.80.3",
       "model": "codex/gpt-5.5",
       "output_path": "output.baseline.md",
-      "output_sha256": "79e7321875ec722ceae9e420cb563c663c446dcccebebe6866230dd6b1fdb110",
+      "output_sha256": "c347f2058b3f21de285d438402f7457d5f9668edbd371628d02662c1dfe8b9a8",
       "run_path": "run.baseline.json",
-      "run_sha256": "11806a2f40c6a1f6c61048be0a8d516f0f61af35eb88acdc1e0fc9b008f51c7e",
+      "run_sha256": "45df81b25eebe3387e5b6c15839f78d2da776502dffb72d73835194b00558a7f",
       "skill_trees": {},
       "thinking": "high"
     },
@@ -90,11 +90,11 @@
       "host_version": "0.80.3",
       "model": "codex/gpt-5.5",
       "output_path": "output.design-craft.md",
-      "output_sha256": "23795aebcde504870629a157f033dc045dfb2e9b07037aa3638eb2c2248db398",
+      "output_sha256": "d32d73b354fdb61b03124f4e70239c2e11f2266df0a6ab8a7715ab4eb8d6f5a5",
       "run_path": "run.design-craft.json",
-      "run_sha256": "c348f7e989567ae568198d3833dc1ddeffbfb651fb1efc8b0f7ab8f75ff217ea",
+      "run_sha256": "9ad5c28fe9499a20a29709b142710085ac77150ac65bfdc06ef49028ca46eed2",
       "skill_trees": {
-        "skills/design-craft": "fa3adddb54ff35fb5b2a7f5b15831005d94664382c90e195cd10971f533d54b4"
+        "skills/design-craft": "c9dbf2c1b84a8f49364c61483af8ecf1cfd204c665d51891d6dfc8f623afcc59"
       },
       "thinking": "high"
     },
@@ -104,9 +104,9 @@
       "host_version": "0.80.3",
       "model": "codex/gpt-5.5",
       "output_path": "output.emil.md",
-      "output_sha256": "c2a2d9c98a0e61df391f8326f9fb7ff43197c05e1e05f931f6eb4840c329e860",
+      "output_sha256": "cef3c84f77abca51bd36943c44791866043daf686a98ac2e06a75a41c4390c5f",
       "run_path": "run.emil.json",
-      "run_sha256": "cd6553328a111c1aa6df59c31cfcb1c0887923cb867266080105cd7a50fa5cae",
+      "run_sha256": "65454015f31991d1994f80752f46de3610eac07719ac6ee47fa8e35ce165e48a",
       "skill_trees": {
         "upstreams/emilkowalski-skills/skills/apple-design": "84ebad0905bc9274fc22eb0b100778adaee20e6d479a69168b5f3a2f018e19de",
         "upstreams/emilkowalski-skills/skills/improve-animations": "b4813f60575f3e1e3d916bb76def2b5821e91194fc6896e6d47177cc22a9e488",
