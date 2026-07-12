@@ -132,7 +132,6 @@ write_metadata() {
   fi
 
   python3 - "${target}" "${name}" "${version}" "${ROOT_DIR}" "${commit}" "${repo}" "${repo_dirty}" "${skill_source_dirty}" <<'PY'
-import hashlib
 import json
 import re
 import subprocess
@@ -150,6 +149,9 @@ if "://" in repo:
     repo = urlunsplit((parsed.scheme, host, parsed.path, "", ""))
 target_path = Path(target)
 source_root_path = Path(source_root)
+sys.path.insert(0, str(source_root_path / "scripts"))
+
+from design_craft_evidence_common import tree_sha256
 
 
 def release_state() -> str:
@@ -175,16 +177,6 @@ def release_state() -> str:
     return "released" if tag_result.stdout.strip() == commit else "release_candidate"
 
 
-tree = hashlib.sha256()
-for path in sorted(target_path.rglob("*")):
-    if not path.is_file() or "__pycache__" in path.parts or path.name in {".DS_Store", ".design-craft-install.json"} or path.suffix in {".pyc", ".pyo"}:
-        continue
-    relative = path.relative_to(target_path).as_posix()
-    file_digest = hashlib.sha256(path.read_bytes()).hexdigest()
-    tree.update(relative.encode("utf-8"))
-    tree.update(b"\0")
-    tree.update(file_digest.encode("ascii"))
-    tree.update(b"\n")
 payload = {
     "schema": "design-craft.install.v2",
     "installer_version": 3,
@@ -198,7 +190,7 @@ payload = {
     "source_dirty": skill_source_dirty == "true",
     "skill_source_dirty": skill_source_dirty == "true",
     "repo_dirty": repo_dirty == "true",
-    "source_tree_sha256": tree.hexdigest(),
+    "source_tree_sha256": tree_sha256(target_path),
     "installed_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
 }
 target_path.joinpath(".design-craft-install.json").write_text(
