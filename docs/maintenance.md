@@ -440,7 +440,8 @@ After restoring to another Codex home, run the validation commands listed in
 `adapters/codex/route-pack/README.md`. Do not treat the manifest alone as proof
 that the restored route planner works. A strict audit must also pass routing
 JSON Schema validation, split authority/browser/delivery/runtime/telemetry
-module checks, a telemetry self-check, browser/runtime tool-parity probes, a
+module checks, telemetry self-checks, browser-lifecycle-receipt contract tests,
+browser/runtime tool-parity probes, a
 verified `gpt-5.6-sol/max` environment-runtime probe, and the unapproved GPT-5.6
 `ultra` runtime-conflict denial probe. Strict probes set
 `FRONTEND_ROUTE_TELEMETRY_LOG_ENABLED=0` and
@@ -459,7 +460,7 @@ Review production route latency and distributions separately:
 python3 ~/.codex/tools/frontend_route_telemetry.py \
   --include-rotated \
   --context prod \
-  --min-events 6 \
+  --min-events 50 \
   --max-p95-ms 1000 \
   --json
 ```
@@ -467,7 +468,57 @@ python3 ~/.codex/tools/frontend_route_telemetry.py \
 The default privacy-safe log rotates at 2 MB with seven retained files. Use a
 non-production context for fixtures and keep general route tests plus release
 route smoke telemetry-off; `test_frontend_route_telemetry.sh` owns telemetry
-behavior coverage.
+behavior coverage. New writes use `frontend-route.telemetry-event.v2`, which
+records `planned_execution_mode` and `actual_subagent_state` without the legacy
+`execution_mode` field. Summary v2 must continue reading mixed v1/v2 history in
+place, report source-schema counts, and never rewrite or delete legacy events.
+
+Route lifecycle contracts must also keep policy separate from runtime truth:
+`planned_browser_lifecycle` and legacy `browser_lifecycle` are plans, while the
+planner's `actual_browser_lifecycle_state.state` remains `not_started` or
+`not_applicable`. Only browser67 outcomes and a scoped `finalize_task` delivery
+summary can support a separate runtime created/adopted/released/closed receipt;
+the planner payload is not automatically updated after browser work. Use
+`frontend_route_browser_receipt.py` to bind a saved route digest to ordered
+`tmwd_browser/browser_tab_lifecycle` arguments and `browser67.tool-outcome.v3`
+results. Its `frontend-route.browser-lifecycle-receipt.v1` output keeps
+`receipt_valid` separate from `runtime_complete`, rejects dry-run or `scope=all`
+as completion evidence, and never copies URLs, titles, tab IDs, adoption tokens,
+or lease IDs.
+
+Keep scope normalization aligned with live browser67: `workspace_key` takes
+precedence and yields `scope=workspace`; a simultaneous `task_id` is an
+additional filter/correlation field. Task-only scope omits `workspace_key`.
+Normalize live camelCase `close_scope.workspaceKey/taskId` to canonical
+snake_case, and keep explicit-call/live-scope mismatches fail closed.
+
+Do not describe the receipt adapter as automatic host cleanup. The global
+Codex config registers a `PostToolUse` matcher only for the exact
+`mcp__tmwd_browser__browser_tab_lifecycle` tool. Capture is observational: it
+binds a privacy-safe route view to session/turn, sanitizes the completed call in
+memory, and atomically replaces one repo-external state file. It cannot dispatch
+`finalize_task` through the active Codex MCP client, so scoped finalization
+remains explicit. Never retain raw hook payloads or match every `tmwd_browser`
+tool. A frontend route-pack restore does not install or trust this Hook and does
+not schedule retention; follow the targeted host-integration procedure in
+`adapters/codex/route-pack/README.md` without exporting the complete
+`config.toml` or Hook trust state. Configuration alone is not live evidence
+until a new Codex session reviews/trusts the Hook and verifies a real lifecycle
+entry plus explicit scoped finalization.
+
+Capture status uses `frontend-route.browser-capture-status.v2`. Health counters
+are historical evidence only when `health_persisted=true` and
+`health_status=persisted`; zero defaults with uninitialized health are not proof
+of an error-free history. Retention removes incomplete state after 7 days and
+complete state after 30 days, caps retained incomplete states at 1,000, and caps
+complete receipts at 100. The wider global periodic runner may own that schedule
+on a full installation; a standalone route-pack restore must schedule `--prune`
+separately and verify the scheduler rather than inferring it from unit tests.
+
+The stable `test_frontend_preflight.sh` entry is a thin parallel orchestrator.
+Its isolated gate, route, observability, policy, and state/concurrency suites
+live under `tools/tests/frontend_preflight/`; keep those files in the route-pack
+manifest and snapshot inventory whenever the suite structure changes.
 
 ## Release checklist
 

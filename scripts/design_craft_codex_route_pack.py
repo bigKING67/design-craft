@@ -38,14 +38,7 @@ class PackFile:
 
 
 SUGGESTED_VALIDATION_COMMANDS = [
-    "bash ~/.codex/tools/tests/test_frontend_route_plan.sh",
-    "bash ~/.codex/tools/tests/test_frontend_route_telemetry.sh",
-    "bash ~/.codex/tools/tests/test_frontend_delivery_contract.sh",
-    "bash ~/.codex/tools/tests/test_frontend_route_contract.sh",
-    "bash ~/.codex/tools/tests/test_frontend_preflight_spec_sync.sh",
-    "bash ~/.codex/tools/tests/test_frontend_preflight.sh",
     "bash ~/.codex/tools/frontend_preflight_verify.sh",
-    "bash ~/.codex/tools/agents_quality_verify.sh --fast",
 ]
 
 
@@ -55,6 +48,13 @@ def utc_now() -> str:
 
 def default_source_root() -> Path:
     return Path(os.environ.get("CODEX_HOME", Path.home() / ".codex")).expanduser()
+
+
+def child_process_env(**overrides: str) -> dict[str, str]:
+    env = os.environ.copy()
+    env["PYTHONDONTWRITEBYTECODE"] = "1"
+    env.update(overrides)
+    return env
 
 
 def sha256_file(path: Path) -> str:
@@ -102,6 +102,40 @@ def normalize_manifest_path(raw_path: object) -> str:
     return posix_path.as_posix()
 
 
+def validate_manifest_source_path(source_root: Path, rel_path: str) -> Path:
+    root = source_root.resolve()
+    candidate = source_root
+    for part in PurePosixPath(rel_path).parts:
+        candidate /= part
+        if candidate.is_symlink():
+            raise ValueError(f"route-pack manifest file path must not use symlinks: {rel_path!r}")
+    resolved = candidate.resolve(strict=False)
+    try:
+        resolved.relative_to(root)
+    except ValueError as exc:
+        raise ValueError(
+            f"route-pack manifest file path resolves outside source root: {rel_path!r}"
+        ) from exc
+    return candidate
+
+
+def validate_export_destination(export_dir: Path, rel_path: str) -> Path:
+    root = export_dir.resolve(strict=False)
+    candidate = export_dir
+    for part in PurePosixPath(rel_path).parts:
+        candidate /= part
+        if candidate.is_symlink():
+            raise ValueError(f"route-pack export path must not use symlinks: {rel_path!r}")
+    resolved = candidate.resolve(strict=False)
+    try:
+        resolved.relative_to(root)
+    except ValueError as exc:
+        raise ValueError(
+            f"route-pack export path resolves outside export root: {rel_path!r}"
+        ) from exc
+    return candidate
+
+
 def load_route_pack_files(source_root: Path) -> tuple[list[PackFile], dict]:
     manifest_path = source_root / ROUTE_PACK_MANIFEST_PATH
     manifest = load_json(manifest_path)
@@ -131,6 +165,7 @@ def load_route_pack_files(source_root: Path) -> tuple[list[PackFile], dict]:
             continue
         try:
             rel_path = normalize_manifest_path(raw.get("path"))
+            validate_manifest_source_path(source_root, rel_path)
         except ValueError as exc:
             errors.append(f"{prefix}: {exc}")
             continue
@@ -214,6 +249,7 @@ def bundled_model_catalog() -> tuple[dict[str, dict], str | None]:
     try:
         completed = subprocess.run(
             [codex, "debug", "models", "--bundled"],
+            env=child_process_env(),
             check=False,
             capture_output=True,
             text=True,
@@ -272,7 +308,7 @@ def run_route_probe(
     runtime_reasoning: str | None = None,
 ) -> tuple[int, dict, str]:
     route_plan = source_root / "tools/frontend_route_plan.sh"
-    env = os.environ.copy()
+    env = child_process_env()
     env.update(
         {
             "CODEX_HOME": str(source_root),
@@ -319,6 +355,15 @@ def semantic_validation(source_root: Path) -> dict:
     route_core_path = source_root / "tools/frontend_route_core.py"
     route_authority_path = source_root / "tools/frontend_route_authority.py"
     route_browser_path = source_root / "tools/frontend_route_browser.py"
+    route_browser_capture_path = source_root / "tools/frontend_route_browser_capture.py"
+    route_browser_capture_sanitize_path = source_root / "tools/frontend_route_browser_capture_sanitize.py"
+    route_browser_capture_store_path = source_root / "tools/frontend_route_browser_capture_store.py"
+    route_browser_contract_path = source_root / "tools/frontend_route_browser_contract.py"
+    route_browser_receipt_path = source_root / "tools/frontend_route_browser_receipt.py"
+    route_browser_receipt_core_path = source_root / "tools/frontend_route_browser_receipt_core.py"
+    route_browser_receipt_reducer_path = source_root / "tools/frontend_route_browser_receipt_reducer.py"
+    route_browser_capture_test_path = source_root / "tools/tests/test_frontend_browser_capture.py"
+    route_browser_receipt_test_path = source_root / "tools/tests/test_frontend_browser_lifecycle_receipt.sh"
     route_delivery_path = source_root / "tools/frontend_route_delivery.py"
     route_runtime_path = source_root / "tools/frontend_route_runtime.py"
     route_telemetry_path = source_root / "tools/frontend_route_telemetry.py"
@@ -343,6 +388,7 @@ def semantic_validation(source_root: Path) -> dict:
                 "--json",
             ],
             cwd=source_root,
+            env=child_process_env(),
             check=False,
             capture_output=True,
             text=True,
@@ -428,6 +474,13 @@ def semantic_validation(source_root: Path) -> dict:
         route_core_path,
         route_authority_path,
         route_browser_path,
+        route_browser_capture_path,
+        route_browser_capture_sanitize_path,
+        route_browser_capture_store_path,
+        route_browser_contract_path,
+        route_browser_receipt_path,
+        route_browser_receipt_core_path,
+        route_browser_receipt_reducer_path,
         route_delivery_path,
         route_runtime_path,
         route_telemetry_path,
@@ -452,7 +505,7 @@ def semantic_validation(source_root: Path) -> dict:
             "from frontend_route_browser import resolve_browser_route",
             "from frontend_route_delivery import",
             "from frontend_route_runtime import resolve_runtime_profile",
-            "from frontend_route_telemetry import append_route_event",
+            "from frontend_route_telemetry import ROUTE_TELEMETRY_SCHEMA, append_route_event",
             "quality_governance",
             "delegation_contract",
             "runtime_profile_verified",
@@ -462,6 +515,8 @@ def semantic_validation(source_root: Path) -> dict:
             '"frontend-route.compact.v1"',
             '"design_tier": tier',
             '"preferred_browser_tool": preferred_browser_tool',
+            '"planned_browser_lifecycle": planned_browser_lifecycle',
+            '"actual_browser_lifecycle_state": actual_browser_lifecycle_state',
             '"runtime_validation_kind": runtime_validation_kind',
             '"native_validation_required": native_validation_required',
         ],
@@ -474,11 +529,74 @@ def semantic_validation(source_root: Path) -> dict:
             "resolve_browser_route",
             '"preferred_browser_tool"',
             '"native_validation_required"',
+            '"planned_browser_lifecycle"',
+            '"actual_browser_lifecycle_state"',
+        ],
+        "frontend_route_browser_capture.py": [
+            "from frontend_route_browser_capture_sanitize import",
+            "from frontend_route_browser_capture_store import",
+            '"--ingest-hook"',
+            '"--strict"',
+            "MAX_HOOK_BYTES",
+        ],
+        "frontend_route_browser_capture_sanitize.py": [
+            "def sanitize_route",
+            "def sanitize_hook_event",
+            "def _aliased_token",
+            '"workspaceKey"',
+            '"preferred_browser_tool": SOURCE_SERVER',
+            "SUPPORTED_ACTIONS",
+        ],
+        "frontend_route_browser_capture_store.py": [
+            'CAPTURE_STATE_FILE = "capture-state.json"',
+            'CAPTURE_HEALTH_FILE = "capture-health.json"',
+            'CAPTURE_STATUS_SCHEMA = "frontend-route.browser-capture-status.v2"',
+            '"last_error_code"',
+            '"error_count"',
+            '"health_persisted"',
+            '"health_status"',
+            "MAX_INCOMPLETE_STATES = 1000",
+            "MAX_COMPLETE_RECEIPTS = 100",
+            "def save_route_binding",
+            "def ingest_observation",
+            "def prune_capture_state",
+        ],
+        "frontend_route_browser_contract.py": [
+            'RECEIPT_SCHEMA = "frontend-route.browser-lifecycle-receipt.v1"',
+            'OBSERVATIONS_SCHEMA = "frontend-route.browser-lifecycle-observations.v1"',
+            'OUTCOME_SCHEMA = "browser67.tool-outcome.v3"',
+            "MAX_ROUTE_BYTES",
+            "MAX_OBSERVATIONS",
+            "planner_actual_browser_lifecycle_state",
+        ],
+        "frontend_route_browser_receipt.py": [
+            "from frontend_route_browser_receipt_core import",
+            '"--require-complete"',
+            "return 3",
+        ],
+        "frontend_route_browser_receipt_core.py": [
+            "def read_json_file",
+            "def normalize_receipt",
+            '"receipt_valid"',
+            '"runtime_complete"',
+            '"host_observation_binding"',
+        ],
+        "frontend_route_browser_receipt_reducer.py": [
+            "class LifecycleReducer",
+            "def expected_scope",
+            '"workspaceKey"',
+            "def _apply_entry",
+            "def _apply_inspection",
+            "def _apply_adoption",
+            "def _apply_finalize",
+            "def format_delivery_summary",
         ],
         "frontend_route_delivery.py": [
             "build_skill_selection_contract",
             "build_delivery_contract",
             "current Codex turn_context",
+            "planned_browser_lifecycle",
+            "actual_browser_lifecycle_state",
         ],
         "frontend_route_runtime.py": [
             "FRONTEND_RUNTIME_SESSION_DISCOVERY",
@@ -492,6 +610,8 @@ def semantic_validation(source_root: Path) -> dict:
             "FRONTEND_ROUTE_TELEMETRY_CONTEXT",
             "append_route_event",
             "summarize",
+            'EVENT_SCHEMA = "frontend-route.telemetry-event.v2"',
+            'SUMMARY_SCHEMA = "frontend-route.telemetry-summary.v2"',
             '"p50"',
             '"p95"',
             '"contains_sensitive_data"',
@@ -562,12 +682,9 @@ def semantic_validation(source_root: Path) -> dict:
     except (OSError, ValueError, tomllib.TOMLDecodeError) as exc:
         issues.append(f"failed to validate worker.toml: {exc}")
 
-    telemetry_env = os.environ.copy()
-    telemetry_env.update(
-        {
-            "FRONTEND_ROUTE_TELEMETRY_CONTEXT": "test",
-            "FRONTEND_ROUTE_TELEMETRY_LOG_ENABLED": "0",
-        }
+    telemetry_env = child_process_env(
+        FRONTEND_ROUTE_TELEMETRY_CONTEXT="test",
+        FRONTEND_ROUTE_TELEMETRY_LOG_ENABLED="0",
     )
     try:
         telemetry_completed = subprocess.run(
@@ -593,6 +710,55 @@ def semantic_validation(source_root: Path) -> dict:
     if not telemetry_probe_ok:
         issues.append(f"frontend route telemetry self-check failed: {telemetry_detail[:240]}")
 
+    capture_env = child_process_env()
+    try:
+        capture_completed = subprocess.run(
+            [sys.executable, str(route_browser_capture_test_path)],
+            cwd=source_root,
+            env=capture_env,
+            check=False,
+            capture_output=True,
+            text=True,
+            timeout=90,
+        )
+        capture_probe_ok = capture_completed.returncode == 0
+        capture_detail = (capture_completed.stderr or capture_completed.stdout).strip()
+    except (OSError, subprocess.TimeoutExpired) as exc:
+        capture_probe_ok = False
+        capture_detail = str(exc)
+    runtime_probes.append(
+        {
+            "name": "browser_lifecycle_capture_contract_tests",
+            "ok": capture_probe_ok,
+        }
+    )
+    if not capture_probe_ok:
+        issues.append(f"frontend browser lifecycle capture tests failed: {capture_detail[:240]}")
+
+    try:
+        receipt_completed = subprocess.run(
+            ["bash", str(route_browser_receipt_test_path)],
+            cwd=source_root,
+            env=child_process_env(),
+            check=False,
+            capture_output=True,
+            text=True,
+            timeout=20,
+        )
+        receipt_probe_ok = receipt_completed.returncode == 0
+        receipt_detail = (receipt_completed.stderr or receipt_completed.stdout).strip()
+    except (OSError, subprocess.TimeoutExpired) as exc:
+        receipt_probe_ok = False
+        receipt_detail = str(exc)
+    runtime_probes.append(
+        {
+            "name": "browser_lifecycle_receipt_contract_tests",
+            "ok": receipt_probe_ok,
+        }
+    )
+    if not receipt_probe_ok:
+        issues.append(f"frontend browser lifecycle receipt contract tests failed: {receipt_detail[:240]}")
+
     probe_base = [
         "--surface",
         "dashboard",
@@ -613,10 +779,19 @@ def semantic_validation(source_root: Path) -> dict:
             source_root,
             [*probe_base, "--browser-context", browser_context],
         )
+        expected_lifecycle_state = (
+            "not_started" if expected_tool == "tmwd_browser" else "not_applicable"
+        )
+        actual_lifecycle = payload.get("actual_browser_lifecycle_state")
         probe_ok = (
             returncode == 0
             and payload.get("preferred_browser_tool") == expected_tool
             and payload.get("preferred_runtime_tool") == expected_tool
+            and payload.get("planned_browser_lifecycle") == payload.get("browser_lifecycle")
+            and isinstance(actual_lifecycle, dict)
+            and actual_lifecycle.get("state") == expected_lifecycle_state
+            and actual_lifecycle.get("finalize_result") == expected_lifecycle_state
+            and actual_lifecycle.get("delivery_summary_observed") is False
             and payload.get("style_authority_applicability") == "not_applicable"
             and payload.get("visual_contract_required") is False
         )
@@ -627,6 +802,11 @@ def semantic_validation(source_root: Path) -> dict:
                 "returncode": returncode,
                 "preferred_browser_tool": payload.get("preferred_browser_tool"),
                 "preferred_runtime_tool": payload.get("preferred_runtime_tool"),
+                "actual_browser_lifecycle_state": (
+                    actual_lifecycle.get("state")
+                    if isinstance(actual_lifecycle, dict)
+                    else None
+                ),
             }
         )
         if not probe_ok:
@@ -686,6 +866,11 @@ def semantic_validation(source_root: Path) -> dict:
         and payload.get("route", {}).get("frontend_tier") == "L1-F"
         and payload.get("runtime_profile", {}).get("verified") is True
         and payload.get("validation", {}).get("preflight_code") == "OK"
+        and payload.get("planned_browser_lifecycle") == payload.get("browser_lifecycle")
+        and payload.get("actual_browser_lifecycle_state", {}).get("state")
+        == "not_applicable"
+        and payload.get("actual_browser_lifecycle_state", {}).get("finalize_result")
+        == "not_applicable"
     )
     runtime_probes.append(
         {
@@ -848,14 +1033,15 @@ def build_manifest(source_root: Path, *, include_semantic: bool = True) -> dict:
 def copy_pack(source_root: Path, export_dir: Path, files: list[dict], dry_run: bool) -> list[str]:
     copied: list[str] = []
     for item in files:
-        source = source_root / item["path"]
+        source = validate_manifest_source_path(source_root, item["path"])
         if not source.is_file():
             continue
-        destination = export_dir / item["path"]
+        destination = validate_export_destination(export_dir, item["path"])
         copied.append(item["path"])
         if dry_run:
             continue
         destination.parent.mkdir(parents=True, exist_ok=True)
+        destination = validate_export_destination(export_dir, item["path"])
         shutil.copy2(source, destination)
     return copied
 
@@ -971,6 +1157,39 @@ def self_check() -> int:
         write_manifest(payload, export_manifest_path, dry_run=False)
         if not export_manifest_path.is_file():
             print("self-check did not write manifest", file=sys.stderr)
+            return 1
+
+        outside = Path(tmp) / "outside-route-pack.txt"
+        outside.write_text("not part of the route pack\n", encoding="utf-8")
+        symlink = root / "tools/frontend_authority_init.sh"
+        symlink.symlink_to(outside)
+        symlink_manifest = build_manifest(root, include_semantic=False)
+        if symlink_manifest["status"] != "manifest-error":
+            print("self-check symlink fixture unexpectedly passed", file=sys.stderr)
+            return 1
+        try:
+            copy_pack(root, Path(tmp) / "symlink-export", payload["files"], dry_run=False)
+        except ValueError:
+            pass
+        else:
+            print("self-check export unexpectedly followed a symlink", file=sys.stderr)
+            return 1
+        symlink.unlink()
+
+        outside_export = Path(tmp) / "outside-export"
+        outside_export.mkdir()
+        poisoned_export = Path(tmp) / "poisoned-export"
+        poisoned_export.mkdir()
+        (poisoned_export / "tools").symlink_to(outside_export, target_is_directory=True)
+        try:
+            copy_pack(root, poisoned_export, payload["files"], dry_run=False)
+        except ValueError:
+            pass
+        else:
+            print("self-check export followed a destination symlink", file=sys.stderr)
+            return 1
+        if any(outside_export.iterdir()):
+            print("self-check export wrote outside the export root", file=sys.stderr)
             return 1
 
         missing = root / "tools/frontend_route_plan.sh"
