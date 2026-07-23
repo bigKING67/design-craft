@@ -58,12 +58,14 @@ preflight thinking.
 - Pinned compatibility commit:
   `630fc2682a5bd39b25a8e61f74b6b3f14f2b1e21`
 - Current selected-behavior boundary and reviewed remote commit:
-  `fc3dc501a6f0e4f238a230b0b30148490a65171a`
+  `fc3dc501a6f0e4f238a230b0b30148490a65171a` selected behavior;
+  `bdaa5a4eb9ad2f5b9ce6164a9ded049da9c00d58` reviewed remote head
 - Cumulative status: `selective_absorbed` for the command taxonomy,
   brief/change-scope authority, surface modes, craft floor, applicable scoring,
   detector/native guidance, hardening, measurement, and evidence contracts.
 - Latest-range status: `selective_absorbed` for the reviewed range from
-  `630fc268` through `fc3dc501`.
+  `630fc268` through `bdaa5a4`; the `fc3dc50..bdaa5a4` tail is intentionally
+  rejected live/provider runtime provenance.
 - Contract: `docs/impeccable-absorption.md`, validated by
   `scripts/design_craft_impeccable_absorption.py` in the canonical repository.
 - 2026-06-30 absorption note:
@@ -88,6 +90,12 @@ preflight thinking.
   context/menu flow, live/provider/hooks runtime, asset generation, the full
   detector/vendor bundle, generated provider copies, promotional tone, and
   universal ecosystem prescriptions remain rejected.
+- 2026-07-23 follow-up review note:
+  the `fc3dc50..bdaa5a4` tail changes upstream live overlay verification,
+  disconnect recovery, TanStack live adapters, source-write/cache/injection
+  coordination, tests, and generated providers. Those remain inside the
+  intentionally rejected upstream live/provider boundary; no selected local
+  behavior was imported.
 - Primary material to inspect:
   - `.agents/skills/impeccable/SKILL.md`
   - `site/content/skills/*.md`
@@ -113,12 +121,12 @@ production-readiness flows.
 - Current selected-behavior boundary:
   `d62b0d8f9a8eb795a512b76239bb873ab9ac7cd5`
 - Current reviewed remote commit:
-  `f6f79ca1d8e9e2d82c8b90d7481b70ca66f4adfb`
+  `e695d13cb298db0f46d5ef05be2ad13fa12908a6`
 - Cumulative status: `selective_absorbed`; the motion-opportunity gate is local,
   while the opinionated library picker and Base UI-only prescription are
   intentionally rejected.
 - Latest-range status: `selective_absorbed` for the range from `7bb7061`
-  through `f6f79ca`.
+  through `e695d13`; the `f6f79ca..e695d13` tail is README-only provenance.
 - 2026-07-10 decision: `absorbed`; original design-craft references now cover
   product-design principles, Apple-style direct manipulation,
   presentation-value interruption, spring response/damping, velocity handoff,
@@ -133,6 +141,8 @@ production-readiness flows.
   newsletter copy; no additional behavior was imported.
 - 2026-07-12 provenance note: `4691d39` and merge commit `7bb7061` correct two
   README typos only; no additional behavior was imported.
+- 2026-07-23 provenance note: `e695d13` changes README wording only; no
+  additional behavior was imported.
 - 2026-07-12 five-Skill deep-audit note: all five `SKILL.md` entrypoints plus
   `AUDIT.md`, `PLAN-TEMPLATE.md`, and `STANDARDS.md` are now mapped in
   `docs/emilkowalski-absorption.md` and checked by

@@ -2,7 +2,7 @@
 
 This document records the deliberate absorption boundary for
 `https://github.com/emilkowalski/skills` at commit
-`f6f79ca1d8e9e2d82c8b90d7481b70ca66f4adfb`. The compatibility submodule
+`e695d13cb298db0f46d5ef05be2ad13fa12908a6`. The compatibility submodule
 stays pinned at `7bb7061b5cf7de15ea1aeaf00fbd9e6592a20fce`.
 
 ## Contents
@@ -107,6 +107,7 @@ the installed Skill receives only the high-value fusion layer.
 | `pick-ui-library` | intentionally-rejected | project dependency authority | Its curated list is a personal library preference, not a stable cross-framework design baseline. Existing dependencies, project constraints, bundle/performance evidence, accessibility, and maintenance cost decide library selection. |
 | Radix UI to Base UI-only prescription | intentionally-rejected | framework-neutral component guidance | `design-craft` supports both when project authority selects them; an upstream wording replacement does not justify ecosystem churn. |
 | README and library-link corrections | provenance-only | pristine upstream history | These edits do not add product behavior. |
+| `f6f79ca..e695d13` README copy cleanup | provenance-only | pristine upstream history | The new tail changes README wording only and adds no runtime or design behavior. |
 
 ## Auxiliary-file matrix
 

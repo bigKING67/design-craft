@@ -26,9 +26,10 @@ checkouts, and local Codex route configuration are not package payload.
 
 The installer writes only under `DESIGN_CRAFT_SKILL_ROOT` and
 `DESIGN_CRAFT_BACKUP_ROOT`, uses a lock plus same-filesystem staging, verifies
-the staged and installed trees, and rolls back failed switches. It refuses
-symlinked or unverified retired aliases. It does not read credential stores or
-browser state.
+the staged and installed trees, and rolls back failed switches. The retired
+`frontend-craft` name is outside the v0.5 installer boundary: the installer
+does not inspect, mutate, or delete existing copies. It does not read credential
+stores or browser state.
 
 Route manifests, evidence JSON, scorecards, upstream metadata, package
 contents, and repository files are untrusted inputs. Validators must reject

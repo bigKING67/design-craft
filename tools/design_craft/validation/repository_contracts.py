@@ -24,6 +24,12 @@ RELEASE_TARGETS = (
     "release-final-verify-certified",
 )
 NOTICE_TOKENS = ("MIT", "Apache-2.0", "Vercel design reference history", "emilkowalski/skills")
+RETIRED_ALIAS_BOUNDARY_DOCS = (
+    "SECURITY.md",
+    "docs/security/threat-model.md",
+    "docs/maintenance.md",
+)
+RETIRED_ALIAS_BOUNDARY = "outside the v0.5 installer boundary"
 
 
 def _load_required(path: Path) -> dict[str, object]:
@@ -58,6 +64,18 @@ def validate(root: Path = REPO_ROOT) -> dict[str, object]:
     for relative in registry["forbidden_paths"]:
         if (root / relative).exists() or (root / relative).is_symlink():
             errors.append(f"retired path must remain absent: {relative}")
+
+    installer = (root / "scripts/install_local.sh").read_text(encoding="utf-8")
+    if "frontend-craft" in installer or "frontend_craft" in installer:
+        errors.append("installer must not manage the retired frontend-craft alias")
+    for relative in RETIRED_ALIAS_BOUNDARY_DOCS:
+        document = re.sub(
+            r"\s+",
+            " ",
+            (root / relative).read_text(encoding="utf-8"),
+        )
+        if RETIRED_ALIAS_BOUNDARY not in document:
+            errors.append(f"{relative} must document the retired alias boundary")
 
     try:
         version = (root / "VERSION").read_text(encoding="utf-8").strip()

@@ -2,7 +2,7 @@
 
 This document records the deliberate fusion and runtime boundary for
 `https://github.com/pbakaus/impeccable` at commit
-`fc3dc501a6f0e4f238a230b0b30148490a65171a`. The compatibility submodule stays
+`bdaa5a4eb9ad2f5b9ce6164a9ded049da9c00d58`. The compatibility submodule stays
 pinned at `630fc2682a5bd39b25a8e61f74b6b3f14f2b1e21`.
 
 ## Contents
@@ -82,7 +82,7 @@ host's existing execution contracts.
 ## Latest reviewed range
 
 The range from `630fc2682a5bd39b25a8e61f74b6b3f14f2b1e21` through
-`fc3dc501a6f0e4f238a230b0b30148490a65171a` is `selective_absorbed`:
+`bdaa5a4eb9ad2f5b9ce6164a9ded049da9c00d58` is `selective_absorbed`:
 
 | Capability | Status | Local target or boundary |
 | --- | --- | --- |
@@ -93,6 +93,7 @@ The range from `630fc2682a5bd39b25a8e61f74b6b3f14f2b1e21` through
 | Radial halo, repeated kicker, meaningless section number, fake cursor/pulse, shape-assembled illustration, and aphoristic-copy signals | absorbed | `visual-judgment.md`; treated as contextual signals, not universal bans |
 | Random concept seeds, mandatory context loader and no-argument menu | intentionally-rejected | local routing and project discovery remain deterministic and task-led |
 | Live/browser/provider/hooks/doctor runtime, asset generation, full detector/vendor bundle, generated provider copies | intentionally-rejected | browser67, host tools, and existing repository governance own these boundaries |
+| `fc3dc50..bdaa5a4` live overlay/resume changes, TanStack adapters, deferred source writes, resolution caching, injection/progress coordination, tests, and generated providers | intentionally-rejected | The tail changes only the upstream live/provider runtime; no selected `design-craft` behavior was imported |
 | Universal category, font, framework, and library prescriptions | intentionally-rejected | project authority and observed performance/accessibility evidence win |
 | Promotional or "award-winning" tone | intentionally-rejected | local output remains factual and evidence-led |
 
