@@ -1,0 +1,58 @@
+{
+  "schema": "design-craft.validation-gates.v1",
+  "gates": [
+    {
+      "id": "repository-contracts",
+      "command": ["python3", "-m", "tools.design_craft.validation.repository_contracts", "--check"],
+      "profiles": ["portable", "local", "operational-release", "certified-release"],
+      "timeout_seconds": 120,
+      "execution": "parallel"
+    },
+    {
+      "id": "lint",
+      "command": ["python3", "scripts/design_craft_lint.py", "--check"],
+      "profiles": ["portable", "local", "operational-release", "certified-release"],
+      "timeout_seconds": 120,
+      "execution": "parallel"
+    },
+    {
+      "id": "contract-tests",
+      "command": ["make", "contract-tests"],
+      "profiles": ["portable", "local", "operational-release", "certified-release"],
+      "timeout_seconds": 600,
+      "execution": "parallel"
+    },
+    {
+      "id": "development-maturity",
+      "command": ["python3", "scripts/design_craft_maturity.py", "--profile", "development"],
+      "profiles": ["portable", "local", "operational-release", "certified-release"],
+      "timeout_seconds": 600,
+      "execution": "serial",
+      "depends_on": ["repository-contracts", "lint", "contract-tests"]
+    },
+    {
+      "id": "install-provenance",
+      "command": ["make", "install-verify"],
+      "profiles": ["local", "operational-release", "certified-release"],
+      "timeout_seconds": 120,
+      "execution": "serial",
+      "depends_on": ["development-maturity"]
+    },
+    {
+      "id": "operational-evidence",
+      "command": ["make", "maturity-operational"],
+      "profiles": ["operational-release"],
+      "timeout_seconds": 1800,
+      "execution": "serial",
+      "depends_on": ["install-provenance"]
+    },
+    {
+      "id": "certified-evidence",
+      "command": ["make", "maturity-certified"],
+      "profiles": ["certified-release"],
+      "timeout_seconds": 1800,
+      "execution": "serial",
+      "depends_on": ["install-provenance"]
+    }
+  ]
+}

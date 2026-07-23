@@ -12,6 +12,11 @@ import sys
 import tempfile
 from pathlib import Path
 
+
+ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
 from design_craft_evidence_common import (
     git_is_ancestor,
     git_root,
@@ -21,184 +26,29 @@ from design_craft_evidence_common import (
     skill_provenance,
     tree_sha256,
 )
-
-
-REQUIRED_FILES = ("prompt.md", "expected-findings.md", "scorecard.md")
-PLACEHOLDER_PATTERN = re.compile(
-    r"\bTODO\b|Use `evals/cross-agent/_template/scorecard\.md`|after real agent runs",
-    re.I,
+from tools.design_craft.evaluation.cross_agent.contract import (
+    CURRENT_SCORE_KEYS,
+    CURRENT_RUN_KEYS,
+    HOSTS,
+    OBSERVED_REQUIRED_CRITERIA,
+    OBSERVED_SCHEMA_V2,
+    OBSERVED_SCHEMA_V3,
+    OBSERVED_SCHEMA_V4,
+    RUN_SCHEMA_V2,
+    STATUS_SCHEMA,
+    cross_agent_contract_sha256,
+    load_evidence_status,
+    read_text,
+    render_current_comparison,
+    scorecard_weights,
+    sha256_text,
+    validate_definition_root as validate_root,
+    validate_task_definition as validate_task_dir,
 )
-REQUIRED_CRITERIA = {
-    "style_authority": ("style authority", "product context"),
-    "reference_selection": ("reference",),
-    "anti_generic_redesign": ("generic", "redesign"),
-    "evidence_level": ("evidence level",),
-    "verified_boundary": ("verified", "unverified"),
-    "design_moves": ("design moves",),
-    "scope_control": ("unrelated", "scope"),
-}
-ROOT = Path(__file__).resolve().parents[1]
-OBSERVED_SCHEMA_V1 = "design-craft.cross-agent-score.v1"
-OBSERVED_SCHEMA_V2 = "design-craft.cross-agent-score.v2"
-HOSTS = ("codex", "pi", "cursor", "claude")
-OBSERVED_REQUIRED_CRITERIA = (
-    "style_authority",
-    "reference_selection",
-    "anti_generic_redesign",
-    "evidence_level",
-    "verified_boundary",
-    "design_moves",
-    "scope_control",
+from tools.design_craft.evaluation.cross_agent.history import (
+    historical_scorecard_weights as historical_markdown_scorecard_weights,
+    validate_historical_task_definition as validate_historical_task_dir,
 )
-
-
-def read_text(path: Path) -> str:
-    return path.read_text(encoding="utf-8")
-
-
-def markdown_rows(text: str) -> list[list[str]]:
-    rows: list[list[str]] = []
-    for raw_line in text.splitlines():
-        line = raw_line.strip()
-        if not line.startswith("|") or not line.endswith("|"):
-            continue
-        cells = [cell.strip() for cell in line.strip("|").split("|")]
-        if cells and all(re.fullmatch(r":?-{3,}:?", cell or "") for cell in cells):
-            continue
-        rows.append(cells)
-    return rows
-
-
-def bullet_count(text: str) -> int:
-    return sum(1 for line in text.splitlines() if re.match(r"^\s*[-*]\s+\S", line))
-
-
-def validate_scorecard(path: Path) -> list[str]:
-    text = read_text(path)
-    errors: list[str] = []
-    rows = markdown_rows(text)
-    if len(rows) < 2:
-        return [f"{path}: scorecard must include a markdown criteria table"]
-
-    header = [cell.lower() for cell in rows[0]]
-    for required in ("criterion", "weight", "pass evidence", "deduction trigger"):
-        if required not in header:
-            errors.append(f"{path}: scorecard table missing column {required!r}")
-    if errors:
-        return errors
-
-    criterion_index = header.index("criterion")
-    weight_index = header.index("weight")
-    criteria_text = " ".join(
-        row[criterion_index].lower()
-        for row in rows[1:]
-        if len(row) > criterion_index
-    )
-    for label, terms in REQUIRED_CRITERIA.items():
-        if not all(term in criteria_text for term in terms):
-            errors.append(f"{path}: scorecard missing criterion coverage for {label}")
-
-    weights: list[int] = []
-    for row_number, row in enumerate(rows[1:], start=2):
-        if len(row) <= max(criterion_index, weight_index):
-            errors.append(f"{path}: table row {row_number} has too few columns")
-            continue
-        match = re.fullmatch(r"([0-9]+)(?:\s*%)?", row[weight_index])
-        if not match:
-            errors.append(f"{path}: table row {row_number} weight must be an integer")
-            continue
-        weight = int(match.group(1))
-        if weight <= 0:
-            errors.append(f"{path}: table row {row_number} weight must be positive")
-        weights.append(weight)
-    if weights and sum(weights) != 100:
-        errors.append(f"{path}: scorecard weights must sum to 100, got {sum(weights)}")
-    if weights and len(weights) != len(OBSERVED_REQUIRED_CRITERIA):
-        errors.append(
-            f"{path}: scorecard must define exactly {len(OBSERVED_REQUIRED_CRITERIA)} criteria"
-        )
-    return errors
-
-
-def scorecard_weights(path: Path) -> dict[str, int]:
-    rows = markdown_rows(read_text(path))
-    if len(rows) < 2:
-        return {}
-    header = [cell.lower() for cell in rows[0]]
-    if "criterion" not in header or "weight" not in header:
-        return {}
-    criterion_index = header.index("criterion")
-    weight_index = header.index("weight")
-    values: dict[str, int] = {}
-    for row in rows[1:]:
-        if len(row) <= max(criterion_index, weight_index):
-            return {}
-        match = re.fullmatch(r"([0-9]+)(?:\s*%)?", row[weight_index])
-        if not match:
-            return {}
-        criterion_text = row[criterion_index].lower()
-        matches = [
-            criterion
-            for criterion, terms in REQUIRED_CRITERIA.items()
-            if all(term in criterion_text for term in terms)
-        ]
-        if len(matches) != 1 or matches[0] in values:
-            return {}
-        values[matches[0]] = int(match.group(1))
-    if set(values) != set(OBSERVED_REQUIRED_CRITERIA):
-        return {}
-    return values
-
-
-def validate_task_dir(path: Path) -> list[str]:
-    errors: list[str] = []
-    for name in REQUIRED_FILES:
-        file_path = path / name
-        if not file_path.is_file():
-            errors.append(f"{path}: missing required file {name}")
-            continue
-        text = read_text(file_path)
-        if PLACEHOLDER_PATTERN.search(text):
-            errors.append(f"{file_path}: contains template placeholder text")
-        if len(text.strip()) < 80:
-            errors.append(f"{file_path}: file is too sparse for an active benchmark task")
-
-    prompt_path = path / "prompt.md"
-    if prompt_path.is_file():
-        prompt = read_text(prompt_path)
-        if "design-craft" not in prompt.lower():
-            errors.append(f"{prompt_path}: prompt must explicitly route through design-craft")
-
-    findings_path = path / "expected-findings.md"
-    if findings_path.is_file() and bullet_count(read_text(findings_path)) < 3:
-        errors.append(f"{findings_path}: expected findings must include at least three bullets")
-
-    scorecard_path = path / "scorecard.md"
-    if scorecard_path.is_file():
-        errors.extend(validate_scorecard(scorecard_path))
-    return errors
-
-
-def validate_root(root: Path) -> list[str]:
-    if not root.is_dir():
-        return [f"{root}: cross-agent benchmark root does not exist"]
-    errors: list[str] = []
-    task_dirs = sorted(
-        path
-        for path in root.iterdir()
-        if path.is_dir() and not path.name.startswith("_")
-    )
-    if not task_dirs:
-        return [f"{root}: at least one active benchmark task directory is required"]
-    for task_dir in task_dirs:
-        errors.extend(validate_task_dir(task_dir))
-    return errors
-
-
-def sha256_text(text: str) -> str:
-    import hashlib
-
-    return hashlib.sha256(text.encode("utf-8")).hexdigest()
 
 
 def validate_observed_score(
@@ -208,7 +58,7 @@ def validate_observed_score(
     *,
     skill_root: Path,
     score_path: Path | None = None,
-    require_schema_v2: bool = False,
+    require_current_schema: bool = False,
     require_current_source: bool = False,
 ) -> list[str]:
     errors: list[str] = []
@@ -221,12 +71,18 @@ def validate_observed_score(
         return [f"{path}: invalid JSON: {exc}"]
 
     schema = payload.get("schema")
-    if schema not in {OBSERVED_SCHEMA_V1, OBSERVED_SCHEMA_V2}:
+    if schema not in {OBSERVED_SCHEMA_V2, OBSERVED_SCHEMA_V3, OBSERVED_SCHEMA_V4}:
         errors.append(
-            f"{path}: schema must be {OBSERVED_SCHEMA_V1} or {OBSERVED_SCHEMA_V2}"
+            f"{path}: schema must be historical v2/v3 or current {OBSERVED_SCHEMA_V4}"
         )
-    if require_schema_v2 and schema != OBSERVED_SCHEMA_V2:
-        errors.append(f"{path}: certified evidence must use {OBSERVED_SCHEMA_V2}")
+    if require_current_schema and schema != OBSERVED_SCHEMA_V4:
+        errors.append(f"{path}: current evidence must use {OBSERVED_SCHEMA_V4}")
+    if schema == OBSERVED_SCHEMA_V4 and set(payload) != CURRENT_SCORE_KEYS:
+        errors.append(
+            f"{path}: current score fields mismatch "
+            f"missing={sorted(CURRENT_SCORE_KEYS - set(payload))} "
+            f"extra={sorted(set(payload) - CURRENT_SCORE_KEYS)}"
+        )
     if payload.get("task_id") != task_dir.name:
         errors.append(f"{path}: task_id must be {task_dir.name}")
     if payload.get("agent") != host:
@@ -245,10 +101,18 @@ def validate_observed_score(
     if not isinstance(score, int) or isinstance(score, bool) or not 0 <= score <= 100:
         errors.append(f"{path}: score must be an integer from 0 to 100")
 
-    if schema == OBSERVED_SCHEMA_V2:
+    if schema in {OBSERVED_SCHEMA_V2, OBSERVED_SCHEMA_V3, OBSERVED_SCHEMA_V4}:
         for key in ("model", "reasoning_profile", "runner_os", "skill_version"):
             if not isinstance(payload.get(key), str) or not payload[key].strip():
                 errors.append(f"{path}: {key} must be a non-empty string")
+        if schema in {OBSERVED_SCHEMA_V3, OBSERVED_SCHEMA_V4}:
+            for key in (
+                "model_observation",
+                "reasoning_observation",
+                "provenance_skill_path",
+            ):
+                if not isinstance(payload.get(key), str) or not payload[key].strip():
+                    errors.append(f"{path}: {key} must be a non-empty string")
 
         source_commit = str(payload.get("skill_source_commit", ""))
         if not re.fullmatch(r"[0-9a-f]{40}", source_commit):
@@ -258,7 +122,11 @@ def validate_observed_score(
             errors.append(f"{path}: skill_source_dirty must be boolean")
         if "repo_dirty" in payload and not isinstance(payload.get("repo_dirty"), bool):
             errors.append(f"{path}: repo_dirty must be boolean when present")
-        for key in ("skill_tree_sha256", "output_sha256", "scorecard_sha256"):
+        digest_keys = ["skill_tree_sha256", "output_sha256"]
+        digest_keys.append("scorecard_json_sha256" if schema == OBSERVED_SCHEMA_V4 else "scorecard_sha256")
+        if schema in {OBSERVED_SCHEMA_V3, OBSERVED_SCHEMA_V4}:
+            digest_keys.extend(("contract_sha256", "run_manifest_sha256"))
+        for key in digest_keys:
             if not re.fullmatch(r"[0-9a-f]{64}", str(payload.get(key, ""))):
                 errors.append(f"{path}: {key} must be 64 lowercase hex characters")
 
@@ -278,9 +146,94 @@ def validate_observed_score(
                 elif payload.get("output_sha256") != sha256_file(output_path):
                     errors.append(f"{path}: output_sha256 must match {output_path.name}")
 
-        scorecard_path = task_dir / "scorecard.md"
-        if scorecard_path.is_file() and payload.get("scorecard_sha256") != sha256_file(scorecard_path):
-            errors.append(f"{path}: scorecard_sha256 must match scorecard.md")
+        scorecard_path = task_dir / ("scorecard.json" if schema == OBSERVED_SCHEMA_V4 else "scorecard.md")
+        scorecard_digest_key = "scorecard_json_sha256" if schema == OBSERVED_SCHEMA_V4 else "scorecard_sha256"
+        if scorecard_path.is_file() and payload.get(scorecard_digest_key) != sha256_file(scorecard_path):
+            errors.append(f"{path}: {scorecard_digest_key} must match {scorecard_path.name}")
+
+        if schema in {OBSERVED_SCHEMA_V3, OBSERVED_SCHEMA_V4}:
+            run_manifest_value = payload.get("run_manifest_path")
+            if not isinstance(run_manifest_value, str) or not run_manifest_value.strip():
+                errors.append(f"{path}: run_manifest_path must be a non-empty relative path")
+            else:
+                run_relative = Path(run_manifest_value)
+                run_path = task_dir / run_relative
+                if run_relative.is_absolute() or ".." in run_relative.parts:
+                    errors.append(f"{path}: run_manifest_path must stay inside the task directory")
+                elif run_path.name != f"run.{host}.json" or not run_path.is_file():
+                    errors.append(f"{path}: run_manifest_path must point to run.{host}.json")
+                else:
+                    if payload.get("run_manifest_sha256") != sha256_file(run_path):
+                        errors.append(f"{path}: run_manifest_sha256 must match {run_path.name}")
+                    try:
+                        run_payload = json.loads(run_path.read_text(encoding="utf-8"))
+                    except json.JSONDecodeError as exc:
+                        errors.append(f"{run_path}: invalid run manifest: {exc}")
+                    else:
+                        if schema == OBSERVED_SCHEMA_V4 and set(run_payload) != CURRENT_RUN_KEYS:
+                            errors.append(
+                                f"{run_path}: current run fields mismatch "
+                                f"missing={sorted(CURRENT_RUN_KEYS - set(run_payload))} "
+                                f"extra={sorted(set(run_payload) - CURRENT_RUN_KEYS)}"
+                            )
+                        if run_payload.get("schema") != RUN_SCHEMA_V2:
+                            errors.append(
+                                f"{run_path}: run manifest schema must be {RUN_SCHEMA_V2}"
+                            )
+                        if run_payload.get("host") != host:
+                            errors.append(f"{run_path}: host must be {host}")
+                        if run_payload.get("prompt_sha256") != prompt_hash:
+                            errors.append(f"{run_path}: prompt_sha256 must match prompt.md")
+                        if run_payload.get("output_sha256") != payload.get("output_sha256"):
+                            errors.append(f"{run_path}: output_sha256 must match the score artifact")
+                        if run_payload.get("worktree_unchanged") is not True:
+                            errors.append(f"{run_path}: worktree_unchanged must be true")
+                        if schema in {OBSERVED_SCHEMA_V3, OBSERVED_SCHEMA_V4}:
+                            run_score_pairs = {
+                                "host_version": "agent_version",
+                                "model": "model",
+                                "model_observation": "model_observation",
+                                "reasoning_profile": "reasoning_profile",
+                                "reasoning_observation": "reasoning_observation",
+                                "runner_os": "runner_os",
+                                "skill_path": "skill_path",
+                                "skill_tree_sha256": "skill_tree_sha256",
+                                "command": "command_summary",
+                            }
+                            for run_key, score_key in run_score_pairs.items():
+                                if run_payload.get(run_key) != payload.get(score_key):
+                                    errors.append(
+                                        f"{run_path}: {run_key} must match score field {score_key}"
+                                    )
+                            if run_payload.get("skill_install_mode") != "isolated_project_copy":
+                                errors.append(
+                                    f"{run_path}: skill_install_mode must be isolated_project_copy"
+                                )
+                            if run_payload.get("workspace_kind") != "repo_external_isolated_project":
+                                errors.append(
+                                    f"{run_path}: workspace_kind must be repo_external_isolated_project"
+                                )
+                            if run_payload.get("returncode") != 0:
+                                errors.append(f"{run_path}: returncode must be zero")
+                            before_hash = run_payload.get("worktree_before_sha256")
+                            after_hash = run_payload.get("worktree_after_sha256")
+                            if not re.fullmatch(r"[0-9a-f]{64}", str(before_hash or "")):
+                                errors.append(
+                                    f"{run_path}: worktree_before_sha256 must be 64 lowercase hex characters"
+                                )
+                            if before_hash != after_hash:
+                                errors.append(
+                                    f"{run_path}: worktree fingerprints must match"
+                                )
+                            for key in ("skill_path", "command", "cwd"):
+                                value = str(run_payload.get(key, ""))
+                                if not value:
+                                    errors.append(f"{run_path}: {key} must be non-empty")
+                                elif re.search(
+                                    r"(?:/Users/|/home/|[A-Za-z]:[\\/]Users[\\/])",
+                                    value,
+                                ):
+                                    errors.append(f"{run_path}: {key} must redact local user paths")
 
         if require_current_source:
             current_version = read_version(skill_root)
@@ -291,6 +244,10 @@ def validate_observed_score(
                 )
             if payload.get("skill_tree_sha256") != current_tree:
                 errors.append(f"{path}: skill_tree_sha256 must match the current skill tree")
+            if schema in {OBSERVED_SCHEMA_V3, OBSERVED_SCHEMA_V4} and payload.get("contract_sha256") != cross_agent_contract_sha256():
+                errors.append(
+                    f"{path}: contract_sha256 must match the current cross-agent contract"
+                )
             if source_dirty is not False:
                 errors.append(f"{path}: certified evidence must record skill_source_dirty=false")
             if re.fullmatch(r"[0-9a-f]{40}", source_commit):
@@ -324,19 +281,38 @@ def validate_observed_score(
     if not isinstance(criteria, dict):
         errors.append(f"{path}: criteria must be an object")
         return errors
-    weights = scorecard_weights(task_dir / "scorecard.md") if schema == OBSERVED_SCHEMA_V2 else {}
+    if set(criteria) != set(OBSERVED_REQUIRED_CRITERIA):
+        errors.append(
+            f"{path}: criteria must contain exactly {list(OBSERVED_REQUIRED_CRITERIA)}"
+        )
+    if schema == OBSERVED_SCHEMA_V4:
+        weights = scorecard_weights(task_dir / "scorecard.json")
+    elif schema in {OBSERVED_SCHEMA_V2, OBSERVED_SCHEMA_V3}:
+        weights = historical_markdown_scorecard_weights(task_dir / "scorecard.md")
+    else:
+        weights = {}
     earned_total = 0
     for criterion in OBSERVED_REQUIRED_CRITERIA:
         result = criteria.get(criterion)
         if not isinstance(result, dict):
             errors.append(f"{path}: criteria.{criterion} must be an object")
             continue
+        expected_result_keys = (
+            {"passed", "earned", "note"}
+            if schema in {OBSERVED_SCHEMA_V2, OBSERVED_SCHEMA_V3, OBSERVED_SCHEMA_V4}
+            else {"passed", "note"}
+        )
+        if set(result) != expected_result_keys:
+            errors.append(
+                f"{path}: criteria.{criterion} fields must be "
+                f"{sorted(expected_result_keys)}"
+            )
         if not isinstance(result.get("passed"), bool):
             errors.append(f"{path}: criteria.{criterion}.passed must be boolean")
         note = result.get("note")
         if not isinstance(note, str) or len(note.strip()) < 8:
             errors.append(f"{path}: criteria.{criterion}.note must explain the result")
-        if schema == OBSERVED_SCHEMA_V2:
+        if schema in {OBSERVED_SCHEMA_V2, OBSERVED_SCHEMA_V3, OBSERVED_SCHEMA_V4}:
             weight = weights.get(criterion)
             earned = result.get("earned")
             if weight is None:
@@ -355,7 +331,7 @@ def validate_observed_score(
                     errors.append(
                         f"{path}: criteria.{criterion} cannot fail with full earned points"
                     )
-    if schema == OBSERVED_SCHEMA_V2 and isinstance(score, int) and score != earned_total:
+    if schema in {OBSERVED_SCHEMA_V2, OBSERVED_SCHEMA_V3, OBSERVED_SCHEMA_V4} and isinstance(score, int) and score != earned_total:
         errors.append(
             f"{path}: score must equal the sum of criteria earned points "
             f"({earned_total}, observed {score})"
@@ -403,10 +379,16 @@ def validate_observed_task(
     required_hosts: tuple[str, ...] = (),
     *,
     skill_root: Path = ROOT / "skills/design-craft",
-    require_schema_v2: bool = False,
+    require_current_schema: bool = False,
     require_current_source: bool = False,
+    historical: bool = False,
+    require_any_observed: bool = False,
 ) -> list[str]:
-    errors = validate_task_dir(task_dir)
+    errors = (
+        validate_historical_task_dir(task_dir)
+        if historical
+        else validate_task_dir(task_dir)
+    )
     if errors:
         return errors
 
@@ -414,6 +396,12 @@ def validate_observed_task(
     prompt_hash = sha256_text(read_text(prompt_path))
 
     observed = observed_hosts(task_dir)
+    if require_any_observed and not observed:
+        errors.append(f"{task_dir}: at least one observed host is required")
+    states: dict[str, str] = {}
+    if not historical:
+        states, status_errors = load_evidence_status(task_dir / "evidence-status.json")
+        errors.extend(status_errors)
     for host in HOSTS:
         output_path = task_dir / f"{host}-output.md"
         score_path = task_dir / f"score.{host}.json"
@@ -427,29 +415,44 @@ def validate_observed_task(
                     host,
                     prompt_hash,
                     skill_root=skill_root,
-                    require_schema_v2=require_schema_v2,
+                    require_current_schema=require_current_schema,
                     require_current_source=require_current_source,
                 )
             )
-            if unverified_path.exists():
-                errors.append(f"{unverified_path}: remove stale unverified note after recording an observed run")
+            if historical:
+                if unverified_path.exists():
+                    errors.append(f"{unverified_path}: remove stale unverified note after recording an observed run")
+            elif states.get(host) != "observed":
+                errors.append(
+                    f"{task_dir / 'evidence-status.json'}: hosts.{host}.status must be observed"
+                )
         else:
-            if not unverified_path.is_file():
-                errors.append(f"{unverified_path}: missing explicit {host} unverified note")
+            if historical:
+                if not unverified_path.is_file():
+                    errors.append(f"{unverified_path}: missing explicit {host} unverified note")
+                else:
+                    text = read_text(unverified_path).lower()
+                    if "unverified" not in text or "reason" not in text:
+                        errors.append(f"{unverified_path}: must record {host} as unverified with a reason")
             else:
-                text = read_text(unverified_path).lower()
-                if "unverified" not in text or "reason" not in text:
-                    errors.append(f"{unverified_path}: must record {host} as unverified with a reason")
+                state = states.get(host)
+                if state not in {"pending", "unverified"}:
+                    errors.append(
+                        f"{task_dir / 'evidence-status.json'}: hosts.{host}.status must be pending or unverified without observed artifacts"
+                    )
 
     for host in required_hosts:
         if host not in observed:
             errors.append(f"{task_dir}: required observed host is missing: {host}")
 
-    comparison_path = task_dir / "comparison.md"
-    if not comparison_path.is_file():
-        errors.append(f"{comparison_path}: missing comparison summary")
-    else:
+    if historical:
+        comparison_path = task_dir / "comparison.md"
+        if not comparison_path.is_file():
+            errors.append(f"{comparison_path}: missing comparison summary")
+            return errors
         comparison = read_text(comparison_path).lower()
+        if len(comparison.strip()) < 80:
+            errors.append(f"{comparison_path}: comparison summary is too sparse")
         for term in HOSTS:
             if term not in comparison:
                 errors.append(f"{comparison_path}: comparison must mention {term}")
@@ -470,18 +473,56 @@ def write_valid_task(root: Path) -> None:
         "- Recommend concrete design moves.\n",
         encoding="utf-8",
     )
-    (task / "scorecard.md").write_text(
-        "# Scorecard\n\n"
-        "| Criterion | Weight | Pass evidence | Deduction trigger |\n"
-        "|---|---:|---|---|\n"
-        "| Style authority and product context | 15 | Reads local authority. | Overrides product context. |\n"
-        "| Reference selection | 15 | Chooses focused references. | Loads unrelated references. |\n"
-        "| Anti-generic redesign | 15 | Avoids generic redesign. | Applies generic redesign. |\n"
-        "| Evidence level labeling | 15 | Labels evidence level. | Overclaims evidence. |\n"
-        "| Verified/unverified boundary | 15 | Separates verified and unverified. | Blurs verification. |\n"
-        "| Concrete design moves | 15 | Gives design moves. | Gives vague advice. |\n"
-        "| Scope control and unrelated changes | 10 | Avoids unrelated changes. | Expands scope. |\n",
+    criteria = [
+        ("style_authority", "Style authority and product context", 15),
+        ("reference_selection", "Reference selection", 15),
+        ("anti_generic_redesign", "Anti-generic redesign", 15),
+        ("evidence_level", "Evidence level labeling", 15),
+        ("verified_boundary", "Verified/unverified boundary", 15),
+        ("design_moves", "Concrete design moves", 15),
+        ("scope_control", "Scope control and unrelated changes", 10),
+    ]
+    (task / "scorecard.json").write_text(
+        json.dumps(
+            {
+                "schema": "design-craft.cross-agent-scorecard.v1",
+                "task_id": task.name,
+                "criteria": [
+                    {
+                        "id": criterion_id,
+                        "label": label,
+                        "weight": weight,
+                        "pass_evidence": "Self-check provides concrete pass evidence.",
+                        "deduction_trigger": "Self-check provides a concrete deduction trigger.",
+                    }
+                    for criterion_id, label, weight in criteria
+                ],
+            },
+            indent=2,
+        )
+        + "\n",
         encoding="utf-8",
+    )
+    (task / "evidence-status.json").write_text(
+        json.dumps(
+            {
+                "schema": STATUS_SCHEMA,
+                "task_id": task.name,
+                "hosts": {
+                    host: {
+                        "status": "pending",
+                        "reason": "Self-check has not admitted current observed evidence.",
+                    }
+                    for host in HOSTS
+                },
+            },
+            indent=2,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    (task / "comparison.md").write_text(
+        render_current_comparison(task), encoding="utf-8"
     )
 
 
@@ -492,21 +533,16 @@ def run_self_check() -> list[str]:
         errors = validate_root(temp_root)
         invalid = temp_root / "same-prompt-invalid"
         shutil.copytree(temp_root / "same-prompt-generic", invalid)
-        (invalid / "scorecard.md").write_text("# Scorecard\n\n- TODO\n", encoding="utf-8")
+        invalid_scorecard = json.loads((invalid / "scorecard.json").read_text(encoding="utf-8"))
+        invalid_scorecard["criteria"][0]["weight"] = "15"
+        (invalid / "scorecard.json").write_text(
+            json.dumps(invalid_scorecard, indent=2) + "\n", encoding="utf-8"
+        )
         invalid_errors = validate_task_dir(invalid)
-        if not any("placeholder" in error or "table" in error for error in invalid_errors):
-            errors.append("self-check failed to reject placeholder scorecard")
+        if not any("weight must be a positive integer" in error for error in invalid_errors):
+            errors.append("self-check failed to reject an invalid JSON scorecard")
 
         task = temp_root / "same-prompt-generic"
-        for host in HOSTS:
-            (task / f"{host}-unverified.md").write_text(
-                f"# {host} unverified\n\nStatus: unverified.\n\nReason: fixture host did not run.\n",
-                encoding="utf-8",
-            )
-        (task / "comparison.md").write_text(
-            "# Comparison\n\nCodex, Pi, Cursor, and Claude remain unverified in this fixture.\n",
-            encoding="utf-8",
-        )
         errors.extend(validate_observed_task(task))
         (task / "cursor-output.md").write_text("Evidence and unverified design moves. " * 20, encoding="utf-8")
         partial_errors = validate_observed_task(task)
@@ -514,29 +550,74 @@ def run_self_check() -> list[str]:
             errors.append("self-check failed to reject a partial observed-host artifact pair")
         (task / "cursor-output.md").unlink()
 
-        (task / "codex-unverified.md").unlink()
         output = task / "codex-output.md"
         output.write_text("Evidence, unverified boundaries, and design moves. " * 20, encoding="utf-8")
+        run_manifest = task / "run.codex.json"
+        run_manifest.write_text(
+            json.dumps(
+                {
+                    "schema": RUN_SCHEMA_V2,
+                    "host": "codex",
+                    "host_version": "self-check",
+                    "model": "fixture-model",
+                    "model_observation": "requested_by_cli",
+                    "reasoning_profile": "fixture",
+                    "reasoning_observation": "requested_by_cli",
+                    "runner_os": "fixture",
+                    "started_at": "2026-01-01T00:00:00Z",
+                    "duration_seconds": 1.0,
+                    "timeout_seconds": 60,
+                    "prompt_path": "prompt.md",
+                    "prompt_sha256": sha256_text(read_text(task / "prompt.md")),
+                    "prompt_transport": "stdin",
+                    "output_path": output.name,
+                    "output_sha256": sha256_file(output),
+                    "skill_path": "$BENCHMARK_WORKSPACE/.agents/skills/design-craft",
+                    "skill_tree_sha256": tree_sha256(ROOT / "skills/design-craft"),
+                    "skill_install_mode": "isolated_project_copy",
+                    "workspace_kind": "repo_external_isolated_project",
+                    "cwd": "$BENCHMARK_WORKSPACE",
+                    "command": "codex exec --sandbox read-only $BENCHMARK_WORKSPACE",
+                    "returncode": 0,
+                    "stderr_bytes": 0,
+                    "stderr_sha256": sha256_text(""),
+                    "worktree_before_sha256": "a" * 64,
+                    "worktree_after_sha256": "a" * 64,
+                    "worktree_unchanged": True,
+                },
+                indent=2,
+            )
+            + "\n",
+            encoding="utf-8",
+        )
         provenance = skill_provenance(ROOT / "skills/design-craft")
-        weights = scorecard_weights(task / "scorecard.md")
+        weights = scorecard_weights(task / "scorecard.json")
         score_payload = {
-            "schema": OBSERVED_SCHEMA_V2,
+            "schema": OBSERVED_SCHEMA_V4,
             "task_id": task.name,
             "agent": "codex",
             "verified": True,
             "agent_version": "self-check",
             "model": "fixture-model",
+            "model_observation": "requested_by_cli",
             "reasoning_profile": "fixture",
+            "reasoning_observation": "requested_by_cli",
             "runner_os": "fixture",
             "date": "2026-01-01",
             "prompt_sha256": sha256_text(read_text(task / "prompt.md")),
-            "scorecard_sha256": sha256_file(task / "scorecard.md"),
-            "skill_path": provenance["skill_path"],
+            "scorecard_json_sha256": sha256_file(task / "scorecard.json"),
+            "contract_sha256": cross_agent_contract_sha256(),
+            "run_manifest_path": run_manifest.name,
+            "run_manifest_sha256": sha256_file(run_manifest),
+            "skill_path": "$BENCHMARK_WORKSPACE/.agents/skills/design-craft",
+            "provenance_skill_path": provenance["skill_path"],
             "skill_version": provenance["skill_version"],
             "skill_source_commit": provenance["skill_source_commit"],
             "skill_source_dirty": provenance["skill_source_dirty"],
+            "repo_dirty": provenance["repo_dirty"],
+            "release_state": provenance["release_state"],
             "skill_tree_sha256": provenance["skill_tree_sha256"],
-            "command_summary": "self-check fixture",
+            "command_summary": "codex exec --sandbox read-only $BENCHMARK_WORKSPACE",
             "output_path": output.name,
             "output_sha256": sha256_file(output),
             "score": 100,
@@ -551,6 +632,17 @@ def run_self_check() -> list[str]:
         }
         score_path = task / "score.codex.json"
         score_path.write_text(json.dumps(score_payload, indent=2) + "\n", encoding="utf-8")
+        status_payload = json.loads((task / "evidence-status.json").read_text(encoding="utf-8"))
+        status_payload["hosts"]["codex"] = {
+            "status": "observed",
+            "reason": "Self-check admitted a complete current observed artifact pair.",
+        }
+        (task / "evidence-status.json").write_text(
+            json.dumps(status_payload, indent=2) + "\n", encoding="utf-8"
+        )
+        (task / "comparison.md").write_text(
+            render_current_comparison(task), encoding="utf-8"
+        )
         errors.extend(validate_observed_task(task))
         score_payload["score"] = 99
         score_path.write_text(json.dumps(score_payload, indent=2) + "\n", encoding="utf-8")
@@ -564,9 +656,14 @@ def run_self_check() -> list[str]:
 
 def main() -> int:
     parser = argparse.ArgumentParser(description="Validate design-craft cross-agent benchmark tasks.")
-    parser.add_argument("--check", action="store_true", help="Run built-in self-checks.")
-    parser.add_argument("--root", default="evals/cross-agent", help="Cross-agent benchmark root.")
-    parser.add_argument("--observed-task", help="Validate one task directory with recorded agent outputs.")
+    modes = parser.add_mutually_exclusive_group()
+    modes.add_argument("--check", action="store_true", help="Run built-in self-checks.")
+    modes.add_argument("--root", help="Cross-agent benchmark root.")
+    modes.add_argument("--observed-task", help="Validate one task with recorded outputs.")
+    modes.add_argument(
+        "--history-root",
+        help="Validate immutable historical observed tasks without treating them as current source.",
+    )
     parser.add_argument(
         "--require-host",
         action="append",
@@ -575,37 +672,42 @@ def main() -> int:
         help="Require this host to have a real output and score in --observed-task",
     )
     parser.add_argument(
-        "--require-schema-v2",
-        action="store_true",
-        help="Require cryptographically bound v2 score artifacts.",
-    )
-    parser.add_argument(
-        "--require-current-source",
-        action="store_true",
-        help="Require v2 evidence bound to the current skill version and tree.",
-    )
-    parser.add_argument(
         "--skill-root",
-        default=str(ROOT / "skills/design-craft"),
-        help="Current canonical skill root used by --require-current-source.",
+        help="Canonical skill root used only by --observed-task.",
     )
     args = parser.parse_args()
+    if not args.observed_task and (args.require_host or args.skill_root):
+        parser.error("--require-host and --skill-root require --observed-task")
 
     errors: list[str] = []
     if args.check:
         errors.extend(run_self_check())
+    elif args.history_root:
+        history_root = Path(args.history_root).expanduser().resolve()
+        historical_tasks = sorted(
+            path for path in history_root.rglob("same-prompt-*") if path.is_dir()
+        )
+        if not historical_tasks:
+            errors.append(f"{history_root}: no historical observed tasks found")
+        for task in historical_tasks:
+            errors.extend(validate_observed_task(task, historical=True))
     elif args.observed_task:
         errors.extend(
             validate_observed_task(
                 Path(args.observed_task),
                 tuple(args.require_host),
-                skill_root=Path(args.skill_root).expanduser().resolve(),
-                require_schema_v2=args.require_schema_v2 or args.require_current_source,
-                require_current_source=args.require_current_source,
+                skill_root=(
+                    Path(args.skill_root).expanduser().resolve()
+                    if args.skill_root
+                    else ROOT / "skills/design-craft"
+                ),
+                require_current_schema=True,
+                require_current_source=True,
+                require_any_observed=True,
             )
         )
     else:
-        errors.extend(validate_root(Path(args.root)))
+        errors.extend(validate_root(Path(args.root or "evals/cross-agent")))
 
     if errors:
         print("\n".join(errors), file=sys.stderr)

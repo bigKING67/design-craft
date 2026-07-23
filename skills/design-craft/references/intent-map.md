@@ -27,9 +27,13 @@ Project evidence still wins: live runtime, scoped `AGENTS.md`, project
 - "太挤", "太散", "卡片太多": use `critique` then `polish`; check density,
   grouping, section rhythm, and whether nested-card structure is hiding the
   actual task.
-- "动效怪", "花", "晕", "不顺": use `polish`; read
-  `design-system-contract.md`; check motion purpose, duration, easing,
-  transform/opacity, and `prefers-reduced-motion`.
+- "动效怪", "花", "晕", "不顺": use `motion`; read
+  `motion-quality.md`; add `interaction-physics.md` for gestures; check motion
+  purpose, frequency, interruption, performance, and Reduced Motion.
+- "把全站动效优化一下", "系统审计动画", "给我动效改进计划": use
+  `motion-plan`; read `motion-audit-planning.md`; map the motion surface, vet
+  prioritized findings, and create implementation-ready plans without editing
+  product source unless implementation is explicitly requested.
 
 ## Product and content complaints
 
@@ -60,11 +64,11 @@ Project evidence still wins: live runtime, scoped `AGENTS.md`, project
 ## Design-system seed complaints
 
 - "新项目没有设计规范", "先给个默认设计系统", "这个项目样式很弱": if no stronger
-  style authority exists, use the bundled Vercel Geist seed via:
+  style authority exists, use the bundled original developer-product seed via:
 
   ```bash
   scripts/design_craft_seed_design.sh --target <project-dir>
   ```
 
 - If a project already has credible `DESIGN.md`, tokens, brand guide, or strong
-  runtime style, compare against the Geist seed instead of overwriting it.
+  runtime style, compare against the developer-product seed instead of overwriting it.

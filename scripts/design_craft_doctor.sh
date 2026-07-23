@@ -15,11 +15,19 @@ EOF
 }
 
 abspath() {
-  python3 - "$1" <<'PY'
+  local resolved
+  resolved="$(python3 - "$1" <<'PY'
 import sys
 from pathlib import Path
 print(Path(sys.argv[1]).expanduser().resolve())
 PY
+  )"
+  resolved="${resolved//$'\r'/}"
+  if command -v cygpath >/dev/null 2>&1; then
+    cygpath -u "${resolved}"
+  else
+    printf '%s\n' "${resolved}"
+  fi
 }
 
 while [[ $# -gt 0 ]]; do
@@ -165,7 +173,6 @@ def installed_check(name: str, source: Path) -> dict:
 
 checks = [
     check("canonical skill", (root / "skills/design-craft/SKILL.md").is_file(), str(root / "skills/design-craft/SKILL.md")),
-    check("legacy alias", (root / "skills/frontend-craft/SKILL.md").is_file(), str(root / "skills/frontend-craft/SKILL.md")),
     check("codex adapter", (root / "adapters/codex/README.md").is_file(), str(root / "adapters/codex/README.md")),
     check("codex route-pack docs", (root / "adapters/codex/route-pack/README.md").is_file(), str(root / "adapters/codex/route-pack/README.md")),
     check("cursor adapter", (root / "adapters/cursor/README.md").is_file(), str(root / "adapters/cursor/README.md")),
@@ -181,13 +188,13 @@ checks = [
     check("codex route runtime truth", route_runtime_truth_ok, "verified explicit environment evidence without session discovery", required=False),
     check("codex route telemetry", route_telemetry_ok, "privacy-safe telemetry self-check under an inherited test context", required=False),
     check("quick validator", quick_validate.is_file(), str(quick_validate), required=False),
-    check("browser evidence helper", (root / "scripts/design_craft_browser_evidence.py").is_file(), str(root / "scripts/design_craft_browser_evidence.py")),
+    check("browser evidence helper", (root / "skills/design-craft/scripts/design_craft_browser_evidence.py").is_file(), str(root / "skills/design-craft/scripts/design_craft_browser_evidence.py")),
     check("portable runtime", (root / "skills/design-craft/scripts/design_craft_route.sh").is_file(), str(root / "skills/design-craft/scripts")),
     check("platform scanner", (root / "skills/design-craft/scripts/design_craft_platform_scan.py").is_file(), str(root / "skills/design-craft/scripts/design_craft_platform_scan.py")),
     check("maturity scorer", (root / "scripts/design_craft_maturity.py").is_file(), str(root / "scripts/design_craft_maturity.py")),
-    check("css smell scanner", (root / "scripts/design_craft_css_smell_scan.py").is_file(), str(root / "scripts/design_craft_css_smell_scan.py")),
-    check("focus audit scanner", (root / "scripts/design_craft_focus_audit.py").is_file(), str(root / "scripts/design_craft_focus_audit.py")),
-    check("token audit scanner", (root / "scripts/design_craft_token_audit.py").is_file(), str(root / "scripts/design_craft_token_audit.py")),
+    check("css smell scanner", (root / "skills/design-craft/scripts/design_craft_css_smell_scan.py").is_file(), str(root / "skills/design-craft/scripts/design_craft_css_smell_scan.py")),
+    check("focus audit scanner", (root / "skills/design-craft/scripts/design_craft_focus_audit.py").is_file(), str(root / "skills/design-craft/scripts/design_craft_focus_audit.py")),
+    check("token audit scanner", (root / "skills/design-craft/scripts/design_craft_token_audit.py").is_file(), str(root / "skills/design-craft/scripts/design_craft_token_audit.py")),
     check("skill version contract", bool(version) and version == skill_version, f"root={version or 'missing'} skill={skill_version or 'missing'}"),
     check(
         "skill compatibility contract",
@@ -197,7 +204,6 @@ checks = [
         str(root / "skills/design-craft/COMPATIBILITY.json"),
     ),
     installed_check("design-craft", root / "skills/design-craft"),
-    installed_check("frontend-craft", root / "skills/frontend-craft"),
     check("python3", shutil.which("python3") is not None, shutil.which("python3") or "missing"),
     check("bash", shutil.which("bash") is not None, shutil.which("bash") or "missing"),
     check("target exists", target.exists(), str(target)),

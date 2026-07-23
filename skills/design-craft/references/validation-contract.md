@@ -2,6 +2,19 @@
 
 Use this before calling frontend work complete.
 
+## Contents
+
+- [Minimal command ladder](#minimal-command-ladder)
+- [Route planner argument hygiene](#route-planner-argument-hygiene)
+- [Browser validation](#browser-validation)
+- [Screenshot evidence](#screenshot-evidence)
+- [Native runtime validation](#native-runtime-validation)
+- [Design-system validation](#design-system-validation)
+- [Route summary fields](#route-summary-fields)
+- [Quality score](#quality-score)
+- [Cross-agent validation](#cross-agent-validation)
+- [Unverified work](#unverified-work)
+
 ## Minimal command ladder
 
 Pick the smallest command set that covers the change:
@@ -11,8 +24,10 @@ Pick the smallest command set that covers the change:
 - Build-system or route change: type-check, lint, build.
 - Data behavior: relevant unit/integration tests plus type-check.
 - Visual/report/dashboard work: type/lint/build as relevant plus browser smoke.
-- Native UI work: platform build/static checks plus simulator/emulator or real
-  device validation when the toolchain exists.
+- Native UI work only when the resolved target is `ios`, `android`, or
+  `adaptive`: platform build/static checks plus simulator/emulator or real
+  device validation when the toolchain exists. Native gates are not part of an
+  ordinary Web/desktop task.
 - Performance work: baseline and after measurement when possible.
 
 Prefer project scripts in `package.json`. Do not invent commands when the repo
@@ -31,7 +46,7 @@ For the `design-craft` source repo itself, use:
   findings plus local design-craft review signals; use `--json-only` only when
   raw upstream detector compatibility is required.
 - `scripts/design_craft_seed_design.sh --target <project-dir>` when a new or
-  weak developer-product surface needs the bundled Vercel Geist `DESIGN.md`
+  weak developer-product surface needs the bundled original `DESIGN.md`
   pair as its initial design-system authority.
 - `scripts/design_craft_taste_review.sh --target <screenshot-or-project>`
   when a product UI taste score or screenshot critique needs a stable review
@@ -59,9 +74,14 @@ For the `design-craft` source repo itself, use:
   --target <path> --dry-run` before installing the canonical skill into another
   host agent.
 - `scripts/design_craft_score.py --self`
-- `scripts/design_craft_maturity.py --profile <portable|local> --min-score 95`
-  for operational maturity gates. `design_craft_score.py` measures source
-  completeness only.
+- `scripts/design_craft_maturity.py --profile development` for the repository
+  development baseline. Its route-pack gate uses an isolated portable self-check
+  and does not read operator `~/.codex` state. Run the explicit `--strict`
+  route-pack command above when auditing an installed Codex host. Release
+  maintainers use `--profile operational_95` or `--profile certified_100` with a
+  committed matching-runner `--baseline`. Those names are evidence tiers with
+  all-required gates, not composite quality scores. `design_craft_score.py`
+  measures source completeness only.
 - `scripts/upstream_absorption_report.py --remote` when checking whether pinned
   upstreams have newer remote heads before absorption work.
 - `scripts/validate.sh`
@@ -141,7 +161,8 @@ interaction states unless separate state evidence is captured.
 ## Native runtime validation
 
 For `ios`, `android`, or `adaptive`, static source scan is a floor rather than a
-runtime verdict.
+runtime verdict. Skip this section for `web`; a mobile viewport or WebView shell
+does not create a native validation requirement.
 
 Report route fields:
 
@@ -178,7 +199,7 @@ Check and report:
 
 - Whether the design-system contract was enforced, evolved, inferred from code,
   or not applicable.
-- Whether the bundled Vercel Geist seed templates were used as the initial
+- Whether the bundled developer-product seed templates were used as the initial
   baseline, and whether the project had a stronger style authority.
 - New hard-coded colors, arbitrary spacing, arbitrary radii, arbitrary shadows,
   font sizes, or timing values, and why they are justified.
@@ -218,7 +239,8 @@ report:
 - `performance_review_required`
 - `runtime_validation_required`, `runtime_validation_kind`,
   `native_validation_required`, and `preferred_runtime_tool`
-- `vercel_geist_seed_applicable` and reason
+- `developer_product_seed_applicable` and reason; legacy route payloads may also
+  expose `vercel_geist_seed_applicable` as a compatibility alias
 
 Never say a subagent was enabled unless it actually spawned. Never say browser
 validation passed unless a browser tool verified the target.
@@ -236,9 +258,17 @@ runtime scripts, source/install parity, reviewed upstreams, CI, observed evals,
 degraded route/detector behavior, and native runtime evidence. A score above 90
 requires forward evals and real task evidence, not only file presence.
 
-For 0.4.0, native simulator/emulator behavior is not locally observed, so the
-honest maturity cap is `95`. Scores `96-100` require observed iOS and Android
-runtime evidence, including at least one real-device validation path.
+Operational maturity is profile-specific:
+
+- `desktop` covers the daily computer-based Web/frontend workflow and can reach
+  100 without iOS/Android runtime or Cursor/Claude evidence.
+- `portable` and normal release readiness use a 95-point boundary while keeping
+  optional host/native proof visible rather than silently promoting it.
+- certified release maturity 100 requires all four current-source host runs and
+  current-source iOS Simulator, Android Emulator, and physical-device evidence.
+
+Do not use the certification profile to declare ordinary Web development
+incomplete, and do not use the desktop profile to claim native release proof.
 
 The 100-point score in `product-ui-taste-review.md` is different: it grades one
 specific UI surface. When reporting both, name them explicitly as

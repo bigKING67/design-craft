@@ -2,12 +2,6 @@
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-SOURCE_ROOT="${DESIGN_CRAFT_SOURCE_ROOT:-}"
-if [[ -n "${SOURCE_ROOT}" && -d "${SOURCE_ROOT}" ]]; then
-  SOURCE_ROOT="$(cd "${SOURCE_ROOT}" && pwd)"
-else
-  SOURCE_ROOT=""
-fi
 
 TARGET="."
 MODE="audit"
@@ -29,7 +23,7 @@ Usage:
 
 Options:
   --target <path>     Project, folder, or file to audit.
-  --mode <mode>       critique|audit|polish|motion|harden|optimize|structure|architecture.
+  --mode <mode>       critique|audit|polish|motion|motion-plan|harden|optimize|structure|architecture.
   --surface <value>   Route planner surface, default auto.
   --intent <value>    Route planner intent, default auto.
   --scope <value>     Route planner scope, default auto.
@@ -38,17 +32,25 @@ Options:
   --product-context-path <path>  Explicit PRODUCT.md.
   --skip-route        Do not call design_craft_route.sh.
   --skip-detector     Do not call design_craft_detect.sh.
-  --skip-score        Do not call design_craft_score.py.
+  --skip-score        Suppress the repository-quality boundary note.
   --strict            Exit non-zero if a sub-check exits non-zero.
 EOF
 }
 
 abspath() {
-  python3 - "$1" <<'PY'
+  local resolved
+  resolved="$(python3 - "$1" <<'PY'
 import sys
 from pathlib import Path
 print(Path(sys.argv[1]).expanduser().resolve())
 PY
+  )"
+  resolved="${resolved//$'\r'/}"
+  if command -v cygpath >/dev/null 2>&1; then
+    cygpath -u "${resolved}"
+  else
+    printf '%s\n' "${resolved}"
+  fi
 }
 
 section() {
@@ -118,7 +120,7 @@ while [[ $# -gt 0 ]]; do
 done
 
 case "${MODE}" in
-  critique|audit|polish|motion|harden|optimize|structure|architecture) ;;
+  critique|audit|polish|motion|motion-plan|harden|optimize|structure|architecture) ;;
   *)
     echo "Unknown mode: ${MODE}" >&2
     usage >&2
@@ -198,21 +200,10 @@ else
 fi
 
 if [[ "${SKIP_SCORE}" != "1" ]]; then
-  section "design-craft source score"
-  if [[ -n "${SOURCE_ROOT}" && -x "${SOURCE_ROOT}/scripts/design_craft_score.py" && ( "${TARGET}" == "${SOURCE_ROOT}" || "${TARGET}" == "${SOURCE_ROOT}/"* ) ]]; then
-    set +e
-    "${SOURCE_ROOT}/scripts/design_craft_score.py" --self
-    status=$?
-    set -e
-    if [[ "${status}" != "0" ]]; then
-      overall_status="${status}"
-      echo "score_status: ${status}"
-    fi
-  else
-    echo "skipped: source-completeness scorer is unavailable or target is not the source repo."
-  fi
+  section "quality evidence boundary"
+  echo "Runtime audit does not compute repository quality scores. Use repo governance tooling for contract, operational, benchmark, evaluation, and certification reports."
 else
-  section "design-craft source score"
+  section "quality evidence boundary"
   echo "skipped"
 fi
 
@@ -250,6 +241,7 @@ EOF
   motion)
     cat <<'EOF'
 - Read references/motion-quality.md before judging animation values.
+- Read references/motion-patterns.md when the task needs concrete web component recipes.
 - Read references/interaction-physics.md for direct manipulation, momentum, or interruptible gestures.
 - Start by asking whether the motion should exist: high-frequency and keyboard-triggered actions usually get no animation.
 - Review with a Before | After | Why table; cite file:line when concrete code is available.
@@ -258,6 +250,18 @@ EOF
 - Prefer transform/opacity, CSS/WAAPI for predetermined motion, transitions/springs for interruptible gesture or rapidly-triggered UI.
 - Verify presentation-value interruption, velocity handoff, projected endpoints, hysteresis, and reduced-motion alternatives for gesture UI.
 - Verdict tiers: feel-breaking regressions, missed simplifications, performance, interruptibility/timing, origin/physicality/cohesion, accessibility.
+EOF
+    ;;
+  motion-plan)
+    cat <<'EOF'
+- Read references/motion-audit-planning.md, then the relevant sections of motion-quality.md and interaction-physics.md.
+- Keep the audit read-only until the user explicitly selects plans for implementation.
+- Start with stack, motion locations, local tokens, product personality, interaction frequency, and evidence-level recon.
+- Audit purpose/frequency, timing/easing, origin/physicality, interruption, performance, accessibility, cohesion/tokens, and missed opportunities.
+- Re-read every cited location; reject duplicates, intentional exceptions, dead code, and unsupported runtime claims.
+- Rank by user impact x frequency x confidence / implementation cost and default to the top three to five findings when non-interactive.
+- Scaffold one self-contained plan per selected finding with scripts/design_craft_motion_plan.py; include exact files, current excerpts, target behavior, boundaries, validation, feel checks, and drift stop conditions.
+- Reconcile plans as proposed, in_progress, complete, stale, or retired; never mark implementation complete from plan existence alone.
 EOF
     ;;
   harden)

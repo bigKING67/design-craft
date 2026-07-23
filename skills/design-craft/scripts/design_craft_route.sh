@@ -47,15 +47,24 @@ EOF
 }
 
 abspath() {
-  python3 - "$1" <<'PY'
+  local resolved
+  resolved="$(python3 - "$1" <<'PY'
 import sys
 from pathlib import Path
 print(Path(sys.argv[1]).expanduser().resolve())
 PY
+  )"
+  resolved="${resolved//$'\r'/}"
+  if command -v cygpath >/dev/null 2>&1; then
+    cygpath -u "${resolved}"
+  else
+    printf '%s\n' "${resolved}"
+  fi
 }
 
 find_upward() {
-  python3 - "$1" "$2" <<'PY'
+  local resolved
+  resolved="$(python3 - "$1" "$2" <<'PY'
 import sys
 from pathlib import Path
 
@@ -69,6 +78,16 @@ for directory in (start, *start.parents):
         print(candidate)
         break
 PY
+  )"
+  resolved="${resolved//$'\r'/}"
+  if [[ -z "${resolved}" ]]; then
+    return 0
+  fi
+  if command -v cygpath >/dev/null 2>&1; then
+    cygpath -u "${resolved}"
+  else
+    printf '%s\n' "${resolved}"
+  fi
 }
 
 while [[ $# -gt 0 ]]; do
@@ -329,31 +348,34 @@ route_payload["inputs"].update(
 developer_product_surfaces = {"auto", "dashboard", "app", "admin", "data-app"}
 non_seed_intents = {"brand", "high-motion", "mobile-flow", "reference-only"}
 has_style_authority = bool(route_payload.get("style_authority_path"))
-vercel_geist_seed_applicable = (
+developer_product_seed_applicable = (
     platform == "web"
     and not has_style_authority
     and surface in developer_product_surfaces
     and intent not in non_seed_intents
 )
-if vercel_geist_seed_applicable:
-    vercel_geist_seed_reason = (
+if developer_product_seed_applicable:
+    developer_product_seed_reason = (
         "existing developer-product surface has no resolved style authority; "
-        "use the Geist seed only if runtime/project style is weak"
+        "use the original developer-product seed only if runtime/project style is weak"
         if existing_project
         else "new developer-product surface has no resolved style authority"
     )
 elif platform != "web":
-    vercel_geist_seed_reason = "native/adaptive platforms require platform-specific design authority"
+    developer_product_seed_reason = "native/adaptive platforms require platform-specific design authority"
 elif has_style_authority:
-    vercel_geist_seed_reason = "stronger style authority was resolved"
+    developer_product_seed_reason = "stronger style authority was resolved"
 elif surface not in developer_product_surfaces:
-    vercel_geist_seed_reason = "surface is not a default developer-product seed case"
+    developer_product_seed_reason = "surface is not a default developer-product seed case"
 else:
-    vercel_geist_seed_reason = "intent calls for another style authority path"
+    developer_product_seed_reason = "intent calls for another style authority path"
 route_payload.update(
     {
-        "vercel_geist_seed_applicable": vercel_geist_seed_applicable,
-        "vercel_geist_seed_reason": vercel_geist_seed_reason,
+        "developer_product_seed_applicable": developer_product_seed_applicable,
+        "developer_product_seed_reason": developer_product_seed_reason,
+        # Compatibility fields for existing route consumers.
+        "vercel_geist_seed_applicable": developer_product_seed_applicable,
+        "vercel_geist_seed_reason": developer_product_seed_reason,
     }
 )
 
@@ -383,8 +405,8 @@ else:
         "preferred_runtime_tool",
         "browser_validation_required",
         "browser_screenshot_required",
-        "vercel_geist_seed_applicable",
-        "vercel_geist_seed_reason",
+        "developer_product_seed_applicable",
+        "developer_product_seed_reason",
     ]:
         print(f"- {key}: {route_payload.get(key)}")
 
@@ -403,11 +425,11 @@ else:
         )
     if intent == "high-motion" or platform != "web":
         refs.add("references/interaction-physics.md")
-    if vercel_geist_seed_applicable:
+    if developer_product_seed_applicable:
         refs.update(
             {
-                "templates/vercel-geist/design.md",
-                "templates/vercel-geist/design.dark.md",
+                "templates/developer-product/design.md",
+                "templates/developer-product/design.dark.md",
             }
         )
     print("- recommended_design_craft_references:")

@@ -15,6 +15,8 @@ from typing import Iterable
 SCHEMA = "design-craft.public-repo-verification.v1"
 ROOT = Path(__file__).resolve().parents[1]
 SELF_PATH = "scripts/design_craft_public_repo_validate.py"
+POLICY_PATH = "docs/public-history-policy.md"
+HISTORY_BASELINE = "d4380a0b8b848c03402f263a09d59bb36cfabdc4"
 SKIP_PREFIXES = ("upstreams/", ".git/")
 TEXT_SUFFIXES = {
     "",
@@ -76,6 +78,87 @@ def path_errors(paths: Iterable[str]) -> list[str]:
     return errors
 
 
+def added_history_path_errors(diff: str) -> list[str]:
+    errors: list[str] = []
+    current_path = ""
+    for line in diff.splitlines():
+        if line.startswith("+++ b/"):
+            current_path = line.removeprefix("+++ b/")
+            continue
+        if not line.startswith("+") or line.startswith("+++"):
+            continue
+        if current_path == SELF_PATH:
+            continue
+        for match in USER_HOME_PATTERN.finditer(line[1:]):
+            errors.append(
+                "public history adds a user-home path after the privacy baseline: "
+                f"{match.group(0)}"
+            )
+    return errors
+
+
+def history_errors() -> list[str]:
+    policy = ROOT / POLICY_PATH
+    if not policy.is_file():
+        return [f"missing public history policy: {POLICY_PATH}"]
+    policy_text = policy.read_text(encoding="utf-8")
+    if HISTORY_BASELINE not in policy_text:
+        return [f"{POLICY_PATH} must record the privacy baseline {HISTORY_BASELINE}"]
+    baseline = subprocess.run(
+        ["git", "-C", str(ROOT), "cat-file", "-e", f"{HISTORY_BASELINE}^{{commit}}"],
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.PIPE,
+        text=True,
+        encoding="utf-8",
+        errors="replace",
+        check=False,
+    )
+    if baseline.returncode != 0:
+        return [f"public history baseline is unavailable: {HISTORY_BASELINE}"]
+    diff = subprocess.run(
+        [
+            "git",
+            "-C",
+            str(ROOT),
+            "log",
+            "--format=",
+            "--unified=0",
+            "--no-ext-diff",
+            f"{HISTORY_BASELINE}..HEAD",
+            "--",
+            ".",
+            ":(exclude)upstreams",
+        ],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+        encoding="utf-8",
+        errors="replace",
+        check=False,
+    )
+    if diff.returncode != 0:
+        return [diff.stderr.strip() or "cannot inspect public history after the privacy baseline"]
+    return added_history_path_errors(diff.stdout)
+
+
+def runtime_identifier_errors() -> list[str]:
+    errors: list[str] = []
+    for path in sorted((ROOT / "evals/native-runtime").glob("*observed.json")):
+        try:
+            payload = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError) as exc:
+            errors.append(f"invalid native runtime evidence {path.relative_to(ROOT)}: {exc}")
+            continue
+        runtime_id = payload.get("runtime_id")
+        if payload.get("runtime_id_kind") != "sha256" or not isinstance(
+            runtime_id, str
+        ) or not re.fullmatch(r"sha256:[0-9a-f]{64}", runtime_id):
+            errors.append(
+                f"public native evidence exposes an unredacted runtime identifier: {path.relative_to(ROOT)}"
+            )
+    return errors
+
+
 def license_errors() -> list[str]:
     errors: list[str] = []
     required = (
@@ -115,17 +198,36 @@ def license_errors() -> list[str]:
     ):
         if token not in notices:
             errors.append(f"THIRD_PARTY_NOTICES.md must reference {token}")
+    for relative in (
+        "skills/design-craft/templates/developer-product/design.md",
+        "skills/design-craft/templates/developer-product/design.dark.md",
+    ):
+        path = ROOT / relative
+        text = path.read_text(encoding="utf-8") if path.is_file() else ""
+        if "source: original-design-craft" not in text:
+            errors.append(f"current developer-product seed must declare original authorship: {relative}")
+    for relative in (
+        "skills/design-craft/templates/vercel-geist/design.md",
+        "skills/design-craft/templates/vercel-geist/design.dark.md",
+    ):
+        path = ROOT / relative
+        text = path.read_text(encoding="utf-8") if path.is_file() else ""
+        if "Legacy path" not in text or "name: Geist" in text:
+            errors.append(f"legacy Vercel path must not redistribute the historical snapshot: {relative}")
     return errors
 
 
 def validate() -> dict:
     paths, errors = repository_paths()
     errors.extend(path_errors(paths))
+    errors.extend(history_errors())
+    errors.extend(runtime_identifier_errors())
     errors.extend(license_errors())
     return {
         "schema": SCHEMA,
         "root": str(ROOT),
         "files_scanned": len(paths),
+        "history_baseline": HISTORY_BASELINE,
         "ok": not errors,
         "errors": errors,
     }
@@ -142,6 +244,13 @@ def self_check() -> list[str]:
     windows = "C:" + "\\Users\\example\\private.png"
     if not USER_HOME_PATTERN.search(windows):
         errors.append("public path validator did not reject a Windows user-home path")
+    sample_diff = (
+        "+++ b/example.md\n"
+        "+safe: ~/.browser67/example.png\n"
+        "+private: /Users/example/private.png\n"
+    )
+    if len(added_history_path_errors(sample_diff)) != 1:
+        errors.append("public history validator did not isolate new absolute paths")
     return errors
 
 

@@ -1,0 +1,193 @@
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      release_level:
+        description: Explicit release evidence level
+        type: choice
+        required: true
+        options:
+          - operational_95
+          - certified_100
+      tag:
+        description: Existing annotated version tag
+        type: string
+        required: true
+      native_run_id:
+        description: Successful Native runtime evidence tag run ID
+        type: string
+        required: true
+      physical_device_run_id:
+        description: Required for certified_100; successful Physical device evidence run ID
+        type: string
+        required: false
+      benchmark_baseline:
+        description: Required committed Linux x86_64 Python 3.13 baseline path
+        type: string
+        required: true
+      confirm_release:
+        description: Enter release-<tag>, for example release-v0.5.0
+        type: string
+        required: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-${{ inputs.tag }}
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      actions: read
+      contents: write
+      id-token: write
+      attestations: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+      RELEASE_LEVEL: ${{ inputs.release_level }}
+      RELEASE_TAG: ${{ inputs.tag }}
+      NATIVE_RUN_ID: ${{ inputs.native_run_id }}
+      PHYSICAL_DEVICE_RUN_ID: ${{ inputs.physical_device_run_id }}
+      BENCHMARK_BASELINE: ${{ inputs.benchmark_baseline }}
+      CONFIRM_RELEASE: ${{ inputs.confirm_release }}
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          ref: main
+          fetch-depth: 0
+          submodules: recursive
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: "24"
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
+        with:
+          python-version: "3.13"
+      - name: Configure isolated release paths
+        shell: bash
+        run: |
+          echo "DESIGN_CRAFT_NATIVE_EVIDENCE_ROOT=${RUNNER_TEMP}/native-evidence" >> "${GITHUB_ENV}"
+          echo "NATIVE_RUN_OBSERVATION=${RUNNER_TEMP}/native-run-observation.json" >> "${GITHUB_ENV}"
+          echo "PHYSICAL_RUN_OBSERVATION=${RUNNER_TEMP}/physical-run-observation.json" >> "${GITHUB_ENV}"
+      - name: Verify immutable release inputs
+        shell: bash
+        run: |
+          set -euo pipefail
+          expected_tag="v$(cat VERSION)"
+          test "${RELEASE_TAG}" = "${expected_tag}"
+          test "${CONFIRM_RELEASE}" = "release-${RELEASE_TAG}"
+          [[ "${NATIVE_RUN_ID}" =~ ^[1-9][0-9]*$ ]]
+          if [[ "${RELEASE_LEVEL}" = certified_100 ]]; then
+            [[ "${PHYSICAL_DEVICE_RUN_ID}" =~ ^[1-9][0-9]*$ ]]
+          else
+            test -z "${PHYSICAL_DEVICE_RUN_ID}"
+          fi
+          [[ "${BENCHMARK_BASELINE}" == benchmarks/baselines/* ]]
+          [[ "${BENCHMARK_BASELINE}" != *..* ]]
+          test -f "${BENCHMARK_BASELINE}"
+          test "$(git cat-file -t "${RELEASE_TAG}")" = tag
+          test "$(git rev-list -n 1 "${RELEASE_TAG}")" = "$(git rev-parse HEAD)"
+          if gh release view "${RELEASE_TAG}" >/dev/null 2>&1; then
+            echo "GitHub Release ${RELEASE_TAG} already exists; publish a new version instead" >&2
+            exit 2
+          fi
+          git switch -C main "$(git rev-parse HEAD)"
+          test -z "$(git status --porcelain=v1 --untracked-files=all)"
+      - name: Observe exact source workflow runs
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -m tools.design_craft release run-observation \
+            --kind native \
+            --run-id "${NATIVE_RUN_ID}" \
+            --output "${NATIVE_RUN_OBSERVATION}"
+          if [[ "${RELEASE_LEVEL}" = certified_100 ]]; then
+            python3 -m tools.design_craft release run-observation \
+              --kind physical \
+              --run-id "${PHYSICAL_DEVICE_RUN_ID}" \
+              --output "${PHYSICAL_RUN_OBSERVATION}"
+          fi
+      - name: Download exact native workflow evidence
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "${RUNNER_TEMP}/native-ios" "${RUNNER_TEMP}/native-android" "${DESIGN_CRAFT_NATIVE_EVIDENCE_ROOT}"
+          gh run download "${NATIVE_RUN_ID}" \
+            --name "native-runtime-ios-${NATIVE_RUN_ID}" \
+            --dir "${RUNNER_TEMP}/native-ios"
+          gh run download "${NATIVE_RUN_ID}" \
+            --name "native-runtime-android-${NATIVE_RUN_ID}" \
+            --dir "${RUNNER_TEMP}/native-android"
+          cp -R "${RUNNER_TEMP}/native-ios/." "${DESIGN_CRAFT_NATIVE_EVIDENCE_ROOT}/"
+          cp -R "${RUNNER_TEMP}/native-android/." "${DESIGN_CRAFT_NATIVE_EVIDENCE_ROOT}/"
+          if [[ "${RELEASE_LEVEL}" = certified_100 ]]; then
+            mkdir -p "${RUNNER_TEMP}/native-physical"
+            gh run download "${PHYSICAL_DEVICE_RUN_ID}" \
+              --name "native-runtime-physical-${PHYSICAL_DEVICE_RUN_ID}" \
+              --dir "${RUNNER_TEMP}/native-physical"
+            cp -R "${RUNNER_TEMP}/native-physical/." "${DESIGN_CRAFT_NATIVE_EVIDENCE_ROOT}/"
+          fi
+      - name: Install and verify the canonical skill
+        run: |
+          bash scripts/install_local.sh
+          make install-verify sync-status-check
+      - name: Verify final release evidence
+        shell: bash
+        run: |
+          set -euo pipefail
+          evidence="dist/evidence/${RELEASE_LEVEL}-final.json"
+          python3 -m tools.design_craft release verify \
+            --level "${RELEASE_LEVEL}" \
+            --phase final \
+            --baseline "${BENCHMARK_BASELINE}" \
+            --output "${evidence}"
+          python3 scripts/design_craft_github_checks.py \
+            --level "${RELEASE_LEVEL}" \
+            --require-tag-run
+          binding_args=(
+            --level "${RELEASE_LEVEL}"
+            --evidence "${evidence}"
+            --native-observation "${NATIVE_RUN_OBSERVATION}"
+          )
+          if [[ "${RELEASE_LEVEL}" = certified_100 ]]; then
+            binding_args+=(--physical-observation "${PHYSICAL_RUN_OBSERVATION}")
+          fi
+          python3 -m tools.design_craft release evidence-bindings "${binding_args[@]}"
+      - name: Build exact release asset set
+        shell: bash
+        run: |
+          set -euo pipefail
+          evidence="dist/evidence/${RELEASE_LEVEL}-final.json"
+          if [[ "${RELEASE_LEVEL}" = certified_100 ]]; then
+            make release-assets-build-certified \
+              CERTIFIED_FINAL_EVIDENCE="${evidence}" \
+              RELEASE_ASSET_DIR=dist/release \
+              NATIVE_RUN_OBSERVATION="${NATIVE_RUN_OBSERVATION}" \
+              PHYSICAL_RUN_OBSERVATION="${PHYSICAL_RUN_OBSERVATION}" \
+              NATIVE_IOS_SOURCE="${RUNNER_TEMP}/native-ios" \
+              NATIVE_ANDROID_SOURCE="${RUNNER_TEMP}/native-android" \
+              NATIVE_REAL_DEVICE_ROOT="${RUNNER_TEMP}/native-physical"
+            make release-assets-verify-certified RELEASE_ASSET_DIR=dist/release
+          else
+            make release-assets-build-operational \
+              OPERATIONAL_FINAL_EVIDENCE="${evidence}" \
+              NATIVE_RUN_OBSERVATION="${NATIVE_RUN_OBSERVATION}" \
+              RELEASE_ASSET_DIR=dist/release
+            make release-assets-verify-operational RELEASE_ASSET_DIR=dist/release
+          fi
+      - name: Attest release assets
+        uses: actions/attest-build-provenance@977bb373ede98d70efdf65b84cb5f73e068dcc2a # v3
+        with:
+          subject-path: dist/release/*
+      - name: Publish final GitHub Release
+        shell: bash
+        run: >-
+          gh release create "${RELEASE_TAG}"
+          dist/release/*
+          --verify-tag
+          --title "${RELEASE_TAG}"
+          --generate-notes

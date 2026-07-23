@@ -12,18 +12,32 @@ This reference is about system discipline, not a specific aesthetic. It should
 help preserve the product's own visual language instead of making every project
 look like one upstream design system.
 
+## Contents
+
+- [Default seed](#default-seed)
+- [Authority](#authority)
+- [Recommended DESIGN.md shape](#recommended-designmd-shape)
+- [Token layers](#token-layers)
+- [Theme parity](#theme-parity)
+- [Typography roles](#typography-roles)
+- [Layout rhythm](#layout-rhythm)
+- [Component state matrix](#component-state-matrix)
+- [Motion](#motion)
+- [Voice and content](#voice-and-content)
+- [Audit checklist](#audit-checklist)
+
 ## Default seed
 
 For a new project or a weakly specified developer-product surface, start from
-the bundled Vercel Geist templates:
+the bundled original design-craft templates:
 
-- `templates/vercel-geist/design.md`
-- `templates/vercel-geist/design.dark.md`
+- `templates/developer-product/design.md`
+- `templates/developer-product/design.dark.md`
 
 Use them as the default initial `DESIGN.md` pair for SaaS, dashboard, admin,
 infra, docs, tooling, and other developer-facing product surfaces. If the
 project already has a credible `DESIGN.md`, token system, brand guide, or strong
-runtime style, keep the project authority first and use the Geist templates as a
+runtime style, keep the project authority first and use the seed templates as a
 comparison baseline for missing token layers, states, focus, motion, and copy.
 
 Use `scripts/design_craft_seed_design.sh --target <project-dir>` when the
@@ -39,10 +53,10 @@ overwrite existing `DESIGN.md` or `DESIGN.dark.md` unless `--force` is explicit.
   conflict, verify the current runtime before deciding whether docs are stale.
 - Do not create a parallel style authority. Evolve the existing one when the
   user approves a system change.
-- The bundled Geist templates are allowed as the default seed when no stronger
+- The bundled developer-product templates are allowed as the default seed when no stronger
   project style authority exists. Once a project-specific system exists, prefer
   adapting it over repeatedly re-applying the seed.
-- If `design_craft_route.sh` reports `vercel_geist_seed_applicable: true`,
+- If `design_craft_route.sh` reports `developer_product_seed_applicable: true`,
   treat that as a prompt to create or compare against the seed, not as
   permission to ignore live runtime style.
 
@@ -119,6 +133,25 @@ Choose typography by role before choosing size:
 
 Avoid three adjacent type sizes that visually collapse into the same hierarchy.
 For dashboards and reports, data typography must be as intentional as prose.
+
+Treat optical detail as part of the role contract:
+
+- Prefer platform/system UI fonts for controls unless the brand has a specific
+  reason to replace them. System faces already carry platform legibility and
+  text-scaling behavior.
+- When a variable font supports optical sizing, enable
+  `font-optical-sizing: auto` and verify that the actual font file exposes an
+  optical-size axis.
+- Set tracking by role and size rather than applying one letter-spacing to the
+  whole product. Large display text often needs slightly tighter tracking;
+  small labels must not be compressed until letterforms merge.
+- Set leading inversely with scale: display type is usually tighter, while body
+  copy needs more line height. Recheck scripts with tall ascenders, descenders,
+  or different shaping behavior instead of inheriting a Latin-only value.
+- Use relative units and responsive layout so browser text zoom, iOS Dynamic
+  Type, and Android font scaling do not clip labels or make actions unreachable.
+- Use tabular figures for changing metrics, timers, and aligned numeric columns
+  when the selected font supports them.
 
 ## Layout rhythm
 

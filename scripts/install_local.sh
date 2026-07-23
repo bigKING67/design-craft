@@ -2,13 +2,12 @@
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-INSTALL_ROOT="${DESIGN_CRAFT_SKILL_ROOT:-${FRONTEND_CRAFT_SKILL_ROOT:-${HOME}/.agents/skills}}"
+INSTALL_ROOT="${DESIGN_CRAFT_SKILL_ROOT:-${HOME}/.agents/skills}"
 BACKUP_BASE="${DESIGN_CRAFT_BACKUP_ROOT:-${HOME}/.agents/backups}"
 KEEP_BACKUPS="${DESIGN_CRAFT_BACKUP_KEEP:-10}"
 LOCK_TIMEOUT="${DESIGN_CRAFT_INSTALL_LOCK_TIMEOUT:-30}"
 VERIFY_SCRIPT="${ROOT_DIR}/scripts/design_craft_install_verify.py"
 DRY_RUN=0
-INCLUDE_LEGACY_ALIAS=0
 PRUNE_BACKUPS=1
 LOCK_DIR="${INSTALL_ROOT}/.design-craft-install.lock"
 LOCK_HELD=0
@@ -17,14 +16,13 @@ STAGING_PATHS=()
 usage() {
   cat <<'EOF'
 Usage:
-  scripts/install_local.sh [--dry-run] [--include-legacy-alias]
+  scripts/install_local.sh [--dry-run]
                            [--keep-backups <count>] [--no-prune-backups]
                            [--lock-timeout <seconds>]
 
 Installs through a same-filesystem staging directory, validates the staged
 copy, atomically replaces the target, and restores the previous target if
-post-install verification fails. An existing legacy frontend-craft alias is
-refreshed even when --include-legacy-alias is omitted.
+post-install verification fails.
 EOF
 }
 
@@ -32,10 +30,6 @@ while [[ $# -gt 0 ]]; do
   case "$1" in
     --dry-run)
       DRY_RUN=1
-      shift
-      ;;
-    --include-legacy-alias)
-      INCLUDE_LEGACY_ALIAS=1
       shift
       ;;
     --keep-backups)
@@ -133,7 +127,8 @@ write_metadata() {
 
   python3 - "${target}" "${name}" "${version}" "${ROOT_DIR}" "${commit}" "${repo}" "${repo_dirty}" "${skill_source_dirty}" <<'PY'
 import json
-import hashlib
+import re
+import subprocess
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
@@ -147,21 +142,41 @@ if "://" in repo:
         host = f"{host}:{parsed.port}"
     repo = urlunsplit((parsed.scheme, host, parsed.path, "", ""))
 target_path = Path(target)
-tree = hashlib.sha256()
-for path in sorted(target_path.rglob("*")):
-    if not path.is_file() or "__pycache__" in path.parts or path.name in {".DS_Store", ".design-craft-install.json"} or path.suffix in {".pyc", ".pyo"}:
-        continue
-    relative = str(path.relative_to(target_path))
-    file_digest = hashlib.sha256(path.read_bytes()).hexdigest()
-    tree.update(relative.encode("utf-8"))
-    tree.update(b"\0")
-    tree.update(file_digest.encode("ascii"))
-    tree.update(b"\n")
+source_root_path = Path(source_root)
+sys.path.insert(0, str(source_root_path / "scripts"))
+
+from design_craft_evidence_common import tree_sha256
+
+
+def release_state() -> str:
+    changelog_path = source_root_path / "CHANGELOG.md"
+    if not changelog_path.is_file():
+        return "unknown"
+    changelog = changelog_path.read_text(encoding="utf-8")
+    match = re.search(rf"^## {re.escape(version)} - (?P<label>[^\n]+)$", changelog, flags=re.M)
+    if not match:
+        return "unknown"
+    label = match.group("label").strip()
+    if label == "Unreleased":
+        return "development"
+    if not re.fullmatch(r"[0-9]{4}-[0-9]{2}-[0-9]{2}", label):
+        return "unknown"
+    tag_result = subprocess.run(
+        ["git", "-C", str(source_root_path), "rev-list", "-n", "1", f"v{version}"],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.DEVNULL,
+        text=True,
+        check=False,
+    )
+    return "released" if tag_result.stdout.strip() == commit else "release_candidate"
+
+
 payload = {
     "schema": "design-craft.install.v2",
     "installer_version": 3,
     "skill_name": name,
     "version": version,
+    "release_state": release_state(),
     "source_root": source_root,
     "source_path": str(Path(source_root) / "skills" / name),
     "source_repo": repo,
@@ -169,7 +184,7 @@ payload = {
     "source_dirty": skill_source_dirty == "true",
     "skill_source_dirty": skill_source_dirty == "true",
     "repo_dirty": repo_dirty == "true",
-    "source_tree_sha256": tree.hexdigest(),
+    "source_tree_sha256": tree_sha256(target_path),
     "installed_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
 }
 target_path.joinpath(".design-craft-install.json").write_text(
@@ -314,11 +329,6 @@ if [[ "${DRY_RUN}" != "1" ]]; then
 fi
 
 install_one "design-craft"
-if [[ "${INCLUDE_LEGACY_ALIAS}" == "1" || -e "${INSTALL_ROOT}/frontend-craft" || -L "${INSTALL_ROOT}/frontend-craft" ]]; then
-  install_one "frontend-craft"
-elif [[ "${INCLUDE_LEGACY_ALIAS}" != "1" ]]; then
-  echo "Skipped absent legacy frontend-craft alias. Pass --include-legacy-alias to install it."
-fi
 
 if [[ "${DRY_RUN}" == "1" ]]; then
   echo "dry_run: no files changed"

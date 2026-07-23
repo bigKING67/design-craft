@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Require successful GitHub validation and native-runtime runs for HEAD."""
+"""Verify exact per-level GitHub workflow and Release state for HEAD."""
 
 from __future__ import annotations
 
@@ -8,11 +8,21 @@ import json
 import shutil
 import subprocess
 import sys
+import tempfile
 from pathlib import Path
 
 
-SCHEMA = "design-craft.github-checks.v1"
 ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
+from tools.design_craft.release.assets import validate_assets
+from tools.design_craft.release.github_runs import validate_run
+from tools.design_craft.release.native_bundle import validate_native_bundle
+from tools.design_craft.release.policy import LEVELS, load_policy
+
+
+SCHEMA = "design-craft.github-checks.v2"
 WORKFLOWS = ("validate.yml", "native-runtime.yml")
 
 
@@ -80,10 +90,53 @@ def validate_latest_run(
     return matching, latest, []
 
 
+def validate_release_native_bindings(
+    manifest: dict[str, object],
+    *,
+    required_native: tuple[str, ...],
+    expected_run: dict[str, object] | None,
+    expected_repository: str,
+) -> list[str]:
+    errors: list[str] = []
+    if not isinstance(expected_run, dict):
+        return ["release native evidence cannot be bound to the selected tag run"]
+    bindings = manifest.get("native_evidence")
+    if not isinstance(bindings, dict):
+        return ["release manifest native_evidence is missing"]
+    for native in required_native:
+        if native == "physical_device":
+            continue
+        binding = bindings.get(native)
+        workflow = binding.get("workflow") if isinstance(binding, dict) else None
+        if not isinstance(workflow, dict):
+            errors.append(f"release native evidence {native} has no workflow binding")
+            continue
+        expected = {
+            "repository": expected_repository,
+            "run_id": expected_run.get("databaseId"),
+            "run_attempt": expected_run.get("attempt"),
+            "head_sha": expected_run.get("headSha"),
+            "event": expected_run.get("event"),
+            "url": expected_run.get("url"),
+        }
+        for field, value in expected.items():
+            if workflow.get(field) != value:
+                errors.append(
+                    f"release native evidence {native} workflow {field} does not match the selected tag run"
+                )
+        head_branch = expected_run.get("headBranch")
+        if isinstance(head_branch, str) and workflow.get("ref") != f"refs/tags/{head_branch}":
+            errors.append(
+                f"release native evidence {native} workflow ref does not match the selected tag run"
+            )
+    return errors
+
+
 def run_self_check() -> None:
     head = "a" * 40
     manual_success = {
         "databaseId": 1,
+        "attempt": 1,
         "status": "completed",
         "conclusion": "success",
         "headSha": head,
@@ -110,7 +163,6 @@ def run_self_check() -> None:
     )
     if latest != tag_failure or not errors:
         raise RuntimeError("tag-run validation accepted an older manual success")
-
     tag_success = {
         **tag_failure,
         "databaseId": 3,
@@ -127,15 +179,57 @@ def run_self_check() -> None:
     )
     if latest != tag_success or errors:
         raise RuntimeError("latest successful tag run did not validate")
+    policy = load_policy()
+    if len(policy["operational_95"].assets("0.5.0")) != 4:
+        raise RuntimeError("operational_95 must require exactly four assets")
+    if len(policy["certified_100"].assets("0.5.0")) != 7:
+        raise RuntimeError("certified_100 must require exactly seven assets")
+    fixture_manifest = {
+        "native_evidence": {
+            native: {
+                "workflow": {
+                    "repository": "example/design-craft",
+                    "run_id": tag_success["databaseId"],
+                    "run_attempt": 1,
+                    "head_sha": head,
+                    "event": "push",
+                    "url": tag_success["url"],
+                    "ref": "refs/tags/v0.5.0",
+                }
+            }
+            for native in ("ios_simulator", "android_emulator")
+        }
+    }
+    if validate_release_native_bindings(
+        fixture_manifest,
+        required_native=("ios_simulator", "android_emulator"),
+        expected_run=tag_success,
+        expected_repository="example/design-craft",
+    ):
+        raise RuntimeError("valid operational native workflow bindings were rejected")
+    fixture_manifest["native_evidence"]["ios_simulator"]["workflow"]["run_id"] = 999
+    if not validate_release_native_bindings(
+        fixture_manifest,
+        required_native=("ios_simulator", "android_emulator"),
+        expected_run=tag_success,
+        expected_repository="example/design-craft",
+    ):
+        raise RuntimeError("tampered operational native workflow binding was accepted")
 
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--level", choices=LEVELS)
     parser.add_argument("--json", action="store_true")
     parser.add_argument(
         "--require-tag-run",
         action="store_true",
-        help="Require the latest v<VERSION> tag-push run for every workflow.",
+        help="Require the latest v<VERSION> tag-push run for Validate and Native runtime.",
+    )
+    parser.add_argument(
+        "--require-release-assets",
+        action="store_true",
+        help="Require a published GitHub Release with the exact per-level asset set.",
     )
     parser.add_argument("--check", action="store_true")
     args = parser.parse_args()
@@ -144,6 +238,9 @@ def main() -> int:
         run_self_check()
         print("github_checks_self_check=ok")
         return 0
+    if not args.level:
+        parser.error("--level is required unless --check is used")
+    level = load_policy()[args.level]
 
     errors: list[str] = []
     results: dict[str, object] = {}
@@ -155,22 +252,23 @@ def main() -> int:
     else:
         head_result = run(["git", "rev-parse", "HEAD"])
         head = head_result.stdout.strip()
-        repo_result = run(["gh", "repo", "view", "--json", "nameWithOwner", "--jq", ".nameWithOwner"])
+        repo_result = run(
+            ["gh", "repo", "view", "--json", "nameWithOwner", "--jq", ".nameWithOwner"]
+        )
         repo = repo_result.stdout.strip()
         if head_result.returncode != 0 or not head:
             errors.append("cannot resolve current HEAD")
         if repo_result.returncode != 0 or not repo:
             errors.append(repo_result.stderr.strip() or "cannot resolve GitHub repository")
 
-    required_event: str | None = None
-    required_branch: str | None = None
+    version = (ROOT / "VERSION").read_text(encoding="utf-8").strip()
+    tag = f"v{version}"
+    required_event = "push" if args.require_tag_run else None
+    required_branch = tag if args.require_tag_run else None
     if args.require_tag_run:
-        version = (ROOT / "VERSION").read_text(encoding="utf-8").strip()
-        required_branch = f"v{version}"
-        required_event = "push"
-        tag_result = run(["git", "rev-list", "-n", "1", required_branch])
+        tag_result = run(["git", "rev-list", "-n", "1", tag])
         if tag_result.returncode != 0 or tag_result.stdout.strip() != head:
-            errors.append(f"tag {required_branch} must exist and point to current HEAD")
+            errors.append(f"tag {tag} must exist and point to current HEAD")
 
     if repo and head:
         for workflow in WORKFLOWS:
@@ -188,7 +286,7 @@ def main() -> int:
                     "--limit",
                     "20",
                     "--json",
-                    "databaseId,status,conclusion,headSha,headBranch,url,event,createdAt",
+                    "attempt,databaseId,status,conclusion,headSha,headBranch,url,event,createdAt,workflowName",
                 ]
             )
             if result.returncode != 0:
@@ -212,22 +310,137 @@ def main() -> int:
             selected_runs[workflow] = latest
             errors.extend(run_errors)
 
+    release_payload: dict[str, object] | None = None
+    release_assets_validation: dict[str, object] | None = None
+    release_manifest: dict[str, object] | None = None
+    native_validation: dict[str, object] | None = None
+    if args.require_release_assets:
+        if not repo:
+            errors.append("cannot verify GitHub Release without a repository")
+        else:
+            release_result = run(["gh", "api", f"repos/{repo}/releases/tags/{tag}"])
+            if release_result.returncode != 0:
+                errors.append(release_result.stderr.strip() or f"GitHub Release {tag} does not exist")
+            else:
+                try:
+                    release_payload = json.loads(release_result.stdout)
+                except json.JSONDecodeError as exc:
+                    errors.append(f"invalid GitHub Release payload: {exc}")
+                else:
+                    if release_payload.get("draft") is True or release_payload.get("prerelease") is True:
+                        errors.append(f"GitHub Release {tag} must be final and published")
+                    if release_payload.get("tag_name") != tag:
+                        errors.append(f"GitHub Release tag must be {tag}")
+                    expected_assets = set(level.assets(version))
+                    observed_assets = {
+                        item.get("name")
+                        for item in release_payload.get("assets", [])
+                        if isinstance(item, dict)
+                    }
+                    if observed_assets != expected_assets:
+                        errors.append(
+                            "GitHub Release asset set mismatch: "
+                            f"expected={sorted(expected_assets)} observed={sorted(observed_assets)}"
+                        )
+                    else:
+                        with tempfile.TemporaryDirectory(
+                            prefix="design-craft-release-download-"
+                        ) as raw:
+                            download = run(
+                                [
+                                    "gh",
+                                    "release",
+                                    "download",
+                                    tag,
+                                    "--repo",
+                                    repo,
+                                    "--dir",
+                                    raw,
+                                    *[
+                                        argument
+                                        for name in level.assets(version)
+                                        for argument in ("--pattern", name)
+                                    ],
+                                ]
+                            )
+                            if download.returncode != 0:
+                                errors.append(download.stderr.strip() or "cannot download release assets")
+                            else:
+                                release_assets_validation = validate_assets(
+                                    Path(raw), level=level
+                                )
+                                errors.extend(release_assets_validation.get("errors", []))
+                                manifest_path = Path(raw) / level.assets(version)[2]
+                                try:
+                                    release_manifest = json.loads(
+                                        manifest_path.read_text(encoding="utf-8")
+                                    )
+                                except (OSError, json.JSONDecodeError) as exc:
+                                    errors.append(f"cannot read downloaded release manifest: {exc}")
+                                if level.name == "certified_100":
+                                    native_validation = validate_native_bundle(
+                                        Path(raw),
+                                        verify_remote_run=True,
+                                        require_current_source=True,
+                                    )
+                                    errors.extend(native_validation.get("errors", []))
+
+    if args.require_release_assets and isinstance(release_manifest, dict):
+        errors.extend(
+            validate_release_native_bindings(
+                release_manifest,
+                required_native=level.required_native,
+                expected_run=(
+                    selected_runs.get("native-runtime.yml")
+                    if isinstance(selected_runs.get("native-runtime.yml"), dict)
+                    else None
+                ),
+                expected_repository=repo,
+            )
+        )
+
+    if level.name == "certified_100" and args.require_release_assets:
+        selected_native = selected_runs.get("native-runtime.yml")
+        manifest_runs = (
+            native_validation.get("github_runs")
+            if isinstance(native_validation, dict)
+            else None
+        )
+        manifest_run = (
+            manifest_runs.get("native") if isinstance(manifest_runs, dict) else None
+        )
+        if not isinstance(manifest_run, dict) or not isinstance(selected_native, dict):
+            errors.append("certified native bundle cannot be bound to the selected tag run")
+        else:
+            errors.extend(
+                validate_run(
+                    manifest_run,
+                    kind="native",
+                    expected_run=selected_native,
+                )
+            )
+
     payload = {
         "schema": SCHEMA,
         "root": str(ROOT),
+        "release_level": level.name,
         "repository": repo,
         "head": head,
         "required_event": required_event,
         "required_branch": required_branch,
         "workflows": results,
         "selected_runs": selected_runs,
+        "release": release_payload,
+        "release_assets_validation": release_assets_validation,
+        "release_manifest": release_manifest,
+        "native_bundle_validation": native_validation,
         "ok": not errors,
         "errors": errors,
     }
     if args.json:
         print(json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True))
     elif payload["ok"]:
-        print("GitHub release checks verified")
+        print(f"GitHub release checks verified: {level.name}")
     else:
         print("\n".join(errors), file=sys.stderr)
     return 0 if payload["ok"] else 2

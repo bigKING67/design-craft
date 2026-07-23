@@ -1,0 +1,22 @@
+{
+  "schema": "design-craft.cross-agent-status.v1",
+  "task_id": "same-prompt-motion-review",
+  "hosts": {
+    "codex": {
+      "status": "pending",
+      "reason": "Recapture v4 evidence from the final clean release-candidate commit."
+    },
+    "pi": {
+      "status": "pending",
+      "reason": "Recapture v4 evidence from the final clean release-candidate commit."
+    },
+    "cursor": {
+      "status": "unverified",
+      "reason": "No current-source v4 Cursor run is admitted for this release candidate."
+    },
+    "claude": {
+      "status": "unverified",
+      "reason": "No current-source v4 Claude run is admitted for this release candidate."
+    }
+  }
+}

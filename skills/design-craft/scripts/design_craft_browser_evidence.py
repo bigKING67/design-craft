@@ -100,7 +100,6 @@ SECRET_PATTERNS = [
 SHA256_PATTERN = re.compile(r"^[a-f0-9]{64}$")
 ALLOWED_EVIDENCE_SCHEMAS = {
     "design-craft.browser-evidence.v1",
-    "frontend-craft.browser-evidence.v1",
 }
 
 

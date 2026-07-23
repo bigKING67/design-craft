@@ -30,23 +30,55 @@ def action_pin_errors(workflow: Path, text: str) -> list[str]:
     return errors
 
 
+def workflow_job_block(text: str, job_name: str) -> str:
+    start_match = re.search(rf"(?m)^  {re.escape(job_name)}:\s*$", text)
+    if start_match is None:
+        return ""
+    next_match = re.search(
+        r"(?m)^  [A-Za-z0-9_-]+:\s*$",
+        text[start_match.end() :],
+    )
+    if next_match is None:
+        return text[start_match.start() :]
+    end = start_match.end() + next_match.start()
+    return text[start_match.start() : end]
+
+
 def validate() -> dict:
     errors: list[str] = []
     native_workflow_path = ROOT / ".github/workflows/native-runtime.yml"
     validate_workflow_path = ROOT / ".github/workflows/validate.yml"
+    benchmark_workflow_path = ROOT / ".github/workflows/benchmark.yml"
+    codeql_workflow_path = ROOT / ".github/workflows/codeql.yml"
+    release_workflow_path = ROOT / ".github/workflows/release.yml"
+    physical_workflow_path = ROOT / ".github/workflows/physical-device.yml"
     dependabot_path = ROOT / ".github/dependabot.yml"
     ios_runner_path = ROOT / "scripts/native_runtime_ci_ios.sh"
     android_runner_path = ROOT / "scripts/native_runtime_ci_android.sh"
     android_common_path = ROOT / "scripts/native_runtime_android_common.sh"
+    portable_validator_path = ROOT / "scripts/validate.sh"
+    lint_validator_path = ROOT / "scripts/design_craft_lint.py"
+    maturity_validator_path = ROOT / "tools/design_craft/validation/maturity/process_runner.py"
+    maturity_entrypoint_path = ROOT / "scripts/design_craft_maturity.py"
+    git_attributes_path = ROOT / ".gitattributes"
     ios_fixture_path = ROOT / "evals/native-runtime/fixtures/ios/App.swift"
 
     required_paths = (
         native_workflow_path,
         validate_workflow_path,
+        benchmark_workflow_path,
+        codeql_workflow_path,
+        release_workflow_path,
+        physical_workflow_path,
         dependabot_path,
         ios_runner_path,
         android_runner_path,
         android_common_path,
+        portable_validator_path,
+        lint_validator_path,
+        maturity_validator_path,
+        maturity_entrypoint_path,
+        git_attributes_path,
         ios_fixture_path,
     )
     for path in required_paths:
@@ -57,10 +89,18 @@ def validate() -> dict:
 
     native_workflow = native_workflow_path.read_text(encoding="utf-8")
     validate_workflow = validate_workflow_path.read_text(encoding="utf-8")
+    benchmark_workflow = benchmark_workflow_path.read_text(encoding="utf-8")
+    codeql_workflow = codeql_workflow_path.read_text(encoding="utf-8")
+    release_workflow = release_workflow_path.read_text(encoding="utf-8")
+    physical_workflow = physical_workflow_path.read_text(encoding="utf-8")
     dependabot = dependabot_path.read_text(encoding="utf-8")
     ios_runner = ios_runner_path.read_text(encoding="utf-8")
     android_runner = android_runner_path.read_text(encoding="utf-8")
     android_common = android_common_path.read_text(encoding="utf-8")
+    portable_validator = portable_validator_path.read_text(encoding="utf-8")
+    lint_validator = lint_validator_path.read_text(encoding="utf-8")
+    maturity_validator = maturity_validator_path.read_text(encoding="utf-8")
+    git_attributes = git_attributes_path.read_text(encoding="utf-8")
     ios_fixture = ios_fixture_path.read_text(encoding="utf-8")
 
     errors.extend(
@@ -72,6 +112,8 @@ def validate() -> dict:
                 "native_runtime_ci_android.sh",
                 "Enable KVM access",
                 "-no-metrics",
+                "concurrency:",
+                "cancel-in-progress: false",
             ),
             ".github/workflows/native-runtime.yml",
         )
@@ -79,10 +121,156 @@ def validate() -> dict:
     errors.extend(
         require_tokens(
             validate_workflow,
-            ("DESIGN_CRAFT_NATIVE_BUILD_ONLY", "android-fixture-build", 'tags: ["v*"]'),
+            (
+                "DESIGN_CRAFT_NATIVE_BUILD_ONLY",
+                "android-fixture-build",
+                'tags: ["v*"]',
+                "concurrency:",
+                "cancel-in-progress: true",
+                "name: lint",
+                "name: contract-tests",
+                "make lint",
+                "make contract-tests",
+                "--profile development",
+            ),
             ".github/workflows/validate.yml",
         )
     )
+    errors.extend(
+        require_tokens(
+            benchmark_workflow,
+            (
+                "schedule:",
+                "workflow_dispatch:",
+                "github.event_name == 'push' || github.event_name == 'pull_request'",
+                "github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'",
+                "ubuntu-24.04",
+                "--scale smoke",
+                "--scale full",
+                "benchmark-result-smoke.json",
+                "benchmark-result-full.json",
+                "actions/upload-artifact@",
+                "retention-days: 30",
+                "retention-days: 90",
+                "concurrency:",
+                "cancel-in-progress: true",
+            ),
+            ".github/workflows/benchmark.yml",
+        )
+    )
+    if benchmark_workflow.count("timeout-minutes:") != 2:
+        errors.append(
+            ".github/workflows/benchmark.yml must set a timeout on both benchmark jobs"
+        )
+    for job_name in ("smoke", "full"):
+        block = workflow_job_block(benchmark_workflow, job_name)
+        if "submodules: recursive" not in block or "fetch-depth: 0" not in block:
+            errors.append(
+                f".github/workflows/benchmark.yml {job_name} must fetch recursive submodules and full history"
+            )
+    errors.extend(
+        require_tokens(
+            codeql_workflow,
+            (
+                "schedule:",
+                "security-events: write",
+                "contents: read",
+                "timeout-minutes:",
+                "matrix:",
+                "python",
+                "javascript-typescript",
+                "github/codeql-action/init@",
+                "github/codeql-action/analyze@",
+                "concurrency:",
+                "cancel-in-progress: true",
+            ),
+            ".github/workflows/codeql.yml",
+        )
+    )
+    if codeql_workflow.count("timeout-minutes:") != 1:
+        errors.append(".github/workflows/codeql.yml must set a timeout on its analysis job")
+    errors.extend(
+        require_tokens(
+            release_workflow,
+            (
+                "workflow_dispatch:",
+                "operational_95",
+                "certified_100",
+                "contents: write",
+                "id-token: write",
+                "attestations: write",
+                "release verify",
+                "--phase final",
+                "--require-tag-run",
+                "actions: read",
+                "release run-observation",
+                "--kind native",
+                "--kind physical",
+                "release evidence-bindings",
+                "--native-observation",
+                "--physical-observation",
+                "release-assets-build-operational",
+                "release-assets-build-certified",
+                "actions/attest-build-provenance@",
+                "gh release create",
+                "GitHub Release ${RELEASE_TAG} already exists",
+                "Configure isolated release paths",
+                "GITHUB_ENV",
+                "RUNNER_TEMP",
+            ),
+            ".github/workflows/release.yml",
+        )
+    )
+    if "npm publish" in release_workflow:
+        errors.append(".github/workflows/release.yml must not publish to the npm registry")
+    release_job = workflow_job_block(release_workflow, "release")
+    if release_job.count("permissions:") != 1:
+        errors.append(".github/workflows/release.yml must scope write permissions to the release job")
+    release_job_header = release_job.split("    steps:", 1)[0]
+    if "${{ runner." in release_job_header:
+        errors.append(
+            ".github/workflows/release.yml must not use the runner context before steps"
+        )
+    errors.extend(
+        require_tokens(
+            physical_workflow,
+            (
+                "workflow_dispatch:",
+                "runs-on: [self-hosted, linux, android-physical-device]",
+                "if: github.ref == 'refs/heads/main'",
+                "environment: physical-device",
+                "capture-physical-device",
+                "native_runtime_device_android.sh",
+                "native-runtime-physical-${{ github.run_id }}",
+                "retention-days: 90",
+            ),
+            ".github/workflows/physical-device.yml",
+        )
+    )
+    if validate_workflow.count("timeout-minutes:") != 5:
+        errors.append(".github/workflows/validate.yml must set a timeout on all five jobs")
+    for job_name in ("portable", "windows-portable"):
+        block = workflow_job_block(validate_workflow, job_name)
+        if "submodules: recursive" not in block or "fetch-depth: 0" not in block:
+            errors.append(
+                f".github/workflows/validate.yml {job_name} must fetch recursive submodules and full history"
+            )
+    windows_block = workflow_job_block(validate_workflow, "windows-portable")
+    for token in (
+        "shell: bash",
+        "git config --global core.autocrlf false",
+        "git config --global core.eol lf",
+        "DESIGN_CRAFT_BASH=",
+        "GITHUB_ENV",
+    ):
+        if token not in windows_block:
+            errors.append(
+                f".github/workflows/validate.yml windows-portable missing {token}"
+            )
+    if native_workflow.count("timeout-minutes:") != 2:
+        errors.append(
+            ".github/workflows/native-runtime.yml must set a timeout on both jobs"
+        )
     errors.extend(
         require_tokens(
             ios_runner,
@@ -95,6 +283,14 @@ def validate() -> dict:
                 "before_screenshot=",
                 "interaction_marker=",
                 "launch_log=",
+                "simulator-selection.txt",
+                "runtime-events.txt",
+                "open-confirmation.png",
+                'tap --label "Open"',
+                "confirmation_tap_point",
+                "coordinate-tap.log",
+                "url-received:designcraft-evidence:",
+                "26a64009c09a3ae980b1f1b4b377bd2a2dd96cbbde24821935e47352cb71cc69",
             ),
             "scripts/native_runtime_ci_ios.sh",
         )
@@ -103,6 +299,63 @@ def validate() -> dict:
         errors.append("iOS certification must not use a test-only --confirm-runtime path")
     if "DESIGN_CRAFT_RUNTIME_URL_RECEIVED" not in ios_fixture:
         errors.append("iOS fixture must log receipt of the real runtime URL")
+    if "createDirectory" not in ios_fixture or "runtime-events.txt" not in ios_fixture:
+        errors.append("iOS fixture must preserve observable URL and marker-write diagnostics")
+
+    errors.extend(
+        require_tokens(
+            portable_validator,
+            (
+                'cygpath -w "${BASH}"',
+                "export DESIGN_CRAFT_BASH",
+                "tools.design_craft.validation.repository_contracts",
+                "tools.design_craft.validation.tooling_contracts",
+                "python3 -m unittest discover",
+                "--profile development",
+            ),
+            "scripts/validate.sh",
+        )
+    )
+    if re.search(
+        r"design_craft_maturity\.py\s+--profile\s+development[^\n]*>/dev/null",
+        portable_validator,
+    ):
+        errors.append(
+            "scripts/validate.sh must preserve development maturity failure diagnostics"
+        )
+    errors.extend(
+        require_tokens(
+            lint_validator,
+            (
+                'os.environ.get("DESIGN_CRAFT_BASH")',
+                'normalized.endswith("/windows/system32/bash.exe")',
+                "[executable, *command[1:], str(path)]",
+            ),
+            "scripts/design_craft_lint.py",
+        )
+    )
+    errors.extend(
+        require_tokens(
+            maturity_validator,
+            (
+                'os.environ.get("DESIGN_CRAFT_BASH")',
+                'normalized.endswith("/windows/system32/bash.exe")',
+                "resolved[0] = executable",
+            ),
+            "tools/design_craft/validation/maturity/process_runner.py",
+        )
+    )
+    errors.extend(
+        require_tokens(
+            git_attributes,
+            (
+                "* text=auto eol=lf",
+                "evals/comparative/*/blind-packet.md whitespace=-blank-at-eol",
+                "evals/comparative/*/output.*.md whitespace=-blank-at-eol",
+            ),
+            ".gitattributes",
+        )
+    )
 
     errors.extend(
         require_tokens(
@@ -153,6 +406,9 @@ def validate() -> dict:
         plist = plistlib.loads((ROOT / "evals/native-runtime/fixtures/ios/Info.plist").read_bytes())
         if plist.get("CFBundleIdentifier") != "dev.designcraft.runtime-evidence":
             errors.append("iOS fixture bundle identifier is invalid")
+        url_types = plist.get("CFBundleURLTypes", [])
+        if not url_types or url_types[0].get("CFBundleTypeRole") != "Viewer":
+            errors.append("iOS fixture URL type must declare the Viewer role")
         scene_manifest = plist.get("UIApplicationSceneManifest", {})
         scene_configs = scene_manifest.get("UISceneConfigurations", {})
         if scene_manifest.get("UIApplicationSupportsMultipleScenes") is not False:
@@ -183,6 +439,21 @@ def self_check() -> list[str]:
         errors.append("workflow validator did not reject an unpinned action")
     if action_pin_errors(fake, "- uses: actions/checkout@" + "a" * 40):
         errors.append("workflow validator rejected a full-SHA action pin")
+    fixture = (
+        "jobs:\n"
+        "  portable:\n"
+        "    steps:\n"
+        "      - with:\n"
+        "          fetch-depth: 0\n"
+        "  windows-portable:\n"
+        "    steps: []\n"
+    )
+    portable = workflow_job_block(fixture, "portable")
+    windows = workflow_job_block(fixture, "windows-portable")
+    if "fetch-depth: 0" not in portable or "windows-portable" in portable:
+        errors.append("workflow job-block parser did not isolate the portable job")
+    if "steps: []" not in windows:
+        errors.append("workflow job-block parser did not isolate the final job")
     return errors
 
 

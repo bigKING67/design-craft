@@ -28,22 +28,33 @@ This document is the local release and maintenance checklist for
   routing.
 - Keep helper scripts deterministic and cheap enough to run before real
   UI/UX/design/frontend work.
-- Keep OS support explicit: repository automation is verified on macOS/Linux;
-  Windows requires WSL or a compatible Git Bash environment and remains
-  unverified without a native Windows CI lane.
-- Keep the deterministic release gate independent of mutable upstream remote
-  heads. Remote freshness is a separate release-readiness and scheduled audit.
+- Keep the product route Web-first: ordinary desktop/browser work defaults to
+  `platform=web`. Load iOS, Android, and adaptive references only when source or
+  product evidence establishes a native target. Mobile Web and WebView shells
+  must not turn native runtime or device evidence into a daily Web blocker.
+- Keep OS support explicit: repository automation is verified on macOS/Linux,
+  and the current-source Windows Git Bash portability lane has succeeded. This
+  does not claim a native Windows UI runtime; WSL is a fallback, not separate
+  product proof.
+- Keep the deterministic source gate independent of mutable upstream remote
+  heads. Remote freshness belongs to explicit release-level readiness and the
+  scheduled audit.
 - Keep GitHub Actions pinned to full reviewed SHAs. Dependabot may propose
   GitHub Actions or npm metadata updates, but those changes still require the
   normal validation and review gates.
 - Keep package, public-repository, and workflow/native contract checks in their
   dedicated validators rather than expanding the monolithic validation shell.
-- Keep 95/100 operational readiness distinct from certified 100/100. The latter
-  requires current-source v2 four-host and native runtime evidence and must not
-  be inferred from legacy artifacts or workflow definitions.
-- Keep certification prepublish checks non-mutating. Verify installation in a
-  temporary skill root first; update the live `~/.agents/skills` copy only
-  after all 100-point gates pass.
+- Keep `operational_95` distinct from `certified_100`. These are evidence-level
+  names, not composite product-quality scores. Certified requires current-source
+  score v4 for all four hosts plus Simulator, Emulator, and physical-device
+  evidence v3; never infer them from history or workflow definitions.
+- Keep source validation non-mutating. Local installation is a separate explicit
+  `publish-local` step; installer behavior and rollback are verified in isolated
+  temporary roots before any release target relies on installed provenance.
+- Keep the repository as canonical source and `~/.agents/skills/design-craft`
+  as an atomic installed copy. Do not replace this with a live symlink or
+  background hot sync; use detect -> review/pin -> clean commit -> gates ->
+  install, and use `sync-status` only to detect drift.
 - Keep agent-specific install behavior in `adapters/` and scripts. Do not fork
   the canonical `skills/design-craft/` content per agent.
 - Keep the Codex frontend route layer portable through the route-pack manifest
@@ -68,12 +79,12 @@ make validate-portable
 ```
 
 It expands to portable checks only: required files, package/version
-consistency, npm pack size/path hygiene, shell syntax, Python compile,
-bundled-runtime independence,
-platform fixtures, observed benchmark artifacts, L4 validators, static
-scanners, 100/100 source completeness, and 95/100 portable maturity. It does
-not depend on local Codex state, installed-skill parity, native SDKs, or remote
-upstream freshness.
+consistency, npm pack size/path hygiene, dependency-free Python/shell/JSON/Node
+lint, isolated runner/comparative/native/release contract self-checks,
+bundled-runtime independence, platform fixtures, L4 validators, static scanners,
+100/100 source-contract completeness, and pass/fail development maturity. It
+does not depend on current host/native observations, local Codex state,
+installed-skill parity, native SDKs, or remote upstream freshness.
 
 Expected result:
 
@@ -83,7 +94,8 @@ Expected result:
 - Static smell scanners and the aggregate static review packet run against
   fixture targets.
 - Cross-agent task definitions validate.
-- Observed dashboard, motion, and native-adaptive Codex/Pi artifacts validate.
+- Cross-agent active definitions and separately archived history validate;
+  current Codex/Pi observations remain release-only evidence.
 - iOS, Android, and adaptive valid/invalid source fixtures separate correctly.
 - Portable route/detector degraded paths are explicit, and copied installed-skill
   L4 helpers run without the source repo.
@@ -92,54 +104,36 @@ Expected result:
 - `npm pack --dry-run` remains within 1 MB compressed, 2 MB unpacked, and 100
   files, contains the canonical skill and required legal metadata, and excludes
   repository-only paths and user-home strings.
-- Source completeness is 100; portable maturity is 95 with the native-runtime
-  and four-host certification caps stated rather than hidden.
+- Source completeness is 100 as an internal contract metric. Development
+  maturity is pass/fail and does not emit a partial product-quality score.
 - CI covers Python 3.11, 3.12, and 3.13 across Ubuntu/macOS and Node 22/24.
 - Native runtime CI definitions and minimal fixtures validate structurally, but
   only a completed workflow run and reviewed artifact JSON count as observed
   Simulator/Emulator evidence.
 
-## Local release gate
+## Development and release gates
 
-Run this before a version bump, initial commit, or route-policy change:
-
-```bash
-make release-gate-local
-```
-
-`make release-gate` remains a compatibility alias for the local full gate. It
-does not query mutable upstream remote heads.
-
-It expands to:
+Run the deterministic source gate before a version bump, commit, or route-policy
+change. Publish locally only when installed parity is part of the task:
 
 ```bash
-bash scripts/validate.sh --portable
-python3 scripts/design_craft_package_validate.py --check --validate
-python3 scripts/design_craft_public_repo_validate.py --check --validate
-python3 "$SKILL_CREATOR_QUICK_VALIDATE" skills/design-craft
-python3 "$SKILL_CREATOR_QUICK_VALIDATE" skills/frontend-craft
-python3 scripts/design_craft_score.py --self
-python3 scripts/design_craft_maturity.py --profile portable --min-score 95
-bash scripts/design_craft_pass.sh --target . --mode audit --skip-route
-bash scripts/design_craft_audit.sh --target . --mode audit --skip-route
-bash scripts/design_craft_audit.sh --target . --mode critique --skip-route
-bash scripts/design_craft_pass.sh --target skills/design-craft --mode motion --skip-route --skip-score
-bash scripts/design_craft_taste_review.sh --target skills/design-craft --context "release smoke" --evidence-level L0
-tmp_dir="$(mktemp -d -t design-craft-seed-dry-run.XXXXXX)" && trap 'rm -rf "${tmp_dir}"' EXIT && bash scripts/design_craft_seed_design.sh --target "${tmp_dir}" --dry-run
-make route-smoke
-bash scripts/design_craft_doctor.sh --target . --json
-make platform-scan-check
-python3 scripts/design_craft_codex_route_pack.py --strict
-make init-dry-run
-make historical-l4-metadata-check
-make cross-agent-observed-check
-make smell-smoke
-python3 scripts/upstream_absorption_report.py
-bash scripts/install_local.sh
-python3 scripts/design_craft_install_verify.py --source skills/design-craft --installed "${DESIGN_CRAFT_SKILL_ROOT:-$HOME/.agents/skills}/design-craft" --expected-name design-craft --expected-version "$(cat VERSION)" --require-metadata
-python3 scripts/design_craft_maturity.py --profile local --min-score 95
-bash scripts/install_local.sh --dry-run --include-legacy-alias
+make release-gate-source
+make publish-local
 ```
+
+`Makefile` is the executable authority for `release-gate-source`; do not copy
+its growing dependency list back into this document. It currently includes
+portable validation, lint, contract tests, package/public/workflow checks,
+source scoring, route/platform checks, native archive/bundle unit tests,
+comparative and cross-agent definition validation, L4/static scans, upstream
+lock checks, governance contract checks, and candidate release metadata checks. Active-install parity
+is intentionally checked only after the atomic installer runs, avoiding a
+stale-install circular dependency.
+
+Immutable v2/v3 cross-agent and v0.4 comparative archives are validated by the
+separate `make history-audit` target. This audit remains strict, but frozen
+schema/Markdown compatibility cannot satisfy or block current-source product
+and release gates.
 
 Expected result:
 
@@ -163,42 +157,40 @@ Expected result:
   generic Agent Skills-compatible installs without writing files.
 - Doctor output runs without mutating files and reports required optional
   capabilities truthfully.
-- Codex route-pack audit confirms the local frontend route planner, frontend
-  rule, preflight contract, and route tests are present and hashable.
-- Vercel Geist seed helper smoke passes and preserves template byte parity.
+- The isolated Codex route-pack self-check proves manifest, export, missing-file,
+  and symlink boundaries without reading operator `~/.codex` state. The strict
+  host route-pack audit remains a separate operational command.
+- Original developer-product seed helper smoke passes and preserves template byte parity.
 - Route smoke passes against a temporary fixture project with its own
   `DESIGN.md`, preserving the contract that product targets provide their own
   design authority.
-- Historical real-project L4 metadata validates in the normal local full gate;
-  current public examples stay project-neutral. Certified 100/100 additionally
-  runs `make real-l4-check`, which requires every referenced screenshot file to
-  exist on the certification machine.
+- Historical real-project L4 metadata validates in the normal local full gate.
+  Certified evidence runs `make real-l4-check` against committed,
+  project-neutral screenshots, so the existing-file proof is reproducible on a
+  fresh checkout.
 - Observed cross-agent evidence validates for the hosts that actually ran the
   same benchmark prompt. Uncollected hosts must remain explicitly unverified.
-- Local maturity reports 95/100. Current-source iOS Simulator and Android
-  Emulator artifacts are observed and validated; physical-device evidence
-  remains missing. The maturity JSON reports these three statuses separately
-  while the aggregate certification gate stays capped at 95 until all pass.
-- Desktop maturity reports 100/100 for the installed computer-based frontend
-  workflow. It excludes optional four-host and physical-device certification
-  from the daily-development score without weakening `release-certify`.
+- Development maturity reports only whether every development contract passed.
+  Older iOS Simulator and Android Emulator v2 artifacts remain under native
+  history and cannot satisfy current release gates.
 - Upstream absorption report runs without fetching or modifying submodules; the
   optional `--remote` check reports remote drift with `git ls-remote`.
 - Upstream lock commits match checked-out submodule commits.
+- Taste, Impeccable, and Emil absorption matrices validate their complete
+  entrypoint inventories, local coverage, cumulative state, latest reviewed
+  range, and intentional rejection boundaries.
 - Installed canonical skill matches the source and carries valid version,
   source commit, dirty-state, exact tree digest, install-time, and source-repo
   provenance.
 - The installer uses staging, an install lock, atomic replacement, rollback,
-  and bounded backup retention. The `frontend-craft` alias is not created by
-  default, but an existing alias is refreshed and verified.
+  and bounded backup retention. It removes the retired alias only when its
+  metadata, installed digest, historical source commit, and repository
+  identity all match; unmanaged paths fail closed.
 - Use `INSTALL_ARGS=--no-prune-backups` when a maintenance run must preserve
   every historical backup; default installs retain the newest ten per skill.
 
-Run the mutable remote check only for release readiness or upstream review:
-
-```bash
-make release-readiness
-```
+Mutable remote review is part of `release-readiness-operational` and
+`release-readiness-certified`, not the deterministic source gate.
 
 Check whether the canonical skill copy or separate Codex route-pack has drifted:
 
@@ -207,28 +199,38 @@ make sync-status
 make sync-status-remote
 ```
 
-For a release that claims certified 100/100, run:
+Operational release readiness requires a committed matching-runner benchmark
+baseline, Codex/Pi current-source score v4, current comparative evaluation,
+current iOS Simulator and Android Emulator evidence v3, clean worktree,
+installed provenance, and live upstream review. Cursor, Claude, and
+physical-device status remain explicitly unverified.
+
+Certified readiness strictly extends Operational with Cursor, Claude, and a
+current physical-device artifact. Candidate and final evidence are separate;
+only final evidence may build assets. Final verification additionally requires
+main, annotated local/live tag parity, successful exact-HEAD tag-push workflows,
+and the live branch/tag rulesets. Use the explicit targets:
 
 ```bash
-make release-certify
+make release-readiness-operational BENCHMARK_BASELINE=<path>
+make release-tag-verify-operational BENCHMARK_BASELINE=<path>
+make release-assets-build-operational \
+  NATIVE_RUN_OBSERVATION=/tmp/native-run.json
+make release-final-verify-operational BENCHMARK_BASELINE=<path>
+
+make release-readiness-certified BENCHMARK_BASELINE=<path>
+make release-tag-verify-certified BENCHMARK_BASELINE=<path>
+NATIVE_RUN_OBSERVATION=/tmp/native-run.json \
+PHYSICAL_RUN_OBSERVATION=/tmp/physical-run.json \
+make release-assets-build-certified
+make release-final-verify-certified BENCHMARK_BASELINE=<path>
 ```
 
-The wrapper acquires a single-writer release lock, runs
-`release-certify-prepublish`, rechecks the fixed HEAD and clean worktree, then
-runs `release-certify-publish`. The prepublish phase uses
-`scripts/design_craft_certification_install_check.sh` to verify install parity
-and local maturity in a temporary root; it does not mutate the live install.
-
-This additionally requires all four current-source v2 cross-agent runs,
-current-source iOS Simulator, Android Emulator, and physical-device evidence,
-a dated release section, clean worktree, maturity 100/100, and exact installed
-provenance. After the normal push and `v<VERSION>` tag, run
-`make release-tag-verify` to require tag/HEAD/upstream parity plus successful
-GitHub `Validate` and `Native runtime evidence` runs for that exact HEAD.
-Both certification entrypoints use a repository-local single-writer lock and
-verify that HEAD and the clean-worktree invariant remain unchanged throughout
-the run. Tag verification accepts only the latest tag-push run for each
-required workflow.
+The manual Release workflow publishes exactly four Operational assets or seven
+Certified assets, produces SPDX and provenance attestations, never publishes to
+npm, and refuses to replace an existing version's assets. A later Certified
+claim therefore requires a new version rather than mutating an Operational
+release in place.
 
 ## Upstream sync procedure
 
@@ -245,17 +247,34 @@ required workflow.
    python3 scripts/upstream_absorption_report.py --remote-details --fail-on-unreviewed
    ```
 
-3. Sync exactly one upstream only after choosing the reviewed commit:
+3. Sync exactly one upstream only when the reviewed range contains source that
+   must become the pinned compatibility snapshot:
 
    ```bash
    bash scripts/sync_upstreams.sh \
      --name <taste-skill|impeccable|emilkowalski-skills> \
-     --commit <40-character-sha>
+     --commit <pinned-40-character-sha>
    ```
 
    The helper updates only the compatibility `commit` field. Set
-   `reviewed_commit`, `absorbed_commit`, `reviewed_at`, `decision`, and
-   `notes` manually after the absorption review.
+   `cumulative_status`, `reviewed_through_commit`,
+   `behavior_absorbed_through_commit`, `latest_range_base_commit`,
+   `latest_range_head_commit`, `latest_range_status`, `reviewed_at`, `notes`,
+   and the compatibility aliases `reviewed_commit`, `absorbed_commit`, and
+   `decision` manually after the absorption review.
+
+   Lock schema v3 separates four truths:
+
+   - `commit`: pinned compatibility source checked out by the submodule;
+   - `reviewed_through_commit`: latest remote head actually reviewed;
+   - `behavior_absorbed_through_commit`: newest upstream behavior boundary
+     represented by the selective local fusion;
+   - `latest_range_base_commit..latest_range_head_commit`: exact newly reviewed
+     range and its explicit decision.
+
+   Do not advance the submodule merely to silence remote drift. A reviewed
+   remote head can remain ahead when its changes are provenance-only, already
+   represented, or intentionally rejected.
 
 4. Generate a local absorption report:
 
@@ -268,6 +287,19 @@ required workflow.
    `repository_operations_only` means upstream CI or repository automation,
    and `manual_review` requires human judgment before changing the fusion layer.
 
+   Validate all three complete inventories, local capability mappings, and
+   intentional rejection boundaries separately:
+
+   ```bash
+   make upstream-absorption-check
+   ```
+
+   The contracts fail if a taste Skill, Impeccable command/runtime boundary,
+   Emil Skill, auxiliary file, or implementation surface appears without an
+   explicit inventory decision. Update the matching matrix under `docs/`, the
+   fusion references, attribution, and `upstreams.lock.json` together after
+   review.
+
 5. Review upstream licenses and attribution if upstream content changed:
 
    ```bash
@@ -276,11 +308,12 @@ required workflow.
 
 6. Update the fusion layer only under `skills/design-craft/`.
 
-7. Run the deterministic release gate, then release readiness:
+7. Run the deterministic source gate. Run the explicit release level only when
+   current evidence and a matching benchmark baseline are available:
 
    ```bash
-   make release-gate
-   make release-readiness
+   make release-gate-source
+   make release-readiness-operational BENCHMARK_BASELINE=<path>
    ```
 
 ## Version policy
@@ -291,23 +324,25 @@ required workflow.
 - Use `1.x` only after repeated live UI/UX/design/frontend tasks prove the
   workflow stable as the default Codex route baseline.
 
-## Live task evidence
+## Current task evidence
 
-Record task evidence under `evals/live-task-log.md` with:
+Do not append current status to a repository-level Markdown log. Store active
+evidence in the owning evaluation domain using its JSON schema and validator:
 
-- Date.
-- Target repo/path.
-- Route command.
-- Candidate skills and selected skills.
-- Style authority path.
-- Validation commands.
-- Browser validation status.
-- Screenshot validation artifact path/hash/dimensions when route output requires
-  screenshot evidence, or the skipped reason.
-- What the run taught the workflow.
+- comparative results under `evals/comparative/`;
+- host observations under `evals/cross-agent/`;
+- native observations under `evals/native-runtime/`;
+- stable replay inputs under `evals/golden-tasks/` or `evals/fixtures/`.
+
+Machine evidence must identify the date, target, route and selected skills,
+style authority, actual validation commands, runtime status, and artifact
+hashes required by that domain. A Markdown view may be generated from the JSON
+contract, but it is not a second status source. Retired narrative logs live
+under `evals/history/` and cannot satisfy current release gates.
 
 Do not use evidence notes as a substitute for verification. If browser smoke,
-type-check, lint, build, or route validation did not run, say that explicitly.
+type-check, lint, build, or route validation did not run, record that explicitly
+in the machine status.
 
 ## Golden task evidence
 
@@ -339,21 +374,21 @@ cases. Each case should record:
   available evidence.
 - Browser evidence JSON, when captured, should use
   `design-craft.browser-evidence.v1` and pass
-  `scripts/design_craft_browser_evidence.py --validate-evidence-json`.
-  The validator still accepts the old `frontend-craft.browser-evidence.v1`
-  schema for historical artifacts. New captures should emit the canonical
-  schema; old TMWD run directory names may remain in evidence records when they
-  point to immutable historical artifacts.
+  `skills/design-craft/scripts/design_craft_browser_evidence.py --validate-evidence-json`.
+  Historical schemas are accepted only by history-specific validators. Old
+  TMWD run directory names may remain in immutable history records, but current
+  evidence must use the canonical schema.
 - L3 cases must include at least two responsive viewports plus state checks; a
   responsive layout that still preserves weak hierarchy should not inflate the
   score.
 
 Keep binary screenshots out of the repo unless the image itself is required for
-reproducibility and attribution is clear.
+reproducibility, is project-neutral, and has clear provenance.
 
-For live browser cases, keep the screenshot PNGs in the TMWD repo-external run
-directory and record only artifact path, SHA-256, dimensions, collection time,
-evidence level, and a redacted visual/DOM summary in the eval case.
+For live browser cases, capture first into the TMWD repo-external run directory.
+Commit only deliberately reviewed project-neutral images needed for durable
+certification; otherwise retain path, SHA-256, dimensions, collection time,
+evidence level, and a redacted visual/DOM summary.
 
 ## L4 before/after evidence
 
@@ -374,9 +409,11 @@ Active project-neutral completed cases:
 - `generic-review-workbench-local-l4`
 - `ops-dashboard-decision-surface-l4`
 
-Validate them with `scripts/design_craft_l4_case_validate.py --strict` before
-citing either as completed before/after evidence. Use `--require-existing-files`
-only on the machine that still has the repo-external PNG artifacts.
+Validate them with
+`skills/design-craft/scripts/design_craft_l4_case_validate.py --strict` before
+citing either as completed before/after evidence. The generic workbench case is
+the durable `--require-existing-files` release proof; the operations case may
+retain external capture provenance.
 
 ## Cross-agent benchmarks
 
@@ -384,11 +421,18 @@ Use `evals/cross-agent/` to compare how Codex, Cursor, Claude, Pi, or another
 Agent Skills-compatible client applies the same `design-craft` prompt.
 
 Do not claim cross-agent stability until real outputs are recorded. Template
-cases define prompts and scorecards only. Legacy v1 dashboard, gesture-motion,
-and native-adaptive cases have observed Codex/Pi artifacts; Cursor and Claude
-remain explicitly unverified. Certified 0.5.0 evidence must use v2 records that
-bind the current skill tree, prompt, scorecard, and exact output, with the score
-recomputed from criterion-earned points.
+cases define prompts and scorecards only. Legacy v2 dashboard, gesture-motion,
+and native-adaptive Codex/Pi artifacts are historical baseline evidence.
+Current evidence must use isolated run-manifest v2 plus score schema v4,
+binding the current Skill, prompt, `scorecard.json`, output, runner/adapter
+contract, host version, and worktree fingerprints. `evidence-status.json` is the
+active host-state truth source; `comparison.md` is generated from it and must
+remain byte-identical. Codex/Pi satisfy the desktop profile when current;
+Cursor/Claude remain independent optional release-certification hosts. Record
+blocked active runs as `pending` or `unverified` with a reason in JSON; explicit
+Markdown unverified notes are accepted only in immutable history.
+Host/model/command fields are derived from the controlled run, not trusted from
+manual recorder flags.
 
 ## Codex route-pack portability
 
@@ -416,7 +460,8 @@ After restoring to another Codex home, run the validation commands listed in
 `adapters/codex/route-pack/README.md`. Do not treat the manifest alone as proof
 that the restored route planner works. A strict audit must also pass routing
 JSON Schema validation, split authority/browser/delivery/runtime/telemetry
-module checks, a telemetry self-check, browser/runtime tool-parity probes, a
+module checks, telemetry self-checks, browser-lifecycle-receipt contract tests,
+browser/runtime tool-parity probes, a
 verified `gpt-5.6-sol/max` environment-runtime probe, and the unapproved GPT-5.6
 `ultra` runtime-conflict denial probe. Strict probes set
 `FRONTEND_ROUTE_TELEMETRY_LOG_ENABLED=0` and
@@ -435,7 +480,7 @@ Review production route latency and distributions separately:
 python3 ~/.codex/tools/frontend_route_telemetry.py \
   --include-rotated \
   --context prod \
-  --min-events 6 \
+  --min-events 50 \
   --max-p95-ms 1000 \
   --json
 ```
@@ -443,7 +488,57 @@ python3 ~/.codex/tools/frontend_route_telemetry.py \
 The default privacy-safe log rotates at 2 MB with seven retained files. Use a
 non-production context for fixtures and keep general route tests plus release
 route smoke telemetry-off; `test_frontend_route_telemetry.sh` owns telemetry
-behavior coverage.
+behavior coverage. New writes use `frontend-route.telemetry-event.v2`, which
+records `planned_execution_mode` and `actual_subagent_state` without the legacy
+`execution_mode` field. Summary v2 must continue reading mixed v1/v2 history in
+place, report source-schema counts, and never rewrite or delete legacy events.
+
+Route lifecycle contracts must also keep policy separate from runtime truth:
+`planned_browser_lifecycle` and legacy `browser_lifecycle` are plans, while the
+planner's `actual_browser_lifecycle_state.state` remains `not_started` or
+`not_applicable`. Only browser67 outcomes and a scoped `finalize_task` delivery
+summary can support a separate runtime created/adopted/released/closed receipt;
+the planner payload is not automatically updated after browser work. Use
+`frontend_route_browser_receipt.py` to bind a saved route digest to ordered
+`tmwd_browser/browser_tab_lifecycle` arguments and `browser67.tool-outcome.v3`
+results. Its `frontend-route.browser-lifecycle-receipt.v1` output keeps
+`receipt_valid` separate from `runtime_complete`, rejects dry-run or `scope=all`
+as completion evidence, and never copies URLs, titles, tab IDs, adoption tokens,
+or lease IDs.
+
+Keep scope normalization aligned with live browser67: `workspace_key` takes
+precedence and yields `scope=workspace`; a simultaneous `task_id` is an
+additional filter/correlation field. Task-only scope omits `workspace_key`.
+Normalize live camelCase `close_scope.workspaceKey/taskId` to canonical
+snake_case, and keep explicit-call/live-scope mismatches fail closed.
+
+Do not describe the receipt adapter as automatic host cleanup. The global
+Codex config registers a `PostToolUse` matcher only for the exact
+`mcp__tmwd_browser__browser_tab_lifecycle` tool. Capture is observational: it
+binds a privacy-safe route view to session/turn, sanitizes the completed call in
+memory, and atomically replaces one repo-external state file. It cannot dispatch
+`finalize_task` through the active Codex MCP client, so scoped finalization
+remains explicit. Never retain raw hook payloads or match every `tmwd_browser`
+tool. A frontend route-pack restore does not install or trust this Hook and does
+not schedule retention; follow the targeted host-integration procedure in
+`adapters/codex/route-pack/README.md` without exporting the complete
+`config.toml` or Hook trust state. Configuration alone is not live evidence
+until a new Codex session reviews/trusts the Hook and verifies a real lifecycle
+entry plus explicit scoped finalization.
+
+Capture status uses `frontend-route.browser-capture-status.v2`. Health counters
+are historical evidence only when `health_persisted=true` and
+`health_status=persisted`; zero defaults with uninitialized health are not proof
+of an error-free history. Retention removes incomplete state after 7 days and
+complete state after 30 days, caps retained incomplete states at 1,000, and caps
+complete receipts at 100. The wider global periodic runner may own that schedule
+on a full installation; a standalone route-pack restore must schedule `--prune`
+separately and verify the scheduler rather than inferring it from unit tests.
+
+The stable `test_frontend_preflight.sh` entry is a thin parallel orchestrator.
+Its isolated gate, route, observability, policy, and state/concurrency suites
+live under `tools/tests/frontend_preflight/`; keep those files in the route-pack
+manifest and snapshot inventory whenever the suite structure changes.
 
 ## Release checklist
 
@@ -451,40 +546,65 @@ Before committing a release:
 
 1. `git status --short`
 2. `make validate-portable`
-3. `make release-gate-local`
-4. `make release-readiness`
-5. Confirm source completeness 100/100 and portable/local maturity 95/100.
+3. `make lint && make contract-tests`
+4. `make release-gate-source`
+5. Confirm source completeness 100/100 is reported only as contract
+   completeness and `maturity-development` passes every required gate.
 6. Route smoke on the fixture (`make route-smoke`) or on at least one real
    project path with its own `DESIGN.md` when route behavior changed.
-7. Upstream absorption report reviewed when upstream commits or detector rules changed.
-8. Product UI taste calibration and completed L4 case validation still pass
+7. Review the upstream absorption report when upstream commits or detector rules changed.
+8. Confirm product UI taste calibration and completed L4 case validation still pass
    when taste scoring changed.
-9. Install parity/provenance check:
+9. Run the install parity/provenance check:
    `make install-verify`
    This checks the installed skill tree and skill-scoped dirty state. Separate
    `repo_dirty` provenance remains visible for audit, while the release
    certification gate independently requires the whole worktree to be clean.
    The recorded source commit must also contain the exact installed skill tree;
    ancestor status alone is not sufficient provenance.
-10. Legacy alias source check:
-   `grep -Fq 'renamed to \`design-craft\`' skills/frontend-craft/SKILL.md`
-11. Optional legacy install dry-run:
-   `bash scripts/install_local.sh --dry-run --include-legacy-alias`
-12. Confirm no repo docs were added inside `skills/design-craft/` except the
+10. Confirm the retired alias is absent from active source and run the
+    installer migration tests. See `docs/operations/v0.5-migration.md`.
+11. Confirm no repo docs were added inside `skills/design-craft/` except the
     machine-readable `VERSION` and `COMPATIBILITY.json` contracts.
-13. Record each maturity JSON status independently. Current evidence should say
-    `ios_simulator: observed_current_source`,
-    `android_emulator: observed_current_source`, and `real_device: missing`
-    until a current-source physical-device artifact is admitted.
-14. For a release claiming native runtime evidence, dispatch
-    `.github/workflows/native-runtime.yml`, download both artifacts, verify their
-    hashes and assertions, and then validate the admitted JSON with
-    `make native-runtime-check`.
+12. Generate a benchmark baseline only from a clean, scoped commit and run the
+    same scale at least twice before admitting
+    `benchmarks/baselines/v<VERSION>-<runner-id>.json`.
+13. Run the selected candidate gate with that exact baseline and a repo-external
+    current native evidence directory:
+    `make release-readiness-operational BENCHMARK_BASELINE=<path>` or
+    `make release-readiness-certified BENCHMARK_BASELINE=<path>`.
+14. Keep Cursor, Claude, and physical-device status explicitly unverified for
+    Operational. Certified must instead provide all three; no gate may infer
+    success from absence.
+15. Dispatch `.github/workflows/native-runtime.yml`, download the iOS and
+    Android artifacts into separate roots, and verify their hashes and
+    assertions with the current-source validator. Do not merge those roots
+    before building the Certified native bundle.
     Runtime identifiers must be hashed, and the decisive Android before/after
-    accessibility trees must be present in the JSON artifact-role set. Capture
-    a physical Android device with `scripts/native_runtime_device_android.sh`;
-    do not hand-author `real-device-observed.json`.
-15. For a release claiming certified 100/100, run `make release-certify`; do
-    not substitute the normal 95/100 release-readiness gate.
-16. Commit with a scoped message.
-17. After push/tag, run `make release-tag-verify`.
+    accessibility trees must be present in the JSON artifact-role set.
+16. For Certified only, capture a physical Android device locally or through
+    the environment-approved `.github/workflows/physical-device.yml`; never
+    hand-author `real-device-observed.json`.
+17. Commit and merge with scoped history. Date the changelog, create an
+    annotated tag, and wait for the exact tag-push Validate and Native workflows.
+18. Before downloading final artifacts, persist the selected Native tag-run
+    observation. Certified must also persist the explicitly approved physical
+    workflow observation. Both observations must be completed/successful,
+    current-HEAD, exact workflow/repository/run-attempt bindings; Native must be
+    the latest successful tag run and physical-device must be a `main`
+    `workflow_dispatch` run. Then run `release-tag-verify-operational` or
+    `release-tag-verify-certified` on main with the matching baseline. Candidate
+    evidence cannot build assets.
+19. Build and verify exactly four Operational assets or seven Certified assets.
+    Certified builds require `NATIVE_RUN_OBSERVATION`,
+    `PHYSICAL_RUN_OBSERVATION`, `NATIVE_IOS_SOURCE`, `NATIVE_ANDROID_SOURCE`,
+    and `NATIVE_REAL_DEVICE_ROOT`; the builder does not redownload artifacts.
+    The package digest must match the SPDX SBOM and manifest, and the outer
+    release manifest must match every inner native evidence digest, artifact
+    record, workflow binding, and selected run. Asset replacement is staged and
+    rolls back on publish failure.
+20. Trigger `.github/workflows/release.yml` manually with its explicit
+    confirmation. Do not publish to npm and do not replace an existing release.
+21. Run `release-final-verify-operational` or
+    `release-final-verify-certified` to re-download the published asset set and
+    verify tag, workflow, manifest, SBOM, attestation inputs, and live rulesets.

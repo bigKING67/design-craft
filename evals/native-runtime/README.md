@@ -36,6 +36,11 @@ an ancestor of the current checkout while the current skill and fixture trees
 still match the recorded hashes. This allows evidence files to be admitted in a
 later commit without allowing old behavior or fixtures to unlock 100/100.
 
+The active directory intentionally contains no pre-contract observed JSON.
+Earlier v2 Simulator/Emulator files are preserved under `history/2026-07-11-v2/`
+for provenance and are excluded from current validation. Never copy them back
+or backfill v3 fields; regenerate all required artifacts from the real runtime.
+
 Runtime identity is recorded only as `sha256:<digest>`; never commit raw device
 serials or UDIDs. Assertions and artifacts are runtime-kind-specific rather
 than arbitrary. Android evidence must hash the before/after accessibility XML,
@@ -52,3 +57,22 @@ bash scripts/native_runtime_device_android.sh \
 
 The runner rejects emulators, performs the build/install/launch/tap flow, writes
 `real-device-observed.json`, and immediately validates the device-only evidence.
+
+## Release bundle
+
+After a clean source passes certification, create the annotated release tag and
+wait for the tag-triggered `Native runtime evidence` workflow to complete. Then
+build the native Release asset triplet from that exact latest successful run:
+
+```bash
+NATIVE_RUN_ID=<tag-run-id> make native-release-bundle-build
+make native-release-bundle-verify
+```
+
+The bundle contains only `ios-observed.json`, `android-observed.json`,
+`real-device-observed.json`, and the artifacts each JSON declares. The manifest
+binds the current commit, tag, workflow path, run id/attempt/url, and evidence
+hashes. Validation rejects stale source or fixture hashes, an older/manual run,
+missing physical-device proof, undeclared or duplicate archive members,
+symlink/hardlink/device members, path traversal, and non-normalized tar
+metadata. The self-check builds twice and requires byte-identical outputs.

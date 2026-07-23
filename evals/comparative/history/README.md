@@ -1,0 +1,16 @@
+# Historical comparative evidence
+
+Historical comparative runs are immutable evidence for the exact variant
+trees, runner contract, blind packet, judge, and scorecard used at collection
+time. They are never searched as active cases and cannot satisfy a
+current-source release gate.
+
+Validate their internal hashes and declared historical bindings with:
+
+```bash
+python3 scripts/design_craft_comparative_validate.py \
+  --history-root evals/comparative/history
+```
+
+History validation does not claim that an archived run used today's Skill
+tree. Current certification requires new runs in the active case directories.

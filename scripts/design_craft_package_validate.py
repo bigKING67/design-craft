@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 import json
 import re
+import shutil
 import subprocess
 import sys
 from pathlib import Path
@@ -40,6 +41,8 @@ REQUIRED_PACKED_PATHS = {
     "skills/design-craft/SKILL.md",
     "skills/design-craft/VERSION",
     "skills/design-craft/COMPATIBILITY.json",
+    "skills/design-craft/templates/developer-product/design.md",
+    "skills/design-craft/templates/developer-product/design.dark.md",
 }
 
 ALLOWED_PATHS = {
@@ -121,6 +124,7 @@ def package_errors(
     if compatibility is not None:
         route = compatibility.get("codex_route_pack", {})
         evidence = compatibility.get("evidence_contracts", {})
+        maintenance = compatibility.get("maintenance_contracts", {})
         expected = {
             "schema": "design-craft.codex-route-pack.v2",
             "manifest_schema": "codex.frontend-route-pack.manifest.v1",
@@ -132,13 +136,33 @@ def package_errors(
         ):
             errors.append("COMPATIBILITY.json must pin the route-pack v2 contracts")
         expected_evidence = {
-            "cross_agent": "design-craft.cross-agent-score.v2",
-            "native_runtime": "design-craft.native-runtime-evidence.v2",
-            "release_verification": "design-craft.release-verification.v1",
-            "github_checks": "design-craft.github-checks.v1",
+            "cross_agent": "design-craft.cross-agent-score.v4",
+            "native_runtime": "design-craft.native-runtime-evidence.v3",
+            "release_verification": "design-craft.release-evidence.v1",
+            "github_checks": "design-craft.github-checks.v2",
         }
         if any(evidence.get(key) != value for key, value in expected_evidence.items()):
             errors.append("COMPATIBILITY.json must pin the release evidence contracts")
+        expected_maintenance = {
+            "install": "design-craft.install.v2",
+            "sync_status": "design-craft.sync-status.v2",
+            "release_assets": "design-craft.release-assets.v2",
+            "maturity": "design-craft.maturity.v2",
+            "release_policy": "design-craft.release-policy.v1",
+            "native_release_bundle": "design-craft.native-release-bundle.v2",
+            "upstream_absorption_state": "design-craft.upstream-absorption-state.v2",
+            "taste_absorption": "design-craft.taste-absorption.v1",
+            "impeccable_absorption": "design-craft.impeccable-absorption.v1",
+            "emil_absorption": "design-craft.emil-absorption.v1",
+            "cross_agent_run": "design-craft.cross-agent-run.v2",
+            "comparative_variants": "design-craft.comparative-variants.v2",
+            "comparative_run": "design-craft.comparative-run.v3",
+            "comparative_blind_map": "design-craft.comparative-blind-map.v3",
+            "comparative_judge_run": "design-craft.comparative-judge-run.v1",
+            "comparative_result": "design-craft.comparative-result.v3",
+        }
+        if any(maintenance.get(key) != value for key, value in expected_maintenance.items()):
+            errors.append("COMPATIBILITY.json must pin the maintenance contracts")
     return errors
 
 
@@ -191,8 +215,11 @@ def public_path_errors(paths: set[str]) -> list[str]:
 
 
 def npm_pack() -> tuple[dict[str, Any], list[str]]:
+    npm = shutil.which("npm")
+    if npm is None:
+        return {}, ["npm is required to validate the publishable package"]
     completed = subprocess.run(
-        ["npm", "pack", "--dry-run", "--json", "--ignore-scripts"],
+        [npm, "pack", "--dry-run", "--json", "--ignore-scripts"],
         cwd=ROOT,
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
@@ -279,10 +306,28 @@ def self_check() -> list[str]:
             "routing_version": 2,
         },
         "evidence_contracts": {
-            "cross_agent": "design-craft.cross-agent-score.v2",
-            "native_runtime": "design-craft.native-runtime-evidence.v2",
-            "release_verification": "design-craft.release-verification.v1",
-            "github_checks": "design-craft.github-checks.v1",
+            "cross_agent": "design-craft.cross-agent-score.v4",
+            "native_runtime": "design-craft.native-runtime-evidence.v3",
+            "release_verification": "design-craft.release-evidence.v1",
+            "github_checks": "design-craft.github-checks.v2",
+        },
+        "maintenance_contracts": {
+            "install": "design-craft.install.v2",
+            "sync_status": "design-craft.sync-status.v2",
+            "release_assets": "design-craft.release-assets.v2",
+            "maturity": "design-craft.maturity.v2",
+            "release_policy": "design-craft.release-policy.v1",
+            "native_release_bundle": "design-craft.native-release-bundle.v2",
+            "upstream_absorption_state": "design-craft.upstream-absorption-state.v2",
+            "taste_absorption": "design-craft.taste-absorption.v1",
+            "impeccable_absorption": "design-craft.impeccable-absorption.v1",
+            "emil_absorption": "design-craft.emil-absorption.v1",
+            "cross_agent_run": "design-craft.cross-agent-run.v2",
+            "comparative_variants": "design-craft.comparative-variants.v2",
+            "comparative_run": "design-craft.comparative-run.v3",
+            "comparative_blind_map": "design-craft.comparative-blind-map.v3",
+            "comparative_judge_run": "design-craft.comparative-judge-run.v1",
+            "comparative_result": "design-craft.comparative-result.v3",
         },
     }
     if package_errors(valid_package, valid_lock, valid_compatibility, "0.5.0"):

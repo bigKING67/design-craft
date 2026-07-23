@@ -4,6 +4,16 @@ Use this for drag, swipe, sheet, drawer, carousel, scrubber, reordering,
 momentum, rubber-band, interruptible transition, or direct-manipulation work.
 For ordinary hover/color transitions, `motion-quality.md` is sufficient.
 
+## Contents
+
+- [Direct response](#direct-response)
+- [Presentation-value interruption](#presentation-value-interruption)
+- [Spring language](#spring-language)
+- [Velocity handoff and projection](#velocity-handoff-and-projection)
+- [Soft boundaries and hysteresis](#soft-boundaries-and-hysteresis)
+- [Performance and accessibility](#performance-and-accessibility)
+- [Verification packet](#verification-packet)
+
 ## Direct response
 
 - Show press feedback on pointer/touch down, not only on click/up.
@@ -14,6 +24,12 @@ For ordinary hover/color transitions, `motion-quality.md` is sufficient.
   outside the original bounds.
 - Track a short time/position history so release velocity is measured rather
   than guessed from one event.
+- State the coordinate space and units. For web examples, keep samples in CSS
+  pixels with monotonic timestamps and report release velocity in CSS px/s;
+  use points/s or dp/s only when the platform API uses those units.
+- If drag translation and press feedback both write `transform`, give them
+  separate wrapper layers or one explicit composed-transform owner. Do not let
+  `translateY(...)` silently replace `scale(...)`, or vice versa.
 
 ## Presentation-value interruption
 
@@ -57,7 +73,24 @@ relative velocity:
 relativeVelocity = gestureVelocity / (target - current)
 ```
 
-Choose a snap target from the projected endpoint, not only the release point:
+Use a projected endpoint to choose a snap target only when the product contract,
+existing behavior, or runtime evidence establishes momentum-based targeting.
+Do not silently replace a project-owned nearest-current-position, threshold, or
+discrete slot rule merely because projection can feel more physical. When the
+semantic contract is unknown, preserve target selection in an implementation
+plan and list projection as a separately authorized hypothesis.
+
+Do not omit the projection chain merely because target selection is
+conditional. In a critique or audit, state the mechanical candidate with its
+units and bounds:
+
+1. measure release velocity in CSS px/s, pt/s, or dp/s;
+2. compute a bounded projected endpoint from the current presentation value;
+3. if momentum targeting is authorized, choose the nearest valid snap point to
+   that endpoint; otherwise retain the existing target rule and use the
+   projection only as a runtime experiment.
+
+For an authorized momentum-based interaction:
 
 ```text
 projection(v, d) = (v / 1000) * d / (1 - d)
@@ -68,6 +101,10 @@ target = nearestSnapPoint(projectedEndpoint)
 Use `d` near `0.998` for scroll-like momentum or closer to `0.99` for a
 snappier result. Clamp unsafe projections and keep destructive actions behind a
 clear commitment threshold.
+
+Velocity handoff and target selection are separate decisions. A settle can
+start from the current presentation value and inherit bounded velocity while
+still using the project's existing target-selection rule.
 
 ## Soft boundaries and hysteresis
 

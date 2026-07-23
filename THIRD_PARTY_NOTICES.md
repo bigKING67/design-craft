@@ -49,18 +49,19 @@ no additional fusion-layer behavior was imported.
 The preserved distribution license and notice are available at:
 `LICENSES/Apache-2.0.txt` and `LICENSES/NOTICE-impeccable.md`.
 
-## Vercel Geist design references
+## Vercel design reference history
 
 - Source: https://vercel.com/design.md
 - Source: https://vercel.com/design.dark.md
 - Local path: `skills/design-craft/templates/vercel-geist/`
 - Retrieved: 2026-06-24
 
-The fusion layer vendors these public design-system references as complete seed
-templates for new or weakly specified developer-product design systems.
-The snapshots remain attributable to Vercel and are not relicensed by the
-design-craft MIT license. See `LICENSES/VERCEL-DESIGN-NOTICE.md` for the exact
-scope and unresolved redistribution boundary.
+Historical commits used these public design-system references as seed inputs.
+Because no separate redistribution license was identified, the current package
+replaces the snapshots with original design-craft templates under
+`skills/design-craft/templates/developer-product/`. The compatibility paths no
+longer contain Vercel-authored snapshot text. See
+`LICENSES/VERCEL-DESIGN-NOTICE.md` for provenance and scope.
 
 ## emilkowalski/skills
 
@@ -71,9 +72,9 @@ scope and unresolved redistribution boundary.
 - Initial pinned commit:
   `a47903a06a05d2e24c483bd8961c85969a51a494`
 - Current absorbed commit:
-  `f76beceb7d3fc8c43309cefad5a095a206103a4e`
+  `b57fc72f8415d84db1e9cfb43270466bf12ac6e2`
 - Current reviewed commit:
-  `220e8607c90b17337d210125777b7b695f26c221`
+  `7bb7061b5cf7de15ea1aeaf00fbd9e6592a20fce`
 
 The fusion layer references and adapts ideas around motion purpose, animation
 frequency, easing and duration standards, physicality, gesture handling,
@@ -83,11 +84,38 @@ The 2026-07-10 review also absorbed product-design principles, direct
 manipulation, presentation-value interruption, spring response/damping,
 velocity handoff, momentum projection, rubber-banding, and optical typography
 into original design-craft references.
-The 2026-07-11 reviewed range changes one README apostrophe only and required no
-additional absorption.
+The later 2026-07-11 range added `improve-animations`; design-craft selectively
+adapted its codebase recon, prioritized audit, self-contained plan, and plan
+reconciliation workflow while retaining project-authority and runtime-evidence
+calibration instead of copying absolute heuristics.
+The following `b024c8b` update changes README newsletter copy only and remains
+provenance-only.
+The subsequent `4691d39` and `7bb7061` range corrects two README typos only and
+also remains provenance-only.
+The 2026-07-12 five-Skill deep audit maps every upstream Skill entrypoint and
+auxiliary Markdown file. The local fusion adds original calibrated rules and
+implementation recipes rather than redistributing an upstream component
+library; the reviewed upstream Skill tree contains no non-Markdown runtime
+source. Substantial adapted text and code snippets remain covered by the
+preserved MIT notice below.
 
 The preserved distribution license is available at:
 `LICENSES/MIT-upstreams.txt`.
+
+## cameroncooke/AXe
+
+- Repository: https://github.com/cameroncooke/AXe
+- License: MIT
+- CI tool version: `v1.7.1`
+- Pinned release asset SHA-256:
+  `26a64009c09a3ae980b1f1b4b377bd2a2dd96cbbde24821935e47352cb71cc69`
+
+The native-runtime workflow downloads this pinned tool only on the ephemeral
+macOS runner when a current iOS Simulator presents its system URL-opening
+confirmation. AXe taps the real `Open` control by accessibility label; the
+fixture must still receive the URL callback and write the interaction marker.
+The AXe binary is not stored in this repository, included in the npm package,
+or redistributed in release assets.
 
 ## Fusion-layer policy
 

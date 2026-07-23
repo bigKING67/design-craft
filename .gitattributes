@@ -1,0 +1,6 @@
+# Keep source-derived evidence hashes stable across Windows and Unix checkouts.
+* text=auto eol=lf
+
+# Preserve model-authored Markdown hard breaks in hash-bound comparative evidence.
+evals/comparative/*/blind-packet.md whitespace=-blank-at-eol
+evals/comparative/*/output.*.md whitespace=-blank-at-eol

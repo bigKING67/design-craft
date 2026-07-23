@@ -27,6 +27,8 @@
     <dict>
       <key>CFBundleURLName</key>
       <string>dev.designcraft.runtime-evidence</string>
+      <key>CFBundleTypeRole</key>
+      <string>Viewer</string>
       <key>CFBundleURLSchemes</key>
       <array>
         <string>designcraft-evidence</string>

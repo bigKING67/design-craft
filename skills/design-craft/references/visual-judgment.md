@@ -8,6 +8,18 @@ anti-slop and brief-inference ideas absorbed from upstream taste guidance, but
 it is not a legacy skill entrypoint and must stay subordinate to live runtime
 truth, scoped project rules, and project `DESIGN.md`.
 
+## Contents
+
+- [Design read first](#design-read-first)
+- [Authority and change scope](#authority-and-change-scope)
+- [Anti-default discipline](#anti-default-discipline)
+- [Three operating dials](#three-operating-dials)
+- [Typography](#typography)
+- [Color](#color)
+- [Layout and material](#layout-and-material)
+- [Motion](#motion)
+- [Final visual self-check](#final-visual-self-check)
+
 ## Design read first
 
 Infer before styling:
@@ -25,6 +37,20 @@ Infer before styling:
 State the read once. If two very different reads are plausible, ask one
 question. Do not ask if repo evidence makes the answer obvious.
 
+## Authority and change scope
+
+- The brief wins. Honor explicit aesthetics, materials, fonts, eras, palettes,
+  and anti-references unless they violate a higher project or platform rule.
+  Redirecting a clear brief toward personal taste is a design failure.
+- Visual authority is observed evidence, not a filename check. Missing
+  `DESIGN.md` does not make an existing product greenfield when its tokens,
+  components, assets, and live UI already establish a coherent world.
+- Refinement preserves the incumbent identity, behavior, factual copy, and
+  everything outside scope. Ask before replacing claims or product truth.
+- Redesign may replace the visual world, but it still preserves product truth,
+  content, function, native affordances, and explicit constraints. Do not hide
+  a partial redesign inside a polish task.
+
 ## Anti-default discipline
 
 Reject these defaults unless the brief and project system explicitly require
@@ -33,12 +59,17 @@ them:
 - Purple/blue gradient hero as a generic "AI" signal.
 - Centered hero plus three identical feature cards.
 - Glassmorphism everywhere.
+- Zero-offset radial halos or colored glow used as generic depth.
 - Over-rounded cards, wide soft shadows, decorative stripes.
-- Tiny uppercase eyebrow on every section.
+- Tiny uppercase eyebrow or repeated kicker on every section.
+- Decorative `01 / 02 / 03` labels when sequence carries no meaning.
 - Gradient text for emphasis.
 - Monotonous equal card grids.
+- Fake blinking cursors, ambient pulses, or attention loops without state.
 - Placeholder people, fake testimonials, lorem ipsum, "Jane Doe" data.
-- Hand-rolled sketch SVGs as a fallback for real visual assets.
+- Hand-rolled sketch SVGs or generic shape-assembled illustrations as a
+  fallback for real visual assets.
+- Repeated aphoristic copy cadence that substitutes slogans for product truth.
 - Motion applied uniformly to every section without content reason.
 
 Replace default scaffolds with content structure: stronger hierarchy, better

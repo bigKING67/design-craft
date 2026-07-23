@@ -28,6 +28,7 @@ SCHEMA = "design-craft.install-verification.v1"
 METADATA_SCHEMA_V1 = "design-craft.install.v1"
 METADATA_SCHEMA_V2 = "design-craft.install.v2"
 METADATA_NAME = ".design-craft-install.json"
+RELEASE_STATES = {"development", "release_candidate", "released", "unknown"}
 
 
 def ignored(path: Path) -> bool:
@@ -46,7 +47,7 @@ def snapshot(root: Path) -> dict[str, str]:
         if not path.is_file() or ignored(path):
             continue
         digest = hashlib.sha256(path.read_bytes()).hexdigest()
-        values[str(path.relative_to(root))] = digest
+        values[path.relative_to(root).as_posix()] = digest
     return values
 
 
@@ -74,6 +75,33 @@ def source_provenance(source: Path) -> tuple[Path, str, bool, bool]:
         return fallback_root.resolve(), "unavailable", True, True
 
 
+def source_release_state(source_root: Path, version: str, source_commit: str) -> str:
+    changelog_path = source_root / "CHANGELOG.md"
+    if not changelog_path.is_file():
+        return "unknown"
+    changelog = changelog_path.read_text(encoding="utf-8")
+    match = re.search(
+        rf"^## {re.escape(version)} - (?P<label>[^\n]+)$",
+        changelog,
+        flags=re.M,
+    )
+    if not match:
+        return "unknown"
+    label = match.group("label").strip()
+    if label == "Unreleased":
+        return "development"
+    if not re.fullmatch(r"[0-9]{4}-[0-9]{2}-[0-9]{2}", label):
+        return "unknown"
+    tag_result = subprocess.run(
+        ["git", "-C", str(source_root), "rev-list", "-n", "1", f"v{version}"],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.DEVNULL,
+        text=True,
+        check=False,
+    )
+    return "released" if tag_result.stdout.strip() == source_commit else "release_candidate"
+
+
 def validate_metadata(
     installed: Path,
     *,
@@ -84,6 +112,7 @@ def validate_metadata(
     expected_source_path: Path,
     expected_source_commit: str,
     expected_skill_source_dirty: bool,
+    expected_release_state: str,
 ) -> tuple[dict, list[str]]:
     path = installed / METADATA_NAME
     if not path.is_file():
@@ -103,6 +132,11 @@ def validate_metadata(
         errors.append(f"metadata skill_name must be {expected_name}")
     if expected_version and payload.get("version") != expected_version:
         errors.append(f"metadata version must be {expected_version}")
+    release_state = payload.get("release_state")
+    if release_state not in RELEASE_STATES:
+        errors.append(f"metadata release_state must be one of {sorted(RELEASE_STATES)}")
+    elif release_state != expected_release_state:
+        errors.append(f"metadata release_state must match current source state {expected_release_state}")
     if payload.get("source_tree_sha256") != expected_tree_digest:
         errors.append("metadata source_tree_sha256 must match the installed source tree")
     source_commit = str(payload.get("source_commit", ""))
@@ -118,7 +152,7 @@ def validate_metadata(
             "metadata source_commit must be an ancestor of the current source HEAD "
             f"{expected_source_commit}"
         )
-    else:
+    elif not expected_skill_source_dirty:
         try:
             recorded_commit_digest = git_tree_sha256(
                 expected_source_root,
@@ -186,6 +220,11 @@ def verify(
     source_files = snapshot(source)
     installed_files = snapshot(installed)
     source_root, source_commit, repo_dirty, skill_source_dirty = source_provenance(source)
+    release_state = source_release_state(
+        source_root,
+        expected_version or "",
+        source_commit,
+    )
     missing = sorted(set(source_files) - set(installed_files))
     extra = sorted(set(installed_files) - set(source_files))
     changed = sorted(
@@ -206,6 +245,7 @@ def verify(
             expected_source_path=source.resolve(),
             expected_source_commit=source_commit,
             expected_skill_source_dirty=skill_source_dirty,
+            expected_release_state=release_state,
         )
 
     errors: list[str] = []
@@ -238,6 +278,7 @@ def verify(
             "dirty": skill_source_dirty,
             "skill_source_dirty": skill_source_dirty,
             "repo_dirty": repo_dirty,
+            "release_state": release_state,
         },
         "metadata": metadata,
         "errors": errors,
@@ -253,6 +294,12 @@ def run_self_check() -> None:
         source.mkdir(parents=True)
         (source / "SKILL.md").write_text("# Fixture skill\n", encoding="utf-8")
         (source / "VERSION").write_text("0.0.0\n", encoding="utf-8")
+        (source / "references").mkdir()
+        (source / "references/example.md").write_text("# Example\n", encoding="utf-8")
+        (repo / "CHANGELOG.md").write_text(
+            "# Changelog\n\n## 0.0.0 - Unreleased\n\n- Fixture.\n",
+            encoding="utf-8",
+        )
         (repo / "unrelated.txt").write_text("initial\n", encoding="utf-8")
 
         for command in (
@@ -271,6 +318,7 @@ def run_self_check() -> None:
             "installer_version": 3,
             "skill_name": "design-craft",
             "version": "0.0.0",
+            "release_state": "development",
             "source_root": str(repo.resolve()),
             "source_path": str(source.resolve()),
             "source_repo": "https://example.invalid/design-craft",

@@ -13,6 +13,19 @@ When the user needs concrete redesign direction, pair this with
 alignment, repetition, or contrast, pair it with
 `foundational-visual-principles.md`.
 
+## Contents
+
+- [When to use](#when-to-use)
+- [Design read](#design-read)
+- [Taste rules](#taste-rules)
+- [Review dimensions](#review-dimensions)
+- [Concrete calibration](#concrete-calibration)
+- [100-point score](#100-point-score)
+- [Evidence levels](#evidence-levels)
+- [Severity](#severity)
+- [Page-type checks](#page-type-checks)
+- [Output contract](#output-contract)
+
 ## When to use
 
 Use with `critique` when the user asks for:
@@ -260,7 +273,20 @@ real-content behavior as verified unless the evidence level actually covers it.
 
 ## Output contract
 
-For a full taste review, use this structure:
+Default reviews should stop after the score, one-sentence diagnosis, design
+direction, at most five blocking issues, at most five secondary issues, and the
+smallest acceptance checklist. Target 150 lines or fewer.
+
+When the user caps concrete recommendations, allocate the move budget across
+the full decision chain. Do not produce two KPI/card moves while leaving a
+blocking chart, generic insight copy, primary table/action problem, missing
+state family, or responsive/accessibility risk without an implementing move.
+Fold secondary CTA or shell refinements into the nearest structural move unless
+they directly block the primary job. Before delivery, map each blocking finding
+to a move or an explicit deferral.
+
+When the user explicitly asks for an exhaustive review or full scorecard, use
+this expanded structure:
 
 ```markdown
 Method: <single-context/degraded/dual-agent, truthfully stated>

@@ -1,0 +1,74 @@
+# Threat model
+
+## Assets
+
+- Integrity of the canonical `skills/design-craft` runtime.
+- User-controlled install and backup roots.
+- Source/evidence provenance and release-level claims.
+- Package, checksum, manifest, SBOM, and native evidence assets.
+- Pristine upstream commits and reviewed absorption decisions.
+
+## Untrusted inputs
+
+Repository files, route manifests, JSON/TOML/YAML, Markdown, tar entries,
+upstream content, evidence artifacts, CLI arguments, environment variables,
+and existing install paths are data, not instructions.
+
+## Primary threats and controls
+
+### Path traversal and symlinks
+
+Manifest paths must be relative POSIX paths without `..`, backslashes, or empty
+segments. Source and export traversal checks reject every symlink component and
+verify the resolved path remains below its root. Tar/SBOM processing rejects
+links, special files, absolute paths, and parent traversal.
+
+### Installer replacement and TOCTOU
+
+The installer acquires a bounded lock, validates any retired alias, stages on
+the target filesystem, removes runtime artifacts, writes provenance, verifies
+the staged tree, performs an atomic rename, verifies again, and restores the
+previous target on failure.
+The retired alias is quarantined only after metadata, installed digest,
+historical commit tree, and repository identity all match. Unmanaged or
+symlinked paths fail closed.
+
+Residual risk: local processes with permission to mutate the install root can
+race filesystem checks. The post-switch digest check detects mutation before
+success, but the installer is not a defense against an already-compromised OS
+account.
+
+### Evidence inflation and stale provenance
+
+Current cross-agent evidence requires the current score schema, machine JSON
+scorecard, run manifest, skill tree, contract digest, and clean source binding.
+Historical schemas cannot satisfy current release gates. Native evidence is
+bound to the exact skill and fixture trees. Operational and Certified release
+levels are explicit; missing evidence never promotes a release automatically.
+
+### Supply chain and release assets
+
+Upstreams are pinned and reviewed separately from the canonical skill. Actions
+use full commit SHAs. Release assets use exact per-level allowlists. The package
+checksum, release manifest, and SPDX file inventory bind the package bytes;
+GitHub attestations must be produced only by the release workflow with scoped
+permissions. Workflow artifacts are downloaded only after exact Native and,
+for Certified, physical-device run observations validate workflow identity,
+repository, run ID/attempt, ref, source commit, status, conclusion, and URL.
+Release assets are assembled and validated in same-filesystem staging before a
+locked transactional replacement; published-set validation runs before the
+backup is discarded, and failure restores the previous exact asset set.
+
+### Resource exhaustion
+
+Validation subprocesses have timeouts and bounded output summaries. Benchmark
+fixtures use explicit 1k/10k/100k scales. Route pack and package validators use
+declared inventories rather than unbounded external traversal.
+
+## Recovery
+
+On failed install, use the retained canonical backup and verify it with
+`design_craft_install_verify.py`. On evidence or asset mismatch, discard the
+derived artifact and regenerate from a clean, exact commit; never repair hashes
+in place. A published Operational release cannot be relabeled Certified by
+replacing assets: certification requires a new version and release record.

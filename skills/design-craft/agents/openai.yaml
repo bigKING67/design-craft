@@ -1,4 +1,4 @@
 interface:
   display_name: "Design Craft"
-  short_description: "Cross-platform product design engineering workflow"
-  default_prompt: "Use $design-craft to plan, implement, and verify a web, iOS, Android, or adaptive product UI/UX, motion, design-system, and accessibility upgrade."
+  short_description: "Web-first product design engineering workflow"
+  default_prompt: "Use $design-craft to plan, implement, and verify a web product UI/UX upgrade; apply its optional iOS, Android, or adaptive guidance only when the target is native."

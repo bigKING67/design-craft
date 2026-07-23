@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import subprocess
 import sys
 from dataclasses import dataclass
@@ -43,8 +44,7 @@ def has(root: Path, rel: str) -> bool:
 
 
 def runtime_text(root: Path, name: str) -> str:
-    portable = read_text(root / "skills/design-craft/scripts" / name)
-    return portable or read_text(root / "scripts" / name)
+    return read_text(root / "skills/design-craft/scripts" / name)
 
 
 def active_product_ui_score_paths(root: Path) -> list[Path]:
@@ -128,9 +128,14 @@ def infer_root(target: Path) -> Path:
 
 
 def check_command(command: list[str], cwd: Path) -> bool:
+    resolved_command = list(command)
+    if resolved_command and resolved_command[0] == "bash":
+        configured_bash = os.environ.get("DESIGN_CRAFT_BASH", "").strip()
+        if configured_bash:
+            resolved_command[0] = configured_bash
     try:
         result = subprocess.run(
-            command,
+            resolved_command,
             cwd=str(cwd),
             stdout=subprocess.DEVNULL,
             stderr=subprocess.DEVNULL,
@@ -159,6 +164,7 @@ def build_score(root: Path, run_smoke: bool) -> list[Dimension]:
     foundational_principles = read_text(root / "skills/design-craft/references/foundational-visual-principles.md")
     design_moves = read_text(root / "skills/design-craft/references/design-move-library.md")
     motion_quality = read_text(root / "skills/design-craft/references/motion-quality.md")
+    motion_planning = read_text(root / "skills/design-craft/references/motion-audit-planning.md")
     motion_vocabulary = read_text(root / "skills/design-craft/references/motion-vocabulary.md")
     browser_evidence_helper = runtime_text(root, "design_craft_browser_evidence.py")
     route_helper = runtime_text(root, "design_craft_route.sh")
@@ -172,11 +178,12 @@ def build_score(root: Path, run_smoke: bool) -> list[Dimension]:
     pass_smoke = False
     critique_smoke = False
     motion_smoke = False
+    motion_plan_smoke = False
     seed_smoke = False
     taste_review_smoke = False
     if run_smoke:
         detector_smoke = check_command(
-            ["bash", "scripts/design_craft_detect.sh", "--target", "skills/design-craft", "--json-only"],
+            ["bash", "skills/design-craft/scripts/design_craft_detect.sh", "--target", "skills/design-craft", "--json-only"],
             root,
         )
         score_smoke = check_command(
@@ -184,23 +191,39 @@ def build_score(root: Path, run_smoke: bool) -> list[Dimension]:
             root,
         )
         pass_smoke = check_command(
-            ["bash", "scripts/design_craft_pass.sh", "--target", "skills/design-craft", "--mode", "audit", "--skip-route", "--skip-score"],
+            ["bash", "skills/design-craft/scripts/design_craft_pass.sh", "--target", "skills/design-craft", "--mode", "audit", "--skip-route", "--skip-score"],
             root,
         )
         critique_smoke = check_command(
-            ["bash", "scripts/design_craft_audit.sh", "--target", "skills/design-craft", "--mode", "critique", "--skip-route", "--skip-score"],
+            ["bash", "skills/design-craft/scripts/design_craft_audit.sh", "--target", "skills/design-craft", "--mode", "critique", "--skip-route", "--skip-score"],
             root,
         )
         motion_smoke = check_command(
-            ["bash", "scripts/design_craft_pass.sh", "--target", "skills/design-craft", "--mode", "motion", "--skip-route", "--skip-score"],
+            ["bash", "skills/design-craft/scripts/design_craft_pass.sh", "--target", "skills/design-craft", "--mode", "motion", "--skip-route", "--skip-score"],
+            root,
+        )
+        motion_plan_smoke = check_command(
+            [
+                sys.executable,
+                "skills/design-craft/scripts/design_craft_motion_plan.py",
+                "--target",
+                str(root),
+                "--title",
+                "Retarget the sheet from its presentation value",
+                "--severity",
+                "P1",
+                "--category",
+                "interruptibility",
+                "--dry-run",
+            ],
             root,
         )
         seed_smoke = check_command(
-            ["bash", "scripts/design_craft_seed_design.sh", "--target", "skills/design-craft", "--dry-run"],
+            ["bash", "skills/design-craft/scripts/design_craft_seed_design.sh", "--target", "skills/design-craft", "--dry-run"],
             root,
         )
         taste_review_smoke = check_command(
-            ["bash", "scripts/design_craft_taste_review.sh", "--target", "skills/design-craft", "--context", "score smoke", "--evidence-level", "L0"],
+            ["bash", "skills/design-craft/scripts/design_craft_taste_review.sh", "--target", "skills/design-craft", "--context", "score smoke", "--evidence-level", "L0"],
             root,
         )
 
@@ -224,6 +247,9 @@ def build_score(root: Path, run_smoke: bool) -> list[Dimension]:
                 ("Evidence levels" in taste_calibration, "taste evidence levels calibrated", "Define evidence levels for screenshot/browser taste scores."),
                 (has(root, "skills/design-craft/references/intent-map.md"), "intent map reference exists", "Add an intent map for subjective frontend requests."),
                 (has(root, "skills/design-craft/references/motion-quality.md"), "motion quality reference exists", "Add a motion-quality reference."),
+                (has(root, "skills/design-craft/references/motion-audit-planning.md"), "motion audit-to-plan reference exists", "Add a codebase-wide motion audit and plan workflow."),
+                ("Phase 1: motion recon" in motion_planning and "Phase 4: write executable plans" in motion_planning, "motion recon-to-plan workflow present", "Document recon, vetted prioritization, and executable motion plans."),
+                (has(root, "skills/design-craft/templates/motion-plan/plan.md"), "motion implementation-plan template exists", "Add a self-contained motion plan template."),
                 (has(root, "skills/design-craft/references/motion-vocabulary.md"), "motion vocabulary reference exists", "Add a motion-vocabulary reference."),
                 ("scale(0)" in motion_quality and "transition-all" in motion_quality, "motion anti-patterns encoded", "Encode motion anti-patterns such as scale(0) and transition-all."),
                 ("Origin-aware animation" in motion_vocabulary, "origin-aware motion vocabulary present", "Add origin-aware animation vocabulary."),
@@ -240,32 +266,32 @@ def build_score(root: Path, run_smoke: bool) -> list[Dimension]:
                 ("candidate_skills" in skill, "route candidate semantics present", "Separate route candidates from selected skills."),
                 (has(root, "skills/design-craft/references/design-system-contract.md"), "design-system contract exists", "Add design-system contract reference."),
                 (
-                    has(root, "skills/design-craft/templates/vercel-geist/design.md")
-                    and has(root, "skills/design-craft/templates/vercel-geist/design.dark.md"),
-                    "Vercel Geist seed templates vendored",
-                    "Vendor the default Vercel Geist seed templates.",
+                    has(root, "skills/design-craft/templates/developer-product/design.md")
+                    and has(root, "skills/design-craft/templates/developer-product/design.dark.md"),
+                    "original developer-product seed templates bundled",
+                    "Bundle original light/dark developer-product seed templates.",
                 ),
                 (
-                    "templates/vercel-geist/design.md" in skill
-                    and "templates/vercel-geist/design.dark.md" in skill,
-                    "Vercel Geist seed routed from SKILL.md",
-                    "Route the Vercel Geist seed templates from SKILL.md.",
+                    "templates/developer-product/design.md" in skill
+                    and "templates/developer-product/design.dark.md" in skill,
+                    "developer-product seed routed from SKILL.md",
+                    "Route the original developer-product seed templates from SKILL.md.",
                 ),
                 (
-                    "default seed" in design_system.lower() and "Vercel Geist" in design_system,
+                    "default seed" in design_system.lower() and "developer-product" in design_system.lower(),
                     "default seed policy documented",
-                    "Document when to use the bundled Vercel Geist seed.",
+                    "Document when to use the bundled original developer-product seed.",
                 ),
                 (
-                    has(root, "scripts/design_craft_seed_design.sh"),
-                    "Vercel Geist seed helper exists",
-                    "Add a helper for seeding DESIGN.md from the bundled Geist templates.",
+                    has(root, "skills/design-craft/scripts/design_craft_seed_design.sh"),
+                    "developer-product seed helper exists",
+                    "Add a helper for seeding DESIGN.md from the bundled original templates.",
                 ),
                 (
-                    "vercel_geist_seed_applicable" in route_helper
-                    or "templates/vercel-geist" in route_helper,
-                    "route summary reports Vercel seed applicability",
-                    "Make route summaries say when the Geist seed is applicable.",
+                    "developer_product_seed_applicable" in route_helper
+                    or "templates/developer-product" in route_helper,
+                    "route summary reports developer-product seed applicability",
+                    "Make route summaries say when the original seed is applicable.",
                 ),
                 ("theme parity" in design_system.lower(), "theme parity guidance present", "Cover light/dark token parity."),
                 ("token layers" in design_system.lower(), "token layer guidance present", "Cover token role separation."),
@@ -280,12 +306,12 @@ def build_score(root: Path, run_smoke: bool) -> list[Dimension]:
                 (has(root, "skills/design-craft/references/engineering-quality.md"), "engineering reference exists", "Add engineering-quality reference."),
                 ("component" in read_text(root / "skills/design-craft/references/engineering-quality.md").lower(), "component boundary guidance present", "Add component boundary guidance."),
                 ("observable" in skill.lower() or "errors" in read_text(root / "skills/design-craft/references/engineering-quality.md").lower(), "error observability covered", "Cover observable errors."),
-                (has(root, "scripts/design_craft_route.sh"), "route wrapper exists", "Add route wrapper script."),
-                (has(root, "scripts/design_craft_pass.sh"), "pass wrapper exists", "Add a neutral pass wrapper script."),
-                (has(root, "scripts/design_craft_detect.sh"), "detector wrapper exists", "Add detector wrapper script."),
-                (has(root, "scripts/design_craft_css_smell_scan.py"), "CSS smell scanner exists", "Add static CSS smell scanner."),
-                (has(root, "scripts/design_craft_focus_audit.py"), "focus audit scanner exists", "Add static focus audit scanner."),
-                (has(root, "scripts/design_craft_token_audit.py"), "token audit scanner exists", "Add token bypass scanner."),
+                (has(root, "skills/design-craft/scripts/design_craft_route.sh"), "route runtime exists", "Add the canonical route runtime."),
+                (has(root, "skills/design-craft/scripts/design_craft_pass.sh"), "pass runtime exists", "Add the canonical neutral pass runtime."),
+                (has(root, "skills/design-craft/scripts/design_craft_detect.sh"), "detector runtime exists", "Add the canonical detector runtime."),
+                (has(root, "skills/design-craft/scripts/design_craft_css_smell_scan.py"), "CSS smell scanner exists", "Add static CSS smell scanner."),
+                (has(root, "skills/design-craft/scripts/design_craft_focus_audit.py"), "focus audit scanner exists", "Add static focus audit scanner."),
+                (has(root, "skills/design-craft/scripts/design_craft_token_audit.py"), "token audit scanner exists", "Add token bypass scanner."),
             ],
         ),
         score_dimension(
@@ -309,6 +335,20 @@ def build_score(root: Path, run_smoke: bool) -> list[Dimension]:
                 (has(root, "skills/design-craft/references/source-map.md"), "source map exists", "Add source-map reference."),
                 (has(root, "scripts/upstream_absorption_report.py"), "upstream absorption report exists", "Add upstream absorption report script."),
                 ("--remote-details" in read_text(root / "scripts/upstream_absorption_report.py"), "actionable remote upstream drift check exists", "Add remote commit/path detail reporting."),
+                (
+                    has(root, "docs/taste-skill-absorption.md")
+                    and has(root, "scripts/design_craft_taste_absorption.py")
+                    and has(root, "docs/impeccable-absorption.md")
+                    and has(root, "scripts/design_craft_impeccable_absorption.py"),
+                    "taste-skill and impeccable absorption matrices are machine-validated",
+                    "Add strict capability and rejection matrices for both non-Emil upstreams.",
+                ),
+                (
+                    "cumulative_status" in read_text(root / "upstreams.lock.json")
+                    and "latest_range_status" in read_text(root / "upstreams.lock.json"),
+                    "upstream cumulative and latest-range decisions are separated",
+                    "Separate cumulative absorption from the latest reviewed commit range.",
+                ),
                 ("Open or update review issue" in read_text(root / ".github/workflows/upstream-audit.yml"), "daily upstream review issue workflow exists", "Add actionable scheduled upstream review notifications."),
                 (has(root, "adapters/codex/README.md"), "Codex adapter docs exist", "Add Codex adapter docs."),
                 (has(root, "adapters/codex/route-pack/README.md"), "Codex route-pack docs exist", "Add docs for Codex frontend route-pack portability."),
@@ -320,8 +360,14 @@ def build_score(root: Path, run_smoke: bool) -> list[Dimension]:
                 (has(root, "scripts/design_craft_doctor.sh"), "doctor helper exists", "Add doctor helper for portability checks."),
                 (has(root, "skills/design-craft/COMPATIBILITY.json"), "route-pack compatibility contract exists", "Add a portable route-pack compatibility contract."),
                 (has(root, "scripts/design_craft_sync_status.py"), "source/install and route-pack sync status exists", "Add a non-mutating sync status command."),
-                (has(root, "scripts/design_craft_release_verify.py"), "release certification contract exists", "Add a version, clean-tree, tag, and remote release verifier."),
-                ("templates/vercel-geist/design.md" in source_map, "Vercel Geist source map present", "Map vendored Vercel templates in source-map."),
+                (
+                    has(root, "tools/design_craft/release/metadata.py")
+                    and has(root, "tools/design_craft/release/evidence.py")
+                    and has(root, "contracts/release/policy.json"),
+                    "tiered release metadata and evidence contracts exist",
+                    "Add explicit release levels with candidate/final metadata verification.",
+                ),
+                ("templates/developer-product/design.md" in source_map, "developer-product seed source map present", "Map the original developer-product templates in source-map."),
                 (("data flow" in read_text(root / "skills/design-craft/references/architecture-quality.md").lower()) or ("data-flow" in read_text(root / "skills/design-craft/references/architecture-quality.md").lower()), "data-flow guidance present", "Add data-flow guidance."),
                 ("migration" in read_text(root / "skills/design-craft/references/architecture-quality.md").lower(), "migration risk covered", "Add migration/compatibility guidance."),
             ],
@@ -340,7 +386,13 @@ def build_score(root: Path, run_smoke: bool) -> list[Dimension]:
                 (has(root, "scripts/design_craft_package_validate.py"), "publishable package boundary validator exists", "Add a Pi/npm package size and path validator."),
                 (has(root, "scripts/design_craft_public_repo_validate.py"), "public repository privacy validator exists", "Add a repository-wide user-home path and license validator."),
                 (has(root, "scripts/design_craft_workflow_validate.py"), "workflow and native runner contract validator exists", "Add a dedicated workflow pinning and native runner validator."),
-                (has(root, "scripts/design_craft_certification_install_check.sh"), "certification uses an isolated install root", "Verify install parity in a temporary root before publishing live."),
+                (has(root, "scripts/design_craft_lint.py") and "contract-tests:" in read_text(root / "Makefile"), "dependency-free lint and contract-test lanes exist", "Add dedicated syntax/data lint and isolated contract-test targets."),
+                (
+                    has(root, "tests/integration/test_installer.py")
+                    and "TemporaryDirectory" in read_text(root / "tests/integration/test_installer.py"),
+                    "installer integration uses isolated install roots",
+                    "Verify install, locking, and rollback behavior in temporary roots.",
+                ),
                 (
                     set(json.loads(read_text(root / "package.json")).get("files", []))
                     == {"skills/design-craft", "LICENSE", "LICENSES", "README.md", "THIRD_PARTY_NOTICES.md", "VERSION"},
@@ -361,21 +413,39 @@ def build_score(root: Path, run_smoke: bool) -> list[Dimension]:
                 (has(root, "scripts/design_craft_score.py"), "score script exists", "Add deterministic score script."),
                 (has(root, "scripts/design_craft_native_runtime_validate.py"), "native runtime evidence validator exists", "Add strict native runtime evidence validation."),
                 (has(root, "scripts/design_craft_native_runtime_record.py") and "reactivecircus/android-emulator-runner@" in read_text(root / ".github/workflows/native-runtime.yml"), "native Simulator/Emulator evidence CI exists", "Add reproducible native runtime fixtures, recording, and CI."),
+                (has(root, "tools/design_craft/release/native_bundle.py") and has(root, "contracts/release/native-bundle.schema.json") and "native_release_bundle" in read_text(root / "skills/design-craft/COMPATIBILITY.json"), "deterministic native Release bundle contract exists", "Bind Simulator, Emulator, and physical-device evidence into a deterministic Release asset."),
+                (
+                    "operational_95" in read_text(root / "contracts/release/policy.json")
+                    and "certified_100" in read_text(root / "contracts/release/policy.json")
+                    and "bypass_actors must be empty" in read_text(root / "scripts/design_craft_github_governance.py"),
+                    "tiered exact-asset and no-bypass GitHub release governance exists",
+                    "Require exact per-level Release assets and empty branch/tag bypass lists.",
+                ),
                 ("HOSTS = (\"codex\", \"pi\", \"cursor\", \"claude\")" in read_text(root / "scripts/design_craft_cross_agent_validate.py"), "four-host observed evidence contract exists", "Validate Cursor and Claude independently from Codex and Pi."),
-                ("design-craft.cross-agent-score.v2" in read_text(root / "scripts/design_craft_cross_agent_validate.py") and has(root, "scripts/design_craft_cross_agent_record.py"), "current-source cross-agent evidence binding exists", "Bind cross-agent scores to skill, prompt, scorecard, and output hashes."),
+                ("design-craft.cross-agent-score.v4" in read_text(root / "scripts/design_craft_cross_agent_validate.py") and has(root, "scripts/design_craft_cross_agent_record.py"), "current-source cross-agent evidence binding exists", "Bind cross-agent scores to skill, prompt, scorecard, output, and runner-contract hashes."),
+                (
+                    has(root, "evals/comparative/emil-motion-ablation/variants.json")
+                    and has(root, "evals/comparative/emil-motion-planning-ablation/variants.json")
+                    and has(root, "evals/comparative/taste-visual-critique-ablation/variants.json")
+                    and has(root, "evals/comparative/impeccable-production-ablation/variants.json")
+                    and has(root, "scripts/design_craft_comparative_judge.py")
+                    and has(root, "scripts/design_craft_comparative_validate.py"),
+                    "blind no-skill/focused-upstream/design-craft ablations cover all three upstreams",
+                    "Add same-host blind focused-upstream ablations with a controlled independent judge.",
+                ),
                 ("--require-current-source" in read_text(root / "scripts/design_craft_native_runtime_validate.py"), "current-source native evidence binding exists", "Bind native evidence to current skill and fixture trees."),
                 ("focus-visible" in design_system.lower(), "focus-visible guidance present", "Cover keyboard focus states."),
                 ("component state matrix" in design_system.lower(), "component state matrix present", "Cover shared component states."),
                 (("voice" in design_system.lower()) and ("content" in design_system.lower()), "voice/content guidance present", "Cover action, error, toast, and empty-state copy."),
                 (
-                    "vercel geist seed templates" in validation.lower(),
-                    "Geist seed validation contract present",
-                    "Require delivery to report whether the Geist seed was used.",
+                    "developer-product seed templates" in validation.lower(),
+                    "developer-product seed validation contract present",
+                    "Require delivery to report whether the original seed was used.",
                 ),
                 ("product UI taste score" in validation, "product UI score is distinct from source score", "Distinguish UI taste scores from the workflow source score."),
-                (has(root, "scripts/design_craft_taste_review.sh"), "taste review wrapper exists", "Add a stable product UI taste review wrapper."),
-                (has(root, "scripts/design_craft_browser_evidence.py"), "browser evidence helper exists", "Add a redacted DOM/computed-style evidence helper."),
-                (has(root, "scripts/design_craft_l4_capture.py"), "L4 capture fallback exists", "Add a deterministic L4 screenshot capture fallback."),
+                (has(root, "skills/design-craft/scripts/design_craft_taste_review.sh"), "taste review runtime exists", "Add a stable product UI taste review runtime."),
+                (has(root, "skills/design-craft/scripts/design_craft_browser_evidence.py"), "browser evidence helper exists", "Add a redacted DOM/computed-style evidence helper."),
+                (has(root, "skills/design-craft/scripts/design_craft_l4_capture.py"), "L4 capture fallback exists", "Add a deterministic L4 screenshot capture fallback."),
                 ("anti-inflation" in browser_evidence_helper and "validate_score_json" in browser_evidence_helper, "taste anti-inflation validator exists", "Add a validator for score anti-inflation rules."),
                 ("design-craft.browser-evidence.v1" in browser_evidence_helper, "design-craft browser evidence schema exists", "Emit the design-craft browser evidence schema."),
                 (has(root, "evals/product-ui-taste/material-ops-home/score.json"), "product UI taste golden case exists", "Add at least one product UI taste calibration case."),
@@ -394,41 +464,12 @@ def build_score(root: Path, run_smoke: bool) -> list[Dimension]:
                 (pass_smoke or not run_smoke, "pass wrapper smoke passes", "Fix pass wrapper smoke."),
                 (critique_smoke or not run_smoke, "critique smoke passes", "Fix critique mode smoke."),
                 (motion_smoke or not run_smoke, "motion pass smoke passes", "Fix motion pass smoke."),
-                (seed_smoke or not run_smoke, "seed helper smoke passes", "Fix Vercel Geist seed helper smoke."),
+                (motion_plan_smoke or not run_smoke, "motion plan scaffold smoke passes", "Fix motion-plan scaffold smoke."),
+                (seed_smoke or not run_smoke, "seed helper smoke passes", "Fix developer-product seed helper smoke."),
                 (taste_review_smoke or not run_smoke, "taste review wrapper smoke passes", "Fix taste review wrapper smoke."),
             ],
         ),
     ]
-
-
-def maturity_cap(root: Path) -> tuple[int, list[str]]:
-    cap = 100
-    reasons: list[str] = []
-
-    eval_files = sorted((root / "evals").glob("*.md")) if (root / "evals").is_dir() else []
-    if len(eval_files) < 3:
-        cap = min(cap, 86)
-        reasons.append("fewer than three forward evals under evals/*.md")
-
-    golden_tasks = sorted((root / "evals/golden-tasks").glob("*.md")) if (root / "evals/golden-tasks").is_dir() else []
-    if not golden_tasks:
-        cap = min(cap, 94)
-        reasons.append("no golden real-task cards under evals/golden-tasks/*.md")
-
-    if not has(root, "scripts/design_craft_audit.sh"):
-        cap = min(cap, 90)
-        reasons.append("no unified audit/polish/harden/optimize command wrapper yet")
-
-    if not has(root, "evals/forward-test-log.md"):
-        cap = min(cap, 92)
-        reasons.append("eval prompts exist but no independent forward-test log yet")
-    elif not has(root, "evals/live-task-log.md"):
-        cap = min(cap, 96)
-        reasons.append("independent forward tests passed, but no live implementation task log yet")
-    elif "Browser validation: not claimed" in read_text(root / "evals/live-task-log.md") and not has_product_ui_l2_case(root):
-        reasons.append("live task log exists; browser validation is intentionally not claimed yet")
-
-    return cap, reasons
 
 
 def main() -> int:

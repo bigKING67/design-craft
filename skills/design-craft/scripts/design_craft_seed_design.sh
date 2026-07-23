@@ -2,7 +2,7 @@
 set -euo pipefail
 
 SKILL_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-TEMPLATE_DIR="${SKILL_ROOT}/templates/vercel-geist"
+TEMPLATE_DIR="${SKILL_ROOT}/templates/developer-product"
 
 TARGET="."
 FORCE=0
@@ -18,18 +18,26 @@ Options:
   --force                 Overwrite existing DESIGN.md / DESIGN.dark.md.
   --dry-run               Print planned writes without changing files.
 
-Copies the bundled Vercel Geist seed templates to:
+Copies the original design-craft developer-product seed templates to:
   <project-dir>/DESIGN.md
   <project-dir>/DESIGN.dark.md
 EOF
 }
 
 abspath() {
-  python3 - "$1" <<'PY'
+  local resolved
+  resolved="$(python3 - "$1" <<'PY'
 import sys
 from pathlib import Path
 print(Path(sys.argv[1]).expanduser().resolve())
 PY
+  )"
+  resolved="${resolved//$'\r'/}"
+  if command -v cygpath >/dev/null 2>&1; then
+    cygpath -u "${resolved}"
+  else
+    printf '%s\n' "${resolved}"
+  fi
 }
 
 while [[ $# -gt 0 ]]; do
@@ -109,5 +117,5 @@ write_template "${DARK_TEMPLATE}" "${DARK_TARGET}"
 if [[ "${DRY_RUN}" == "1" ]]; then
   echo "dry_run: no files changed"
 else
-  echo "seeded Vercel Geist DESIGN.md pair"
+  echo "seeded design-craft developer-product DESIGN.md pair"
 fi

@@ -15,6 +15,13 @@ from urllib.error import HTTPError, URLError
 from urllib.parse import quote
 from urllib.request import Request, urlopen
 
+from design_craft_absorption_common import (
+    CUMULATIVE_STATUSES,
+    LATEST_RANGE_STATUSES,
+    LEGACY_DECISION_BY_CUMULATIVE_STATUS,
+    LOCK_SCHEMA,
+)
+
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -43,6 +50,12 @@ class UpstreamReport:
     locked_commit: str
     reviewed_commit: str
     absorbed_commit: str
+    cumulative_status: str
+    reviewed_through_commit: str
+    behavior_absorbed_through_commit: str
+    latest_range_base_commit: str
+    latest_range_head_commit: str
+    latest_range_status: str
     reviewed_at: str
     decision: str
     decision_notes: str
@@ -304,14 +317,22 @@ def build_report(
 ) -> list[UpstreamReport]:
     lock_path = root / "upstreams.lock.json"
     payload = json.loads(lock_path.read_text(encoding="utf-8"))
+    if payload.get("schema") != LOCK_SCHEMA:
+        raise ValueError(f"upstream lock schema must be {LOCK_SCHEMA}")
     reports: list[UpstreamReport] = []
 
     for name, meta in payload.get("upstreams", {}).items():
         rel_path = meta.get("path", "")
         upstream_path = root / rel_path
         locked = meta.get("commit", "")
-        reviewed = meta.get("reviewed_commit", "")
-        absorbed = meta.get("absorbed_commit", "")
+        reviewed = meta.get("reviewed_through_commit", meta.get("reviewed_commit", ""))
+        absorbed = meta.get(
+            "behavior_absorbed_through_commit", meta.get("absorbed_commit", "")
+        )
+        cumulative_status = meta.get("cumulative_status", "")
+        latest_range_base = meta.get("latest_range_base_commit", "")
+        latest_range_head = meta.get("latest_range_head_commit", "")
+        latest_range_status = meta.get("latest_range_status", "")
         reviewed_at = meta.get("reviewed_at", "")
         decision = meta.get("decision", "")
         decision_notes = meta.get("notes", "")
@@ -338,12 +359,25 @@ def build_report(
         remote_changed_files: list[ChangedFile] = []
         remote_detail_error: str | None = None
 
-        if decision not in {"absorbed", "partial", "provenance_only", "deferred"}:
-            notes.append("lock decision must be absorbed, partial, provenance_only, or deferred")
+        if cumulative_status not in CUMULATIVE_STATUSES:
+            notes.append("lock cumulative_status is invalid")
+        if latest_range_status not in LATEST_RANGE_STATUSES:
+            notes.append("lock latest_range_status is invalid")
+        expected_legacy = LEGACY_DECISION_BY_CUMULATIVE_STATUS.get(cumulative_status)
+        if expected_legacy and decision != expected_legacy:
+            notes.append(
+                f"legacy decision must be {expected_legacy} for cumulative_status={cumulative_status}"
+            )
         if not reviewed or not reviewed_at:
             notes.append("review metadata is incomplete")
-        if decision != "deferred" and not absorbed:
-            notes.append("non-deferred decisions require absorbed_commit")
+        if cumulative_status != "deferred" and not absorbed:
+            notes.append("non-deferred cumulative states require behavior_absorbed_through_commit")
+        if meta.get("reviewed_commit") != reviewed:
+            notes.append("reviewed_commit must alias reviewed_through_commit")
+        if meta.get("absorbed_commit") != absorbed:
+            notes.append("absorbed_commit must alias behavior_absorbed_through_commit")
+        if latest_range_head != reviewed:
+            notes.append("latest range head must match reviewed_through_commit")
 
         if check_remote:
             remote_commit, remote_ref, remote_error = remote_head(meta.get("repo", ""))
@@ -407,6 +441,12 @@ def build_report(
                 locked_commit=locked,
                 reviewed_commit=reviewed,
                 absorbed_commit=absorbed,
+                cumulative_status=cumulative_status,
+                reviewed_through_commit=reviewed,
+                behavior_absorbed_through_commit=absorbed,
+                latest_range_base_commit=latest_range_base,
+                latest_range_head_commit=latest_range_head,
+                latest_range_status=latest_range_status,
                 reviewed_at=reviewed_at,
                 decision=decision,
                 decision_notes=decision_notes,
@@ -448,8 +488,19 @@ def print_text(reports: list[UpstreamReport]) -> None:
         print(f"  locked_commit: {report.locked_commit}")
         print(f"  reviewed_commit: {report.reviewed_commit or 'unavailable'}")
         print(f"  absorbed_commit: {report.absorbed_commit or 'unavailable'}")
+        print(f"  cumulative_status: {report.cumulative_status or 'unavailable'}")
+        print(
+            "  behavior_absorbed_through_commit: "
+            f"{report.behavior_absorbed_through_commit or 'unavailable'}"
+        )
+        print(
+            "  latest_range: "
+            f"{report.latest_range_base_commit or 'unavailable'}.."
+            f"{report.latest_range_head_commit or 'unavailable'}"
+        )
+        print(f"  latest_range_status: {report.latest_range_status or 'unavailable'}")
         print(f"  reviewed_at: {report.reviewed_at or 'unavailable'}")
-        print(f"  decision: {report.decision or 'unavailable'}")
+        print(f"  legacy_decision: {report.decision or 'unavailable'}")
         if report.decision_notes:
             print(f"  decision_notes: {report.decision_notes}")
         print(f"  current_commit: {report.current_commit or 'unavailable'}")
@@ -501,8 +552,8 @@ def render_markdown_summary(reports: list[UpstreamReport]) -> str:
     lines = [
         "# design-craft upstream audit",
         "",
-        "| Upstream | Reviewed | Remote | State | Recommendation |",
-        "|---|---|---|---|---|",
+        "| Upstream | Cumulative | Latest range | Reviewed | Remote | State | Recommendation |",
+        "|---|---|---|---|---|---|---|",
     ]
     for report in reports:
         state = "current"
@@ -511,8 +562,10 @@ def render_markdown_summary(reports: list[UpstreamReport]) -> str:
         elif report.remote_commit is None:
             state = "remote unavailable"
         lines.append(
-            "| {name} | `{reviewed}` | `{remote}` | {state} | {recommendation} |".format(
+            "| {name} | {cumulative} | {latest} | `{reviewed}` | `{remote}` | {state} | {recommendation} |".format(
                 name=report.name,
+                cumulative=report.cumulative_status or "unavailable",
+                latest=report.latest_range_status or "unavailable",
                 reviewed=(report.reviewed_commit or "unavailable")[:12],
                 remote=(report.remote_commit or "unavailable")[:12],
                 state=state,
@@ -610,8 +663,15 @@ def main() -> int:
             for report in reports
             if not report.reviewed_commit
             or not report.reviewed_at
-            or report.decision not in {"absorbed", "partial", "provenance_only", "deferred"}
-            or (report.decision != "deferred" and not report.absorbed_commit)
+            or report.cumulative_status not in CUMULATIVE_STATUSES
+            or report.latest_range_status not in LATEST_RANGE_STATUSES
+            or report.decision
+            != LEGACY_DECISION_BY_CUMULATIVE_STATUS.get(report.cumulative_status)
+            or (
+                report.cumulative_status != "deferred"
+                and not report.behavior_absorbed_through_commit
+            )
+            or report.latest_range_head_commit != report.reviewed_through_commit
             or report.reviewed_remote_drift is True
         ]
         if invalid:

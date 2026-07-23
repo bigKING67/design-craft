@@ -4,6 +4,20 @@ All notable local changes to `design-craft` are recorded here.
 
 ## 0.5.0 - Unreleased
 
+- Added a five-Skill Emil Kowalski absorption contract and human-readable
+  matrix. The gate verifies all five entrypoints, three auxiliary Markdown
+  files, local capability mappings, the pinned commit, and the upstream fact
+  that there is no non-Markdown implementation library to vendor.
+- Deepened the Emil fusion with concrete web motion recipes, tooltip/transient
+  lifecycle handling, reusable-component craft, optical typography details,
+  and the previously omitted spring, ambient-motion, and animation-principle
+  vocabulary while explicitly rejecting overbroad static performance claims,
+  forced delegation/read-only policy, and promotional response text.
+- Fixed remote portability validation by resolving the platform-specific npm
+  executable and fetching the privacy-history baseline in portable/Windows CI.
+  Hardened iOS runtime evidence around a fresh ephemeral Simulator and a fully
+  declared URL scheme so stale hosted-runner migration state cannot invalidate
+  the deep-link interaction proof.
 - Added a root MIT license, preserved upstream Apache/MIT license and notice
   text, and documented the separate Vercel snapshot redistribution boundary.
 - Restricted the Pi/npm payload to the canonical skill plus required legal
@@ -24,13 +38,23 @@ All notable local changes to `design-craft` are recorded here.
   reporting four-host and physical-device gaps as optional release
   certification status; the existing portable/local and `release-certify`
   contracts remain strict and unchanged.
-- Regenerated all three Codex/Pi current-source v2 benchmarks against
-  `gpt-5.6-sol` max and `deepseek-v4-pro` high, rescored each criterion without
-  carrying forward stale headline scores, and expanded multilingual output
-  validation to recognize concrete Chinese design-correction headings. Native
-  maturity reporting now preserves per-runtime truth: current-source iOS
-  Simulator and Android Emulator evidence remain observed while a missing or
-  invalid physical-device artifact is reported independently.
+- Replaced the old cross-agent invocation path with isolated run-manifest v2
+  workspaces and score schema v3. Every host now copies and hashes the exact
+  Skill tree it used, fingerprints the source worktree before/after execution,
+  and derives host/model/command metadata from the controlled run. Existing
+  Codex/Pi artifacts remain historical until all four hosts are rerun against a
+  clean current source; Cursor/Claude evidence is not claimed in advance.
+- Moved the former Codex/Pi v2 benchmarks into self-contained historical
+  snapshots with their matching old prompts and scorecards. Active cases now
+  carry explicit four-host unverified notes until real v3/run-v2 evidence is
+  generated; hash editing or field backfills cannot promote history.
+- Preserved per-runtime native truth while upgrading certification to evidence
+  schema v3 and role-specific artifacts. Earlier Simulator/Emulator v2 evidence
+  is archived as immutable history until regenerated against the final clean
+  source, and physical-device evidence remains required independently.
+- Split operational maturity from certification evidence: validated historical
+  run baselines support the normal 95/100 workflow, while current four-host and
+  native evidence exclusively controls the 95-to-100 certification cap.
 - Added compact JSON and human-readable frontend route outputs so normal agent
   handoffs do not need to ingest the full static delivery contract. Moved
   architecture-intent and performance-surface triggers into the routing JSON
@@ -43,9 +67,9 @@ All notable local changes to `design-craft` are recorded here.
   their current Node 24 runtime releases.
 - Added Dependabot coverage for GitHub Actions and npm metadata while retaining
   full-SHA action pinning and normal review gates.
-- Documented the verified macOS/Linux automation boundary and the currently
-  unverified Windows-via-WSL/Git-Bash path instead of implying native Windows
-  certification.
+- Added a Windows Git Bash portable CI lane while keeping its status explicit:
+  native Windows remains pending until the current-source remote lane succeeds;
+  WSL is a compatible fallback rather than separate certification evidence.
 - Reduced broad-task context loading to a three-reference core with explicit
   conditional additions, preventing cross-host context dilution from loading
   the full reference library by default.
@@ -87,12 +111,37 @@ All notable local changes to `design-craft` are recorded here.
   to avoid production-log pollution or caller-session reads.
 - Defined two honest maturity levels: the normal portable/local release path
   remains usable at 95/100, while certified 100/100 now additionally requires
-  current-source v2 evidence from Codex, Pi, Cursor, and Claude plus observed
+  current-source score schema v3/run-manifest v2 evidence from Codex, Pi,
+  Cursor, and Claude plus observed
   iOS Simulator, Android Emulator, and real-device runtime evidence.
 - Added cryptographically bound cross-agent evidence with skill version,
-  source commit, skill-tree, prompt, scorecard, and output hashes; v2 scores are
-  recomputed from per-criterion earned points instead of accepting arbitrary
-  headline integers.
+  source commit, skill-tree, prompt, scorecard, output, run-manifest, and
+  runner/adapter-contract hashes; v3 scores are recomputed from per-criterion
+  earned points instead of accepting arbitrary headline integers.
+- Added two controlled no-skill/current-Emil/design-craft ablations. The Pi
+  runner isolates all three variants, anonymizes outputs, and requires an
+  independent blind judge whose raw output, normalized judgment, host metadata,
+  and worktree fingerprints are preserved. Real observed runs remain a strict
+  release requirement rather than being inferred from offline self-checks.
+- Selectively absorbed Emil's `improve-animations` recon, frequency-map,
+  eight-dimension audit, vetted prioritization, self-contained planning, and
+  reconciliation workflow. Added `motion-plan` mode and a deterministic plan
+  scaffold while keeping absolute heuristics subordinate to project authority
+  and runtime evidence.
+- Added a deterministic native Release bundle that binds the exact latest
+  successful `v<VERSION>` tag-push run, iOS Simulator, Android Emulator, and
+  physical-device evidence. Its validator rejects undeclared or duplicate tar
+  members, links/devices, path traversal, non-normalized metadata, stale source
+  hashes, and non-deterministic builds. GitHub Release verification now requires
+  six assets across the package and native triplets.
+- Added dependency-free Python/shell/JSON/Node lint plus a dedicated contract
+  test lane for cross-agent, comparative, native, release, workflow, and
+  governance self-checks. All Validate jobs now have timeouts and workflow
+  concurrency policies.
+- Hardened GitHub branch/tag ruleset validation: both rulesets require empty
+  bypass lists, the main branch requires all 12 matrix jobs plus Android,
+  Windows, lint, and contract-test contexts, and branch creation remains exempt
+  only through `do_not_enforce_on_create=true`.
 - Allowed host-specific Claude/Cursor skill copies to use separate clean
   provenance only when their complete skill trees match, and made custom score
   output paths validate the artifact that was actually written.
@@ -108,13 +157,17 @@ All notable local changes to `design-craft` are recorded here.
 - Changed the scheduled upstream audit from weekly to daily, added GitHub
   compare details, path classification, workflow summaries, retained artifacts,
   and an automatically maintained review-required issue.
-- Reviewed the latest Impeccable repository-operations-only commit and Emil
-  Kowalski README-only commit without importing unrelated behavior.
+- Reviewed pinned Impeccable repository-operations-only and Emil README-only
+  ranges without importing unrelated behavior; mutable remote freshness remains
+  a release-time gate rather than a historical changelog claim.
 - Rebuilt local installation around a lock, same-filesystem staging, atomic
   replacement, rollback, bounded backups, generated provenance metadata, and a
   dedicated source/install verifier that rejects non-ancestor source commits,
   skill-scoped dirty-state, source-root, and source-path mismatches even when
   tree hashes match.
+- Removed active-install parity from `release-gate-source`; the atomic installer
+  now runs first and `sync-status-check` is enforced immediately afterward,
+  eliminating the stale-install circular dependency.
 - Added installed `VERSION` and Codex route-pack compatibility contracts,
   refreshed existing legacy aliases by default, and exposed install/route
   compatibility through doctor and maturity checks.
@@ -123,7 +176,8 @@ All notable local changes to `design-craft` are recorded here.
   route/worker cores and routing schema, and moved strict semantic validation to
   the real Python cores plus browser-tool and unauthorized-`ultra` probes.
 - Expanded portable CI from a single Python 3.13 lane to a Python
-  3.11/3.12/3.13 matrix across both Ubuntu/macOS and Node 22/24.
+  3.11/3.12/3.13 matrix across Ubuntu/macOS and Node 22/24, plus Windows Git
+  Bash, Android fixture build, lint, and contract-test lanes.
 - Added strict native-runtime evidence schemas, environment probing, and
   self-checks; evidence now requires a present, non-empty, directory-contained
   artifact with matching byte count and SHA-256, so placeholder JSON cannot

@@ -1,14 +1,20 @@
 ---
 name: design-craft
-description: "Use for product UI/UX and design-engineering quality across web, iOS, Android, and adaptive cross-platform products: product-context shaping, visual taste critique, design-system enforcement, UI polish, interaction physics, motion review, responsive/adaptive validation, accessibility, and frontend/native craft. Do not use for backend-only logic, database-only migrations, pure algorithms, CLI-only tools, or non-visual refactors unless product UI quality is affected."
+description: "Use primarily for web and desktop product UI/UX design engineering: product context, visual critique, design systems, UI polish, motion and interaction, accessibility, responsive behavior, and frontend implementation quality. When the target is explicitly native, also covers iOS, Android, and adaptive quality. Do not use for backend-only, database-only, algorithm-only, or CLI-only work."
 ---
 
 # Design Craft
 
-Production-grade design engineering work for this machine: product UI, UX,
-visual taste, motion, design systems, web and native implementation,
-performance, architecture, project quality, and directory governance in one
-workflow.
+Production-grade, web-first design engineering for this machine: product UI,
+UX, visual taste, motion, design systems, frontend implementation, performance,
+architecture, project quality, and directory governance in one workflow. iOS,
+Android, and adaptive references are optional extensions loaded only when the
+resolved target is genuinely native or cross-platform.
+
+Default to `platform=web` for ordinary desktop/browser work. A mobile viewport,
+responsive page, PWA, Capacitor/Cordova shell, or WebView does not by itself
+make the target native. Native quality gates must not block the desktop Web
+profile when no native product is in scope.
 
 ## When not to use
 
@@ -31,7 +37,7 @@ Use this order when evidence conflicts:
 3. Project `PRODUCT.md` for product/platform/user/accessibility context.
 4. Project `DESIGN.md` or equivalent visual style authority.
 5. Local frontend route planner output.
-6. Bundled Vercel Geist seed templates for new or weak web developer-product
+6. Bundled original developer-product seed templates for new or weak web
    systems.
 7. `design-craft` references.
 8. Upstream generic visual or Impeccable guidance.
@@ -45,6 +51,8 @@ system, data density, report grammar, or runtime truth.
    `AGENTS.md`, optional `PRODUCT.md`, `DESIGN.md`, route files, package/build
    scripts, existing components, platform targets, style tokens, and similar
    implementations.
+   Resolve the platform from source and product evidence; use Web by default
+   unless real iOS, Android, or cross-platform targets establish otherwise.
 2. For L1+ frontend implementation tasks, run the local route planner when
    available:
    `bash ~/.codex/tools/frontend_route_plan.sh --surface <surface> --intent <intent> --scope <scope> [--platform <auto|web|ios|android|adaptive>] [--product-context-path <abs PRODUCT.md>] [--style-authority-path <abs DESIGN.md>] --output compact-json`.
@@ -72,7 +80,9 @@ system, data density, report grammar, or runtime truth.
    optimize/structure/architecture passes,
    `scripts/design_craft_pass.sh` as the preferred neutral wrapper,
    `scripts/design_craft_seed_design.sh` for seeding `DESIGN.md` and
-   `DESIGN.dark.md` from the bundled Vercel Geist templates,
+   `DESIGN.dark.md` from the bundled original developer-product templates,
+   `scripts/design_craft_motion_plan.py` for source-stamped motion implementation
+   plan scaffolds,
    `scripts/design_craft_detect.sh` for detector and local design-craft signals,
    `scripts/design_craft_taste_review.sh` for stable product UI taste-review
    packets,
@@ -120,8 +130,8 @@ Read only the references needed for the current task:
   `references/product-design-principles.md`.
 - New or weakly specified developer-product, SaaS, dashboard, admin, infra,
   docs, or tooling surfaces without a stronger style authority:
-  `templates/vercel-geist/design.md` and
-  `templates/vercel-geist/design.dark.md` as the default initial seed.
+  `templates/developer-product/design.md` and
+  `templates/developer-product/design.dark.md` as the default initial seed.
 - Product UI taste scoring, "why not 100", screenshot/product-page review,
   concrete top issues, and acceptance criteria:
   `references/product-ui-taste-review.md`; add
@@ -140,6 +150,18 @@ Read only the references needed for the current task:
   popovers, drawers, gestures, perceived animation performance, or reduced
   motion:
   `references/motion-quality.md`.
+- Concrete web motion implementation recipes for press feedback, anchored
+  overlays, tooltip groups, `@starting-style`, percentage transforms,
+  clip-path, crossfade repair, or transient UI lifecycle:
+  `references/motion-patterns.md` together with
+  `references/motion-quality.md`.
+- Whole-codebase animation improvement, motion inventory, prioritized audit,
+  implementation-ready motion plans, or plan reconciliation: read
+  `references/motion-audit-planning.md` together with
+  `references/motion-quality.md`; if recon finds drag, swipe, sheet, drawer,
+  momentum, reordering, or another direct-manipulation surface, also read
+  `references/interaction-physics.md`. Scaffold individual plans from
+  `templates/motion-plan/plan.md`.
 - Gesture-driven motion, direct manipulation, interruption, springs, velocity
   handoff, projection, hysteresis, and rubber-banding:
   `references/interaction-physics.md`.
@@ -148,6 +170,9 @@ Read only the references needed for the current task:
   `references/motion-vocabulary.md`.
 - Code elegance, component boundaries, state, types, errors:
   `references/engineering-quality.md`.
+- Reusable component-library APIs, defaults, invisible interaction edge cases,
+  and interactive documentation: `references/engineering-quality.md`; add
+  `references/motion-patterns.md` when transient or animated UI is involved.
 - UI performance, Web Vitals, render hot paths, charts/tables:
   `references/performance-quality.md`.
 - Architecture, interfaces, migrations, data flow:
@@ -176,7 +201,7 @@ paths, `project-structure.md` for structural changes, `report-quality.md` for
 reports/dashboards, and `intent-map.md` for subjective briefs. Do not load the
 entire reference library merely because the request is broad.
 
-For native or cross-platform tasks, also read `product-context.md`,
+Only for native or cross-platform tasks, also read `product-context.md`,
 `product-design-principles.md`, the matching platform reference(s),
 `interaction-physics.md` when gestures are involved, and
 `validation-contract.md`.
@@ -206,6 +231,19 @@ unverified:
 - Platform: native navigation, controls, insets, gestures, accessibility, and
   adaptive structure match the resolved platform; mobile web is not mislabeled
   as native.
+- Static evidence: source can prove present or missing branches, property
+  ownership, and explicit values; it cannot prove perceived lag, smoothness,
+  frame rate, compositing, browser-specific behavior, layout shift, or device
+  feel. Label those as risks or runtime hypotheses until observed.
+- Direct manipulation: for drag, swipe, sheet, drawer, reorder, momentum, or
+  scrubbing work, reject input lockout and require pointer/native capture, grab
+  offset, 1:1 tracking, explicit coordinate space and velocity units,
+  interruption from the current presentation value without a jump,
+  non-conflicting transform ownership, and a non-vestibular Reduced Motion
+  path. Make the velocity units and bounded projected-endpoint method explicit,
+  but do not change project-owned target-selection semantics unless product
+  authority, existing behavior, or runtime evidence establishes momentum-based
+  targeting.
 - Engineering: clear component boundaries, no needless abstraction, observable
   errors, dependency checks before imports.
 - Performance: measured or reasoned hot paths, no layout thrashing, no unbounded
@@ -236,5 +274,14 @@ For frontend implementation work, summarize:
 - Screenshot validation tool, target, artifact path/hash/dimensions, or why it
   was skipped.
 - Performance impact and remaining risks.
+
+Default critique and audit budget:
+
+- one-sentence diagnosis;
+- at most five blocking findings and five secondary findings;
+- at most eight concrete design moves;
+- the smallest validation plan that can change the decision;
+- target 150 lines or fewer unless the user explicitly requests an exhaustive
+  review, full scorecard, or report artifact.
 
 Keep output concise, evidence-backed, and honest about anything not verified.

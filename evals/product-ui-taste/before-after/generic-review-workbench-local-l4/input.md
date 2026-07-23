@@ -18,20 +18,21 @@ and after variants are served from the same HTML file and selected with:
 
 | Artifact | Path | SHA-256 | Dimensions |
 |---|---|---|---|
-| before desktop viewport | `~/.tmwd-browser-mcp/runtime/runs/design-craft-generic-l4/20260630T163339Z-headless-chrome-final/artifacts/screenshot-viewport-generic-review-workbench-before-desktop-headless-chrome.png` | `db939b6b342a9833b1ec9d133c5aa1d8a6c4f87d02cdae7b9ffd723182de4da3` | 1440x900 |
-| before compact viewport | `~/.tmwd-browser-mcp/runtime/runs/design-craft-generic-l4/20260630T163339Z-headless-chrome-final/artifacts/screenshot-viewport-generic-review-workbench-before-compact500-headless-chrome.png` | `7d5b355b47622fa44fd0df1016fed43347c0ac09b29f322279ae7c467b303017` | 500x844 |
+| before desktop viewport | `artifacts/screenshot-viewport-generic-review-workbench-before-desktop-headless-chrome.png` | `db939b6b342a9833b1ec9d133c5aa1d8a6c4f87d02cdae7b9ffd723182de4da3` | 1440x900 |
+| before compact viewport | `artifacts/screenshot-viewport-generic-review-workbench-before-compact500-headless-chrome.png` | `7d5b355b47622fa44fd0df1016fed43347c0ac09b29f322279ae7c467b303017` | 500x844 |
 
 ## After evidence
 
 | Artifact | Path | SHA-256 | Dimensions |
 |---|---|---|---|
-| after desktop viewport | `~/.tmwd-browser-mcp/runtime/runs/design-craft-generic-l4/20260630T163339Z-headless-chrome-final/artifacts/screenshot-viewport-generic-review-workbench-after-desktop-headless-chrome.png` | `96827d97a94041db18711e9502fe1978194e55cf270a20462ad9a9b33ffa2ee9` | 1440x900 |
-| after compact viewport | `~/.tmwd-browser-mcp/runtime/runs/design-craft-generic-l4/20260630T163339Z-headless-chrome-final/artifacts/screenshot-viewport-generic-review-workbench-after-compact500-headless-chrome.png` | `5fdf66b1ebde14a7612445919c9f2600ddd831a645f73b01be7d068a58121afa` | 500x844 |
+| after desktop viewport | `artifacts/screenshot-viewport-generic-review-workbench-after-desktop-headless-chrome.png` | `96827d97a94041db18711e9502fe1978194e55cf270a20462ad9a9b33ffa2ee9` | 1440x900 |
+| after compact viewport | `artifacts/screenshot-viewport-generic-review-workbench-after-compact500-headless-chrome.png` | `5fdf66b1ebde14a7612445919c9f2600ddd831a645f73b01be7d068a58121afa` | 500x844 |
 
 ## Runtime evidence
 
 - Browser target: local static fixture served from `evals/fixtures/l4-pages`.
-- Capture tool: Google Chrome headless CLI, writing repo-external PNG artifacts under `~/.tmwd-browser-mcp/runtime/runs/design-craft-generic-l4/`.
+- Capture tool: Google Chrome headless CLI. The reviewed, project-neutral PNGs
+  are committed under this case's `artifacts/` directory for durable replay.
 - Viewports: desktop `1440x900`, compact responsive `500x844`.
 - Layout metrics: headless `--dump-dom` reads `data-design-craft-layout-metrics`; all four captures record `horizontal_overflow:false`.
 - Interaction states: static fixture button state is visible; no hover, keyboard traversal, async loading, empty, or error states are claimed.

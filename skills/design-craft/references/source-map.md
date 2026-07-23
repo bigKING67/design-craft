@@ -4,6 +4,14 @@ This project keeps upstream repositories as pristine submodules under
 `upstreams/`. The installed skill is a curated fusion layer; do not edit
 upstream files directly.
 
+## Contents
+
+- [Upstreams](#upstreams)
+- [External design references](#external-design-references)
+- [Local calibration artifacts](#local-calibration-artifacts)
+- [Maintenance rule](#maintenance-rule)
+- [Attribution rule](#attribution-rule)
+
 ## Upstreams
 
 ### Leonxlnx/taste-skill
@@ -15,10 +23,17 @@ upstream files directly.
   `06d6028b5c623016c59ce8536f578e5a1127b499`
 - Initial commit note:
   `2026-06-21T00:54:21+02:00 docs(readme): remove sponsor table and tighten logo-to-text spacing`
-- Current reviewed commit:
+- Pinned compatibility commit:
   `b17742737e796305d829b3ad39eda3add0d79060`
-- 2026-07-10 decision: `provenance_only`; the reviewed range changes README
-  sponsorship and image assets, with no behavior imported into design-craft.
+- Current reviewed remote commit:
+  `98565e65bc3274ddf6eb0838734341714057178b`
+- Cumulative status: `selective_absorbed`; behavior through the initial
+  `06d6028b5c623016c59ce8536f578e5a1127b499` snapshot is represented in the
+  local visual-judgment, product-taste, design-move, and design-system layers.
+- Latest-range status: `provenance_only`; the range from `b177427` through
+  `98565e6` changes README sponsorship and sponsor image assets only.
+- Contract: `docs/taste-skill-absorption.md`, validated by
+  `scripts/design_craft_taste_absorption.py` in the canonical repository.
 - Primary material to inspect:
   - `skills/taste-skill/SKILL.md`
   - `skills/redesign-skill/SKILL.md`
@@ -40,10 +55,17 @@ preflight thinking.
   `d2ab4ddee6fa63002fae680652b5fbd31735e280`
 - Initial commit note:
   `2026-06-22T16:01:16-07:00 Make Copilot built-in note a callout block under the Install header`
-- Current absorbed commit:
-  `da99645a58400ed7acb201e6904f9413efd89c6e`
-- Current reviewed commit:
+- Pinned compatibility commit:
   `630fc2682a5bd39b25a8e61f74b6b3f14f2b1e21`
+- Current selected-behavior boundary and reviewed remote commit:
+  `fc3dc501a6f0e4f238a230b0b30148490a65171a`
+- Cumulative status: `selective_absorbed` for the command taxonomy,
+  brief/change-scope authority, surface modes, craft floor, applicable scoring,
+  detector/native guidance, hardening, measurement, and evidence contracts.
+- Latest-range status: `selective_absorbed` for the reviewed range from
+  `630fc268` through `fc3dc501`.
+- Contract: `docs/impeccable-absorption.md`, validated by
+  `scripts/design_craft_impeccable_absorption.py` in the canonical repository.
 - 2026-06-30 absorption note:
   remote updates were reviewed and selectively absorbed for critique method
   provenance, explicit degraded/single-context reporting, `.impeccable`
@@ -58,6 +80,14 @@ preflight thinking.
 - 2026-07-11 review note:
   the new range changes only GitHub sheriff automation and its tests. It is
   repository-operations provenance and adds no design-craft behavior.
+- 2026-07-23 absorption note:
+  selectively absorbed explicit brief authority, refinement-versus-redesign
+  boundaries, evidence-based visual authority, four per-surface modes,
+  post-direction craft verification, applicable-denominator critique scoring,
+  and additional anti-generic signals. Random concept generation, mandatory
+  context/menu flow, live/provider/hooks runtime, asset generation, the full
+  detector/vendor bundle, generated provider copies, promotional tone, and
+  universal ecosystem prescriptions remain rejected.
 - Primary material to inspect:
   - `.agents/skills/impeccable/SKILL.md`
   - `site/content/skills/*.md`
@@ -78,58 +108,94 @@ production-readiness flows.
   `a47903a06a05d2e24c483bd8961c85969a51a494`
 - Initial commit note:
   `2026-06-29T15:30:16+02:00 Update README.md`
-- Current absorbed commit:
-  `f76beceb7d3fc8c43309cefad5a095a206103a4e`
-- Current reviewed commit:
-  `220e8607c90b17337d210125777b7b695f26c221`
+- Pinned compatibility commit:
+  `7bb7061b5cf7de15ea1aeaf00fbd9e6592a20fce`
+- Current selected-behavior boundary:
+  `d62b0d8f9a8eb795a512b76239bb873ab9ac7cd5`
+- Current reviewed remote commit:
+  `f6f79ca1d8e9e2d82c8b90d7481b70ca66f4adfb`
+- Cumulative status: `selective_absorbed`; the motion-opportunity gate is local,
+  while the opinionated library picker and Base UI-only prescription are
+  intentionally rejected.
+- Latest-range status: `selective_absorbed` for the range from `7bb7061`
+  through `f6f79ca`.
 - 2026-07-10 decision: `absorbed`; original design-craft references now cover
   product-design principles, Apple-style direct manipulation,
   presentation-value interruption, spring response/damping, velocity handoff,
   momentum projection, rubber-banding, accessibility variants, and optical
   typography.
-- 2026-07-11 review note: the new range changes one README apostrophe only;
-  no additional design or motion guidance was imported.
+- 2026-07-11 audit-to-plan absorption note: selectively absorbed the new
+  `improve-animations` recon, frequency mapping, eight-dimension audit, finding
+  vetting, impact/effort prioritization, self-contained plan, and reconciliation
+  workflow into original design-craft guidance and templates. Absolute upstream
+  heuristics remain calibrated by project authority and runtime evidence.
+- 2026-07-11 provenance note: the following `b024c8b` commit changes only README
+  newsletter copy; no additional behavior was imported.
+- 2026-07-12 provenance note: `4691d39` and merge commit `7bb7061` correct two
+  README typos only; no additional behavior was imported.
+- 2026-07-12 five-Skill deep-audit note: all five `SKILL.md` entrypoints plus
+  `AUDIT.md`, `PLAN-TEMPLATE.md`, and `STANDARDS.md` are now mapped in
+  `docs/emilkowalski-absorption.md` and checked by
+  `scripts/design_craft_emil_absorption.py`. This pass added original local web
+  motion recipes, component-lifecycle craft, optical typography detail, and
+  the previously omitted spring/ambient/principle vocabulary. The upstream
+  Skill tree has no non-Markdown implementation files to vendor.
+- 2026-07-23 latest-range note: `find-animation-opportunities` is already
+  represented by the local purpose/frequency/speed/function gate, missed
+  opportunities, explicit rejection, and bounded output. `pick-ui-library` and
+  the Base UI-only substitution are rejected as universal product policy;
+  README and link corrections remain provenance only.
 - Primary material to inspect:
   - `skills/emil-design-eng/SKILL.md`
+  - `skills/apple-design/SKILL.md`
   - `skills/review-animations/SKILL.md`
   - `skills/review-animations/STANDARDS.md`
+  - `skills/improve-animations/SKILL.md`
+  - `skills/improve-animations/AUDIT.md`
+  - `skills/improve-animations/PLAN-TEMPLATE.md`
   - `skills/animation-vocabulary/SKILL.md`
 
 Use this upstream for motion purpose, frequency-based animation decisions,
 easing and duration standards, origin-aware physicality, interruptibility,
 gesture craft, animation performance, reduced-motion behavior, strict motion
-reviews, and animation vocabulary. Do not absorb its standalone greeting or
-tone; keep the local `design-craft` voice evidence-led and project-aware.
+reviews, codebase-wide audit-to-plan workflows, and animation vocabulary. Do
+not absorb standalone tone or unqualified framework/performance claims; keep
+the local `design-craft` voice evidence-led, measured, and project-aware.
+In the canonical source repository, see `docs/emilkowalski-absorption.md` for
+the capability-level status matrix, including deliberate rejections and
+contextual partial coverage.
 
 ## External design references
 
-### Vercel Geist `design.md`
+### Vercel design references and clean-room replacement
 
 - URLs:
   - `https://vercel.com/design.md`
   - `https://vercel.com/design.dark.md`
 - Review note: inspected as public design-system references on 2026-06-24.
-- Vendored templates:
+- Historical package paths:
   - `templates/vercel-geist/design.md`
   - `templates/vercel-geist/design.dark.md`
+- Current original templates:
+  - `templates/developer-product/design.md`
+  - `templates/developer-product/design.dark.md`
 - Workflow absorption:
   - `references/design-system-contract.md`
 
-Use the vendored files as the default initial template for new or weakly
-specified developer-product, SaaS, dashboard, admin, infra, docs, and tooling
-surfaces. They provide a strong complete baseline: structured tokens plus
-human-readable rationale, identical light/dark token names with theme-specific
-values, role-based color scales, component state coverage, motion limits, focus
-rules, and UI copy discipline.
+The Vercel endpoints were reviewed as design-system research. The current
+package no longer redistributes their verbatim snapshots. It ships an original
+design-craft developer-product pair with structured semantic tokens, matched
+light/dark roles, component states, motion limits, focus rules, and UI copy
+discipline.
 
-Use `scripts/design_craft_seed_design.sh` to copy the vendored pair into a
+Use `scripts/design_craft_seed_design.sh` to copy the original pair into a
 target project as `DESIGN.md` and `DESIGN.dark.md`. The route wrapper reports
-`vercel_geist_seed_applicable` so a new or weak developer-product surface does
+`developer_product_seed_applicable` so a new or weak developer-product surface does
 not rely on an implicit style-authority guess.
 
 When a project already has a credible `DESIGN.md`, token system, brand guide, or
 strong runtime visual language, keep the project authority first and use the
-Geist templates as a comparison baseline for missing system pieces.
+developer-product templates as a comparison baseline for missing system pieces.
 
 ## Local calibration artifacts
 
@@ -140,6 +206,9 @@ Geist templates as a comparison baseline for missing system pieces.
 - `references/interaction-physics.md`: curated direct-manipulation,
   interruption, spring, velocity, projection, hysteresis, and rubber-band
   contract.
+- `references/motion-patterns.md`: original web implementation recipes for
+  press feedback, anchored overlays, tooltip groups, interruptible state,
+  percentage transforms, clip-path, crossfade repair, and transient lifecycle.
 - `references/ios-quality.md`, `references/android-quality.md`, and
   `references/adaptive-quality.md`: original platform-specific audit and
   evidence boundaries built from the reviewed upstream principles.
@@ -185,7 +254,8 @@ Geist templates as a comparison baseline for missing system pieces.
 When updating upstreams:
 
 1. Run `scripts/upstream_absorption_report.py --remote` when you need to know
-   whether a remote head changed without mutating submodules.
+   whether a remote head changed without mutating submodules. The pinned
+   compatibility commit may intentionally lag the reviewed remote head.
 2. Run `scripts/sync_upstreams.sh --name <name> --commit <40-char-sha>` only
    after selecting an explicit commit; the helper never advances review or
    absorption metadata automatically.
@@ -196,7 +266,10 @@ When updating upstreams:
 4. Inspect upstream changelogs and key skill/command files.
 5. Update this source map only after deciding what the fusion layer should
    absorb.
-6. Never overwrite `skills/design-craft` automatically from upstream.
+6. Update the matching absorption matrix and strict validator. Keep the pinned
+   source, cumulative behavior boundary, and latest reviewed commit range
+   separate.
+7. Never overwrite `skills/design-craft` automatically from upstream.
 
 ## Attribution rule
 

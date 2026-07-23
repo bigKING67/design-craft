@@ -20,8 +20,9 @@ The only file-list authority is:
 The route-pack helper selects entries with `route_pack=true`; the global
 snapshot selects entries with `snapshot=true`. Every required route-pack file
 must also be snapshot-covered. The helper rejects an unknown manifest schema,
-duplicate or unsafe paths, invalid field types, and a manifest that does not
-include itself as a required route-pack file.
+duplicate or unsafe paths, symlinks or resolved paths outside the source root,
+invalid field types, and a manifest that does not include itself as a required
+route-pack file.
 
 The current required route-pack core includes:
 
@@ -34,6 +35,13 @@ tools/frontend_route_plan.sh
 tools/frontend_route_core.py
 tools/frontend_route_authority.py
 tools/frontend_route_browser.py
+tools/frontend_route_browser_capture.py
+tools/frontend_route_browser_capture_sanitize.py
+tools/frontend_route_browser_capture_store.py
+tools/frontend_route_browser_contract.py
+tools/frontend_route_browser_receipt.py
+tools/frontend_route_browser_receipt_core.py
+tools/frontend_route_browser_receipt_reducer.py
 tools/frontend_route_delivery.py
 tools/frontend_route_runtime.py
 tools/frontend_route_telemetry.py
@@ -48,17 +56,35 @@ tools/frontend_preflight_spec.json
 tools/frontend_preflight.py
 tools/frontend_preflight_run.sh
 tools/frontend_preflight_verify.sh
-tools/agents_quality_verify.sh
+tools/frontend_preflight_policy.json
+tools/frontend_preflight_policy_run.sh
+tools/frontend_preflight_report.sh
+tools/frontend_preflight_log_summary.sh
+tools/frontend_preflight_log_rotate.sh
+tools/frontend_preflight_log_maintenance.sh
+tools/templates/frontend-preflight-ci.yml
 tools/tests/test_frontend_route_plan.sh
+tools/tests/test_frontend_browser_capture.py
+tools/tests/test_frontend_browser_lifecycle_receipt.py
+tools/tests/test_frontend_browser_lifecycle_receipt.sh
 tools/tests/test_frontend_route_telemetry.sh
 tools/tests/test_frontend_route_contract.sh
 tools/tests/test_frontend_delivery_contract.sh
 tools/tests/test_frontend_preflight.sh
+tools/tests/frontend_preflight/common.sh
+tools/tests/frontend_preflight/test_gate.sh
+tools/tests/frontend_preflight/test_route.sh
+tools/tests/frontend_preflight/test_observability.sh
+tools/tests/frontend_preflight/test_policy.sh
+tools/tests/frontend_preflight/test_state_concurrency.sh
 tools/tests/test_frontend_preflight_spec_sync.sh
 ```
 
-Optional helpers, such as preflight policy/report/log scripts, are included
-when their manifest entries use `route_pack=true` and the files are present.
+`frontend_authority_init.sh` remains an optional helper. Policy, report, and log
+scripts are required because the self-contained frontend verifier invokes them
+unconditionally. The global `agents_quality_verify.sh` remains snapshot-covered
+but is not part of this frontend-only pack because it depends on investment,
+periodic-runner, prompt-stack, and global-snapshot files outside the pack.
 
 The pack intentionally excludes credentials, browser profiles, MCP state,
 session logs, caches, and unrelated Codex configuration.
@@ -78,6 +104,7 @@ This prints:
 - manifest schema, selected/required counts, and required snapshot coverage
 - routing JSON Schema validation plus V2 semantics and stale-model checks
 - split authority, browser, delivery, runtime, and telemetry module contracts
+- deterministic browser lifecycle receipt contract tests with negative fixtures
 - browser/runtime tool parity probes for external and local contexts
 - a verified `gpt-5.6-sol/max` environment-runtime truth probe with session
   discovery disabled
@@ -159,15 +186,66 @@ python3 scripts/design_craft_codex_route_pack.py \
 After restoring the bundle into another Codex home, run:
 
 ```bash
-bash ~/.codex/tools/tests/test_frontend_route_plan.sh
-bash ~/.codex/tools/tests/test_frontend_route_telemetry.sh
-bash ~/.codex/tools/tests/test_frontend_delivery_contract.sh
-bash ~/.codex/tools/tests/test_frontend_route_contract.sh
-bash ~/.codex/tools/tests/test_frontend_preflight_spec_sync.sh
-bash ~/.codex/tools/tests/test_frontend_preflight.sh
 bash ~/.codex/tools/frontend_preflight_verify.sh
-bash ~/.codex/tools/agents_quality_verify.sh --fast
 ```
+
+This verifier owns the restored frontend pack's complete test chain. It still
+uses the target host's valid Codex runtime/configuration and installed skills as
+external runtime prerequisites, but has no investment, periodic-runner,
+prompt-stack, or global-snapshot file dependency. Do not run the global
+`agents_quality_verify.sh` as a frontend restore gate; it is valid only after
+the wider Codex governance stack has also been restored.
+
+### Host capture integration is separate
+
+Restoring the portable code does **not** configure or trust a Hook, prove that a
+Hook is active, or schedule retention. Do not export or overwrite the target
+host's complete `config.toml` or Hook trust state. Instead, merge only this
+targeted fragment, replacing both placeholders with trusted absolute paths on
+the target host:
+
+```toml
+[[hooks.PostToolUse]]
+matcher = "^mcp__tmwd_browser__browser_tab_lifecycle$"
+
+[[hooks.PostToolUse.hooks]]
+type = "command"
+command = "PYTHONDONTWRITEBYTECODE=1 /absolute/path/to/python3 /absolute/path/to/.codex/tools/frontend_route_browser_capture.py --ingest-hook"
+timeout = 2
+statusMessage = "Recording browser lifecycle receipt"
+```
+
+The exact matcher observes lifecycle calls only; it does not intercept every
+`tmwd_browser` tool and cannot invoke `finalize_task`. After changing the Hook,
+start a new Codex session, review/trust it there, and establish live evidence:
+
+1. Run the route planner for a browser67 route and confirm the capture binding
+   is `bound`.
+2. Complete a real managed lifecycle entry call and confirm an observation was
+   captured with `receipt_valid=true` while `runtime_complete=false`.
+3. Explicitly call scoped `finalize_task`, then confirm the receipt is valid,
+   `runtime_complete=true`, and its lifecycle state is `finalized`.
+4. Confirm browser67 reports no managed-tab residue and capture health reports
+   no errors.
+
+`frontend_route_browser_capture.py --status` emits
+`frontend-route.browser-capture-status.v2`. Treat health counters as persisted
+history only when `health_persisted=true` and `health_status=persisted`. When the
+health file has not been initialized, zero counters are synthesized status
+defaults, not evidence of a healthy history.
+
+Retention is also host integration. Schedule this command separately if the
+wider global periodic runner is not installed:
+
+```bash
+PYTHONDONTWRITEBYTECODE=1 /absolute/path/to/python3 \
+  /absolute/path/to/.codex/tools/frontend_route_browser_capture.py --prune
+```
+
+The prune contract removes incomplete state after 7 days and complete state
+after 30 days, retains at most 1,000 incomplete states, and retains at most 100
+complete receipts. Unit tests, configured Hook text, and synthesized zero health
+alone are never live capture or retention-scheduler proof.
 
 ## Runtime truth and privacy boundary
 
@@ -186,11 +264,13 @@ does not return prompts, messages, tool payloads, or absolute home paths.
 
 ## Route telemetry boundary
 
-The planner appends a fixed privacy-safe event schema to
-`~/.codex/logs/frontend_route_telemetry.jsonl` by default. Events contain only
-bounded enums, booleans, counts, and millisecond timings. They do not contain
-task prose, source code, PRODUCT/DESIGN paths, tokens, credentials, or session
-content. The default log rotates at 2 MB with seven retained files.
+The planner appends privacy-safe `frontend-route.telemetry-event.v2` events to
+`~/.codex/logs/frontend_route_telemetry.jsonl` by default. New events separate
+`planned_execution_mode` from `actual_subagent_state` and do not contain the
+ambiguous legacy `execution_mode` field. Events contain only bounded enums,
+booleans, counts, and millisecond timings. They do not contain task prose,
+source code, PRODUCT/DESIGN paths, tokens, credentials, or session content. The
+default log rotates at 2 MB with seven retained files.
 
 Use `FRONTEND_ROUTE_TELEMETRY_CONTEXT=prod|test|ci` to isolate histories and
 `FRONTEND_ROUTE_TELEMETRY_LOG_ENABLED=0` for probes or tests that should not
@@ -205,12 +285,72 @@ python3 ~/.codex/tools/frontend_route_telemetry.py \
   --json
 ```
 
-The summary reports p50/p95/max durations, route/tier/platform/tool/runtime
-source distributions, parse errors, and the privacy marker. The general route
-test and release route smoke disable telemetry; the dedicated telemetry test
-owns append, context, rotation, summary, and self-check coverage.
+`frontend-route.telemetry-summary.v2` reads mixed v1/v2 history without
+rewriting or deleting legacy events. It normalizes v1 `execution_mode` into the
+planned field, derives the bounded actual state from `agents_spawned`, and
+reports source-schema counts so legacy coverage remains auditable. The summary
+reports p50/p95/max durations, route/tier/platform/tool/runtime source and
+planned/actual distributions, parse/ignored-schema counts, and the privacy
+marker. The general route test and release route smoke disable telemetry; the
+dedicated telemetry test owns append, mixed-version compatibility, context,
+rotation, summary, and self-check coverage.
 Do not use a smaller sample to claim production stability; before 50 events,
 report latency as provisional observation only.
+
+## Browser lifecycle truth boundary
+
+`planned_browser_lifecycle` is the route policy for browser67 ownership,
+explicit adoption, workspace/task scoping, and finalization. The legacy
+`browser_lifecycle` field remains an alias of that plan; neither field proves a
+tab was created, adopted, released, or closed. Route-planner output sets
+`actual_browser_lifecycle_state.state` to `not_started` for browser67 routes and
+`not_applicable` for other runtimes. The planner payload is immutable planning
+output and is not automatically updated after browser work. Runtime delivery
+must report a separate actual receipt from browser67 outcome evidence,
+including ownership, workspace/task scope, entry or adoption result, and the
+scoped `finalize_task` delivery summary.
+
+The portable host adapter is:
+
+```bash
+python3 ~/.codex/tools/frontend_route_browser_receipt.py \
+  --route /path/to/saved-route.json \
+  --observations /path/to/browser-lifecycle-observations.json
+```
+
+The observation document uses
+`frontend-route.browser-lifecycle-observations.v1` and binds the canonical
+route SHA-256, expected workspace/task scope, ordered call arguments, and the
+exact `browser67.tool-outcome.v3` result. The adapter emits
+`frontend-route.browser-lifecycle-receipt.v1`. `receipt_valid` means the
+binding and evidence normalized without ambiguity; `runtime_complete` is a
+separate decision and requires a non-dry-run scoped finalizer with verified
+closes, no remaining unkept tabs, and an exact cleanup delivery summary.
+`inspect_adoption` alone remains read-only, an adopted tab must be released
+without close, and a later entry/adoption makes an earlier finalize receipt
+stale. The receipt omits URLs, titles, tab IDs, adoption tokens, and lease IDs.
+Browser67 request IDs are represented only by bounded SHA-256 references, not
+copied verbatim.
+
+Browser67 derives cleanup scope from identifiers: when `workspace_key` is
+present the live scope is `workspace`, while `task_id` remains an additional
+filter/correlation field. Task-only scope requires omitting `workspace_key`.
+The receipt normalizes live `close_scope.workspaceKey/taskId` into canonical
+snake_case and fails closed when an explicit call scope disagrees with the live
+scope.
+
+The adapter is a normalizer, not a cleanup dispatcher. When the host integration
+above is separately configured and trusted, its exact `PostToolUse` matcher
+observes only `mcp__tmwd_browser__browser_tab_lifecycle`.
+`frontend_route_browser_capture.py` binds the planner's privacy-safe route view
+to the current session/turn, sanitizes the completed lifecycle call in memory,
+and atomically replaces one repo-external capture state. It never persists raw
+hook payloads, URLs, titles, tab IDs, adoption tokens, lease IDs, or raw request
+IDs. The Hook records results but cannot invoke `finalize_task` through Codex's
+active MCP client, so the main agent must still run scoped finalization
+explicitly. Root `capture-health.json`, when persisted, contains only the last
+safe error code/epoch and aggregate error, missing-binding, and
+dropped-observation counters.
 
 ## Screenshot policy boundary
 
