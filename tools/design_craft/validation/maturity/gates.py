@@ -286,18 +286,16 @@ def upstream_lock_parity(context: MaturityContext) -> MaturityGateResult:
 
 def route_pack(context: MaturityContext) -> MaturityGateResult:
     result = run_command(
-        [sys.executable, "scripts/design_craft_codex_route_pack.py", "--strict", "--json"],
+        [sys.executable, "scripts/design_craft_codex_route_pack.py", "--check"],
         root=context.root,
         timeout=120,
     )
-    payload = json_payload(result)
-    passed = result.returncode == 0 and payload.get("status") == "ok"
     return _result(
         "route_pack",
-        passed,
+        result.returncode == 0,
         result.duration_ms,
-        {"status": payload.get("status"), "summary": payload.get("summary")},
-        result.stderr or "strict route-pack validation failed",
+        {"fixture_scope": "portable_self_check"},
+        result.stderr or result.stdout or "portable route-pack self-check failed",
     )
 
 

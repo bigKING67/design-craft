@@ -75,10 +75,13 @@ For the `design-craft` source repo itself, use:
   host agent.
 - `scripts/design_craft_score.py --self`
 - `scripts/design_craft_maturity.py --profile development` for the repository
-  development baseline. Release maintainers use `--profile operational_95` or
-  `--profile certified_100` with a committed matching-runner `--baseline`.
-  Those names are evidence tiers with all-required gates, not composite quality
-  scores. `design_craft_score.py` measures source completeness only.
+  development baseline. Its route-pack gate uses an isolated portable self-check
+  and does not read operator `~/.codex` state. Run the explicit `--strict`
+  route-pack command above when auditing an installed Codex host. Release
+  maintainers use `--profile operational_95` or `--profile certified_100` with a
+  committed matching-runner `--baseline`. Those names are evidence tiers with
+  all-required gates, not composite quality scores. `design_craft_score.py`
+  measures source completeness only.
 - `scripts/upstream_absorption_report.py --remote` when checking whether pinned
   upstreams have newer remote heads before absorption work.
 - `scripts/validate.sh`

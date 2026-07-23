@@ -66,6 +66,6 @@ python3 scripts/design_craft_codex_route_pack.py --check
 python3 scripts/design_craft_maturity.py --check
 
 python3 -m unittest discover -s tests -p 'test_*.py'
-python3 scripts/design_craft_maturity.py --profile development --json >/dev/null
+python3 scripts/design_craft_maturity.py --profile development
 
 echo "design-craft validation passed."

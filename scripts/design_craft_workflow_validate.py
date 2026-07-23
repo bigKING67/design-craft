@@ -316,6 +316,13 @@ def validate() -> dict:
             "scripts/validate.sh",
         )
     )
+    if re.search(
+        r"design_craft_maturity\.py\s+--profile\s+development[^\n]*>/dev/null",
+        portable_validator,
+    ):
+        errors.append(
+            "scripts/validate.sh must preserve development maturity failure diagnostics"
+        )
     errors.extend(
         require_tokens(
             lint_validator,

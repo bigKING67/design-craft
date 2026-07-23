@@ -1,11 +1,14 @@
 from __future__ import annotations
 
 import json
+import os
 import tempfile
 import unittest
 from pathlib import Path
+from unittest import mock
 
-from tools.design_craft.validation.maturity.gates import performance_regression
+from tools.design_craft.repo import REPO_ROOT
+from tools.design_craft.validation.maturity.gates import performance_regression, route_pack
 from tools.design_craft.validation.maturity.model import MaturityContext
 from tools.design_craft.validation.maturity.profiles import (
     check_profile_invariants,
@@ -14,6 +17,25 @@ from tools.design_craft.validation.maturity.profiles import (
 
 
 class MaturityProfileTests(unittest.TestCase):
+    def test_development_route_pack_is_portable(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="design-craft-missing-codex-") as raw:
+            missing_codex_home = Path(raw) / "missing"
+            with mock.patch.dict(
+                os.environ,
+                {"CODEX_HOME": str(missing_codex_home)},
+                clear=False,
+            ):
+                result = route_pack(
+                    MaturityContext(
+                        root=REPO_ROOT,
+                        profile="development",
+                        phase="candidate",
+                        baseline_path=None,
+                    )
+                )
+        self.assertTrue(result.passed, result.error)
+        self.assertEqual(result.evidence["fixture_scope"], "portable_self_check")
+
     def test_release_performance_rejects_smoke_baseline(self) -> None:
         with tempfile.TemporaryDirectory(prefix="design-craft-maturity-test-") as raw:
             baseline = Path(raw) / "baseline.json"

@@ -157,8 +157,9 @@ Expected result:
   generic Agent Skills-compatible installs without writing files.
 - Doctor output runs without mutating files and reports required optional
   capabilities truthfully.
-- Codex route-pack audit confirms the local frontend route planner, frontend
-  rule, preflight contract, and route tests are present and hashable.
+- The isolated Codex route-pack self-check proves manifest, export, missing-file,
+  and symlink boundaries without reading operator `~/.codex` state. The strict
+  host route-pack audit remains a separate operational command.
 - Original developer-product seed helper smoke passes and preserves template byte parity.
 - Route smoke passes against a temporary fixture project with its own
   `DESIGN.md`, preserving the contract that product targets provide their own
