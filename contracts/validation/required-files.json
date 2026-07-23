@@ -107,6 +107,7 @@
     "tests/unit/test_release_policy.py",
     "tests/unit/test_route_pack_manifest.py",
     "tests/unit/test_sbom.py",
+    "tests/unit/test_skill_schema.py",
     "tools/design_craft/benchmark/cli.py",
     "tools/design_craft/benchmark/contract.py",
     "tools/design_craft/benchmark/fixtures.py",
@@ -138,6 +139,7 @@
     "tools/design_craft/routing/semantic_audit.py",
     "tools/design_craft/validation/maturity/gates.py",
     "tools/design_craft/validation/maturity/profiles.py",
+    "tools/design_craft/validation/skill_schema.py",
     "upstreams.lock.json"
   ],
   "directories": [

@@ -3,12 +3,12 @@
   "task_id": "same-prompt-motion-review",
   "hosts": {
     "codex": {
-      "status": "pending",
-      "reason": "Recapture v4 evidence from the final clean release-candidate commit."
+      "status": "observed",
+      "reason": "Current-source score v4 and run-manifest v2 recorded from the final release-candidate skill tree on 2026-07-23."
     },
     "pi": {
-      "status": "pending",
-      "reason": "Recapture v4 evidence from the final clean release-candidate commit."
+      "status": "observed",
+      "reason": "Current-source score v4 and run-manifest v2 recorded from the final release-candidate skill tree on 2026-07-23."
     },
     "cursor": {
       "status": "unverified",

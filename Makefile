@@ -1,5 +1,5 @@
 DESIGN_CRAFT_SKILL_ROOT ?= $(HOME)/.agents/skills
-SKILL_CREATOR_QUICK_VALIDATE ?= $(HOME)/.codex/skills/.system/skill-creator/scripts/quick_validate.py
+SKILL_CREATOR_QUICK_VALIDATE ?=
 INSTALL_ARGS ?=
 BENCHMARK_BASELINE ?=
 RELEASE_ASSET_DIR ?= dist/release
@@ -13,7 +13,7 @@ export PYTHONDONTWRITEBYTECODE := 1
 .PHONY: validate validate-portable lint contract-tests package-check public-repo-check workflow-check skill-quick-validate score \
 	maturity-development maturity-operational maturity-certified pass audit critique motion motion-plan-dry-run taste-review \
 	seed-dry-run route-smoke doctor platform-scan-check native-runtime-probe native-runtime-check native-release-bundle-check \
-	native-release-bundle-build native-release-bundle-verify codex-route-pack-check init-dry-run active-scope-check \
+	native-release-bundle-build native-release-bundle-verify codex-route-pack-check codex-route-pack-host-check init-dry-run active-scope-check \
 	cross-agent-check cross-agent-history-check cross-agent-observed-check cross-agent-four-host-check \
 	cross-agent-motion-observed-check cross-agent-native-observed-check comparative-check comparative-history-check \
 	comparative-observed-check history-audit l4-capture-check historical-l4-metadata-check real-l4-check smell-smoke static-review-smoke \
@@ -56,7 +56,10 @@ workflow-check:
 	python3 scripts/design_craft_workflow_validate.py --check --validate
 
 skill-quick-validate:
-	python3 "$(SKILL_CREATOR_QUICK_VALIDATE)" skills/design-craft
+	python3 -m tools.design_craft.validation.skill_schema --check skills/design-craft
+	@if [ -n "$(SKILL_CREATOR_QUICK_VALIDATE)" ]; then \
+		python3 "$(SKILL_CREATOR_QUICK_VALIDATE)" skills/design-craft; \
+	fi
 
 score:
 	python3 scripts/design_craft_score.py --self
@@ -141,8 +144,10 @@ native-release-bundle-verify:
 	python3 -m tools.design_craft release native-bundle validate --verify-run --output-dir "$(RELEASE_ASSET_DIR)"
 
 codex-route-pack-check:
-	python3 scripts/design_craft_codex_route_pack.py --check >/dev/null
-	python3 scripts/design_craft_codex_route_pack.py --strict >/dev/null
+	python3 scripts/design_craft_codex_route_pack.py --check
+
+codex-route-pack-host-check:
+	python3 scripts/design_craft_codex_route_pack.py --strict
 
 init-dry-run:
 	@tmp_dir="$$(mktemp -d -t design-craft-init.XXXXXX)"; \

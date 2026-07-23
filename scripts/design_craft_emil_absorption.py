@@ -61,6 +61,7 @@ COVERAGE = {
     "apple-design": {
         "status": "absorbed",
         "paths": [
+            "skills/design-craft/SKILL.md",
             "skills/design-craft/references/interaction-physics.md",
             "skills/design-craft/references/product-design-principles.md",
             "skills/design-craft/references/design-system-contract.md",
@@ -68,6 +69,8 @@ COVERAGE = {
         "terms": [
             "presentation value",
             "projected endpoint",
+            "release animation starts at the finger's measured velocity",
+            "Naming a projected endpoint alone never satisfies",
             "rubber-band",
             "font-optical-sizing",
             "causal state change",

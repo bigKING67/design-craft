@@ -137,7 +137,9 @@ and release gates.
 
 Expected result:
 
-- Skill schema passes `quick_validate.py`.
+- Skill schema passes the repository-owned, dependency-free validator. Set
+  `SKILL_CREATOR_QUICK_VALIDATE` only when an additional external compatibility
+  check is required.
 - Required references, scripts, notices, evals, and version files exist.
 - Shell scripts pass `bash -n`.
 - Python scorer compiles and runs.
@@ -446,8 +448,15 @@ snapshot must derive their scopes from that manifest rather than maintaining
 parallel lists:
 
 ```bash
+make codex-route-pack-host-check
+# Equivalent direct command:
 python3 scripts/design_craft_codex_route_pack.py --strict --json
 ```
+
+`make codex-route-pack-check` is the repository-owned portable contract and
+uses only isolated fixtures. It belongs in source and release-candidate gates;
+the host check above intentionally audits operator `CODEX_HOME` state and must
+remain separate from clean-runner certification.
 
 For migration or backup, export only the whitelisted bundle:
 

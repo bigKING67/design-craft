@@ -142,13 +142,20 @@ def validate() -> dict:
             (
                 "schedule:",
                 "workflow_dispatch:",
+                "operational-candidate",
+                "native_run_id:",
                 "github.event_name == 'push' || github.event_name == 'pull_request'",
-                "github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'",
+                "(github.event_name == 'workflow_dispatch' && inputs.mode == 'full')",
+                "inputs.mode == 'operational-candidate'",
                 "ubuntu-24.04",
                 "--scale smoke",
                 "--scale full",
                 "benchmark-result-smoke.json",
                 "benchmark-result-full.json",
+                "release-readiness-operational",
+                "DESIGN_CRAFT_NATIVE_EVIDENCE_ROOT",
+                "v0.5.0-linux-x86_64-python3.13.json",
+                "operational-95-candidate.json",
                 "actions/upload-artifact@",
                 "retention-days: 30",
                 "retention-days: 90",
@@ -158,16 +165,45 @@ def validate() -> dict:
             ".github/workflows/benchmark.yml",
         )
     )
-    if benchmark_workflow.count("timeout-minutes:") != 2:
+    if benchmark_workflow.count("timeout-minutes:") != 3:
         errors.append(
-            ".github/workflows/benchmark.yml must set a timeout on both benchmark jobs"
+            ".github/workflows/benchmark.yml must set a timeout on all three benchmark jobs"
         )
-    for job_name in ("smoke", "full"):
+    for job_name in ("smoke", "full", "operational-candidate"):
         block = workflow_job_block(benchmark_workflow, job_name)
         if "submodules: recursive" not in block or "fetch-depth: 0" not in block:
             errors.append(
                 f".github/workflows/benchmark.yml {job_name} must fetch recursive submodules and full history"
             )
+    full_benchmark_job = workflow_job_block(benchmark_workflow, "full")
+    if "inputs.mode == 'full'" not in full_benchmark_job:
+        errors.append(
+            ".github/workflows/benchmark.yml full must only handle full workflow dispatches"
+        )
+    operational_candidate_job = workflow_job_block(
+        benchmark_workflow,
+        "operational-candidate",
+    )
+    errors.extend(
+        require_tokens(
+            operational_candidate_job,
+            (
+                "permissions:",
+                "actions: read",
+                "contents: read",
+                "gh run view",
+                "gh run download",
+                "native-runtime-ios-${NATIVE_RUN_ID}",
+                "native-runtime-android-${NATIVE_RUN_ID}",
+                "release-readiness-operational",
+                "DESIGN_CRAFT_NATIVE_EVIDENCE_ROOT",
+                "operational-candidate-${{ github.run_id }}",
+                "operational-95-candidate.json",
+                "if: always()",
+            ),
+            ".github/workflows/benchmark.yml operational-candidate",
+        )
+    )
     errors.extend(
         require_tokens(
             codeql_workflow,
@@ -310,6 +346,7 @@ def validate() -> dict:
                 "export DESIGN_CRAFT_BASH",
                 "tools.design_craft.validation.repository_contracts",
                 "tools.design_craft.validation.tooling_contracts",
+                "tools.design_craft.validation.skill_schema",
                 "python3 -m unittest discover",
                 "--profile development",
             ),
@@ -323,6 +360,8 @@ def validate() -> dict:
         errors.append(
             "scripts/validate.sh must preserve development maturity failure diagnostics"
         )
+    if ".codex/skills/.system/skill-creator" in portable_validator:
+        errors.append("scripts/validate.sh must not depend on a user-home skill validator")
     errors.extend(
         require_tokens(
             lint_validator,

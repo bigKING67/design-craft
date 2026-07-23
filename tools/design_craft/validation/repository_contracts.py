@@ -111,7 +111,18 @@ def validate(root: Path = REPO_ROOT) -> dict[str, object]:
         errors.append("repository root must not contain DESIGN.md")
 
     makefile = (root / "Makefile").read_text(encoding="utf-8")
-    for target in ("maturity-development", "maturity-operational", "maturity-certified", *RELEASE_TARGETS):
+    if "tools.design_craft.validation.skill_schema" not in makefile:
+        errors.append("Makefile must use the repository-owned skill schema validator")
+    if ".codex/skills/.system/skill-creator" in makefile:
+        errors.append("Makefile must not depend on a user-home skill validator")
+    for target in (
+        "maturity-development",
+        "maturity-operational",
+        "maturity-certified",
+        "codex-route-pack-check",
+        "codex-route-pack-host-check",
+        *RELEASE_TARGETS,
+    ):
         if re.search(rf"(?m)^{re.escape(target)}(?:\s|:)", makefile) is None:
             errors.append(f"Makefile is missing target: {target}")
     source_line = next(
@@ -122,6 +133,10 @@ def validate(root: Path = REPO_ROOT) -> dict[str, object]:
         errors.append("release-gate-source must not depend on mutable upstream state")
     if "maturity-development" not in source_line:
         errors.append("release-gate-source must require maturity-development")
+    if "codex-route-pack-check" not in source_line:
+        errors.append("release-gate-source must require the portable route-pack contract")
+    if "codex-route-pack-host-check" in source_line:
+        errors.append("release-gate-source must not depend on operator Codex home state")
     for retired in ("maturity-portable:", "maturity-local:", "maturity-desktop:", "release-certify:"):
         if retired in makefile:
             errors.append(f"retired Make target must remain absent: {retired[:-1]}")

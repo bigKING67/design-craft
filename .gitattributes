@@ -4,3 +4,7 @@
 # Preserve model-authored Markdown hard breaks in hash-bound comparative evidence.
 evals/comparative/*/blind-packet.md whitespace=-blank-at-eol
 evals/comparative/*/output.*.md whitespace=-blank-at-eol
+
+# Preserve model-authored Markdown hard breaks in hash-bound cross-agent evidence.
+evals/cross-agent/*/codex-output.md whitespace=-blank-at-eol
+evals/cross-agent/*/pi-output.md whitespace=-blank-at-eol

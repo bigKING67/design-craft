@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import shutil
 import subprocess
 import sys
@@ -7,6 +8,10 @@ import tempfile
 import unittest
 from pathlib import Path
 
+from tools.design_craft.evaluation.cross_agent.contract import (
+    HOSTS,
+    render_current_comparison,
+)
 from tools.design_craft.repo import REPO_ROOT
 
 
@@ -50,11 +55,36 @@ class EvaluationCliTests(unittest.TestCase):
         )
 
     def test_observed_task_requires_an_observed_host(self) -> None:
-        result = run_script(
-            "scripts/design_craft_cross_agent_validate.py",
-            "--observed-task",
-            "evals/cross-agent/same-prompt-dashboard-review",
-        )
+        source = REPO_ROOT / "evals/cross-agent/same-prompt-dashboard-review"
+        with tempfile.TemporaryDirectory() as temp_dir:
+            task = Path(temp_dir) / source.name
+            shutil.copytree(source, task)
+            for host in HOSTS:
+                for name in (
+                    f"{host}-output.md",
+                    f"run.{host}.json",
+                    f"score.{host}.json",
+                ):
+                    (task / name).unlink(missing_ok=True)
+            status_path = task / "evidence-status.json"
+            status = json.loads(status_path.read_text(encoding="utf-8"))
+            for host in HOSTS:
+                status["hosts"][host] = {
+                    "status": "pending",
+                    "reason": "Temporary fixture has not admitted current observed evidence.",
+                }
+            status_path.write_text(
+                json.dumps(status, indent=2) + "\n", encoding="utf-8"
+            )
+            (task / "comparison.md").write_text(
+                render_current_comparison(task), encoding="utf-8"
+            )
+
+            result = run_script(
+                "scripts/design_craft_cross_agent_validate.py",
+                "--observed-task",
+                str(task),
+            )
         self.assertEqual(result.returncode, 1)
         self.assertIn("at least one observed host", result.stderr)
 
@@ -92,6 +122,8 @@ class EvaluationCliTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temp_dir:
             case_dir = Path(temp_dir) / source.name
             shutil.copytree(source, case_dir)
+            for name in ("blind-packet.md", "blind-map.json"):
+                (case_dir / name).unlink(missing_ok=True)
             (case_dir / "scorecard.md").write_text("# drift\n", encoding="utf-8")
 
             result = run_script(

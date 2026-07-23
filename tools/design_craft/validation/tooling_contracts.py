@@ -21,6 +21,8 @@ MAKE_TARGETS = (
     "publish-local",
     "sync-status",
     "native-release-bundle-check",
+    "codex-route-pack-check",
+    "codex-route-pack-host-check",
     *RELEASE_TARGETS,
 )
 
