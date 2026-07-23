@@ -55,7 +55,12 @@ python3 -m tools.design_craft benchmark \
 ```
 
 Do not commit a result as a release baseline until base and head have run on the
-same controlled runner. The comparison fails closed when schema, scale,
+same controlled runner. GitHub-hosted `runner_id` values describe a runner
+class, not one fixed physical host, so collect at least three full runs before
+promoting a hosted-runner baseline. At least two real artifacts must form a
+reproducible cluster under `compare_results`; never synthesize an average or
+promote the fastest isolated artifact. Record the selected run URL and artifact
+SHA-256 in the promotion PR. The comparison fails closed when schema, scale,
 runner, Python, platform, policy, metric set, sample count, numeric timing, or
 specialized safety metadata is missing or inconsistent.
 
