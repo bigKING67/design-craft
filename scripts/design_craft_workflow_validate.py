@@ -346,6 +346,7 @@ def validate() -> dict:
                 "export DESIGN_CRAFT_BASH",
                 "tools.design_craft.validation.repository_contracts",
                 "tools.design_craft.validation.tooling_contracts",
+                "tools.design_craft.validation.skill_schema",
                 "python3 -m unittest discover",
                 "--profile development",
             ),
@@ -359,6 +360,8 @@ def validate() -> dict:
         errors.append(
             "scripts/validate.sh must preserve development maturity failure diagnostics"
         )
+    if ".codex/skills/.system/skill-creator" in portable_validator:
+        errors.append("scripts/validate.sh must not depend on a user-home skill validator")
     errors.extend(
         require_tokens(
             lint_validator,

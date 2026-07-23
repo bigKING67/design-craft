@@ -111,6 +111,10 @@ def validate(root: Path = REPO_ROOT) -> dict[str, object]:
         errors.append("repository root must not contain DESIGN.md")
 
     makefile = (root / "Makefile").read_text(encoding="utf-8")
+    if "tools.design_craft.validation.skill_schema" not in makefile:
+        errors.append("Makefile must use the repository-owned skill schema validator")
+    if ".codex/skills/.system/skill-creator" in makefile:
+        errors.append("Makefile must not depend on a user-home skill validator")
     for target in ("maturity-development", "maturity-operational", "maturity-certified", *RELEASE_TARGETS):
         if re.search(rf"(?m)^{re.escape(target)}(?:\s|:)", makefile) is None:
             errors.append(f"Makefile is missing target: {target}")

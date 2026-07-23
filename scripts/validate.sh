@@ -3,7 +3,7 @@ set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 SKILL_DIR="${ROOT_DIR}/skills/design-craft"
-VALIDATOR="${SKILL_CREATOR_QUICK_VALIDATE:-${HOME}/.codex/skills/.system/skill-creator/scripts/quick_validate.py}"
+EXTERNAL_VALIDATOR="${SKILL_CREATOR_QUICK_VALIDATE:-}"
 PORTABLE=0
 
 while [[ $# -gt 0 ]]; do
@@ -32,13 +32,15 @@ if [[ -z "${DESIGN_CRAFT_BASH:-}" ]]; then
 fi
 export DESIGN_CRAFT_BASH
 
-if [[ "${PORTABLE}" == "0" ]]; then
-  if [[ ! -f "${VALIDATOR}" ]]; then
-    echo "Missing skill validator: ${VALIDATOR}" >&2
+python3 -m tools.design_craft.validation.skill_schema --check "${SKILL_DIR}"
+
+if [[ "${PORTABLE}" == "0" && -n "${EXTERNAL_VALIDATOR}" ]]; then
+  if [[ ! -f "${EXTERNAL_VALIDATOR}" ]]; then
+    echo "Missing external skill validator: ${EXTERNAL_VALIDATOR}" >&2
     echo "Set SKILL_CREATOR_QUICK_VALIDATE to a compatible quick_validate.py path." >&2
     exit 1
   fi
-  python3 "${VALIDATOR}" "${SKILL_DIR}"
+  python3 "${EXTERNAL_VALIDATOR}" "${SKILL_DIR}"
 fi
 
 python3 -m tools.design_craft.validation.repository_contracts --check

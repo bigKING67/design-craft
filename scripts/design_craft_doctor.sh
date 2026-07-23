@@ -87,7 +87,7 @@ def run_json(command: list[str]) -> tuple[dict, str]:
     return payload, detail
 
 route_plan = Path(os.environ.get("DESIGN_CRAFT_ROUTE_PLAN", str(home / ".codex/tools/frontend_route_plan.sh")))
-quick_validate = Path(os.environ.get("SKILL_CREATOR_QUICK_VALIDATE", str(home / ".codex/skills/.system/skill-creator/scripts/quick_validate.py")))
+quick_validate = Path(os.environ.get("SKILL_CREATOR_QUICK_VALIDATE", str(root / "tools/design_craft/validation/skill_schema.py")))
 codex_home = Path(os.environ.get("CODEX_HOME", str(home / ".codex")))
 version = (root / "VERSION").read_text(encoding="utf-8").strip()
 skill_version = (root / "skills/design-craft/VERSION").read_text(encoding="utf-8").strip() if (root / "skills/design-craft/VERSION").is_file() else ""
@@ -187,7 +187,7 @@ checks = [
     check("codex route module split", route_modules_ok, ", ".join(sorted(required_route_modules)), required=False),
     check("codex route runtime truth", route_runtime_truth_ok, "verified explicit environment evidence without session discovery", required=False),
     check("codex route telemetry", route_telemetry_ok, "privacy-safe telemetry self-check under an inherited test context", required=False),
-    check("quick validator", quick_validate.is_file(), str(quick_validate), required=False),
+    check("skill schema validator", quick_validate.is_file(), str(quick_validate)),
     check("browser evidence helper", (root / "skills/design-craft/scripts/design_craft_browser_evidence.py").is_file(), str(root / "skills/design-craft/scripts/design_craft_browser_evidence.py")),
     check("portable runtime", (root / "skills/design-craft/scripts/design_craft_route.sh").is_file(), str(root / "skills/design-craft/scripts")),
     check("platform scanner", (root / "skills/design-craft/scripts/design_craft_platform_scan.py").is_file(), str(root / "skills/design-craft/scripts/design_craft_platform_scan.py")),

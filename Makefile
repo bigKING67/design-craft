@@ -1,5 +1,5 @@
 DESIGN_CRAFT_SKILL_ROOT ?= $(HOME)/.agents/skills
-SKILL_CREATOR_QUICK_VALIDATE ?= $(HOME)/.codex/skills/.system/skill-creator/scripts/quick_validate.py
+SKILL_CREATOR_QUICK_VALIDATE ?=
 INSTALL_ARGS ?=
 BENCHMARK_BASELINE ?=
 RELEASE_ASSET_DIR ?= dist/release
@@ -56,7 +56,10 @@ workflow-check:
 	python3 scripts/design_craft_workflow_validate.py --check --validate
 
 skill-quick-validate:
-	python3 "$(SKILL_CREATOR_QUICK_VALIDATE)" skills/design-craft
+	python3 -m tools.design_craft.validation.skill_schema --check skills/design-craft
+	@if [ -n "$(SKILL_CREATOR_QUICK_VALIDATE)" ]; then \
+		python3 "$(SKILL_CREATOR_QUICK_VALIDATE)" skills/design-craft; \
+	fi
 
 score:
 	python3 scripts/design_craft_score.py --self

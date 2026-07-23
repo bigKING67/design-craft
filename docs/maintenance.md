@@ -137,7 +137,9 @@ and release gates.
 
 Expected result:
 
-- Skill schema passes `quick_validate.py`.
+- Skill schema passes the repository-owned, dependency-free validator. Set
+  `SKILL_CREATOR_QUICK_VALIDATE` only when an additional external compatibility
+  check is required.
 - Required references, scripts, notices, evals, and version files exist.
 - Shell scripts pass `bash -n`.
 - Python scorer compiles and runs.
