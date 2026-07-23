@@ -122,6 +122,8 @@ class EvaluationCliTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temp_dir:
             case_dir = Path(temp_dir) / source.name
             shutil.copytree(source, case_dir)
+            for name in ("blind-packet.md", "blind-map.json"):
+                (case_dir / name).unlink(missing_ok=True)
             (case_dir / "scorecard.md").write_text("# drift\n", encoding="utf-8")
 
             result = run_script(

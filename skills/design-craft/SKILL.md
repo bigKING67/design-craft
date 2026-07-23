@@ -73,6 +73,13 @@ system, data density, report grammar, or runtime truth.
    - `optimize`: measured UI performance work.
    - `structure`: file/directory governance.
    - `architecture`: frontend architecture and data-flow review.
+   When a production review legitimately combines modes, use one causal order:
+   audit the evidence and establish the performance baseline; harden
+   correctness, recovery, accessibility, and hostile-data blockers; remeasure
+   and optimize only supported hot paths; then polish and run release
+   validation. A validation section written after proposed optimizations is not
+   measurement-first: capture or define the baseline before selecting or
+   claiming performance fixes.
 5. Use helper scripts when available. Resolve them from the source repo or from
    `$DESIGN_CRAFT_HOME/scripts` first:
    `scripts/design_craft_route.sh` for route summaries,
@@ -109,6 +116,12 @@ system, data density, report grammar, or runtime truth.
    browser for visible UI, interaction, responsive, report, dashboard, download,
    upload, or login-state changes. When the route requires screenshot evidence,
    report only actual screenshot artifacts, not planned screenshots.
+7. Before returning, enforce every explicit response-size constraint. For a
+   limit of N lines, count newline-delimited lines and rewrite until the result
+   is at most N. In a multi-section audit, group related P0-P3 findings, give
+   each evidence/fix once, and make later detector and validation sections
+   reference those findings instead of repeating them. Complete coverage does
+   not permit exceeding the user's cap.
 
 ## Reference routing
 
@@ -228,6 +241,10 @@ unverified:
   quality are covered when relevant.
 - Product: solves the user's job, preserves information architecture, handles
   empty/loading/error/long-data states when relevant.
+- Accessibility: keyboard, focus, labels, semantics, contrast, and effective
+  target size match the input mode. When a web tablet target has no project
+  standard, use 44 CSS pixels as a provisional comfort floor and label it for
+  project ratification; project and native platform authority still wins.
 - Platform: native navigation, controls, insets, gestures, accessibility, and
   adaptive structure match the resolved platform; mobile web is not mislabeled
   as native.
@@ -235,15 +252,32 @@ unverified:
   ownership, and explicit values; it cannot prove perceived lag, smoothness,
   frame rate, compositing, browser-specific behavior, layout shift, or device
   feel. Label those as risks or runtime hypotheses until observed.
+- Evidence scope: an explicit statement that a state or behavior is absent can
+  be decisive within the supplied scope. A local snippet proves only the code
+  shown. Contextual static signals such as easing, control dimensions, removed
+  outlines, fixed widths, or global state are review risks until the complete
+  component, inherited styles, API semantics, or runtime evidence rules out a
+  compensating path. State what evidence would resolve the risk instead of
+  upgrading a detector-like signal into whole-product proof.
 - Direct manipulation: for drag, swipe, sheet, drawer, reorder, momentum, or
   scrubbing work, reject input lockout and require pointer/native capture, grab
   offset, 1:1 tracking, explicit coordinate space and velocity units,
   interruption from the current presentation value without a jump,
   non-conflicting transform ownership, and a non-vestibular Reduced Motion
   path. Make the velocity units and bounded projected-endpoint method explicit,
-  but do not change project-owned target-selection semantics unless product
+  and pass the measured release velocity into the settle as its initial
+  velocity using the animation API's required units. Velocity handoff preserves
+  continuity; projected-endpoint target selection is a separate product
+  decision.
+  Do not change project-owned target-selection semantics unless product
   authority, existing behavior, or runtime evidence establishes momentum-based
   targeting.
+- Velocity continuity: when a gesture releases into a settle, the audit or plan
+  must state three separate steps: measure release velocity with units; choose
+  the target under project-owned semantics; feed the measured release velocity
+  into the settle as its initial velocity, converting units for the selected
+  API when necessary. Naming a projected endpoint alone never satisfies the
+  velocity-handoff requirement.
 - Engineering: clear component boundaries, no needless abstraction, observable
   errors, dependency checks before imports.
 - Performance: measured or reasoned hot paths, no layout thrashing, no unbounded
@@ -283,5 +317,10 @@ Default critique and audit budget:
 - the smallest validation plan that can change the decision;
 - target 150 lines or fewer unless the user explicitly requests an exhaustive
   review, full scorecard, or report artifact.
+
+Treat the user's explicit line, word, section, or item limit as a hard delivery
+contract. Budget the structure before drafting, check the final size, and merge
+repeated evidence, fixes, detector reconciliation, and acceptance criteria
+rather than restating the same finding in every section.
 
 Keep output concise, evidence-backed, and honest about anything not verified.

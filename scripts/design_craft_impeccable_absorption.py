@@ -60,6 +60,20 @@ COVERAGE = {
             "Loading, empty, error",
         ],
     },
+    "production_audit_discipline": {
+        "paths": [
+            "skills/design-craft/SKILL.md",
+            "skills/design-craft/references/performance-quality.md",
+        ],
+        "terms": [
+            "baseline before selecting or claiming performance fixes",
+            "Contextual static signals",
+            "explicit line, word, section, or item limit",
+            "count newline-delimited lines",
+            "44 CSS pixels",
+            "provisional numeric thresholds",
+        ],
+    },
     "detector_and_evidence": {
         "paths": [
             "skills/design-craft/references/impeccable-workflow.md",
@@ -207,9 +221,11 @@ def validate() -> dict:
                 missing_paths.append(relative)
                 continue
             combined += "\n" + path.read_text(encoding="utf-8")
-        normalized = combined.casefold()
+        normalized = " ".join(combined.casefold().split())
         missing_terms = [
-            term for term in spec["terms"] if term.casefold() not in normalized
+            term
+            for term in spec["terms"]
+            if " ".join(term.casefold().split()) not in normalized
         ]
         if missing_paths:
             errors.append(f"{capability}: missing local coverage paths: {missing_paths}")
@@ -249,6 +265,7 @@ def self_check() -> None:
     if set(COVERAGE) != {
         "workflow_modes",
         "hardening_and_performance",
+        "production_audit_discipline",
         "detector_and_evidence",
         "platform_quality",
         "design_system_corrections",

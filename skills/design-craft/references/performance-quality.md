@@ -8,6 +8,19 @@ frontend interactions.
 Do not optimize blindly. Identify the hot path or risk first, then verify with
 the smallest useful measurement: browser smoke, Web Vitals/Lighthouse signal,
 DevTools/CDP metric, build output, bundle report, profiler, or targeted test.
+In a read-only plan, establish the baseline before selecting or claiming
+performance fixes. Do not prescribe virtualization, debouncing, memoization,
+workers, or asset changes as measured improvements before the baseline exists.
+You may still require an explicit bound for work that is demonstrably
+unbounded, while leaving the implementation choice contingent on measurement
+and project constraints.
+
+When acceptance conditions are requested but the project has no performance
+budget, propose provisional numeric thresholds and label them for ratification
+instead of saying only "responsive" or "fast". Match them to the actual device,
+browser, data scale, and interaction. Useful examples include input/filter p95,
+maximum long-task duration, mounted row bound, peak memory, CLS, and a maximum
+base-to-head regression with both relative and absolute limits.
 
 ## Frontend hot paths
 
