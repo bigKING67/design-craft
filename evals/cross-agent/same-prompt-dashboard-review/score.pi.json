@@ -14,54 +14,54 @@
   "scorecard_json_sha256": "9b73f89575f83eecd859595a81851a57681987dbb8aee6d3b8230d5827081920",
   "contract_sha256": "392e1903ad3e7088fc07c6794dfc98d025f310781a01a51f880fd0041ab25c8e",
   "run_manifest_path": "run.pi.json",
-  "run_manifest_sha256": "ad483591639cd1baa01c4d2a0914cbd3a0d11aa2ba16f26f32398208a6ae41ab",
+  "run_manifest_sha256": "f0ac618aa6c50cef5d58967fe72a2f18144b6db5074230d47e13918542543901",
   "skill_version": "0.5.0",
-  "skill_source_commit": "e1f1cc24c89c8764791049ca9860980f15d7dbc7",
+  "skill_source_commit": "49a279138f4b2162c6a6b506233006aa6b67f4b9",
   "skill_source_dirty": false,
-  "repo_dirty": false,
-  "release_state": "development",
-  "skill_tree_sha256": "d0fe615c290d84945ffba0d90908ed47a0f4f8627fb2a729401ca29d3bee6c72",
+  "repo_dirty": true,
+  "release_state": "unknown",
+  "skill_tree_sha256": "a1d70f431e9d59a4537e5082f1d363029a604086f5bf2a80cf6fa508722a5ca1",
   "skill_path": "$BENCHMARK_WORKSPACE/.pi/skills/design-craft",
-  "provenance_skill_path": "/private/tmp/design-craft-cert-provenance/skills/design-craft",
+  "provenance_skill_path": "$DESIGN_CRAFT_HOME/skills/design-craft",
   "command_summary": "pi --print --no-session --no-skills --skill '$BENCHMARK_SKILL' --no-context-files --tools read,grep,find,ls --model codex/gpt-5.5 --thinking high",
   "output_path": "pi-output.md",
-  "output_sha256": "983afb115f30130080542f3f2c819697f7ca4189c1cc3d143334a79d7c777a06",
+  "output_sha256": "eb6bef761f9265c3e87c45d7e1ef01b01e5b37b478063d6257c463846cc3cd58",
   "score": 100,
   "criteria": {
     "style_authority": {
       "passed": true,
       "earned": 15,
-      "note": "Preserves the restrained, dense-but-calm enterprise-console authority, token-backed color boundary, and next-hour operator decision."
+      "note": "Preserves the restrained, dense-but-calm enterprise-console authority and the operator's next-hour triage decision."
     },
     "reference_selection": {
       "passed": true,
       "earned": 15,
-      "note": "Uses only the needed dashboard hierarchy, anti-generic taste, design moves, tokens, resilient states, accessibility, and validation guidance."
+      "note": "Uses only the dashboard hierarchy, anti-generic, token, resilient-state, accessibility, and validation guidance required by the task."
     },
     "anti_generic_redesign": {
       "passed": true,
       "earned": 15,
-      "note": "Rejects equal-card hierarchy, decorative analytics, and generic tips for a lead decision object, support strip, exception queue, diagnostics, and actions."
+      "note": "Rejects flat KPI cards and generic tips in favor of a lead decision object, ranked exception queue, diagnostics, and contextual actions."
     },
     "evidence_level": {
       "passed": true,
       "earned": 15,
-      "note": "Labels the review L0 static and prompt-only and caps the concept score because visual, responsive, accessibility, state, and runtime evidence are missing."
+      "note": "Treats the supplied brief as static evidence and explicitly avoids claiming rendered, accessibility, responsive, state, or runtime quality."
     },
     "verified_boundary": {
       "passed": true,
       "earned": 15,
-      "note": "Separates prompt-confirmed facts from unverified rendering, tokens, table behavior, accessibility, responsiveness, interaction states, and performance."
+      "note": "Separates prompt-confirmed facts from unverified rendering, tokens, table behavior, accessibility, responsiveness, interactions, and performance."
     },
     "design_moves": {
       "passed": true,
       "earned": 15,
-      "note": "Provides exactly eight concrete moves covering the lead decision object, support metrics, command context, diagnostic chart, exception queue, table, rail, and states."
+      "note": "Provides exactly eight concrete moves spanning the lead object, support metrics, command context, diagnostics, exceptions, table, rail, and states."
     },
     "scope_control": {
       "passed": true,
       "earned": 10,
-      "note": "Stays read-only, dashboard-specific, and decisive at 95 logical lines, with exactly five blocking findings and eight concrete moves."
+      "note": "Stays read-only, dashboard-specific, and decisive with five blockers and eight moves in 83 logical lines, below the 150-line cap."
     }
   }
 }

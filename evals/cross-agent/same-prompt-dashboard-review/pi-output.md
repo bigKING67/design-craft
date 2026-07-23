@@ -1,95 +1,83 @@
 ## 1. Evidence level and score band
 
-**Evidence level: L0 static / prompt-only concept.**  
-No screenshot, DOM, responsive run, focus walk, hover/loading/error verification, or real data sample was checked.
+**Evidence level: L0 — prompt-only concept critique.**  
+No screenshot, DOM, tokens, real data, responsive behavior, focus order, hover, loading, empty, or error states were verified.
 
-**Score band: ~60–70 / 100 — “functional but ordinary.”**  
-The concept has recognizable dashboard parts, but the described hierarchy is “dashboard card soup,” not an hour-by-hour revenue operations decision surface. Score is capped because runtime states, data density, accessibility, and visual execution are unverified.
+**Score band: 60–70 / 100 — functional but ordinary.**  
+The concept has recognizable dashboard ingredients, but the described hierarchy is “dashboard card soup”: many modules, little operational priority.
 
 ## 2. Design read
 
-**Reading this as:** an enterprise ecommerce revenue-ops dashboard for internal operators, dense but calm, optimized for **deciding which account or campaign needs attention in the next hour**.
+Reading this as: **a restrained enterprise revenue-ops command surface for ecommerce operators, dense but calm, optimized for deciding which account or campaign needs attention in the next hour.**
 
-The dashboard should optimize for **triage speed**: detect the highest-impact exception, understand why it matters, and take or route the next action.
+The dashboard should not optimize for “showing many metrics.” It should optimize for **attention routing**: what is abnormal, how material it is, who/what owns it, and what action should happen next.
 
 ## 3. Top hierarchy / product-fit issues
 
-1. **P1 — No operational focal point.**  
-   Twelve equal KPI cards make routine totals visually equal to urgent revenue risk. The first scan does not answer “what needs attention now?”
+1. **P1 — Twelve equal KPI cards flatten priority.**  
+   Equal cards make revenue, risk, pacing, anomaly, and secondary diagnostics feel equally urgent. Operators lose the “what needs attention first?” path.
 
-2. **P1 — KPI hierarchy is flat and under-contextualized.**  
-   KPIs need comparison, threshold, time window, owner, and semantic state. Equal cards without “compared to what?” encourage passive monitoring, not action.
+2. **P1 — Decorative area chart is not earning its space.**  
+   A chart without a named operational question becomes visual filler. For this user, charts should explain trend, anomaly, pacing, or variance.
 
-3. **P1 — Decorative area chart misuses analytical space.**  
-   A chart in this context must answer a named ops question: pacing risk, spend efficiency anomaly, conversion drop, margin leakage, inventory constraint, etc. Decorative trend art is noise.
+3. **P1 — Dense table appears to be the real work object, but is visually demoted.**  
+   If the operator acts on accounts/campaigns, the table or exception queue should be central, not buried under KPI noise.
 
-4. **P1 — Dense table may be a data dump rather than a task-first table.**  
-   If account/campaign identity, risk, impact, status, owner, and next action are not first-class, operators must decode instead of decide.
+4. **P1 — Generic tips rail mismatches enterprise ops context.**  
+   “Tips” are likely perceived as low-trust unless tied to specific entities, evidence, owner, impact, and next action.
 
-5. **P1/P2 — Generic tips rail is low-trust.**  
-   A right rail should not contain generic advice. In an ops console, it should either become an exception/action rail with evidence or disappear to preserve table width.
+5. **P2 — Style risk: card-heavy layout can become demo-like rather than calm enterprise.**  
+   A restrained console needs hierarchy through grouping, type, alignment, semantic status, and density—not equal raised surfaces everywhere.
 
 ## 4. Concrete design moves
 
-1. **Replace the top card grid with a lead decision object.**  
-   Example anatomy: “Top revenue risk now,” affected account/campaign, estimated impact, cause signal, freshness, owner, and primary next action.
+1. **Replace KPI card soup with a lead + support hierarchy.**  
+   Promote one lead operational state: e.g. “At-risk revenue in next hour,” “Campaigns pacing below threshold,” or “Accounts requiring action.” Compress remaining KPIs into a supporting metric strip.
 
-2. **Convert 12 KPIs into a compact supporting metric strip.**  
-   Group by decision tier: revenue pacing, spend efficiency, conversion health, margin/fulfillment constraints. Use tabular numerals, deltas, thresholds, and semantic state color only.
+2. **Add a top command/context band.**  
+   Include scope, time window, freshness, filters, and owner/team context: “Last updated 09:42 · Today · US marketplace · Paid Social.” This prevents metric ambiguity.
 
-3. **Add a command/context band above the decision surface.**  
-   Include time window, market/store scope, currency, data freshness, active filters, and last refresh. This prevents metric ambiguity.
+3. **Introduce an exception queue above or beside the table.**  
+   Show the top 5–10 accounts/campaigns needing action, ordered by severity and business impact. Each item should include entity, reason, impact, confidence/threshold, and next action.
 
-4. **Turn the area chart into a diagnostic chart.**  
-   It should answer one explicit question, e.g. “Revenue pacing vs target by hour,” “ROAS anomaly by campaign,” or “Spend up / orders down divergence.” Use direct labels and restrained enterprise chart color.
+4. **Convert the decorative chart into a diagnostic chart.**  
+   Give it a question: “Where did revenue pacing diverge in the last 6 hours?” Use direct labels, threshold/reference lines, accessible semantic color, and a short takeaway.
 
-5. **Promote an exception queue near the top.**  
-   Show the next 5–10 accounts/campaigns needing attention, ranked by impact × urgency. This is the operating surface, not a sidebar novelty.
+5. **Rework the table into a task-first table.**  
+   Put columns in decision order: entity, status/risk, revenue impact, pacing/variance, owner, last change, next action. Right-align numeric columns; keep filters adjacent to the table they affect.
 
-6. **Rework the table as a task-first table.**  
-   First columns: identity, status/risk, impact, reason, owner, next action. Push metadata later. Right-align numeric columns, keep filters adjacent to affected data, support sorting by urgency and revenue impact.
+6. **Replace generic tips with evidence-backed insight/action rail.**  
+   Keep the rail only if it is contextual: “Campaign X is 18% below hourly target; budget cap hit 42 min ago; owner: Mia; action: increase cap or pause low-ROAS ad group.”
 
-7. **Replace generic tips with evidence-backed insights or remove the rail.**  
-   Keep an insight only if it names entity, observed change, threshold/baseline, business impact, and action/owner.
+7. **Use restrained enterprise surface grammar.**  
+   Prefer flat sections, subtle dividers, compact spacing, tabular numbers, semantic status tokens, and minimal elevation. Reserve strong color for warning/danger/success states.
 
-8. **Define resilient state contracts before implementation.**  
-   Loading, empty, error, stale data, permission-limited, long account names, zero values, delayed metrics, disabled actions, focus-visible, and keyboard navigation need designed treatments.
+8. **Design state coverage as part of the component contract.**  
+   Define loading, empty, stale-data, partial-data, permission, API error, long-label, high-row-count, selected-row, focus-visible, and disabled states before implementation.
 
 ## 5. Verified versus unverified claims
 
-**Verified from prompt only**
-- Dashboard concept includes 12 equal KPI cards, decorative area chart, dense account table, and generic tips rail.
-- Product context is internal ecommerce revenue operations.
-- Primary user needs next-hour attention decisions.
-- Style authority is restrained enterprise console, dense but calm, token-backed color only.
+**Verified from prompt only:**
+- The intended user is an internal ecommerce revenue-ops operator.
+- The primary decision horizon is the next hour.
+- The concept contains 12 equal KPI cards, one decorative area chart, a dense account table, and a generic tips rail.
+- The requested style authority is restrained enterprise console, dense but calm, token-backed color only.
 
-**Unverified / must not be claimed**
-- Actual visual quality, spacing, typography, contrast, color token usage, or surface treatment.
-- Whether the table has usable sorting/filtering, sticky columns, row actions, or numeric alignment.
-- Accessibility: keyboard order, focus-visible states, labels, contrast, screen-reader semantics.
-- Responsive behavior, overflow, long labels, chart tooltip clipping, or mobile/narrow layout.
-- Loading, empty, error, stale, disabled, hover, active, selected, or permission states.
-- Browser/runtime performance or perceived scan speed.
+**Not verified:**
+- Actual visual quality, spacing, typography, contrast, alignment, or color-token usage.
+- Whether KPI values include comparisons, thresholds, owners, or time ranges.
+- Whether the area chart is truly decorative in implementation.
+- Table column order, sorting, filtering, keyboard behavior, row actions, sticky headers, or virtualization.
+- Hover, focus, loading, empty, error, responsive, reduced-motion, or accessibility behavior.
+- Metric correctness, data freshness, source-of-truth, or duplicate/missing account handling.
 
 ## 6. Minimal validation plan before implementation
 
-1. **Product/data validation**
-   - Confirm the top 3 operator decisions made in the next hour.
-   - Define source-of-truth metrics, freshness expectations, thresholds, and owner/action rules.
-
-2. **Information architecture prototype**
-   - Test lead object + support strip + exception queue + task-first table against realistic account/campaign data.
-   - Validate that the top action is identifiable within ~3 seconds.
-
-3. **Visual/design-system check**
-   - Map typography, spacing, surfaces, borders, and semantic colors to existing tokens.
-   - Verify dense enterprise treatment without marketing hero styling.
-
-4. **State and content stress cases**
-   - Long names, missing owner, stale data, zero revenue, delayed metrics, empty queue, API error, partial permissions.
-
-5. **Runtime/browser validation later, not claimed here**
-   - Desktop and narrow responsive pass.
-   - Keyboard/focus walk.
-   - Chart label/tooltip overflow.
-   - Table scrolling, sorting, filtering, and row-action behavior.
+1. **Product/data validation:** confirm the top 3 operator decisions, source-of-truth metrics, refresh cadence, severity thresholds, and owner/action model.  
+2. **Content validation:** test with real account/campaign names, long labels, missing owners, zero-data periods, stale data, and conflicting metric states.  
+3. **Hierarchy validation:** run a 3-second review: can an operator identify the top account/campaign needing attention and why?  
+4. **Dashboard state validation:** specify loading, empty, partial, stale, error, and permission-denied states for KPIs, chart, table, and rail.  
+5. **Accessibility validation:** keyboard path, focus-visible states, semantic table structure, non-color-only status, contrast, and screen-reader labels.  
+6. **Responsive validation:** at least desktop dense, narrow laptop, and constrained split-screen widths; verify table overflow and rail behavior.  
+7. **Performance validation:** table rendering, sorting/filtering latency, chart cost, and data refresh behavior under realistic row counts.  
+8. **Design-system validation:** verify all color, surface, spacing, type, status, and focus treatments use approved tokens.

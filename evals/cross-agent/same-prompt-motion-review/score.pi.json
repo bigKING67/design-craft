@@ -14,24 +14,24 @@
   "scorecard_json_sha256": "5b0b6a0d6df83ce49b9e2c598a9cdd79149efca50a9e12069667bc008462d183",
   "contract_sha256": "392e1903ad3e7088fc07c6794dfc98d025f310781a01a51f880fd0041ab25c8e",
   "run_manifest_path": "run.pi.json",
-  "run_manifest_sha256": "b80bdb2f3a59e382ba0944f51db7410559ebca8c43e355b7904db64ae989cbe1",
+  "run_manifest_sha256": "2c1eb7cb82417761f794f4af5d9f386fb1085f9bb886d63cb94b1a296c5174fe",
   "skill_version": "0.5.0",
-  "skill_source_commit": "e1f1cc24c89c8764791049ca9860980f15d7dbc7",
+  "skill_source_commit": "49a279138f4b2162c6a6b506233006aa6b67f4b9",
   "skill_source_dirty": false,
-  "repo_dirty": false,
-  "release_state": "development",
-  "skill_tree_sha256": "d0fe615c290d84945ffba0d90908ed47a0f4f8627fb2a729401ca29d3bee6c72",
+  "repo_dirty": true,
+  "release_state": "unknown",
+  "skill_tree_sha256": "a1d70f431e9d59a4537e5082f1d363029a604086f5bf2a80cf6fa508722a5ca1",
   "skill_path": "$BENCHMARK_WORKSPACE/.pi/skills/design-craft",
-  "provenance_skill_path": "/private/tmp/design-craft-cert-provenance/skills/design-craft",
+  "provenance_skill_path": "$DESIGN_CRAFT_HOME/skills/design-craft",
   "command_summary": "pi --print --no-session --no-skills --skill '$BENCHMARK_SKILL' --no-context-files --tools read,grep,find,ls --model codex/gpt-5.5 --thinking high",
   "output_path": "pi-output.md",
-  "output_sha256": "b78a8c2c013496b90e0f88a70376e61b0f24c64aebdc8ec5a6a404f454bd6149",
-  "score": 99,
+  "output_sha256": "5e552dcd71c96ef09f92d96036e4a8e9d6a0065cac91f1a68722691c44a18d0c",
+  "score": 98,
   "criteria": {
     "style_authority": {
       "passed": true,
-      "earned": 15,
-      "note": "Reads the product as a calm, repeatedly used operations sheet whose motion preserves task context and direct manipulation."
+      "earned": 14,
+      "note": "Preserves a calm repeated-use operations surface, but introduces an unsupported desktop and keyboard-heavy staff assumption."
     },
     "reference_selection": {
       "passed": true,
@@ -41,12 +41,12 @@
     "anti_generic_redesign": {
       "passed": true,
       "earned": 15,
-      "note": "Questions motion purpose first, keeps causal drag and settle feedback, and rejects transition-all, layout movement, scale, long ease-in travel, and input lockout."
+      "note": "Questions motion purpose first, retains causal drag and settle feedback, and rejects transition-all, layout movement, scale, long ease-in travel, and lockout."
     },
     "evidence_level": {
       "passed": true,
       "earned": 15,
-      "note": "Labels the result static-source only and declines to claim smoothness, frame rate, computed styles, touch feel, Reduced Motion behavior, or interruption outcomes."
+      "note": "Labels the result as static-source evidence and declines to claim smoothness, frame rate, computed styles, touch feel, reduced-motion behavior, or interruption outcomes."
     },
     "verified_boundary": {
       "passed": true,
@@ -56,12 +56,12 @@
     "design_moves": {
       "passed": true,
       "earned": 14,
-      "note": "Provides eight strong moves but leaves the pointer-session cancel lifecycle and snap hysteresis less explicit than the expected implementation findings."
+      "note": "Passes measured release velocity into settling, but does not make expected snap-target hysteresis explicit in the implementation moves."
     },
     "scope_control": {
       "passed": true,
       "earned": 10,
-      "note": "Stays read-only, motion-specific, prioritized, and within the 150-line cap at 145 logical lines, with five blockers and eight moves."
+      "note": "Stays read-only, motion-specific, and prioritized with five blockers and eight moves in 94 logical lines, below the 150-line cap."
     }
   }
 }
