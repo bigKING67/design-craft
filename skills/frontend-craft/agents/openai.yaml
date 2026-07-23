@@ -1,4 +1,0 @@
-interface:
-  display_name: "Frontend Craft (legacy alias)"
-  short_description: "Legacy alias for design-craft"
-  default_prompt: "Use $design-craft for new UI/UX/design engineering/frontend quality work; $frontend-craft is a compatibility alias only."

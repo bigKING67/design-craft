@@ -40,27 +40,29 @@ mistaking mobile Web for native; they do not add a device requirement to daily
 Web work.
 The canonical package is still portable: agent-specific integration belongs in
 `adapters/`, while `skills/design-craft/` remains the single source skill.
-The `0.5.0` development contract keeps ordinary portable/local operation at
-95/100 while reserving certified 100/100 for current-source v3 evidence from
-Codex, Pi, Cursor, and Claude plus observed iOS Simulator, Android Emulator,
-and real-device evidence. Evidence hashes bind the skill tree, fixtures,
-prompt, scorecard, and agent output instead of treating file presence as proof.
+The `0.5.0` development contract defines an `operational_95` release level for
+Codex/Pi and Simulator/Emulator current-source evidence, benchmark regression,
+clean-checkout provenance, and repository governance. It reserves
+`certified_100` for the additional Cursor, Claude, and physical-device proof.
+These names are release evidence tiers, not composite product-quality scores.
+Evidence hashes bind the skill tree, fixtures, prompt, scorecard, and agent
+output instead of treating file presence as proof.
 
 ## Layout
 
 ```text
 design-craft/
-├── skills/design-craft/        # Installable Codex skill
-├── adapters/                     # Thin Codex/Cursor/Claude/Pi/generic install adapters
-├── scripts/                      # Deterministic route/pass/detect/score/review tools
-├── .github/workflows/            # Portable validation and scheduled upstream audit
-├── evals/                        # Forward-test and live-task evidence
-│   ├── golden-tasks/             # Reproducible real-task evidence cards
-│   └── product-ui-taste/         # Taste-score calibration cases
+├── skills/design-craft/          # Only installable/published runtime product
+├── adapters/                     # Thin Codex/Cursor/Claude/Pi/generic adapters
+├── tools/design_craft/           # Repository governance and release tooling
+├── contracts/                    # Machine-readable schemas and policy truth
+├── tests/                        # Unit, contract, integration, adversarial tests
+├── benchmarks/                   # Reproducible measurements and baselines
+├── scripts/                      # Compatibility CLIs and platform runners
+├── evals/                        # Specs, fixtures, current evidence, history
 ├── upstreams/                    # Pristine upstream submodules; do not edit
-├── docs/                         # Repo maintenance and release process
-├── THIRD_PARTY_NOTICES.md        # Attribution and licenses
-├── upstreams.lock.json           # Pinned upstream commit provenance
+├── docs/                         # Architecture, operations, and security docs
+├── .github/workflows/            # Validation, native, audit, and CodeQL lanes
 └── VERSION                       # Local release version
 ```
 
@@ -122,27 +124,22 @@ python3 scripts/design_craft_install_verify.py \
 ```
 
 Check the canonical checkout, cached/live GitHub origin, canonical install,
-optional legacy alias, separate Codex route-pack authority, and reviewed
-external upstreams without changing them:
+separate Codex route-pack authority, and reviewed external upstreams without
+changing them:
 
 ```bash
 make sync-status
 make sync-status-remote # also checks live origin and mutable upstream heads
 ```
 
-`skills/frontend-craft` is a legacy compatibility alias only. New route and
-preflight defaults should use `design-craft`. A fresh install does not create
-the alias, but an already-installed alias is refreshed so it cannot silently
-drift. Create it explicitly only for old clients that still use the former
-name:
-
-```bash
-bash scripts/install_local.sh --include-legacy-alias
-```
+The former `frontend-craft` product surface has been removed. The installer
+does not create, inspect, refresh, or delete that name. Existing copies are
+outside the v0.5 runtime boundary and must be reviewed and retired separately.
+See `docs/operations/v0.5-migration.md`.
 
 Override retention with `--keep-backups <count>` or
 `DESIGN_CRAFT_BACKUP_KEEP`; use `--no-prune-backups` for an explicitly
-non-destructive maintenance run. `make release-gate` forwards optional
+non-destructive maintenance run. `make publish-local` forwards optional
 installer flags through `INSTALL_ARGS`.
 
 ## Install as a Pi package
@@ -186,6 +183,13 @@ make public-repo-check
 GitHub Actions and npm metadata updates are tracked separately through
 `.github/dependabot.yml`; action executions remain pinned to reviewed full
 commit SHAs.
+
+Security reports, trust boundaries, contribution contracts, and the detailed
+threat model are documented in [`SECURITY.md`](SECURITY.md),
+[`CONTRIBUTING.md`](CONTRIBUTING.md), and
+[`docs/security/threat-model.md`](docs/security/threat-model.md). Code scanning
+runs in the pinned `.github/workflows/codeql.yml` workflow; ownership defaults
+are declared in `.github/CODEOWNERS`.
 
 Validate workflow pins, concurrency/timeouts, native fixture manifests, real
 iOS deep-link routing and system-confirmation recovery, Android dialog
@@ -268,7 +272,7 @@ rather than replacing project authority blindly.
 Seed a project directly with:
 
 ```bash
-bash scripts/design_craft_seed_design.sh --target /path/to/project
+bash skills/design-craft/scripts/design_craft_seed_design.sh --target /path/to/project
 ```
 
 The helper refuses to overwrite an existing `DESIGN.md` or `DESIGN.dark.md`
@@ -307,10 +311,11 @@ Portable gate for a fresh clone or another machine:
 make validate-portable
 ```
 
-Deterministic source gate, followed by an atomic local publish:
+Deterministic source gate and development maturity:
 
 ```bash
-make release-gate-local
+make release-gate-source
+make maturity-development
 ```
 
 Equivalent direct commands:
@@ -319,36 +324,43 @@ Equivalent direct commands:
 bash scripts/validate.sh --portable
 python3 scripts/design_craft_active_scope_validate.py --root .
 python3 scripts/design_craft_score.py --self
-python3 scripts/design_craft_maturity.py --profile portable --min-score 95
-python3 scripts/design_craft_maturity.py --profile local --min-score 95
-python3 scripts/design_craft_maturity.py --profile desktop --min-score 100
-bash scripts/design_craft_pass.sh --target . --mode audit --skip-route
+python3 scripts/design_craft_maturity.py --profile development
+bash skills/design-craft/scripts/design_craft_pass.sh --target . --mode audit --skip-route
 ```
 
-`make release-gate` remains a compatibility alias for the local full gate.
-Remote upstream freshness is intentionally separate because a moving remote
-`HEAD` must not make an unchanged commit's deterministic gate change over time.
-Before a new release, run `make release-readiness`; it runs the local gate and
-then the actionable remote audit. The source scorer must report 100/100. The
-maturity scorer reports 95/100 until schema-valid observed native runtime
-evidence removes the explicit cap. Portable CI exercises Ubuntu and macOS with
-Node 22/24 and Python 3.11/3.12/3.13 rather than treating one Python runtime as
-cross-version proof.
+The source scorer's 100 is contract completeness only. Maturity v2 does not
+calculate a partial composite score: every required gate either passes or the
+selected profile fails. `development` verifies source, runtime, package,
+workflow, evaluation-definition, installer, and governance contracts without
+promoting historical evidence to current proof. Portable CI exercises Ubuntu,
+macOS, and Windows with the declared Node/Python matrix rather than treating one
+runtime as cross-platform proof.
 
-For normal computer-based web/frontend development, use the `desktop` profile.
-It verifies the installed skill, local route pack, design authority, browser and
-screenshot contracts, CI portability, and Codex/Pi evidence, but does not treat
-optional Cursor/Claude portability or physical-device certification as a daily
-development blocker. This profile can report 100/100 while `local` and
-`release-certify` continue to preserve the stricter cross-host/native release
-boundary.
+For a release-oriented view, report the independent quality domains without
+turning them into another aggregate score. A release profile remains
+`incomplete` until its current evidence and matching benchmark baseline exist:
+
+```bash
+python3 -m tools.design_craft quality \
+  --level operational_95 \
+  --baseline <committed-matching-runner-baseline> \
+  --json
+```
+
+Release levels are explicit. `operational_95` requires Codex, Pi, current-source
+iOS Simulator and Android Emulator evidence, a current comparative evaluation,
+benchmark regression, a clean checkout, installed provenance, and live upstream
+review. Cursor, Claude, and physical-device status remain explicitly unverified.
+`certified_100` strictly adds those two hosts and physical-device evidence. The
+numbers name release evidence levels; they are not repository-wide quality
+scores.
 
 ## Common commands
 
 Route a frontend task through the local Codex route planner:
 
 ```bash
-bash scripts/design_craft_route.sh \
+bash skills/design-craft/scripts/design_craft_route.sh \
   --target /path/to/project \
   --surface mobile \
   --intent visual-refine \
@@ -360,7 +372,7 @@ bash scripts/design_craft_route.sh \
 Detect platform or run conservative native/adaptive static checks:
 
 ```bash
-python3 scripts/design_craft_platform_scan.py \
+python3 skills/design-craft/scripts/design_craft_platform_scan.py \
   --target /path/to/project \
   --platform auto \
   --mode scan \
@@ -373,17 +385,18 @@ Simulator, Android Emulator, or real-device run.
 Run a critique/audit/polish/harden/optimize/structure/architecture pass:
 
 ```bash
-bash scripts/design_craft_pass.sh \
+bash skills/design-craft/scripts/design_craft_pass.sh \
   --target /path/to/project \
   --mode critique
 ```
 
-`design_craft_audit.sh` remains as a compatibility entrypoint.
+`skills/design-craft/scripts/` is the only runtime source; repository-root
+forwarding wrappers are intentionally not maintained.
 
 Run a motion-specific review pass:
 
 ```bash
-bash scripts/design_craft_pass.sh \
+bash skills/design-craft/scripts/design_craft_pass.sh \
   --target /path/to/project \
   --mode motion
 ```
@@ -392,7 +405,7 @@ Create a stable product UI taste-review packet before scoring a screenshot or
 page:
 
 ```bash
-bash scripts/design_craft_taste_review.sh \
+bash skills/design-craft/scripts/design_craft_taste_review.sh \
   --target /path/to/screenshot-or-project \
   --context "dashboard for internal operators" \
   --evidence-level L0
@@ -408,7 +421,7 @@ proof of better task hierarchy.
 Create a real L4 before/after eval scaffold:
 
 ```bash
-bash scripts/design_craft_l4_eval_case.sh \
+bash skills/design-craft/scripts/design_craft_l4_eval_case.sh \
   --case-id generic-review-workbench-local-l4 \
   --surface "http://127.0.0.1:4173/generic-review-workbench/" \
   --primary-user "review operations teammates"
@@ -429,7 +442,7 @@ Chrome-headless fallback and writes only repo-external PNG artifacts plus
 `screenshots.json` metadata:
 
 ```bash
-python3 scripts/design_craft_l4_capture.py \
+python3 skills/design-craft/scripts/design_craft_l4_capture.py \
   --case-id generic-review-workbench-local-l4 \
   --before-url 'http://127.0.0.1:4173/generic-review-workbench/?variant=before' \
   --after-url 'http://127.0.0.1:4173/generic-review-workbench/?variant=after' \
@@ -445,12 +458,12 @@ Emit a redacted DOM/computed-style sampler for TMWD `browser_execute_js`, or
 validate captured product UI evidence and score anti-inflation rules:
 
 ```bash
-python3 scripts/design_craft_browser_evidence.py --print-js
-python3 scripts/design_craft_browser_evidence.py \
+python3 skills/design-craft/scripts/design_craft_browser_evidence.py --print-js
+python3 skills/design-craft/scripts/design_craft_browser_evidence.py \
   --validate-score-json evals/product-ui-taste/before-after/generic-review-workbench-local-l4/score.after.json
-python3 scripts/design_craft_browser_evidence.py \
+python3 skills/design-craft/scripts/design_craft_browser_evidence.py \
   --validate-score-json evals/product-ui-taste/before-after/generic-review-workbench-local-l4/score.before.json
-python3 scripts/design_craft_l4_evidence_manifest.py \
+python3 skills/design-craft/scripts/design_craft_l4_evidence_manifest.py \
   --validate-screenshots-json evals/product-ui-taste/before-after/generic-review-workbench-local-l4/screenshots.json \
   --strict
 ```
@@ -458,7 +471,7 @@ python3 scripts/design_craft_l4_evidence_manifest.py \
 Validate a completed L4 before/after case directory before citing its metadata:
 
 ```bash
-python3 scripts/design_craft_l4_case_validate.py \
+python3 skills/design-craft/scripts/design_craft_l4_case_validate.py \
   --case-dir evals/product-ui-taste/before-after/<case> \
   --strict
 ```
@@ -500,9 +513,9 @@ python3 scripts/design_craft_cross_agent_validate.py \
   --observed-task evals/cross-agent/same-prompt-native-adaptive-review
 ```
 
-Legacy v2 Codex/Pi dashboard, gesture-motion, and native-adaptive artifacts are
-historical baseline evidence only. Current evidence requires an isolated
-run-manifest v2 plus score schema v3 bound to the current Skill tree. Codex and
+Legacy v2/v3 Codex/Pi dashboard, gesture-motion, and native-adaptive artifacts
+are historical baseline evidence only. Current evidence requires an isolated
+run-manifest v2 plus score schema v4 bound to the current Skill tree. Codex and
 Pi can satisfy the normal desktop profile independently; Cursor and Claude are
 additional release-certification hosts and remain explicitly unverified when
 their local authentication or API transport cannot complete. Historical
@@ -535,14 +548,19 @@ from criterion-earned points and binds the output, prompt, scorecard, version,
 source commit, skill tree, run manifest, and runner/adapter contract hashes.
 See `evals/cross-agent/README.md` for the full four-host procedure.
 
+`--observed-task` fails when no host has a complete output/score pair. Use
+`--root` to validate pending/unverified active definitions. Archived v2/v3
+evidence is checked separately with `make history-audit`; archive compatibility
+does not satisfy or block the current-source release gate.
+
 Run static UI smell scanners. These are review signals, not a replacement for
 design judgment or browser evidence:
 
 ```bash
-python3 scripts/design_craft_static_review.py --target /path/to/project --json
-python3 scripts/design_craft_css_smell_scan.py --target /path/to/project
-python3 scripts/design_craft_focus_audit.py --target /path/to/project
-python3 scripts/design_craft_token_audit.py --target /path/to/project
+python3 skills/design-craft/scripts/design_craft_static_review.py --target /path/to/project --json
+python3 skills/design-craft/scripts/design_craft_css_smell_scan.py --target /path/to/project
+python3 skills/design-craft/scripts/design_craft_focus_audit.py --target /path/to/project
+python3 skills/design-craft/scripts/design_craft_token_audit.py --target /path/to/project
 ```
 
 `design_craft_static_review.py` normalizes the three scanner outputs into one
@@ -554,7 +572,7 @@ local design-craft review signals; `--json-only` remains raw upstream JSON for
 compatibility, and `--full-json` emits the combined payload.
 
 ```bash
-bash scripts/design_craft_detect.sh --target /path/to/project
+bash skills/design-craft/scripts/design_craft_detect.sh --target /path/to/project
 ```
 
 Review pinned upstream drift and absorption candidates without fetching:
@@ -590,13 +608,16 @@ provider runtime; its matrix records why design-craft absorbs the workflow,
 detector, hardening, and native quality behavior without vendoring that second
 browser/package boundary.
 
-Score source completeness and operational maturity separately:
+Score source completeness and evaluate explicit all-required maturity profiles
+separately. Release profiles require a committed, matching-runner benchmark
+baseline and current evidence; they are expected to fail when that evidence is
+not present:
 
 ```bash
 python3 scripts/design_craft_score.py --self --json
-python3 scripts/design_craft_maturity.py --profile portable --min-score 95 --json
-python3 scripts/design_craft_maturity.py --profile local --min-score 95 --json
-python3 scripts/design_craft_maturity.py --profile desktop --min-score 100 --json
+python3 scripts/design_craft_maturity.py --profile development --json
+python3 scripts/design_craft_maturity.py --profile operational_95 --baseline <path> --json
+python3 scripts/design_craft_maturity.py --profile certified_100 --baseline <path> --json
 ```
 
 ## Upstream policy
@@ -621,13 +642,15 @@ Refresh upstreams with:
 ```bash
 bash scripts/sync_upstreams.sh \
   --name emilkowalski-skills \
-  --commit <reviewed-40-character-sha>
+  --commit <pinned-40-character-sha>
 ```
 
 The sync helper advances one explicit submodule and only the compatibility
 `commit` field. It never advances `reviewed_through_commit`,
 `behavior_absorbed_through_commit`, `latest_range_*`, their legacy aliases, or
-the decision metadata. Before absorbing upstream changes, run:
+the decision metadata. The pinned commit may intentionally lag a reviewed
+remote head when upstream changes are provenance-only, already represented, or
+deliberately rejected. Before absorbing upstream changes, run:
 
 ```bash
 python3 scripts/upstream_absorption_report.py --remote-details --fail-on-unreviewed
@@ -647,73 +670,93 @@ snapshot provenance remains documented, but the current package ships original
 design-craft developer-product templates instead of redistributing the verbatim
 snapshots; see `LICENSES/VERCEL-DESIGN-NOTICE.md`.
 
-## Local release gate
+## Release governance
 
 Before treating the current source and local install as stable, run:
 
 ```bash
 make validate-portable
-make release-gate-local
+make release-gate-source
+make publish-local
 ```
 
-`make release-gate` remains a compatibility alias for `make release-gate-local`.
-Before tagging a new release, additionally run:
+Before tagging an Operational release, provide the committed benchmark baseline
+for the current runner and a repo-external native evidence directory:
 
 ```bash
-make release-readiness
+DESIGN_CRAFT_NATIVE_EVIDENCE_ROOT=/path/to/native-evidence \
+make release-readiness-operational \
+  BENCHMARK_BASELINE=benchmarks/baselines/v0.5.0-<runner-id>.json
 ```
 
-`release-readiness` is the normal 95/100 release boundary. A release claiming
-certified 100/100 must instead pass the stricter non-bypassable contract:
+The equivalent Certified target is:
 
 ```bash
-make release-certify
+DESIGN_CRAFT_NATIVE_EVIDENCE_ROOT=/path/to/native-evidence \
+make release-readiness-certified \
+  BENCHMARK_BASELINE=benchmarks/baselines/v0.5.0-<runner-id>.json
 ```
 
-It requires every active blind no-skill/focused-upstream/design-craft ablation, all four
-current-source v3 host runs, current-source Simulator, Emulator, and
-physical-device evidence, a dated release section, a clean worktree, local
-maturity 100/100, and install provenance parity. After pushing and tagging,
-verify annotated-tag/live-remote parity plus successful `Validate` and
-`Native runtime evidence` workflow runs with `make release-tag-verify`.
-
-Build the package triplet in an ignored directory. After the annotated tag's
-successful `Native runtime evidence` run and physical-device evidence exist,
-build the separately bound native-runtime triplet from that exact latest tag
-run:
+After the dated changelog, reviewed main merge, annotated tag, and successful
+tag-push `Validate` plus `Native runtime evidence` runs, verify final metadata
+and workflow identity. Final evidence, not candidate evidence, is required to
+build assets:
 
 ```bash
-make release-assets-build
-make release-assets-verify
-NATIVE_RUN_ID=<successful-tag-run-id> make native-release-bundle-build
-make native-release-bundle-verify
+make release-tag-verify-operational \
+  BENCHMARK_BASELINE=benchmarks/baselines/v0.5.0-<runner-id>.json
+make release-assets-build-operational \
+  NATIVE_RUN_OBSERVATION=/tmp/native-run.json
+make release-assets-verify-operational
 ```
 
-Upload all six assets: package, package checksum, package manifest, native
-bundle, native checksum, and native manifest. Then run
-`make release-final-verify`. It downloads and revalidates both triplets,
-requires the native manifest run id to match the selected latest successful tag
-run, and requires the repository branch/tag governance rulesets.
+Operational has exactly four assets: package, checksum, release manifest, and
+SPDX SBOM. Certified has exactly seven, adding the self-contained native bundle,
+checksum, and native manifest. Operational records the exact native workflow
+run and the 90-day artifact-retention boundary; it does not claim permanent
+self-contained native proof. Certified asset construction additionally uses
+persisted observations for the exact native tag run and the explicitly approved
+physical-device run, plus three separate, already downloaded evidence roots.
+Both observations must be created before any artifact download, and final
+release evidence must bind byte-for-byte to those selected runs. Keeping the
+Simulator, Emulator, and physical-device roots separate prevents artifact-name
+collisions and avoids downloading the same GitHub run twice:
 
-Certification is intentionally two-phase. `release-certify-prepublish` runs
-all source, remote, L4, four-host, native, and 100-point gates and verifies the
-installer in an isolated temporary skill root. Only after those checks pass
-does `release-certify-publish` atomically update the live
-`~/.agents/skills/design-craft` installation. A failed prepublish phase cannot
-leave the active installation on an uncertified tree.
-The certification entrypoints acquire a repository-local single-writer lock
-and reject a changed HEAD or dirty worktree at the end of the run. Tag
-verification requires the latest `push` run whose `headBranch` is the release
-tag; an older manual success for the same commit cannot satisfy the contract.
+```bash
+python3 -m tools.design_craft release run-observation \
+  --kind native --run-id <tag-run-id> --output /tmp/native-run.json
+python3 -m tools.design_craft release run-observation \
+  --kind physical --run-id <physical-run-id> --output /tmp/physical-run.json
+python3 -m tools.design_craft release evidence-bindings \
+  --level certified_100 \
+  --evidence dist/evidence/certified_100-final.json \
+  --native-observation /tmp/native-run.json \
+  --physical-observation /tmp/physical-run.json
+make release-assets-build-certified \
+  CERTIFIED_FINAL_EVIDENCE=dist/evidence/certified_100-final.json \
+  NATIVE_RUN_OBSERVATION=/tmp/native-run.json \
+  PHYSICAL_RUN_OBSERVATION=/tmp/physical-run.json \
+  NATIVE_IOS_SOURCE=/path/to/native-runtime-ios-<tag-run-id> \
+  NATIVE_ANDROID_SOURCE=/path/to/native-runtime-android-<tag-run-id> \
+  NATIVE_REAL_DEVICE_ROOT=/path/to/native-runtime-physical-<run-id>
+```
+
+`.github/workflows/release.yml` is a manual, confirmation-gated final publisher.
+It never publishes to npm, rejects an existing GitHub Release instead of
+replacing assets in place, generates provenance attestations, and publishes the
+exact four- or seven-asset set. An Operational release can only become Certified
+in a new version. After publication, use `make release-final-verify-operational`
+or `make release-final-verify-certified` to download and revalidate the exact
+Release assets and selected tag-run bindings.
 
 The gate split is documented in `docs/maintenance.md`. The portable gate checks
 package shape, syntax, bundled runtime independence, platform fixtures,
 validators, static scanners, project-neutral L4 fixtures, source completeness,
-and portable maturity without local Codex or install-state assumptions. The
-local gate adds skill quick validation, Codex route-pack checks, observed
-cross-agent evidence, historical real-project L4 provenance, atomic install,
-installed-skill provenance/parity, and local maturity. `release-readiness`
-adds mutable remote-upstream freshness only after the deterministic gate passes.
+and development maturity without local install-state assumptions. Local publish
+adds an atomic install and installed-skill provenance/parity. Release profiles
+add current observed evidence, benchmark regression, a clean worktree, live
+upstream review, and final remote/tag/ruleset checks without using history
+artifacts as substitutes.
 
 Probe native SDK/runtime availability and validate real evidence separately:
 
@@ -733,13 +776,19 @@ the evidence and validates the generated JSON before upload. Downloaded
 artifacts must still be reviewed before `ios-observed.json` and
 `android-observed.json` are admitted as durable evidence. A separate physical
 device run must provide `real-device-observed.json`; workflow existence is not
-itself runtime proof.
+itself runtime proof. `.github/workflows/physical-device.yml` only defines a
+manual, environment-approved self-hosted capture lane. It is not certification
+until that exact run's current-source artifact validates.
 
 The release bundle validator packages all three evidence JSON files and their
 declared artifacts only. It rejects undeclared files, duplicate members,
 links/devices, path traversal, non-normalized archive metadata, stale source
-hashes, and a run other than the latest completed successful `v<VERSION>` tag
-push. Its offline self-check also verifies byte-identical double builds.
+hashes, oversized archives/members, and a run other than the latest completed
+successful `v<VERSION>` tag push. It separately requires the physical evidence
+to bind to an explicitly selected successful `main` workflow-dispatch run. Unit
+and integration tests verify byte-identical double builds, bounded extraction,
+single-inspection validation, CLI exit codes, and exact outer/inner evidence,
+workflow, and per-artifact binding.
 
 Runtime evidence stores only a SHA-256-derived runtime identifier. Raw
 Simulator UDIDs, iOS device identifiers, and Android serials must not be
@@ -759,8 +808,10 @@ bash scripts/native_runtime_device_android.sh \
 ```
 
 The raw serial is used only for the live ADB session; the recorded JSON contains
-its SHA-256-derived identifier. Review the output before admitting
-`real-device-observed.json` and its artifacts under `evals/native-runtime/`.
+its SHA-256-derived identifier. Review the output before admitting it to the
+repo-external release evidence directory. Current evidence is not committed back
+into the source tree because its source-commit binding would otherwise be
+cyclic.
 
 Route smoke uses a temporary fixture project with its own `DESIGN.md`, because
 `design-craft` itself is a reusable skill system rather than a product UI target:

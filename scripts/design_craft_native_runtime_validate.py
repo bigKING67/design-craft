@@ -315,6 +315,30 @@ def validate_evidence(
             errors.append(f"{path}: {key} must be 64 lowercase hex characters")
     if not isinstance(payload.get("capture_context"), str) or not payload["capture_context"].strip():
         errors.append(f"{path}: capture_context is required")
+    workflow = payload.get("workflow")
+    if evidence_schema == EVIDENCE_SCHEMA:
+        if workflow is not None and not isinstance(workflow, dict):
+            errors.append(f"{path}: workflow must be an object or null")
+        elif isinstance(workflow, dict):
+            expected_workflow_keys = {
+                "repository",
+                "run_id",
+                "run_attempt",
+                "url",
+                "event",
+                "head_sha",
+                "ref",
+            }
+            if set(workflow) != expected_workflow_keys:
+                errors.append(f"{path}: workflow keys are incomplete or unsupported")
+            for key in ("repository", "url", "event", "ref"):
+                if not isinstance(workflow.get(key), str) or not workflow[key].strip():
+                    errors.append(f"{path}: workflow.{key} must be a non-empty string")
+            for key in ("run_id", "run_attempt"):
+                if not isinstance(workflow.get(key), int) or isinstance(workflow.get(key), bool) or workflow[key] <= 0:
+                    errors.append(f"{path}: workflow.{key} must be a positive integer")
+            if not re.fullmatch(r"[0-9a-f]{40}", str(workflow.get("head_sha", ""))):
+                errors.append(f"{path}: workflow.head_sha must be a full lowercase Git SHA")
     commands = payload.get("commands")
     if not isinstance(commands, list) or not commands or not all(isinstance(item, str) and item.strip() for item in commands):
         errors.append(f"{path}: commands must be a non-empty string array")
@@ -412,6 +436,13 @@ def validate_evidence(
             errors.append(
                 f"{path}: contract_sha256 must match the current {expected_platform} runtime contract"
             )
+        if runtime_kind in {"ios_simulator", "android_emulator"}:
+            if not isinstance(workflow, dict):
+                errors.append(
+                    f"{path}: current Simulator/Emulator evidence must include GitHub workflow identity"
+                )
+            elif workflow.get("head_sha") != source_commit:
+                errors.append(f"{path}: workflow.head_sha must match source_commit")
         if re.fullmatch(r"[0-9a-f]{40}", source_commit):
             try:
                 repository = git_root(skill_root)
@@ -536,6 +567,15 @@ def run_self_check() -> list[str]:
             "fixture_tree_sha256": "c" * 64,
             "contract_sha256": "e" * 64,
             "capture_context": "fixture",
+            "workflow": {
+                "repository": "example/design-craft",
+                "run_id": 1,
+                "run_attempt": 1,
+                "url": "https://example.invalid/example/design-craft/actions/runs/1",
+                "event": "workflow_dispatch",
+                "head_sha": "a" * 40,
+                "ref": "refs/heads/main",
+            },
             "commands": ["xcrun simctl boot fixture"],
             "assertions": {
                 "build_succeeded": True,
@@ -612,6 +652,7 @@ def run_self_check() -> list[str]:
         valid["source_commit"] = subprocess.check_output(
             ["git", "rev-parse", "HEAD"], cwd=source_repo, text=True
         ).strip()
+        valid["workflow"]["head_sha"] = valid["source_commit"]
         path.write_text(json.dumps(valid), encoding="utf-8")
         _, current_errors = validate_evidence(
             path,

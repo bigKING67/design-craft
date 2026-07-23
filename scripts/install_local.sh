@@ -2,13 +2,12 @@
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-INSTALL_ROOT="${DESIGN_CRAFT_SKILL_ROOT:-${FRONTEND_CRAFT_SKILL_ROOT:-${HOME}/.agents/skills}}"
+INSTALL_ROOT="${DESIGN_CRAFT_SKILL_ROOT:-${HOME}/.agents/skills}"
 BACKUP_BASE="${DESIGN_CRAFT_BACKUP_ROOT:-${HOME}/.agents/backups}"
 KEEP_BACKUPS="${DESIGN_CRAFT_BACKUP_KEEP:-10}"
 LOCK_TIMEOUT="${DESIGN_CRAFT_INSTALL_LOCK_TIMEOUT:-30}"
 VERIFY_SCRIPT="${ROOT_DIR}/scripts/design_craft_install_verify.py"
 DRY_RUN=0
-INCLUDE_LEGACY_ALIAS=0
 PRUNE_BACKUPS=1
 LOCK_DIR="${INSTALL_ROOT}/.design-craft-install.lock"
 LOCK_HELD=0
@@ -17,14 +16,13 @@ STAGING_PATHS=()
 usage() {
   cat <<'EOF'
 Usage:
-  scripts/install_local.sh [--dry-run] [--include-legacy-alias]
+  scripts/install_local.sh [--dry-run]
                            [--keep-backups <count>] [--no-prune-backups]
                            [--lock-timeout <seconds>]
 
 Installs through a same-filesystem staging directory, validates the staged
 copy, atomically replaces the target, and restores the previous target if
-post-install verification fails. An existing legacy frontend-craft alias is
-refreshed even when --include-legacy-alias is omitted.
+post-install verification fails.
 EOF
 }
 
@@ -32,10 +30,6 @@ while [[ $# -gt 0 ]]; do
   case "$1" in
     --dry-run)
       DRY_RUN=1
-      shift
-      ;;
-    --include-legacy-alias)
-      INCLUDE_LEGACY_ALIAS=1
       shift
       ;;
     --keep-backups)
@@ -335,11 +329,6 @@ if [[ "${DRY_RUN}" != "1" ]]; then
 fi
 
 install_one "design-craft"
-if [[ "${INCLUDE_LEGACY_ALIAS}" == "1" || -e "${INSTALL_ROOT}/frontend-craft" || -L "${INSTALL_ROOT}/frontend-craft" ]]; then
-  install_one "frontend-craft"
-elif [[ "${INCLUDE_LEGACY_ALIAS}" != "1" ]]; then
-  echo "Skipped absent legacy frontend-craft alias. Pass --include-legacy-alias to install it."
-fi
 
 if [[ "${DRY_RUN}" == "1" ]]; then
   echo "dry_run: no files changed"

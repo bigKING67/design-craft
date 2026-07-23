@@ -136,18 +136,20 @@ def package_errors(
         ):
             errors.append("COMPATIBILITY.json must pin the route-pack v2 contracts")
         expected_evidence = {
-            "cross_agent": "design-craft.cross-agent-score.v3",
+            "cross_agent": "design-craft.cross-agent-score.v4",
             "native_runtime": "design-craft.native-runtime-evidence.v3",
-            "release_verification": "design-craft.release-verification.v1",
-            "github_checks": "design-craft.github-checks.v1",
+            "release_verification": "design-craft.release-evidence.v1",
+            "github_checks": "design-craft.github-checks.v2",
         }
         if any(evidence.get(key) != value for key, value in expected_evidence.items()):
             errors.append("COMPATIBILITY.json must pin the release evidence contracts")
         expected_maintenance = {
             "install": "design-craft.install.v2",
             "sync_status": "design-craft.sync-status.v2",
-            "release_assets": "design-craft.release-assets.v1",
-            "native_release_bundle": "design-craft.native-release-bundle.v1",
+            "release_assets": "design-craft.release-assets.v2",
+            "maturity": "design-craft.maturity.v2",
+            "release_policy": "design-craft.release-policy.v1",
+            "native_release_bundle": "design-craft.native-release-bundle.v2",
             "upstream_absorption_state": "design-craft.upstream-absorption-state.v2",
             "taste_absorption": "design-craft.taste-absorption.v1",
             "impeccable_absorption": "design-craft.impeccable-absorption.v1",
@@ -304,16 +306,18 @@ def self_check() -> list[str]:
             "routing_version": 2,
         },
         "evidence_contracts": {
-            "cross_agent": "design-craft.cross-agent-score.v3",
+            "cross_agent": "design-craft.cross-agent-score.v4",
             "native_runtime": "design-craft.native-runtime-evidence.v3",
-            "release_verification": "design-craft.release-verification.v1",
-            "github_checks": "design-craft.github-checks.v1",
+            "release_verification": "design-craft.release-evidence.v1",
+            "github_checks": "design-craft.github-checks.v2",
         },
         "maintenance_contracts": {
             "install": "design-craft.install.v2",
             "sync_status": "design-craft.sync-status.v2",
-            "release_assets": "design-craft.release-assets.v1",
-            "native_release_bundle": "design-craft.native-release-bundle.v1",
+            "release_assets": "design-craft.release-assets.v2",
+            "maturity": "design-craft.maturity.v2",
+            "release_policy": "design-craft.release-policy.v1",
+            "native_release_bundle": "design-craft.native-release-bundle.v2",
             "upstream_absorption_state": "design-craft.upstream-absorption-state.v2",
             "taste_absorption": "design-craft.taste-absorption.v1",
             "impeccable_absorption": "design-craft.impeccable-absorption.v1",

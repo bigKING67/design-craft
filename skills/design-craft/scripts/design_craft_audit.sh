@@ -2,12 +2,6 @@
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-SOURCE_ROOT="${DESIGN_CRAFT_SOURCE_ROOT:-}"
-if [[ -n "${SOURCE_ROOT}" && -d "${SOURCE_ROOT}" ]]; then
-  SOURCE_ROOT="$(cd "${SOURCE_ROOT}" && pwd)"
-else
-  SOURCE_ROOT=""
-fi
 
 TARGET="."
 MODE="audit"
@@ -38,7 +32,7 @@ Options:
   --product-context-path <path>  Explicit PRODUCT.md.
   --skip-route        Do not call design_craft_route.sh.
   --skip-detector     Do not call design_craft_detect.sh.
-  --skip-score        Do not call design_craft_score.py.
+  --skip-score        Suppress the repository-quality boundary note.
   --strict            Exit non-zero if a sub-check exits non-zero.
 EOF
 }
@@ -58,10 +52,6 @@ PY
     printf '%s\n' "${resolved}"
   fi
 }
-
-if [[ -n "${SOURCE_ROOT}" ]]; then
-  SOURCE_ROOT="$(abspath "${SOURCE_ROOT}")"
-fi
 
 section() {
   printf '\n== %s ==\n' "$1"
@@ -210,21 +200,10 @@ else
 fi
 
 if [[ "${SKIP_SCORE}" != "1" ]]; then
-  section "design-craft source score"
-  if [[ -n "${SOURCE_ROOT}" && -x "${SOURCE_ROOT}/scripts/design_craft_score.py" && ( "${TARGET}" == "${SOURCE_ROOT}" || "${TARGET}" == "${SOURCE_ROOT}/"* ) ]]; then
-    set +e
-    "${SOURCE_ROOT}/scripts/design_craft_score.py" --self
-    status=$?
-    set -e
-    if [[ "${status}" != "0" ]]; then
-      overall_status="${status}"
-      echo "score_status: ${status}"
-    fi
-  else
-    echo "skipped: source-completeness scorer is unavailable or target is not the source repo."
-  fi
+  section "quality evidence boundary"
+  echo "Runtime audit does not compute repository quality scores. Use repo governance tooling for contract, operational, benchmark, evaluation, and certification reports."
 else
-  section "design-craft source score"
+  section "quality evidence boundary"
   echo "skipped"
 fi
 

@@ -152,7 +152,7 @@ def validate_metadata(
             "metadata source_commit must be an ancestor of the current source HEAD "
             f"{expected_source_commit}"
         )
-    else:
+    elif not expected_skill_source_dirty:
         try:
             recorded_commit_digest = git_tree_sha256(
                 expected_source_root,

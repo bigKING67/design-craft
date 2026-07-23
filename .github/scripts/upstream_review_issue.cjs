@@ -1,4 +1,4 @@
-const fs = require("fs");
+const fs = require("fs/promises");
 
 const TITLE = "[design-craft] Upstream review required";
 
@@ -36,7 +36,7 @@ module.exports = async function maintainUpstreamReviewIssue({
   if (mode !== "drift") {
     throw new Error(`Unsupported upstream review issue mode: ${mode}`);
   }
-  const report = fs.readFileSync(reportPath, "utf8").slice(0, 50000);
+  const report = (await fs.readFile(reportPath, "utf8")).slice(0, 50000);
   const body = [
     "The daily upstream freshness audit found unreviewed remote drift.",
     "",

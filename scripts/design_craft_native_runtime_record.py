@@ -116,6 +116,38 @@ def main() -> int:
         raw_runtime_id.encode("utf-8")
     ).hexdigest()
 
+    workflow = None
+    if os.environ.get("GITHUB_ACTIONS") == "true":
+        required_workflow_env = (
+            "GITHUB_REPOSITORY",
+            "GITHUB_RUN_ID",
+            "GITHUB_RUN_ATTEMPT",
+            "GITHUB_EVENT_NAME",
+            "GITHUB_SHA",
+            "GITHUB_REF",
+            "GITHUB_SERVER_URL",
+        )
+        missing_workflow_env = [
+            name for name in required_workflow_env if not os.environ.get(name)
+        ]
+        if missing_workflow_env:
+            parser.error(
+                "GitHub runtime evidence is missing workflow identity: "
+                + ", ".join(missing_workflow_env)
+            )
+        workflow = {
+            "repository": os.environ["GITHUB_REPOSITORY"],
+            "run_id": int(os.environ["GITHUB_RUN_ID"]),
+            "run_attempt": int(os.environ["GITHUB_RUN_ATTEMPT"]),
+            "url": (
+                f"{os.environ['GITHUB_SERVER_URL']}/{os.environ['GITHUB_REPOSITORY']}"
+                f"/actions/runs/{os.environ['GITHUB_RUN_ID']}"
+            ),
+            "event": os.environ["GITHUB_EVENT_NAME"],
+            "head_sha": os.environ["GITHUB_SHA"],
+            "ref": os.environ["GITHUB_REF"],
+        }
+
     payload = {
         "schema": EVIDENCE_SCHEMA,
         "platform": args.platform,
@@ -142,6 +174,7 @@ def main() -> int:
             if os.environ.get("GITHUB_ACTIONS") == "true"
             else "local"
         ),
+        "workflow": workflow,
         "commands": args.command,
         "assertions": assertions,
         "artifacts": artifacts,

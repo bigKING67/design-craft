@@ -126,13 +126,6 @@ def canonical_status(*, remote: bool) -> dict[str, object]:
 
 def install_status(skill_root: Path, version: str, name: str) -> dict[str, object]:
     installed = skill_root / name
-    if name == "frontend-craft" and not installed.exists():
-        return {
-            "present": False,
-            "installed": str(installed),
-            "ok": True,
-            "errors": [],
-        }
     result = run(
         [
             sys.executable,
@@ -188,7 +181,6 @@ def main() -> int:
     version = (ROOT / "VERSION").read_text(encoding="utf-8").strip()
     canonical = canonical_status(remote=args.remote)
     install = install_status(skill_root, version, "design-craft")
-    legacy_install = install_status(skill_root, version, "frontend-craft")
     route_result = run(
         [sys.executable, "scripts/design_craft_codex_route_pack.py", "--strict", "--json"]
     )
@@ -215,7 +207,6 @@ def main() -> int:
     ok = bool(
         canonical.get("ok")
         and install.get("ok")
-        and legacy_install.get("ok")
         and route_pack.get("status") == "ok"
         and upstream.get("ok") is not False
     )
@@ -226,7 +217,6 @@ def main() -> int:
         "ok": ok,
         "canonical": canonical,
         "install": install,
-        "legacy_install": legacy_install,
         "route_pack": {
             "status": route_pack.get("status"),
             "source_root": route_pack.get("source_root"),
@@ -241,10 +231,6 @@ def main() -> int:
         print(f"design-craft sync status: {'ok' if ok else 'drift'}")
         print(f"canonical: {'ok' if canonical.get('ok') else 'drift'}")
         print(f"install: {'ok' if install.get('ok') else 'drift'}")
-        if legacy_install.get("present"):
-            print(f"legacy_alias: {'ok' if legacy_install.get('ok') else 'drift'}")
-        else:
-            print("legacy_alias: not installed")
         print(f"route_pack: {route_pack.get('status', 'invalid')}")
         print(
             f"upstream: {'not checked' if not args.remote else 'ok' if upstream.get('ok') else 'drift'}"

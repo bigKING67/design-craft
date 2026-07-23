@@ -48,19 +48,28 @@ def validate() -> dict:
     errors: list[str] = []
     native_workflow_path = ROOT / ".github/workflows/native-runtime.yml"
     validate_workflow_path = ROOT / ".github/workflows/validate.yml"
+    benchmark_workflow_path = ROOT / ".github/workflows/benchmark.yml"
+    codeql_workflow_path = ROOT / ".github/workflows/codeql.yml"
+    release_workflow_path = ROOT / ".github/workflows/release.yml"
+    physical_workflow_path = ROOT / ".github/workflows/physical-device.yml"
     dependabot_path = ROOT / ".github/dependabot.yml"
     ios_runner_path = ROOT / "scripts/native_runtime_ci_ios.sh"
     android_runner_path = ROOT / "scripts/native_runtime_ci_android.sh"
     android_common_path = ROOT / "scripts/native_runtime_android_common.sh"
     portable_validator_path = ROOT / "scripts/validate.sh"
     lint_validator_path = ROOT / "scripts/design_craft_lint.py"
-    maturity_validator_path = ROOT / "scripts/design_craft_maturity.py"
+    maturity_validator_path = ROOT / "tools/design_craft/validation/maturity/process_runner.py"
+    maturity_entrypoint_path = ROOT / "scripts/design_craft_maturity.py"
     git_attributes_path = ROOT / ".gitattributes"
     ios_fixture_path = ROOT / "evals/native-runtime/fixtures/ios/App.swift"
 
     required_paths = (
         native_workflow_path,
         validate_workflow_path,
+        benchmark_workflow_path,
+        codeql_workflow_path,
+        release_workflow_path,
+        physical_workflow_path,
         dependabot_path,
         ios_runner_path,
         android_runner_path,
@@ -68,6 +77,7 @@ def validate() -> dict:
         portable_validator_path,
         lint_validator_path,
         maturity_validator_path,
+        maturity_entrypoint_path,
         git_attributes_path,
         ios_fixture_path,
     )
@@ -79,6 +89,10 @@ def validate() -> dict:
 
     native_workflow = native_workflow_path.read_text(encoding="utf-8")
     validate_workflow = validate_workflow_path.read_text(encoding="utf-8")
+    benchmark_workflow = benchmark_workflow_path.read_text(encoding="utf-8")
+    codeql_workflow = codeql_workflow_path.read_text(encoding="utf-8")
+    release_workflow = release_workflow_path.read_text(encoding="utf-8")
+    physical_workflow = physical_workflow_path.read_text(encoding="utf-8")
     dependabot = dependabot_path.read_text(encoding="utf-8")
     ios_runner = ios_runner_path.read_text(encoding="utf-8")
     android_runner = android_runner_path.read_text(encoding="utf-8")
@@ -117,8 +131,112 @@ def validate() -> dict:
                 "name: contract-tests",
                 "make lint",
                 "make contract-tests",
+                "--profile development",
             ),
             ".github/workflows/validate.yml",
+        )
+    )
+    errors.extend(
+        require_tokens(
+            benchmark_workflow,
+            (
+                "schedule:",
+                "workflow_dispatch:",
+                "github.event_name == 'push' || github.event_name == 'pull_request'",
+                "github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'",
+                "ubuntu-24.04",
+                "--scale smoke",
+                "--scale full",
+                "benchmark-result-smoke.json",
+                "benchmark-result-full.json",
+                "actions/upload-artifact@",
+                "retention-days: 30",
+                "retention-days: 90",
+                "concurrency:",
+                "cancel-in-progress: true",
+            ),
+            ".github/workflows/benchmark.yml",
+        )
+    )
+    if benchmark_workflow.count("timeout-minutes:") != 2:
+        errors.append(
+            ".github/workflows/benchmark.yml must set a timeout on both benchmark jobs"
+        )
+    for job_name in ("smoke", "full"):
+        block = workflow_job_block(benchmark_workflow, job_name)
+        if "submodules: recursive" not in block or "fetch-depth: 0" not in block:
+            errors.append(
+                f".github/workflows/benchmark.yml {job_name} must fetch recursive submodules and full history"
+            )
+    errors.extend(
+        require_tokens(
+            codeql_workflow,
+            (
+                "schedule:",
+                "security-events: write",
+                "contents: read",
+                "timeout-minutes:",
+                "matrix:",
+                "python",
+                "javascript-typescript",
+                "github/codeql-action/init@",
+                "github/codeql-action/analyze@",
+                "concurrency:",
+                "cancel-in-progress: true",
+            ),
+            ".github/workflows/codeql.yml",
+        )
+    )
+    if codeql_workflow.count("timeout-minutes:") != 1:
+        errors.append(".github/workflows/codeql.yml must set a timeout on its analysis job")
+    errors.extend(
+        require_tokens(
+            release_workflow,
+            (
+                "workflow_dispatch:",
+                "operational_95",
+                "certified_100",
+                "contents: write",
+                "id-token: write",
+                "attestations: write",
+                "release verify",
+                "--phase final",
+                "--require-tag-run",
+                "actions: read",
+                "release run-observation",
+                "--kind native",
+                "--kind physical",
+                "release evidence-bindings",
+                "--native-observation",
+                "--physical-observation",
+                "release-assets-build-operational",
+                "release-assets-build-certified",
+                "actions/attest-build-provenance@",
+                "gh release create",
+                "GitHub Release ${RELEASE_TAG} already exists",
+            ),
+            ".github/workflows/release.yml",
+        )
+    )
+    if "npm publish" in release_workflow:
+        errors.append(".github/workflows/release.yml must not publish to the npm registry")
+    release_job = workflow_job_block(release_workflow, "release")
+    if release_job.count("permissions:") != 1:
+        errors.append(".github/workflows/release.yml must scope write permissions to the release job")
+    errors.extend(
+        require_tokens(
+            physical_workflow,
+            (
+                "workflow_dispatch:",
+                "runs-on: [self-hosted, linux, android-physical-device]",
+                "if: github.ref == 'refs/heads/main'",
+                "environment: physical-device",
+                "capture-physical-device",
+                "native_runtime_device_android.sh",
+                "native-runtime-physical-${{ github.run_id }}",
+                "retention-days: 90",
+            ),
+            ".github/workflows/physical-device.yml",
         )
     )
     if validate_workflow.count("timeout-minutes:") != 5:
@@ -180,13 +298,12 @@ def validate() -> dict:
         require_tokens(
             portable_validator,
             (
-                "command -v rg",
-                "grep -R -n -E",
-                '"${BASH}" -n',
                 'cygpath -w "${BASH}"',
                 "export DESIGN_CRAFT_BASH",
-                'shutil.which(os.environ.get("DESIGN_CRAFT_BASH") or "bash")',
-                "DESIGN_CRAFT_BASH must resolve to Git Bash",
+                "tools.design_craft.validation.repository_contracts",
+                "tools.design_craft.validation.tooling_contracts",
+                "python3 -m unittest discover",
+                "--profile development",
             ),
             "scripts/validate.sh",
         )
@@ -208,9 +325,9 @@ def validate() -> dict:
             (
                 'os.environ.get("DESIGN_CRAFT_BASH")',
                 'normalized.endswith("/windows/system32/bash.exe")',
-                "resolved_command[0] = executable",
+                "resolved[0] = executable",
             ),
-            "scripts/design_craft_maturity.py",
+            "tools/design_craft/validation/maturity/process_runner.py",
         )
     )
     errors.extend(

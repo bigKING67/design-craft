@@ -20,7 +20,7 @@ ACTIVE_FILES = [
     "scripts/design_craft_doctor.sh",
     "scripts/design_craft_score.py",
     "scripts/validate.sh",
-    "scripts/design_craft_l4_capture.py",
+    "skills/design-craft/scripts/design_craft_l4_capture.py",
     "scripts/design_craft_cross_agent_validate.py",
     "skills/design-craft/SKILL.md",
     "skills/design-craft/references/report-quality.md",
@@ -30,16 +30,13 @@ ACTIVE_FILES = [
     "evals/golden-tasks/generic-review-workbench.md",
     "evals/product-ui-taste/before-after/README.md",
     "evals/cross-agent/README.md",
-    "evals/cross-agent/same-prompt-dashboard-review/prompt.md",
-    "evals/cross-agent/same-prompt-dashboard-review/expected-findings.md",
-    "evals/cross-agent/same-prompt-dashboard-review/scorecard.md",
-    "evals/cross-agent/same-prompt-landing-polish/prompt.md",
-    "evals/cross-agent/same-prompt-landing-polish/expected-findings.md",
-    "evals/cross-agent/same-prompt-landing-polish/scorecard.md",
-    "evals/cross-agent/same-prompt-motion-review/prompt.md",
-    "evals/cross-agent/same-prompt-motion-review/expected-findings.md",
-    "evals/cross-agent/same-prompt-motion-review/scorecard.md",
 ]
+CROSS_AGENT_ACTIVE_FILES = (
+    "prompt.md",
+    "expected-findings.md",
+    "scorecard.json",
+    "evidence-status.json",
+)
 
 
 MARKER_FRAGMENTS = [
@@ -85,6 +82,17 @@ def validate_paths(root: Path, rel_paths: list[str]) -> list[str]:
     return errors
 
 
+def active_paths(root: Path) -> list[str]:
+    task_files: list[str] = []
+    for task in sorted((root / "evals/cross-agent").glob("same-prompt-*")):
+        if task.is_dir():
+            task_files.extend(
+                str((task / name).relative_to(root))
+                for name in CROSS_AGENT_ACTIVE_FILES
+            )
+    return [*ACTIVE_FILES, *task_files]
+
+
 def self_check() -> int:
     with tempfile.TemporaryDirectory(prefix="design-craft-active-scope.") as tmp:
         root = Path(tmp)
@@ -122,12 +130,13 @@ def main() -> int:
         return self_check()
 
     root = Path(args.root).expanduser().resolve()
-    errors = validate_paths(root, ACTIVE_FILES)
+    paths = active_paths(root)
+    errors = validate_paths(root, paths)
     if errors:
         print("\n".join(errors), file=sys.stderr)
         return 1
 
-    print(f"active scope validation passed: {len(ACTIVE_FILES)} files")
+    print(f"active scope validation passed: {len(paths)} files")
     return 0
 
 
