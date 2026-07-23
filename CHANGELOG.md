@@ -2,7 +2,7 @@
 
 All notable local changes to `design-craft` are recorded here.
 
-## 0.5.0 - Unreleased
+## 0.5.0 - 2026-07-23
 
 - Added a five-Skill Emil Kowalski absorption contract and human-readable
   matrix. The gate verifies all five entrypoints, three auxiliary Markdown
