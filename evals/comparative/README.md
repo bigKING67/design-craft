@@ -1,5 +1,10 @@
 # Comparative skill evals
 
+`scorecard.json` is the machine authority for criterion IDs and weights.
+`scorecard.md` is deterministically generated from the machine-authoritative
+`scorecard.json`; the validator rejects any drift. It is hashed into
+run provenance, but validators never parse Markdown tables as score data.
+
 These cases compare a no-skill baseline, one focused upstream variant, and
 `design-craft` under the same host, model, reasoning profile, and prompt. They
 complement cross-host portability tests; they do not replace browser or native
@@ -20,6 +25,10 @@ Active cases:
 - `impeccable-production-ablation`: audit sequencing, hostile-data hardening,
   responsive/accessibility quality, detector reconciliation, and measured
   performance planning.
+
+Active case directories are definition truth only until a complete new run is
+recorded. The 2026-07-12 result tranche is preserved byte-for-byte under
+`history/v0.4.0/`; it cannot satisfy a current-source release gate.
 
 Run the following workflow for each active case:
 
@@ -56,3 +65,10 @@ Each `variants.json` declares its focused upstream with
 both the no-skill baseline and that focused upstream in every active case. If
 it does not, fix the Skill or narrow the claim; do not edit the judgment
 headline or hand-author judge metadata.
+
+Validate archived internal hashes separately with:
+
+```bash
+python3 scripts/design_craft_comparative_validate.py \
+  --history-root evals/comparative/history
+```

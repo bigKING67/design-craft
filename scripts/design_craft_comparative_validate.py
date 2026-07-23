@@ -22,6 +22,7 @@ from design_craft_comparative_common import (
     VARIANTS_SCHEMA,
     contract_sha256,
     load_scorecard,
+    render_scorecard_markdown,
     sha256_file,
     validate_judgment,
     validate_judgment_schema,
@@ -49,19 +50,9 @@ REQUIRED_OBSERVED_FILES = (
 )
 
 
-def markdown_weight_total(path: Path) -> int:
-    total = 0
-    for line in path.read_text(encoding="utf-8").splitlines():
-        stripped = line.strip()
-        if not stripped.startswith("|") or not stripped.endswith("|"):
-            continue
-        cells = [cell.strip() for cell in stripped.strip("|").split("|")]
-        if len(cells) >= 2 and cells[1].isdigit():
-            total += int(cells[1])
-    return total
-
-
-def load_variants(case_dir: Path) -> tuple[dict, list[str]]:
+def load_variants(
+    case_dir: Path, *, require_skill_paths: bool = True
+) -> tuple[dict, list[str]]:
     path = case_dir / "variants.json"
     try:
         payload = json.loads(path.read_text(encoding="utf-8"))
@@ -93,24 +84,39 @@ def load_variants(case_dir: Path) -> tuple[dict, list[str]]:
         for relative in paths:
             if Path(relative).is_absolute() or ".." in Path(relative).parts:
                 errors.append(f"{path}: variant skill path must stay repository-relative: {relative}")
-            elif not ROOT.joinpath(relative, "SKILL.md").is_file():
+            elif require_skill_paths and not ROOT.joinpath(relative, "SKILL.md").is_file():
                 errors.append(f"{path}: missing variant skill {relative}")
     return payload, errors
 
 
-def validate_definition(case_dir: Path) -> tuple[dict, dict[str, int], list[str]]:
+def validate_definition(
+    case_dir: Path,
+    *,
+    require_skill_paths: bool = True,
+    require_scorecard_parity: bool = True,
+) -> tuple[dict, dict[str, int], list[str]]:
     errors: list[str] = []
     for name in REQUIRED_DEFINITION_FILES:
         if not case_dir.joinpath(name).is_file():
             errors.append(f"{case_dir}: missing {name}")
     if errors:
         return {}, {}, errors
-    variants, variant_errors = load_variants(case_dir)
+    variants, variant_errors = load_variants(
+        case_dir, require_skill_paths=require_skill_paths
+    )
     errors.extend(variant_errors)
     weights, scorecard_errors = load_scorecard(case_dir)
     errors.extend(scorecard_errors)
-    if markdown_weight_total(case_dir / "scorecard.md") != 100:
-        errors.append(f"{case_dir}/scorecard.md: visible criterion weights must total 100")
+    if require_scorecard_parity:
+        try:
+            rendered_scorecard = render_scorecard_markdown(case_dir)
+        except (OSError, ValueError, json.JSONDecodeError) as exc:
+            errors.append(f"{case_dir}/scorecard.json: cannot render scorecard: {exc}")
+        else:
+            if (case_dir / "scorecard.md").read_text(encoding="utf-8") != rendered_scorecard:
+                errors.append(
+                    f"{case_dir}/scorecard.md: must be generated exactly from scorecard.json"
+                )
     if weights:
         errors.extend(validate_judgment_schema(case_dir, weights))
     prompt = (case_dir / "prompt.md").read_text(encoding="utf-8").lower()
@@ -125,6 +131,7 @@ def validate_run(
     variant: dict,
     *,
     prompt_hash: str,
+    require_current_source: bool,
 ) -> tuple[dict, list[str]]:
     output = case_dir / f"output.{variant_id}.md"
     manifest = case_dir / f"run.{variant_id}.json"
@@ -165,7 +172,10 @@ def validate_run(
         errors.append(f"{manifest}: model_observation must be requested_by_cli")
     if payload.get("thinking_observation") != "requested_by_cli":
         errors.append(f"{manifest}: thinking_observation must be requested_by_cli")
-    if payload.get("contract_sha256") != contract_sha256():
+    observed_contract = str(payload.get("contract_sha256", ""))
+    if not re.fullmatch(r"[0-9a-f]{64}", observed_contract):
+        errors.append(f"{manifest}: contract_sha256 must be 64 lowercase hex characters")
+    elif require_current_source and observed_contract != contract_sha256():
         errors.append(f"{manifest}: comparative contract hash is stale")
     if payload.get("skill_install_mode") != "isolated_project_copy":
         errors.append(f"{manifest}: skill_install_mode must be isolated_project_copy")
@@ -181,14 +191,23 @@ def validate_run(
     for key in ("command", "cwd"):
         if re.search(r"(?:/Users/|/home/|[A-Za-z]:[\\/]Users[\\/])", str(payload.get(key, ""))):
             errors.append(f"{manifest}: {key} leaks a local user path")
-    expected_trees = {
-        str(relative): tree_sha256(ROOT / str(relative))
-        for relative in variant.get("skill_paths", [])
-    }
-    if payload.get("skill_trees") != expected_trees:
-        errors.append(f"{manifest}: skill_trees must match current variant sources")
+    expected_tree_paths = {str(relative) for relative in variant.get("skill_paths", [])}
+    observed_trees = payload.get("skill_trees")
+    if not isinstance(observed_trees, dict) or set(observed_trees) != expected_tree_paths:
+        errors.append(f"{manifest}: skill_trees must cover every variant skill")
+        observed_trees = {}
+    for relative, digest in observed_trees.items():
+        if not re.fullmatch(r"[0-9a-f]{64}", str(digest)):
+            errors.append(f"{manifest}: skill_trees.{relative} must be 64 lowercase hex characters")
+    if require_current_source:
+        expected_trees = {
+            str(relative): tree_sha256(ROOT / str(relative))
+            for relative in variant.get("skill_paths", [])
+        }
+        if observed_trees != expected_trees:
+            errors.append(f"{manifest}: skill_trees must match current variant sources")
     installed_paths = payload.get("installed_skill_paths")
-    if not isinstance(installed_paths, dict) or set(installed_paths) != set(expected_trees):
+    if not isinstance(installed_paths, dict) or set(installed_paths) != expected_tree_paths:
         errors.append(f"{manifest}: installed_skill_paths must cover every variant skill")
     elif any(not str(value).startswith("$VARIANT_WORKSPACE/") for value in installed_paths.values()):
         errors.append(f"{manifest}: installed skill paths must be redacted workspace paths")
@@ -387,8 +406,17 @@ def validate_result(
     return errors
 
 
-def validate_case(case_dir: Path, *, require_observed: bool) -> list[str]:
-    variants, weights, errors = validate_definition(case_dir)
+def validate_case(
+    case_dir: Path,
+    *,
+    require_observed: bool,
+    require_current_source: bool = True,
+) -> list[str]:
+    variants, weights, errors = validate_definition(
+        case_dir,
+        require_skill_paths=require_current_source,
+        require_scorecard_parity=require_current_source,
+    )
     if errors:
         return errors
     try:
@@ -413,6 +441,7 @@ def validate_case(case_dir: Path, *, require_observed: bool) -> list[str]:
             variant_id,
             variant_map.get(variant_id, {}),
             prompt_hash=prompt_hash,
+            require_current_source=require_current_source,
         )
         if payload:
             runs[variant_id] = payload
@@ -444,7 +473,7 @@ def active_cases(root: Path) -> list[Path]:
     return sorted(
         path
         for path in root.iterdir()
-        if path.is_dir() and not path.name.startswith("_")
+        if path.is_dir() and not path.name.startswith("_") and path.name != "history"
     ) if root.is_dir() else []
 
 
@@ -473,6 +502,21 @@ def run_self_check() -> list[str]:
         (case / "scorecard.json").write_text(json.dumps(scorecard), encoding="utf-8")
         if not validate_definition(case)[2]:
             errors.append("comparative self-check accepted a non-100 scorecard")
+        shutil.copy2(source / "scorecard.json", case / "scorecard.json")
+        (case / "scorecard.md").write_text(
+            render_scorecard_markdown(case), encoding="utf-8"
+        )
+        if validate_definition(case)[2]:
+            errors.append("comparative self-check rejected generated scorecard Markdown")
+        (case / "scorecard.md").write_text("# drift\n", encoding="utf-8")
+        if not any(
+            "must be generated exactly" in error
+            for error in validate_definition(case)[2]
+        ):
+            errors.append("comparative self-check accepted scorecard Markdown drift")
+        (case / "scorecard.md").write_text(
+            render_scorecard_markdown(case), encoding="utf-8"
+        )
 
     with tempfile.TemporaryDirectory(prefix="design-craft-comparative-e2e-") as raw:
         case = Path(raw) / source.name
@@ -639,7 +683,11 @@ def run_self_check() -> list[str]:
                 + (record.stderr.strip() or record.stdout.strip())
             )
             return errors
-        observed_errors = validate_case(case, require_observed=True)
+        observed_errors = validate_case(
+            case,
+            require_observed=True,
+            require_current_source=True,
+        )
         if observed_errors:
             errors.append(
                 "comparative e2e self-check rejected valid observed evidence: "
@@ -655,25 +703,47 @@ def run_self_check() -> list[str]:
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--root", default="evals/comparative")
-    parser.add_argument("--case-dir")
+    modes = parser.add_mutually_exclusive_group()
+    modes.add_argument("--root")
+    modes.add_argument("--case-dir")
+    modes.add_argument(
+        "--history-root",
+        help="Validate archived observed cases without accepting them as current-source evidence.",
+    )
+    modes.add_argument("--check", action="store_true")
     parser.add_argument("--require-observed", action="store_true")
-    parser.add_argument("--check", action="store_true")
     args = parser.parse_args()
-    errors = run_self_check() if args.check else []
+    if args.check and args.require_observed:
+        parser.error("--require-observed is not valid with --check")
+    if args.check:
+        errors = run_self_check()
+        if errors:
+            print("\n".join(errors), file=sys.stderr)
+            return 1
+        print("comparative_validator_self_check=ok")
+        return 0
+    errors: list[str] = []
+    history_mode = bool(args.history_root)
     if args.case_dir:
         cases = [Path(args.case_dir).expanduser().resolve()]
+    elif history_mode:
+        history_root = Path(args.history_root).expanduser().resolve()
+        cases = sorted(path.parent for path in history_root.rglob("variants.json"))
     else:
-        cases = active_cases(Path(args.root).expanduser().resolve())
+        cases = active_cases(Path(args.root or "evals/comparative").expanduser().resolve())
     if not cases:
-        errors.append("at least one active comparative case is required")
+        errors.append("at least one comparative case is required")
     for case in cases:
-        errors.extend(validate_case(case, require_observed=args.require_observed))
+        errors.extend(
+            validate_case(
+                case,
+                require_observed=True if history_mode else args.require_observed,
+                require_current_source=not history_mode,
+            )
+        )
     if errors:
         print("\n".join(errors), file=sys.stderr)
-        return 2
-    if args.check:
-        print("comparative_validator_self_check=ok")
+        return 1
     return 0
 
 

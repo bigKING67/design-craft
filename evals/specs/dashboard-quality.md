@@ -1,4 +1,4 @@
-# Dashboard quality forward eval
+# Dashboard quality evaluation spec
 
 ## Prompt
 

@@ -24,22 +24,19 @@ python3 scripts/design_craft_cross_agent_validate.py --root evals/cross-agent
 The validator checks active `same-prompt-*` task directories, not `_template/`.
 
 Observed benchmark outputs are intentionally host-specific. A host only counts
-as verified after it runs the same prompt and records an output plus score JSON.
-Legacy v2 Codex and Pi artifacts are preserved as self-contained snapshots
-under `history/2026-07-11-v2/`. They are historical baseline evidence only and
-are excluded from active release validation because the active prompts,
-scorecards, runner, and score contract changed. The validator treats each of
-Codex, Pi, Cursor, and Claude independently: a host must provide both a real
-output and score JSON, or retain an explicit unverified note. A partial pair is
-rejected, and a stale unverified note is rejected after evidence is recorded.
+as observed after it runs the same prompt and records an output plus current
+score JSON. `evidence-status.json` is the machine truth for each active host;
+`comparison.md` is deterministically generated from that JSON and must remain
+byte-identical, so it is a display artifact rather than a second truth source.
+Markdown unverified notes are accepted only in immutable history. A partial
+output/score pair, an `observed` status without artifacts, or artifacts paired
+with `pending`/`unverified` status is rejected.
 
-As of 2026-07-12, Codex and Pi have current-source v3 score/run-v2 evidence for
-all three active tasks, bound to Skill source commit `f04e105`. Cursor remains
-unverified because its installed CLI is not logged in. Claude remains
-unverified because its valid OAuth session still returns `ECONNRESET` during a
-controlled read-only request. Environment preflights are status only, not
-observed benchmark output. Do not restore historical outputs to active
-directories or edit their hashes; rerun the controlled host instead.
+The score-v2 and score-v3 Codex/Pi tranches are preserved under `history/`.
+They remain historical baseline evidence only and are excluded from active
+release validation because the Skill, scorecard, runner, or score contract has
+changed. Do not restore historical outputs to active directories or edit their
+hashes; rerun the controlled host against the final clean commit instead.
 
 Validate the recorded runs with:
 
@@ -63,10 +60,10 @@ python3 scripts/design_craft_cross_agent_validate.py \
   --require-host claude
 ```
 
-Certified 100/100 evidence additionally requires score schema v3, run-manifest
-schema v2, a current skill tree, and a current runner/adapter contract hash.
-`make cross-agent-four-host-check` applies this contract to every active
-observed task and stops on the first failure:
+Current evidence requires score schema v4, run-manifest schema v2, the machine
+JSON scorecard, a clean current Skill tree, and a current runner/adapter
+contract hash. `make cross-agent-four-host-check` additionally requires all
+four hosts for the Certified release level and stops on the first failure:
 
 ```bash
 python3 scripts/design_craft_cross_agent_validate.py \
@@ -74,9 +71,7 @@ python3 scripts/design_craft_cross_agent_validate.py \
   --require-host codex \
   --require-host pi \
   --require-host cursor \
-  --require-host claude \
-  --require-current-schema \
-  --require-current-source
+  --require-host claude
 ```
 
 Capture the exact prompt and read-only invocation first:
@@ -96,12 +91,24 @@ the host read-only, verifies a content-level source-worktree fingerprint, and
 only then transactionally publishes `<host>-output.md` plus `run.<host>.json`.
 Do not point a certified run at a stale user-level install.
 
-Then create v3 score JSON with `scripts/design_craft_cross_agent_record.py` and
+Then create v4 score JSON with `scripts/design_craft_cross_agent_record.py` and
 the generated `run.<host>.json`. Copy `_template/criteria.json`, assign each
 criterion an earned value within its
 scorecard weight, and preserve the exact `<host>-output.md`. The recorder
-computes the score and records hashes for the prompt, scorecard, output, run
+computes the score and records hashes for the prompt, JSON scorecard, output, run
 manifest, skill tree, and runner/adapter contract plus the source commit,
 version, model, reasoning profile, host version, and runner OS. Canonical repo
 paths use `$DESIGN_CRAFT_HOME`; installed host paths use a home-relative form.
-Do not backfill v3 fields onto an older run.
+Set that host to `observed` in `evidence-status.json` only after the complete
+pair is admitted. Do not backfill v4 fields onto an older run.
+
+Validate immutable history independently:
+
+```bash
+python3 scripts/design_craft_cross_agent_validate.py \
+  --history-root evals/cross-agent/history
+```
+
+`make history-audit` checks both cross-agent and comparative archives. It is a
+strict archival-integrity audit, but it is intentionally separate from current
+portable, development-maturity, and release-source gates.

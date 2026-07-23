@@ -17,6 +17,7 @@ from design_craft_comparative_common import (
     VARIANTS_SCHEMA,
     load_scorecard,
     sha256_file,
+    render_scorecard_markdown,
     validate_judgment_schema,
     variant_ids,
 )
@@ -38,6 +39,13 @@ def main() -> int:
     schema_errors = validate_judgment_schema(case_dir, weights) if weights else []
     if scorecard_errors or schema_errors:
         parser.error("; ".join([*scorecard_errors, *schema_errors]))
+    try:
+        rendered_scorecard = render_scorecard_markdown(case_dir)
+        stored_scorecard = (case_dir / "scorecard.md").read_text(encoding="utf-8")
+    except (OSError, ValueError, json.JSONDecodeError) as exc:
+        parser.error(f"cannot verify scorecard.md parity: {exc}")
+    if stored_scorecard != rendered_scorecard:
+        parser.error("scorecard.md must be generated exactly from scorecard.json")
     try:
         variants_payload = json.loads(
             (case_dir / "variants.json").read_text(encoding="utf-8")
@@ -69,7 +77,6 @@ def main() -> int:
     random.Random(args.seed).shuffle(shuffled)
     mapping = dict(zip(BLIND_LABELS, shuffled, strict=True))
     prompt = (case_dir / "prompt.md").read_text(encoding="utf-8")
-    scorecard = (case_dir / "scorecard.md").read_text(encoding="utf-8")
     scorecard_json = (case_dir / "scorecard.json").read_text(encoding="utf-8")
     judgment_schema = (case_dir / "judgment.schema.json").read_text(encoding="utf-8")
     sections = [
@@ -80,7 +87,7 @@ def main() -> int:
         "## Task prompt\n\n",
         prompt,
         "\n\n## Human-readable scorecard\n\n",
-        scorecard,
+        rendered_scorecard,
         "\n\n## Machine-readable scorecard\n\n```json\n",
         scorecard_json.rstrip(),
         "\n```\n\n## Required judgment schema\n\n```json\n",

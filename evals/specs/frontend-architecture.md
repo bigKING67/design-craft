@@ -1,4 +1,4 @@
-# Frontend architecture forward eval
+# Frontend architecture evaluation spec
 
 ## Prompt
 

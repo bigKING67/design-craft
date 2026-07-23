@@ -96,6 +96,34 @@ def load_scorecard(case_dir: Path) -> tuple[dict[str, int], list[str]]:
     return weights, errors
 
 
+def render_scorecard_markdown(case_dir: Path) -> str:
+    payload = json.loads((case_dir / "scorecard.json").read_text(encoding="utf-8"))
+    criteria = payload.get("criteria")
+    if not isinstance(criteria, list):
+        raise ValueError("scorecard.json criteria must be an array")
+
+    def cell(value: object) -> str:
+        return " ".join(str(value).split()).replace("|", "\\|")
+
+    lines = [
+        "# Comparative scorecard",
+        "",
+        "Generated from `scorecard.json`; do not edit by hand.",
+        "",
+        "| Criterion | Weight | Full credit |",
+        "|---|---:|---|",
+    ]
+    for item in criteria:
+        if not isinstance(item, dict):
+            raise ValueError("scorecard.json criteria must contain objects")
+        lines.append(
+            f"| {cell(item.get('label', ''))} | {cell(item.get('weight', ''))} | "
+            f"{cell(item.get('full_credit', ''))} |"
+        )
+    lines.extend((f"| **Total** | **{cell(payload.get('total', ''))}** | |", ""))
+    return "\n".join(lines)
+
+
 def validate_judgment_schema(case_dir: Path, weights: dict[str, int]) -> list[str]:
     path = case_dir / "judgment.schema.json"
     try:

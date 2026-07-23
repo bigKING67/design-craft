@@ -1,4 +1,4 @@
-# DataHub special report forward eval
+# DataHub special report evaluation spec
 
 ## Prompt
 

@@ -1,8 +1,11 @@
-# Live task log
+# Archived live task log
 
-This file records real task evidence for the `design-craft` workflow. It is
-not a substitute for validation output; every entry must state what actually
-ran and what remains unverified.
+> Immutable pre-v0.5 archive. Current evidence must use the machine contracts
+> documented in `evals/README.md`.
+
+This file records historical task evidence for the `design-craft` workflow. It
+is not a substitute for validation output; every entry states what actually ran
+and what remained unverified at the time.
 
 Historical commands use machine-neutral aliases such as `DATAHUB_REPO` and
 `DESIGN_CRAFT_HOME`; set them to the relevant local checkouts before replay.

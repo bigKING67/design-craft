@@ -1,5 +1,7 @@
 # Forward test log
 
+> Immutable pre-v0.5 archive. This narrative is not current release evidence.
+
 Date: 2026-06-24
 
 Scope: independent read-only subagent passes against the local

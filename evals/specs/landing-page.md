@@ -1,4 +1,4 @@
-# Landing page forward eval
+# Landing page evaluation spec
 
 ## Prompt
 

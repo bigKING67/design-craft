@@ -5,23 +5,29 @@ from __future__ import annotations
 
 import argparse
 import json
+import sys
 from datetime import date
 from pathlib import Path
 
-from design_craft_cross_agent_validate import (
+
+ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
+from tools.design_craft.evaluation.cross_agent.contract import (
     OBSERVED_REQUIRED_CRITERIA,
-    OBSERVED_SCHEMA_V3,
+    OBSERVED_SCHEMA_V4,
     cross_agent_contract_sha256,
     read_text,
     scorecard_weights,
     sha256_text,
+)
+from design_craft_cross_agent_validate import (
     validate_output,
     validate_observed_score,
 )
 from design_craft_evidence_common import redacted_path, sha256_file, skill_provenance, tree_sha256
 
-
-ROOT = Path(__file__).resolve().parents[1]
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--task-dir", required=True)
@@ -79,7 +85,7 @@ def main() -> int:
 
     for path, label in (
         (task_dir / "prompt.md", "prompt"),
-        (task_dir / "scorecard.md", "scorecard"),
+        (task_dir / "scorecard.json", "machine scorecard"),
         (output, "agent output"),
         (criteria_path, "criteria JSON"),
         (run_manifest_path, "run manifest"),
@@ -158,7 +164,7 @@ def main() -> int:
         if not isinstance(run_manifest.get(key), str) or not run_manifest[key].strip():
             parser.error(f"run manifest {key} must be a non-empty string")
 
-    weights = scorecard_weights(task_dir / "scorecard.md")
+    weights = scorecard_weights(task_dir / "scorecard.json")
     if set(weights) != set(OBSERVED_REQUIRED_CRITERIA):
         parser.error("scorecard does not expose the canonical seven criteria")
 
@@ -195,7 +201,7 @@ def main() -> int:
         parser.error("run manifest must be stored inside the task directory")
 
     payload = {
-        "schema": OBSERVED_SCHEMA_V3,
+        "schema": OBSERVED_SCHEMA_V4,
         "task_id": task_dir.name,
         "agent": args.agent,
         "verified": True,
@@ -207,7 +213,7 @@ def main() -> int:
         "runner_os": run_manifest["runner_os"],
         "date": args.date,
         "prompt_sha256": sha256_text(read_text(task_dir / "prompt.md")),
-        "scorecard_sha256": sha256_file(task_dir / "scorecard.md"),
+        "scorecard_json_sha256": sha256_file(task_dir / "scorecard.json"),
         "contract_sha256": cross_agent_contract_sha256(),
         "run_manifest_path": run_manifest_relative,
         "run_manifest_sha256": sha256_file(run_manifest_path),
@@ -230,7 +236,6 @@ def main() -> int:
         payload["prompt_sha256"],
         skill_root=canonical_skill_root,
         score_path=score_output,
-        require_schema_v2=True,
         require_current_schema=True,
         require_current_source=not args.allow_dirty_source,
     ))
