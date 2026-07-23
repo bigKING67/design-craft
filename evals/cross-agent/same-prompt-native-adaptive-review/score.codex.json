@@ -1,0 +1,67 @@
+{
+  "schema": "design-craft.cross-agent-score.v4",
+  "task_id": "same-prompt-native-adaptive-review",
+  "agent": "codex",
+  "verified": true,
+  "agent_version": "codex-cli 0.145.0",
+  "model": "gpt-5.6-sol",
+  "model_observation": "requested_by_cli",
+  "reasoning_profile": "max",
+  "reasoning_observation": "requested_by_cli",
+  "runner_os": "macOS-15.7.7-arm64-arm-64bit-Mach-O",
+  "date": "2026-07-23",
+  "prompt_sha256": "61f2e14e7f03ad0f21bff2db3770e0b6c0ffba120aa7598dab1f73411256b2bd",
+  "scorecard_json_sha256": "260126ae8e6eb6765184f92ad040b5e32995c941f559d654a303a0d5305e210f",
+  "contract_sha256": "392e1903ad3e7088fc07c6794dfc98d025f310781a01a51f880fd0041ab25c8e",
+  "run_manifest_path": "run.codex.json",
+  "run_manifest_sha256": "0477ed85686115b5232aa80235f935ed135c7c3a75b2551224798bf592865e90",
+  "skill_version": "0.5.0",
+  "skill_source_commit": "e1f1cc24c89c8764791049ca9860980f15d7dbc7",
+  "skill_source_dirty": false,
+  "repo_dirty": false,
+  "release_state": "development",
+  "skill_tree_sha256": "d0fe615c290d84945ffba0d90908ed47a0f4f8627fb2a729401ca29d3bee6c72",
+  "skill_path": "$BENCHMARK_WORKSPACE/.agents/skills/design-craft",
+  "provenance_skill_path": "/private/tmp/design-craft-cert-provenance/skills/design-craft",
+  "command_summary": "codex exec --ephemeral --sandbox read-only --skip-git-repo-check --ignore-rules -C '$BENCHMARK_WORKSPACE' --model gpt-5.6-sol -c 'model_reasoning_effort=\"max\"' --output-last-message '$BENCHMARK_WORKSPACE/.design-craft-host-output.md' -",
+  "output_path": "codex-output.md",
+  "output_sha256": "466db31e0c0db231156f7a3ea41a131d8f52030bcdf91083a049f51c1f5215dd",
+  "score": 99,
+  "criteria": {
+    "style_authority": {
+      "passed": true,
+      "earned": 15,
+      "note": "Resolves adaptive product authority and separates shared semantic roles and hierarchy from native navigation, controls, icons, materials, and motion."
+    },
+    "reference_selection": {
+      "passed": true,
+      "earned": 15,
+      "note": "Selects product, iOS, Android, adaptive, motion-physics, design-system, and validation guidance for platform verdicts, parity, and runtime checks."
+    },
+    "anti_generic_redesign": {
+      "passed": true,
+      "earned": 15,
+      "note": "Repairs native trust, accessibility, interruption resilience, semantic theming, controls, window adaptation, and completion feedback without generic decoration."
+    },
+    "evidence_level": {
+      "passed": true,
+      "earned": 15,
+      "note": "Labels the review L0 static and states that no source scan, build, screenshot, accessibility tree, Simulator, Emulator, or device validation occurred."
+    },
+    "verified_boundary": {
+      "passed": true,
+      "earned": 15,
+      "note": "Separates prompt-supported conflicts from unknown hit regions, contrast, accessibility traversal, gestures, persistence, performance, store review, and hardware feel."
+    },
+    "design_moves": {
+      "passed": true,
+      "earned": 15,
+      "note": "Provides eight moves for native navigation, recovery, scalable type, accessible targets and traversal, semantic tokens, controls, adaptive panes, and reduced motion."
+    },
+    "scope_control": {
+      "passed": true,
+      "earned": 9,
+      "note": "Fits 112 lines with five blockers and eight moves; one point is withheld because checkpoint and outbox architecture slightly extends beyond the narrow UI-conformance scope."
+    }
+  }
+}
