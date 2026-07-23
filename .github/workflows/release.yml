@@ -23,10 +23,9 @@ on:
         type: string
         required: false
       benchmark_baseline:
-        description: Committed Linux x86_64 Python 3.13 baseline path
+        description: Required committed Linux x86_64 Python 3.13 baseline path
         type: string
         required: true
-        default: benchmarks/baselines/v0.5.0-linux-x86_64-python3.13.json
       confirm_release:
         description: Enter release-<tag>, for example release-v0.5.0
         type: string
