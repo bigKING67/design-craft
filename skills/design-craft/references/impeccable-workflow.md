@@ -7,6 +7,7 @@ remaining inside this user's local Codex workflow.
 
 - [Mode selection](#mode-selection)
 - [Shape brief](#shape-brief)
+- [Direction and craft floor](#direction-and-craft-floor)
 - [Critique pass](#critique-pass)
 - [Audit dimensions](#audit-dimensions)
 - [Polish pass](#polish-pass)
@@ -49,6 +50,23 @@ For nontrivial design work, capture:
 
 Do not over-interview. Ask only if a missing answer changes implementation.
 
+## Direction and craft floor
+
+Settle the brief, authority, surface mode, and visual direction before editing.
+Then apply the craft floor to the built result rather than treating the
+checklist as a direction generator:
+
+- verify real contrast, spacing rhythm, type hierarchy and overflow;
+- verify responsive composition, working controls, keyboard focus, and
+  hover/disabled/loading/empty/error states;
+- verify factual copy, brief coverage, motion purpose, and reduced-motion
+  behavior;
+- refuse generic scaffolds and decorative signals listed in
+  `visual-judgment.md` unless the brief deliberately earns them.
+
+The floor is mechanical acceptance, not the creative ceiling. A project brief
+or committed visual world outranks a generic detector preference.
+
 ## Critique pass
 
 Use `critique` for a read-only judgment pass before implementation or when a UI
@@ -64,6 +82,12 @@ If the user asks for a score, why the UI is not full marks, or a concrete
 product UI review, read `product-ui-taste-review.md` and use its 100-point
 output contract. Keep that score scoped to the reviewed UI, not this
 `design-craft` repo.
+
+For a heuristic score, mark a dimension `n/a` when it genuinely cannot apply
+to the selected surface. Report `score / applicable maximum`; never keep a
+fixed denominator after excluding dimensions. Name every excluded dimension so
+two runs with different denominators are not presented as a like-for-like
+trend.
 
 For a full unanchored critique of a viewable target, include method provenance
 in the first line:

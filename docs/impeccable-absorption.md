@@ -2,7 +2,8 @@
 
 This document records the deliberate fusion and runtime boundary for
 `https://github.com/pbakaus/impeccable` at commit
-`630fc2682a5bd39b25a8e61f74b6b3f14f2b1e21`.
+`fc3dc501a6f0e4f238a230b0b30148490a65171a`. The compatibility submodule stays
+pinned at `630fc2682a5bd39b25a8e61f74b6b3f14f2b1e21`.
 
 ## Contents
 
@@ -10,18 +11,20 @@ This document records the deliberate fusion and runtime boundary for
 - [Status vocabulary](#status-vocabulary)
 - [Command taxonomy](#command-taxonomy)
 - [Detector and platform coverage](#detector-and-platform-coverage)
+- [Latest reviewed range](#latest-reviewed-range)
 - [Runtime and packaging boundary](#runtime-and-packaging-boundary)
 - [Current conclusion](#current-conclusion)
 
 ## Inventory truth
 
-The reviewed upstream exposes one generated Agent Skill, twenty-four public
-command documents, native platform references, a detector, and a substantial
-live-browser/manual-edit/provider/package runtime. `design-craft` absorbs the
-general workflow, detector signals, native quality guidance, and production
-hardening discipline. It deliberately does not vendor a second browser runtime
-or provider/package system beside browser67 and the host's existing execution
-contracts.
+The pinned compatibility snapshot exposes one generated Agent Skill,
+twenty-four public command documents, native platform references, a detector,
+and a substantial live-browser/manual-edit/provider/package runtime. The
+reviewed remote head expands that system substantially. `design-craft` absorbs
+only general workflow, judgment, selected detector signals, native quality
+guidance, and production hardening discipline. It deliberately does not vendor
+a second browser runtime or provider/package system beside browser67 and the
+host's existing execution contracts.
 
 ## Status vocabulary
 
@@ -76,6 +79,23 @@ contracts.
 | Adaptive parity | absorbed | `adaptive-quality.md`, shared-versus-platform-specific contracts |
 | Hostile-data hardening and measurement-first optimization | absorbed | `impeccable-workflow.md`, engineering and performance references |
 
+## Latest reviewed range
+
+The range from `630fc2682a5bd39b25a8e61f74b6b3f14f2b1e21` through
+`fc3dc501a6f0e4f238a230b0b30148490a65171a` is `selective_absorbed`:
+
+| Capability | Status | Local target or boundary |
+| --- | --- | --- |
+| Explicit brief authority and evidence-based visual authority | absorbed | `visual-judgment.md` |
+| Refinement preserves; redesign replaces the visual world without replacing product truth | absorbed | `visual-judgment.md`, existing-redesign playbook |
+| Per-surface `Persuade`, `Operate`, `Read`, and `Experience` modes | absorbed | `surface-playbooks.md` |
+| Direction-first craft floor and applicable-denominator critique scoring | absorbed | `impeccable-workflow.md` |
+| Radial halo, repeated kicker, meaningless section number, fake cursor/pulse, shape-assembled illustration, and aphoristic-copy signals | absorbed | `visual-judgment.md`; treated as contextual signals, not universal bans |
+| Random concept seeds, mandatory context loader and no-argument menu | intentionally-rejected | local routing and project discovery remain deterministic and task-led |
+| Live/browser/provider/hooks/doctor runtime, asset generation, full detector/vendor bundle, generated provider copies | intentionally-rejected | browser67, host tools, and existing repository governance own these boundaries |
+| Universal category, font, framework, and library prescriptions | intentionally-rejected | project authority and observed performance/accessibility evidence win |
+| Promotional or "award-winning" tone | intentionally-rejected | local output remains factual and evidence-led |
+
 ## Runtime and packaging boundary
 
 The following surfaces are `intentionally-rejected` from the baseline package:
@@ -98,12 +118,11 @@ tool actually ran.
 
 `missing-high-value`: none within the selected fusion boundary.
 
-The cumulative state is selective absorption. General workflow, native
-quality, detector discipline, hardening, and evidence honesty are local; the
-duplicative live/provider/package runtime is intentionally not vendored. The
-range from `da99645a58400ed7acb201e6904f9413efd89c6e` to the reviewed head
-changes GitHub sheriff stale-clock automation only, so its latest-range status
-is repository operations rather than new design behavior.
+The cumulative state is selective absorption. General workflow, brief and
+change-scope authority, surface modes, native quality, detector discipline,
+mechanical craft verification, hardening, and evidence honesty are local. The
+duplicative live/provider/package runtime and prescriptive ecosystem choices
+remain intentionally outside the product.
 
 Current independent blind evidence is recorded in
 `evals/comparative/impeccable-production-ablation/`: `design-craft` 98,

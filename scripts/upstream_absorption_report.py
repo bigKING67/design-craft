@@ -19,6 +19,7 @@ from design_craft_absorption_common import (
     CUMULATIVE_STATUSES,
     LATEST_RANGE_STATUSES,
     LEGACY_DECISION_BY_CUMULATIVE_STATUS,
+    LOCK_SCHEMA,
 )
 
 
@@ -316,6 +317,8 @@ def build_report(
 ) -> list[UpstreamReport]:
     lock_path = root / "upstreams.lock.json"
     payload = json.loads(lock_path.read_text(encoding="utf-8"))
+    if payload.get("schema") != LOCK_SCHEMA:
+        raise ValueError(f"upstream lock schema must be {LOCK_SCHEMA}")
     reports: list[UpstreamReport] = []
 
     for name, meta in payload.get("upstreams", {}).items():
@@ -373,10 +376,8 @@ def build_report(
             notes.append("reviewed_commit must alias reviewed_through_commit")
         if meta.get("absorbed_commit") != absorbed:
             notes.append("absorbed_commit must alias behavior_absorbed_through_commit")
-        if reviewed != locked or latest_range_head != locked:
-            notes.append("reviewed/latest range head must match the compatibility commit")
-        if latest_range_base != absorbed:
-            notes.append("latest range base must match behavior_absorbed_through_commit")
+        if latest_range_head != reviewed:
+            notes.append("latest range head must match reviewed_through_commit")
 
         if check_remote:
             remote_commit, remote_ref, remote_error = remote_head(meta.get("repo", ""))
@@ -670,10 +671,7 @@ def main() -> int:
                 report.cumulative_status != "deferred"
                 and not report.behavior_absorbed_through_commit
             )
-            or report.reviewed_through_commit != report.locked_commit
-            or report.latest_range_head_commit != report.locked_commit
-            or report.latest_range_base_commit
-            != report.behavior_absorbed_through_commit
+            or report.latest_range_head_commit != report.reviewed_through_commit
             or report.reviewed_remote_drift is True
         ]
         if invalid:

@@ -23,13 +23,15 @@ upstream files directly.
   `06d6028b5c623016c59ce8536f578e5a1127b499`
 - Initial commit note:
   `2026-06-21T00:54:21+02:00 docs(readme): remove sponsor table and tighten logo-to-text spacing`
-- Current reviewed commit:
+- Pinned compatibility commit:
   `b17742737e796305d829b3ad39eda3add0d79060`
+- Current reviewed remote commit:
+  `98565e65bc3274ddf6eb0838734341714057178b`
 - Cumulative status: `selective_absorbed`; behavior through the initial
   `06d6028b5c623016c59ce8536f578e5a1127b499` snapshot is represented in the
   local visual-judgment, product-taste, design-move, and design-system layers.
-- Latest-range status: `provenance_only`; the range after `06d6028b` changes
-  README sponsorship and image assets only.
+- Latest-range status: `provenance_only`; the range from `b177427` through
+  `98565e6` changes README sponsorship and sponsor image assets only.
 - Contract: `docs/taste-skill-absorption.md`, validated by
   `scripts/design_craft_taste_absorption.py` in the canonical repository.
 - Primary material to inspect:
@@ -53,15 +55,15 @@ preflight thinking.
   `d2ab4ddee6fa63002fae680652b5fbd31735e280`
 - Initial commit note:
   `2026-06-22T16:01:16-07:00 Make Copilot built-in note a callout block under the Install header`
-- Current absorbed commit:
-  `da99645a58400ed7acb201e6904f9413efd89c6e`
-- Current reviewed commit:
+- Pinned compatibility commit:
   `630fc2682a5bd39b25a8e61f74b6b3f14f2b1e21`
-- Cumulative status: `selective_absorbed` through
-  `da99645a58400ed7acb201e6904f9413efd89c6e` for the command taxonomy,
+- Current selected-behavior boundary and reviewed remote commit:
+  `fc3dc501a6f0e4f238a230b0b30148490a65171a`
+- Cumulative status: `selective_absorbed` for the command taxonomy,
+  brief/change-scope authority, surface modes, craft floor, applicable scoring,
   detector/native guidance, hardening, measurement, and evidence contracts.
-- Latest-range status: `repository_operations_only` for the sheriff stale-clock
-  change from `da99645a` to `630fc268`.
+- Latest-range status: `selective_absorbed` for the reviewed range from
+  `630fc268` through `fc3dc501`.
 - Contract: `docs/impeccable-absorption.md`, validated by
   `scripts/design_craft_impeccable_absorption.py` in the canonical repository.
 - 2026-06-30 absorption note:
@@ -78,6 +80,14 @@ preflight thinking.
 - 2026-07-11 review note:
   the new range changes only GitHub sheriff automation and its tests. It is
   repository-operations provenance and adds no design-craft behavior.
+- 2026-07-23 absorption note:
+  selectively absorbed explicit brief authority, refinement-versus-redesign
+  boundaries, evidence-based visual authority, four per-surface modes,
+  post-direction craft verification, applicable-denominator critique scoring,
+  and additional anti-generic signals. Random concept generation, mandatory
+  context/menu flow, live/provider/hooks runtime, asset generation, the full
+  detector/vendor bundle, generated provider copies, promotional tone, and
+  universal ecosystem prescriptions remain rejected.
 - Primary material to inspect:
   - `.agents/skills/impeccable/SKILL.md`
   - `site/content/skills/*.md`
@@ -98,14 +108,17 @@ production-readiness flows.
   `a47903a06a05d2e24c483bd8961c85969a51a494`
 - Initial commit note:
   `2026-06-29T15:30:16+02:00 Update README.md`
-- Current absorbed commit:
-  `b57fc72f8415d84db1e9cfb43270466bf12ac6e2`
-- Current reviewed commit:
+- Pinned compatibility commit:
   `7bb7061b5cf7de15ea1aeaf00fbd9e6592a20fce`
-- Cumulative status: `absorbed` through
-  `b57fc72f8415d84db1e9cfb43270466bf12ac6e2`.
-- Latest-range status: `provenance_only` for the newsletter and typo-only
-  README changes through `7bb7061`.
+- Current selected-behavior boundary:
+  `d62b0d8f9a8eb795a512b76239bb873ab9ac7cd5`
+- Current reviewed remote commit:
+  `f6f79ca1d8e9e2d82c8b90d7481b70ca66f4adfb`
+- Cumulative status: `selective_absorbed`; the motion-opportunity gate is local,
+  while the opinionated library picker and Base UI-only prescription are
+  intentionally rejected.
+- Latest-range status: `selective_absorbed` for the range from `7bb7061`
+  through `f6f79ca`.
 - 2026-07-10 decision: `absorbed`; original design-craft references now cover
   product-design principles, Apple-style direct manipulation,
   presentation-value interruption, spring response/damping, velocity handoff,
@@ -127,6 +140,11 @@ production-readiness flows.
   motion recipes, component-lifecycle craft, optical typography detail, and
   the previously omitted spring/ambient/principle vocabulary. The upstream
   Skill tree has no non-Markdown implementation files to vendor.
+- 2026-07-23 latest-range note: `find-animation-opportunities` is already
+  represented by the local purpose/frequency/speed/function gate, missed
+  opportunities, explicit rejection, and bounded output. `pick-ui-library` and
+  the Base UI-only substitution are rejected as universal product policy;
+  README and link corrections remain provenance only.
 - Primary material to inspect:
   - `skills/emil-design-eng/SKILL.md`
   - `skills/apple-design/SKILL.md`
@@ -236,7 +254,8 @@ developer-product templates as a comparison baseline for missing system pieces.
 When updating upstreams:
 
 1. Run `scripts/upstream_absorption_report.py --remote` when you need to know
-   whether a remote head changed without mutating submodules.
+   whether a remote head changed without mutating submodules. The pinned
+   compatibility commit may intentionally lag the reviewed remote head.
 2. Run `scripts/sync_upstreams.sh --name <name> --commit <40-char-sha>` only
    after selecting an explicit commit; the helper never advances review or
    absorption metadata automatically.
@@ -247,8 +266,9 @@ When updating upstreams:
 4. Inspect upstream changelogs and key skill/command files.
 5. Update this source map only after deciding what the fusion layer should
    absorb.
-6. Update the matching absorption matrix and strict validator. Keep cumulative
-   behavior state separate from the latest reviewed commit range.
+6. Update the matching absorption matrix and strict validator. Keep the pinned
+   source, cumulative behavior boundary, and latest reviewed commit range
+   separate.
 7. Never overwrite `skills/design-craft` automatically from upstream.
 
 ## Attribution rule

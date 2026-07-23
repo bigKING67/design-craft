@@ -8,6 +8,7 @@ import subprocess
 from pathlib import Path
 
 
+LOCK_SCHEMA = "design-craft.upstreams-lock.v3"
 CUMULATIVE_STATUSES = {
     "absorbed",
     "selective_absorbed",
@@ -16,6 +17,7 @@ CUMULATIVE_STATUSES = {
 }
 LATEST_RANGE_STATUSES = {
     "absorbed",
+    "selective_absorbed",
     "partial",
     "provenance_only",
     "repository_operations_only",
@@ -60,7 +62,7 @@ def git_success(path: Path, *args: str) -> bool:
 
 
 def validate_review_state(name: str, meta: dict, upstream: Path) -> tuple[dict, list[str]]:
-    """Validate the v2 cumulative/latest-range state plus legacy aliases."""
+    """Validate the v3 pinned, reviewed, absorbed, and latest-range state."""
 
     errors: list[str] = []
     current = git_output(upstream, "rev-parse", "HEAD")
@@ -89,13 +91,9 @@ def validate_review_state(name: str, meta: dict, upstream: Path) -> tuple[dict, 
         errors.append(
             f"{name}: absorbed_commit must alias behavior_absorbed_through_commit"
         )
-    if fields["commit"] != fields["reviewed_through_commit"]:
-        errors.append(f"{name}: reviewed_through_commit must match commit")
-    if fields["commit"] != fields["latest_range_head_commit"]:
-        errors.append(f"{name}: latest_range_head_commit must match commit")
-    if fields["latest_range_base_commit"] != fields["behavior_absorbed_through_commit"]:
+    if fields["reviewed_through_commit"] != fields["latest_range_head_commit"]:
         errors.append(
-            f"{name}: latest_range_base_commit must match behavior_absorbed_through_commit"
+            f"{name}: latest_range_head_commit must match reviewed_through_commit"
         )
 
     cumulative = meta.get("cumulative_status", "")
@@ -112,21 +110,80 @@ def validate_review_state(name: str, meta: dict, upstream: Path) -> tuple[dict, 
     if not meta.get("reviewed_at") or not meta.get("notes"):
         errors.append(f"{name}: reviewed_at and notes are required")
 
-    for field in ("reviewed_through_commit", "behavior_absorbed_through_commit"):
-        value = fields[field]
-        if value and not git_success(upstream, "cat-file", "-e", f"{value}^{{commit}}"):
-            errors.append(f"{name}: {field} is unavailable in the upstream checkout")
+    # A pinned submodule can intentionally lag a reviewed remote head. Fresh,
+    # shallow submodule clones therefore are not required to contain review-only
+    # commits; the networked upstream audit verifies the remote boundary.
+    available = {
+        field: git_success(upstream, "cat-file", "-e", f"{value}^{{commit}}")
+        for field, value in fields.items()
+        if value
+    }
+    is_shallow = git_output(upstream, "rev-parse", "--is-shallow-repository") == "true"
+    pinned = fields["commit"]
+    reviewed = fields["reviewed_through_commit"]
+    if (
+        not is_shallow
+        and available.get("commit")
+        and available.get("reviewed_through_commit")
+    ):
+        ancestor = subprocess.run(
+            ["git", "-C", str(upstream), "merge-base", "--is-ancestor", pinned, reviewed],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+            check=False,
+        )
+        if ancestor.returncode == 1:
+            errors.append(f"{name}: pinned commit must be an ancestor of the reviewed head")
+        elif ancestor.returncode != 0:
+            errors.append(f"{name}: could not compare pinned and reviewed commits")
     base = fields["latest_range_base_commit"]
     head = fields["latest_range_head_commit"]
-    if base and head:
+    if (
+        not is_shallow
+        and base
+        and head
+        and available.get("latest_range_base_commit")
+        and available.get("latest_range_head_commit")
+    ):
         ancestor = subprocess.run(
             ["git", "-C", str(upstream), "merge-base", "--is-ancestor", base, head],
             stdout=subprocess.DEVNULL,
             stderr=subprocess.DEVNULL,
             check=False,
         )
-        if ancestor.returncode != 0:
+        if ancestor.returncode == 1:
             errors.append(f"{name}: latest range base must be an ancestor of its head")
+        elif ancestor.returncode != 0:
+            errors.append(f"{name}: could not compare latest range commits")
+
+    absorbed = fields["behavior_absorbed_through_commit"]
+    if (
+        not is_shallow
+        and absorbed
+        and reviewed
+        and available.get("behavior_absorbed_through_commit")
+        and available.get("reviewed_through_commit")
+    ):
+        ancestor = subprocess.run(
+            [
+                "git",
+                "-C",
+                str(upstream),
+                "merge-base",
+                "--is-ancestor",
+                absorbed,
+                reviewed,
+            ],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+            check=False,
+        )
+        if ancestor.returncode == 1:
+            errors.append(
+                f"{name}: behavior absorption boundary must be an ancestor of the reviewed head"
+            )
+        elif ancestor.returncode != 0:
+            errors.append(f"{name}: could not compare absorption and review commits")
 
     return {
         "current_commit": current,

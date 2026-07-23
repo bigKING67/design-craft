@@ -2,6 +2,34 @@
 
 Use this to avoid applying the wrong aesthetic to the wrong surface.
 
+## Contents
+
+- [Choose the surface mode](#choose-the-surface-mode)
+- [Landing or brand page](#landing-or-brand-page)
+- [Dashboard or admin app](#dashboard-or-admin-app)
+- [Data visualization](#data-visualization)
+- [Static or special report](#static-or-special-report)
+- [Mobile flow](#mobile-flow)
+- [Native phone or tablet app](#native-phone-or-tablet-app)
+- [Forms and settings](#forms-and-settings)
+- [Existing redesign](#existing-redesign)
+
+## Choose the surface mode
+
+Choose the mode from the current surface, not the product's category or brand:
+
+- `Persuade`: the visitor must understand, decide, and act. Landing, campaign,
+  pricing, and marketing surfaces belong here.
+- `Operate`: the user must complete or monitor a task. Apps, dashboards,
+  editors, admin, settings, and tools belong here.
+- `Read`: the reader must understand structured information. Documentation,
+  articles, guides, help, changelogs, and evidence-heavy reports belong here.
+- `Experience`: the work itself is the destination. Portfolios, galleries, and
+  showcases belong here; the interface should recede behind the artifact.
+
+A developer tool's landing page is still `Persuade`; a fashion brand's guide
+is still `Read`. Persist the choice only for the surface being designed.
+
 ## Landing or brand page
 
 Primary job: persuade, explain, convert, or establish taste.

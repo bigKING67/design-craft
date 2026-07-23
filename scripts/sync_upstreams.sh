@@ -75,4 +75,4 @@ path.write_text(json.dumps(payload, indent=2, ensure_ascii=False) + "\n", encodi
 PY
 
 echo "${NAME}: ${before:-none} -> ${COMMIT}"
-echo "Updated only upstreams.lock.json commit. Review and set reviewed/absorbed metadata manually."
+echo "Updated only the pinned upstreams.lock.json commit. Review and set remote/absorbed metadata manually."

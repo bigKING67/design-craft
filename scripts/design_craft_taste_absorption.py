@@ -9,6 +9,7 @@ import sys
 from pathlib import Path
 
 from design_craft_absorption_common import (
+    LOCK_SCHEMA,
     MATRIX_STATUS_LABELS,
     validate_matrix_vocabulary,
     validate_review_state,
@@ -112,6 +113,8 @@ def validate() -> dict:
     errors: list[str] = []
     matrix_relative = MATRIX_PATH.relative_to(ROOT).as_posix()
     lock = read_json(LOCK_PATH)
+    if lock.get("schema") != LOCK_SCHEMA:
+        errors.append(f"upstream lock schema must be {LOCK_SCHEMA}")
     meta = lock.get("upstreams", {}).get("taste-skill", {})
     upstream = ROOT / meta.get("path", "upstreams/taste-skill")
     inventory = meta.get("skill_inventory", {})

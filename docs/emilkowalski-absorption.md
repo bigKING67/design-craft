@@ -2,20 +2,22 @@
 
 This document records the deliberate absorption boundary for
 `https://github.com/emilkowalski/skills` at commit
-`7bb7061b5cf7de15ea1aeaf00fbd9e6592a20fce`.
+`f6f79ca1d8e9e2d82c8b90d7481b70ca66f4adfb`. The compatibility submodule
+stays pinned at `7bb7061b5cf7de15ea1aeaf00fbd9e6592a20fce`.
 
 ## Contents
 
 - [Inventory truth](#inventory-truth)
 - [Status vocabulary](#status-vocabulary)
 - [Skill-level matrix](#skill-level-matrix)
+- [Latest-range entrypoints](#latest-range-entrypoints)
 - [Auxiliary-file matrix](#auxiliary-file-matrix)
 - [Intentionally rejected rules](#intentionally-rejected-rules)
 - [Current conclusion](#current-conclusion)
 
 ## Inventory truth
 
-The reviewed upstream contains:
+The pinned compatibility snapshot contains:
 
 - five `SKILL.md` entrypoints;
 - three auxiliary Markdown references;
@@ -24,9 +26,10 @@ The reviewed upstream contains:
 
 Therefore, "copy more source" means adapting Markdown rules and small CSS/JS
 examples. It does not mean vendoring an upstream implementation library that is
-not present. The pristine upstream remains available under
-`upstreams/emilkowalski-skills/`; the installed Skill receives only the
-high-value fusion layer.
+not present. The reviewed remote range adds `find-animation-opportunities` and
+`pick-ui-library`; both receive an explicit decision below. The pristine
+compatibility source remains available under `upstreams/emilkowalski-skills/`;
+the installed Skill receives only the high-value fusion layer.
 
 ## Status vocabulary
 
@@ -96,6 +99,15 @@ high-value fusion layer.
 | Spring parameter terms, looping/ambient motion, anticipation/follow-through/squash-stretch principles | absorbed | `motion-vocabulary.md` | Filled the previous low-cost vocabulary gap. |
 | Requirement to quote upstream wording verbatim | intentionally-rejected | none | Local phrasing may be clearer, more concise, and license-attributed without forcing verbatim output. |
 
+## Latest-range entrypoints
+
+| Upstream entrypoint or change | Status | Local target or boundary | Decision |
+| --- | --- | --- | --- |
+| `find-animation-opportunities` | absorbed | `motion-quality.md`, `motion-audit-planning.md`, `motion-vocabulary.md` | Purpose, frequency, speed, function, missed-opportunity, explicit rejection, and bounded-output rules are already represented locally. The local workflow can report that no candidate survives rather than manufacturing motion. |
+| `pick-ui-library` | intentionally-rejected | project dependency authority | Its curated list is a personal library preference, not a stable cross-framework design baseline. Existing dependencies, project constraints, bundle/performance evidence, accessibility, and maintenance cost decide library selection. |
+| Radix UI to Base UI-only prescription | intentionally-rejected | framework-neutral component guidance | `design-craft` supports both when project authority selects them; an upstream wording replacement does not justify ecosystem churn. |
+| README and library-link corrections | provenance-only | pristine upstream history | These edits do not add product behavior. |
+
 ## Auxiliary-file matrix
 
 | Upstream file | Status | Local target |
@@ -125,12 +137,15 @@ The local fusion does not copy these as universal truth:
 
 ## Current conclusion
 
-`missing-high-value`: none for the reviewed five-Skill snapshot.
+`missing-high-value`: none within the selected fusion boundary through the
+reviewed remote head.
 
-The absorption is intentionally not a 100 percent verbatim copy. High-value
-capabilities are local; narrow promotional text, aggressive review posture,
-host-policy conflicts, decorative recipes, and technically overbroad claims
-remain `intentionally-rejected`, `partial`, or `provenance-only`.
+The cumulative state is now `selective_absorbed`, not an unqualified full-copy
+claim. High-value behavior from the five pinned Skills and the new motion
+opportunity gate is local; the opinionated library picker, Base UI-only
+prescription, promotional text, aggressive review posture, host-policy
+conflicts, decorative recipes, and technically overbroad claims remain
+`intentionally-rejected`, `partial`, or `provenance-only`.
 
 Current independent blind evidence is recorded in two cases:
 

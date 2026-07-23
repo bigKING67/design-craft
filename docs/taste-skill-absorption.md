@@ -2,7 +2,8 @@
 
 This document records the deliberate baseline-fusion boundary for
 `https://github.com/Leonxlnx/taste-skill` at commit
-`b17742737e796305d829b3ad39eda3add0d79060`.
+`98565e65bc3274ddf6eb0838734341714057178b`. The compatibility submodule stays
+pinned at `b17742737e796305d829b3ad39eda3add0d79060`.
 
 ## Contents
 
@@ -15,9 +16,10 @@ This document records the deliberate baseline-fusion boundary for
 
 ## Inventory truth
 
-The reviewed upstream contains thirteen Skill entrypoints, one `llms.txt`, and
-one Stitch-oriented `DESIGN.md`. It contains no reusable component library,
-runtime package, test harness, or implementation script under `skills/`.
+The reviewed remote head contains the same thirteen Skill entrypoints, one
+`llms.txt`, and one Stitch-oriented `DESIGN.md` as the pinned compatibility
+snapshot. It contains no reusable component library, runtime package, test
+harness, or implementation script under `skills/`.
 
 `design-craft` therefore absorbs durable judgment and workflow behavior. It
 does not flatten every style preset, image-generation workflow, host-output
@@ -79,9 +81,11 @@ generic aesthetic prescription. Style Skills can be selected alongside
 The cumulative state is selective absorption: high-value design judgment and
 redesign behavior are local, while specialized style, image-generation,
 Stitch, brand-kit, and output-policy Skills remain deliberately independent.
-The range after `06d6028b5c623016c59ce8536f578e5a1127b499` changes README
-sponsorship and image assets only, so its latest-range status is
-`provenance-only` rather than a statement that the upstream was never absorbed.
+The latest reviewed range from
+`b17742737e796305d829b3ad39eda3add0d79060` through
+`98565e65bc3274ddf6eb0838734341714057178b` changes README sponsorship and
+sponsor image assets only. Its latest-range status is `provenance-only`; the
+submodule does not need to advance for those repository-presentation changes.
 
 Current independent blind evidence is recorded in
 `evals/comparative/taste-visual-critique-ablation/`: `design-craft` 99,

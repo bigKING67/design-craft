@@ -9,6 +9,7 @@ import sys
 from pathlib import Path
 
 from design_craft_absorption_common import (
+    LOCK_SCHEMA,
     validate_matrix_vocabulary,
     validate_review_state,
 )
@@ -19,6 +20,25 @@ ROOT = Path(__file__).resolve().parents[1]
 LOCK_PATH = ROOT / "upstreams.lock.json"
 MATRIX_PATH = ROOT / "docs/emilkowalski-absorption.md"
 COMPATIBILITY_PATH = ROOT / "skills/design-craft/COMPATIBILITY.json"
+LATEST_RANGE_ENTRYPOINT_DECISIONS = {
+    "find-animation-opportunities": "absorbed",
+    "pick-ui-library": "intentionally_rejected",
+}
+LATEST_RANGE_COVERAGE = {
+    "paths": [
+        "skills/design-craft/references/motion-quality.md",
+        "skills/design-craft/references/motion-audit-planning.md",
+        "skills/design-craft/references/motion-vocabulary.md",
+    ],
+    "terms": [
+        "Motion needs a reason",
+        "Frequency decides restraint",
+        "Most UI animations should stay under `300ms`",
+        "Missed opportunities",
+        "Reject duplicates",
+        "at most four missed opportunities",
+    ],
+}
 
 
 COVERAGE = {
@@ -103,8 +123,11 @@ def validate() -> dict:
     errors: list[str] = []
     matrix_relative = MATRIX_PATH.relative_to(ROOT).as_posix()
     lock = read_json(LOCK_PATH)
+    if lock.get("schema") != LOCK_SCHEMA:
+        errors.append(f"upstream lock schema must be {LOCK_SCHEMA}")
     meta = lock.get("upstreams", {}).get("emilkowalski-skills", {})
     inventory = meta.get("skill_inventory", {})
+    latest_decisions = inventory.get("latest_range_entrypoint_decisions", {})
     upstream = ROOT / meta.get("path", "upstreams/emilkowalski-skills")
     state, state_errors = validate_review_state(
         "emilkowalski-skills", meta, upstream
@@ -144,6 +167,10 @@ def validate() -> dict:
             "upstream non-Markdown inventory drift: "
             f"observed {observed_non_markdown}"
         )
+    if latest_decisions != LATEST_RANGE_ENTRYPOINT_DECISIONS:
+        errors.append(
+            "latest_range_entrypoint_decisions must explicitly cover the reviewed additions"
+        )
 
     if meta.get("coverage_contract") != SCHEMA:
         errors.append(f"coverage_contract must be {SCHEMA}")
@@ -157,6 +184,9 @@ def validate() -> dict:
 
     matrix_text = MATRIX_PATH.read_text(encoding="utf-8") if MATRIX_PATH.is_file() else ""
     errors.extend(validate_matrix_vocabulary(matrix_text))
+    for entrypoint in LATEST_RANGE_ENTRYPOINT_DECISIONS:
+        if f"`{entrypoint}`" not in matrix_text:
+            errors.append(f"absorption matrix is missing latest entrypoint: {entrypoint}")
 
     coverage_payload = {}
     for skill, spec in COVERAGE.items():
@@ -192,6 +222,25 @@ def validate() -> dict:
             "coverage map must match the five locked Skill entrypoints exactly"
         )
 
+    latest_combined = ""
+    latest_missing_paths = []
+    for relative in LATEST_RANGE_COVERAGE["paths"]:
+        path = ROOT / relative
+        if not path.is_file():
+            latest_missing_paths.append(relative)
+            continue
+        latest_combined += "\n" + path.read_text(encoding="utf-8")
+    normalized_latest = latest_combined.casefold()
+    latest_missing_terms = [
+        term
+        for term in LATEST_RANGE_COVERAGE["terms"]
+        if term.casefold() not in normalized_latest
+    ]
+    if latest_missing_paths:
+        errors.append(f"latest range: missing local coverage paths: {latest_missing_paths}")
+    if latest_missing_terms:
+        errors.append(f"latest range: missing local coverage terms: {latest_missing_terms}")
+
     return {
         "schema": SCHEMA,
         "ok": not errors,
@@ -207,6 +256,12 @@ def validate() -> dict:
             "non_markdown_files": observed_non_markdown,
         },
         "coverage": coverage_payload,
+        "latest_range": {
+            "entrypoint_decisions": latest_decisions,
+            "coverage_paths": LATEST_RANGE_COVERAGE["paths"],
+            "missing_paths": latest_missing_paths,
+            "missing_terms": latest_missing_terms,
+        },
         "matrix": matrix_relative,
         "errors": errors,
     }
@@ -221,6 +276,11 @@ def self_check() -> None:
         "animation-vocabulary",
     }:
         raise RuntimeError("internal five-Skill coverage map drifted")
+    if LATEST_RANGE_ENTRYPOINT_DECISIONS != {
+        "find-animation-opportunities": "absorbed",
+        "pick-ui-library": "intentionally_rejected",
+    }:
+        raise RuntimeError("latest-range entrypoint decisions drifted")
 
 
 def main() -> int:
