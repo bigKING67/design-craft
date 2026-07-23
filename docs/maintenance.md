@@ -183,9 +183,10 @@ Expected result:
   source commit, dirty-state, exact tree digest, install-time, and source-repo
   provenance.
 - The installer uses staging, an install lock, atomic replacement, rollback,
-  and bounded backup retention. It removes the retired alias only when its
-  metadata, installed digest, historical source commit, and repository
-  identity all match; unmanaged paths fail closed.
+  and bounded backup retention. The retired `frontend-craft` name is outside
+  the v0.5 installer boundary: the installer does not inspect, mutate, or delete
+  existing copies. Review ownership and preserve local changes before retiring
+  one separately.
 - Use `INSTALL_ARGS=--no-prune-backups` when a maintenance run must preserve
   every historical backup; default installs retain the newest ten per skill.
 

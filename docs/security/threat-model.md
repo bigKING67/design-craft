@@ -25,18 +25,21 @@ links, special files, absolute paths, and parent traversal.
 
 ### Installer replacement and TOCTOU
 
-The installer acquires a bounded lock, validates any retired alias, stages on
-the target filesystem, removes runtime artifacts, writes provenance, verifies
-the staged tree, performs an atomic rename, verifies again, and restores the
-previous target on failure.
-The retired alias is quarantined only after metadata, installed digest,
-historical commit tree, and repository identity all match. Unmanaged or
-symlinked paths fail closed.
+The installer acquires a bounded lock, stages on the target filesystem, removes
+runtime artifacts, writes provenance, verifies the staged tree, performs an
+atomic rename, verifies again, and restores the previous target on failure.
+The retired `frontend-craft` name is outside the v0.5 installer boundary: the
+installer does not inspect, mutate, or delete existing copies. Operators must
+verify ownership and preserve local changes before retiring one separately, as
+documented in `docs/operations/v0.5-migration.md`.
 
 Residual risk: local processes with permission to mutate the install root can
 race filesystem checks. The post-switch digest check detects mutation before
 success, but the installer is not a defense against an already-compromised OS
 account.
+
+Residual risk: old automation can continue invoking an unmanaged retired alias
+until its callers are migrated and the copy is reviewed separately.
 
 ### Evidence inflation and stale provenance
 
