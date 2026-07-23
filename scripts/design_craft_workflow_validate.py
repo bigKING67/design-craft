@@ -214,6 +214,9 @@ def validate() -> dict:
                 "actions/attest-build-provenance@",
                 "gh release create",
                 "GitHub Release ${RELEASE_TAG} already exists",
+                "Configure isolated release paths",
+                "GITHUB_ENV",
+                "RUNNER_TEMP",
             ),
             ".github/workflows/release.yml",
         )
@@ -223,6 +226,11 @@ def validate() -> dict:
     release_job = workflow_job_block(release_workflow, "release")
     if release_job.count("permissions:") != 1:
         errors.append(".github/workflows/release.yml must scope write permissions to the release job")
+    release_job_header = release_job.split("    steps:", 1)[0]
+    if "${{ runner." in release_job_header:
+        errors.append(
+            ".github/workflows/release.yml must not use the runner context before steps"
+        )
     errors.extend(
         require_tokens(
             physical_workflow,

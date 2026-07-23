@@ -10,7 +10,7 @@ write the active `~/.agents` installation.
 
 The smoke suite records:
 
-- portable route selection and strict Codex route-pack validation;
+- portable route selection and the isolated Codex route-pack self-check;
 - 1k and 10k file-tree hashing;
 - validation registry load, full lint, evidence validation, and package
   validation;
@@ -29,6 +29,10 @@ suite without competing maturity gates. Native evidence collection and final
 release certification are intentionally not benchmark fixtures: those require
 real current-source workflow or device evidence and must not be fabricated for
 timing.
+
+The route-pack benchmark deliberately uses its built-in temporary self-check
+fixture. It must not read the operator's `~/.codex` tree, so local and CI runs
+measure the same portable contract instead of leaking host configuration.
 
 ```bash
 python3 -m tools.design_craft benchmark --scale smoke --json

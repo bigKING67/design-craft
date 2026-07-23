@@ -170,6 +170,8 @@ def specialized_metric_errors(name: str, metric: object) -> list[str]:
         or metric.get("output_root") != "temporary_directory"
     ):
         errors.append("metric release_bundle_build must prove deterministic temporary output")
+    if name == "route_pack" and metric.get("fixture_scope") != "portable_self_check":
+        errors.append("metric route_pack must use the portable self-check fixture")
     return errors
 
 

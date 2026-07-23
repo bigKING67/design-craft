@@ -164,12 +164,14 @@ def run_suite(scale: str = "smoke") -> dict[str, object]:
             lambda: _run(route_command, env=route_env),
             5 if scale == "smoke" else MIN_FULL_SAMPLES,
         )
-        metrics["route_pack"] = _measure(
+        route_pack_metric = _measure(
             lambda: _run(
-                [sys.executable, "scripts/design_craft_codex_route_pack.py", "--strict", "--json"]
+                [sys.executable, "scripts/design_craft_codex_route_pack.py", "--check"]
             ),
             2 if scale == "smoke" else MIN_FULL_SAMPLES,
         )
+        route_pack_metric["fixture_scope"] = "portable_self_check"
+        metrics["route_pack"] = route_pack_metric
 
         for count, iterations in ((1_000, 5), (10_000, 3)):
             fixture = temporary / f"tree-{count}"

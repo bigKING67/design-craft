@@ -34,6 +34,7 @@ def metric(p95: float) -> dict[str, object]:
 
 def metrics(p95: float) -> dict[str, dict[str, object]]:
     values = {name: metric(p95) for name in SMOKE_METRIC_NAMES}
+    values["route_pack"]["fixture_scope"] = "portable_self_check"
     for count in (1, 10, 100):
         values[f"incremental_validation_{count}"].update(
             {
@@ -213,6 +214,13 @@ class BenchmarkPolicyTests(unittest.TestCase):
         comparison = compare_results(baseline, result(100.0))
         self.assertFalse(comparison["ok"])
         self.assertTrue(any("release_bundle_build" in error for error in comparison["errors"]))
+
+    def test_route_pack_requires_portable_fixture(self) -> None:
+        baseline = result(100.0)
+        del baseline["metrics"]["route_pack"]["fixture_scope"]
+        comparison = compare_results(baseline, result(100.0))
+        self.assertFalse(comparison["ok"])
+        self.assertTrue(any("portable self-check" in error for error in comparison["errors"]))
 
 
 class IncrementalAndCacheTests(unittest.TestCase):

@@ -55,9 +55,6 @@ jobs:
       PHYSICAL_DEVICE_RUN_ID: ${{ inputs.physical_device_run_id }}
       BENCHMARK_BASELINE: ${{ inputs.benchmark_baseline }}
       CONFIRM_RELEASE: ${{ inputs.confirm_release }}
-      DESIGN_CRAFT_NATIVE_EVIDENCE_ROOT: ${{ runner.temp }}/native-evidence
-      NATIVE_RUN_OBSERVATION: ${{ runner.temp }}/native-run-observation.json
-      PHYSICAL_RUN_OBSERVATION: ${{ runner.temp }}/physical-run-observation.json
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
@@ -70,6 +67,12 @@ jobs:
       - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
         with:
           python-version: "3.13"
+      - name: Configure isolated release paths
+        shell: bash
+        run: |
+          echo "DESIGN_CRAFT_NATIVE_EVIDENCE_ROOT=${RUNNER_TEMP}/native-evidence" >> "${GITHUB_ENV}"
+          echo "NATIVE_RUN_OBSERVATION=${RUNNER_TEMP}/native-run-observation.json" >> "${GITHUB_ENV}"
+          echo "PHYSICAL_RUN_OBSERVATION=${RUNNER_TEMP}/physical-run-observation.json" >> "${GITHUB_ENV}"
       - name: Verify immutable release inputs
         shell: bash
         run: |
