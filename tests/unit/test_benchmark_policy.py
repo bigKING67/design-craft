@@ -190,6 +190,14 @@ class BenchmarkPolicyTests(unittest.TestCase):
         self.assertFalse(comparison["ok"])
         self.assertTrue(any("sample count" in error for error in comparison["errors"]))
 
+    def test_baseline_and_current_sample_counts_must_match(self) -> None:
+        current = result(100.0)
+        current["metrics"]["route_selection"]["iterations"] = 2
+        current["metrics"]["route_selection"]["samples"] = [100.0, 100.0]
+        comparison = compare_results(result(100.0), current)
+        self.assertFalse(comparison["ok"])
+        self.assertTrue(any("between baseline and current" in error for error in comparison["errors"]))
+
     def test_cache_capacity_violation_fails_closed(self) -> None:
         baseline = result(100.0)
         baseline["metrics"]["validation_cache_warm"]["max_entries_observed"] = (

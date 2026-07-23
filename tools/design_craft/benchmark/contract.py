@@ -265,6 +265,9 @@ def compare_results(
             continue
         assert isinstance(baseline_metric, dict)
         assert isinstance(current_metric, dict)
+        if baseline_metric.get("iterations") != current_metric.get("iterations"):
+            errors.append(f"{name} sample count must match between baseline and current")
+            continue
         baseline_p95 = float(baseline_metric["p95"])
         current_p95 = float(current_metric["p95"])
         absolute_delta = current_p95 - baseline_p95
