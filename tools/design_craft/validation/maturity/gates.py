@@ -376,6 +376,14 @@ def performance_regression(context: MaturityContext) -> MaturityGateResult:
         )
     try:
         baseline = json.loads(path.read_text(encoding="utf-8"))
+        if baseline.get("scale") != "full":
+            return _result(
+                "performance_regression",
+                False,
+                (time.perf_counter() - started) * 1_000,
+                {"baseline": str(path), "scale": baseline.get("scale")},
+                "release benchmark baseline must use the full suite",
+            )
         current = run_suite(str(baseline.get("scale", "smoke")))
         comparison = compare_results(baseline, current)
     except (OSError, ValueError, json.JSONDecodeError) as exc:

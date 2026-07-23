@@ -10,6 +10,24 @@ from .model import MaturityContext, MaturityGateResult
 from .profiles import load_profile
 
 
+SERIAL_GATE_IDS = frozenset({"performance_regression"})
+
+
+def _evaluate_gate(
+    gate_id: str, context: MaturityContext
+) -> MaturityGateResult:
+    try:
+        return gate_runner(gate_id)(context)
+    except Exception as exc:
+        return MaturityGateResult(
+            gate_id=gate_id,
+            status="failed",
+            duration_ms=0.0,
+            evidence={},
+            error=f"unhandled gate error: {exc}",
+        )
+
+
 def evaluate_maturity(
     profile_name: str,
     *,
@@ -27,23 +45,22 @@ def evaluate_maturity(
     )
     worker_count = jobs if jobs > 0 else min(4, os.cpu_count() or 2)
     results: dict[str, MaturityGateResult] = {}
+    parallel_gate_ids = tuple(
+        gate_id
+        for gate_id in profile.required_gate_ids
+        if gate_id not in SERIAL_GATE_IDS
+    )
     with ThreadPoolExecutor(max_workers=max(1, worker_count)) as executor:
         futures = {
-            executor.submit(gate_runner(gate_id), context): gate_id
-            for gate_id in profile.required_gate_ids
+            executor.submit(_evaluate_gate, gate_id, context): gate_id
+            for gate_id in parallel_gate_ids
         }
         for future in as_completed(futures):
             gate_id = futures[future]
-            try:
-                results[gate_id] = future.result()
-            except Exception as exc:
-                results[gate_id] = MaturityGateResult(
-                    gate_id=gate_id,
-                    status="failed",
-                    duration_ms=0.0,
-                    evidence={},
-                    error=f"unhandled gate error: {exc}",
-                )
+            results[gate_id] = future.result()
+    for gate_id in profile.required_gate_ids:
+        if gate_id in SERIAL_GATE_IDS:
+            results[gate_id] = _evaluate_gate(gate_id, context)
     ordered = [results[gate_id] for gate_id in profile.required_gate_ids]
     failed = [result.gate_id for result in ordered if not result.passed]
     return {

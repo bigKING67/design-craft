@@ -7,16 +7,18 @@ from pathlib import Path
 from tools.design_craft.benchmark.contract import (
     ABSOLUTE_REGRESSION_LIMIT_MS,
     CACHE_CAPACITY,
+    MIN_FULL_SAMPLES,
     RELATIVE_REGRESSION_LIMIT,
     SCHEMA,
     SMOKE_METRIC_NAMES,
     compare_results,
+    result_errors,
 )
 from tools.design_craft.benchmark.fixtures import (
     _BoundedDigestCache,
     _validate_changed_files,
 )
-from tools.design_craft.benchmark.runner import _measure_cache
+from tools.design_craft.benchmark.runner import _measure_cache, _percentile
 
 
 def metric(p95: float) -> dict[str, object]:
@@ -122,7 +124,31 @@ def result(
     }
 
 
+def full_result(p95: float) -> dict[str, object]:
+    payload = result(p95, scale="full")
+    payload["metrics"]["tree_scan_100000"] = metric(p95)
+    for value in payload["metrics"].values():
+        value["iterations"] = MIN_FULL_SAMPLES
+        value["samples"] = [p95] * MIN_FULL_SAMPLES
+    return payload
+
+
 class BenchmarkPolicyTests(unittest.TestCase):
+    def test_full_results_require_enough_samples_for_p95(self) -> None:
+        payload = full_result(100.0)
+        self.assertEqual(result_errors(payload, label="current"), [])
+
+        payload["metrics"]["route_pack"]["iterations"] = MIN_FULL_SAMPLES - 1
+        payload["metrics"]["route_pack"]["samples"] = [100.0] * (
+            MIN_FULL_SAMPLES - 1
+        )
+        errors = result_errors(payload, label="current")
+        self.assertTrue(any("at least 20 samples" in error for error in errors))
+
+    def test_full_sample_p95_is_not_a_single_maximum(self) -> None:
+        samples = [100.0] * (MIN_FULL_SAMPLES - 1) + [1000.0]
+        self.assertEqual(_percentile(samples, 0.95), 100.0)
+
     def test_small_absolute_variance_does_not_fail(self) -> None:
         comparison = compare_results(result(10.0), result(20.0))
         self.assertTrue(comparison["ok"])

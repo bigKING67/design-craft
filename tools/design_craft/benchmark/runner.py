@@ -16,6 +16,7 @@ from .contract import (
     ABSOLUTE_REGRESSION_LIMIT_MS,
     CACHE_CAPACITY,
     INCREMENTAL_FILE_COUNTS,
+    MIN_FULL_SAMPLES,
     RELATIVE_REGRESSION_LIMIT,
     SCHEMA,
     compare_results,
@@ -160,13 +161,14 @@ def run_suite(scale: str = "smoke") -> dict[str, object]:
             "DESIGN_CRAFT_ROUTE_PLAN": str(temporary / "missing-route-plan.sh"),
         }
         metrics["route_selection"] = _measure(
-            lambda: _run(route_command, env=route_env), 5 if scale == "smoke" else 15
+            lambda: _run(route_command, env=route_env),
+            5 if scale == "smoke" else MIN_FULL_SAMPLES,
         )
         metrics["route_pack"] = _measure(
             lambda: _run(
                 [sys.executable, "scripts/design_craft_codex_route_pack.py", "--strict", "--json"]
             ),
-            2 if scale == "smoke" else 7,
+            2 if scale == "smoke" else MIN_FULL_SAMPLES,
         )
 
         for count, iterations in ((1_000, 5), (10_000, 3)):
@@ -175,20 +177,22 @@ def run_suite(scale: str = "smoke") -> dict[str, object]:
             _create_tree(fixture, count)
             metrics[f"tree_scan_{count}"] = _measure(
                 lambda fixture=fixture: _tree_digest(fixture),
-                iterations if scale == "smoke" else iterations * 2,
+                iterations if scale == "smoke" else MIN_FULL_SAMPLES,
             )
         if scale == "full":
             fixture = temporary / "tree-100000"
             fixture.mkdir()
             _create_tree(fixture, 100_000)
-            metrics["tree_scan_100000"] = _measure(lambda: _tree_digest(fixture), 3)
+            metrics["tree_scan_100000"] = _measure(
+                lambda: _tree_digest(fixture), MIN_FULL_SAMPLES
+            )
 
         metrics["validation_registry"] = _measure(
             lambda: select_gates(load_registry(), "portable"), 20 if scale == "smoke" else 100
         )
         metrics["lint_full"] = _measure(
             lambda: _run([sys.executable, "scripts/design_craft_lint.py"]),
-            2 if scale == "smoke" else 5,
+            2 if scale == "smoke" else MIN_FULL_SAMPLES,
         )
         metrics["evidence_validation"] = _measure(
             lambda: _run(
@@ -199,13 +203,13 @@ def run_suite(scale: str = "smoke") -> dict[str, object]:
                     "--print-js",
                 ]
             ),
-            3 if scale == "smoke" else 10,
+            3 if scale == "smoke" else MIN_FULL_SAMPLES,
         )
         metrics["package_validation"] = _measure(
             lambda: _run(
                 [sys.executable, "scripts/design_craft_package_validate.py", "--validate"]
             ),
-            2 if scale == "smoke" else 5,
+            2 if scale == "smoke" else MIN_FULL_SAMPLES,
         )
 
         incremental_root = temporary / "incremental-validation"
@@ -216,7 +220,7 @@ def run_suite(scale: str = "smoke") -> dict[str, object]:
                 lambda count=count: _validate_changed_files(
                     incremental_root, incremental_paths[:count]
                 ),
-                5 if scale == "smoke" else 15,
+                5 if scale == "smoke" else MIN_FULL_SAMPLES,
             )
             metric.update(
                 {
@@ -232,21 +236,21 @@ def run_suite(scale: str = "smoke") -> dict[str, object]:
             incremental_root,
             cache_paths,
             capacity=CACHE_CAPACITY,
-            iterations=3 if scale == "smoke" else 10,
+            iterations=3 if scale == "smoke" else MIN_FULL_SAMPLES,
             warm=False,
         )
         metrics["validation_cache_warm"] = _measure_cache(
             incremental_root,
             cache_paths,
             capacity=CACHE_CAPACITY,
-            iterations=3 if scale == "smoke" else 10,
+            iterations=3 if scale == "smoke" else MIN_FULL_SAMPLES,
             warm=True,
         )
         metrics["validation_cache_overflow"] = _measure_cache(
             incremental_root,
             incremental_paths[: CACHE_CAPACITY * 2],
             capacity=CACHE_CAPACITY,
-            iterations=2 if scale == "smoke" else 5,
+            iterations=2 if scale == "smoke" else MIN_FULL_SAMPLES,
             warm=False,
         )
 
@@ -262,7 +266,7 @@ def run_suite(scale: str = "smoke") -> dict[str, object]:
         install_command = _install_command(install_fixture)
         metrics["install_atomic"] = _measure(
             lambda: _run(install_command, env=install_env),
-            1 if scale == "smoke" else 3,
+            1 if scale == "smoke" else MIN_FULL_SAMPLES,
         )
 
         installed_skill = install_root / "design-craft"
@@ -281,7 +285,9 @@ def run_suite(scale: str = "smoke") -> dict[str, object]:
             if not installed_skill.is_dir() or _tree_digest(installed_skill) != installed_digest:
                 raise RuntimeError("installer rollback benchmark did not restore the original tree")
 
-        rollback_metric = _measure(rollback_install, 1 if scale == "smoke" else 3)
+        rollback_metric = _measure(
+            rollback_install, 1 if scale == "smoke" else MIN_FULL_SAMPLES
+        )
         rollback_metric.update(
             {
                 "failure_point": "after_switch",
@@ -315,7 +321,9 @@ def run_suite(scale: str = "smoke") -> dict[str, object]:
             if (contended_root / "design-craft").exists():
                 raise RuntimeError("installer contention benchmark modified the install target")
 
-        contention_metric = _measure(contend_install, 1 if scale == "smoke" else 3)
+        contention_metric = _measure(
+            contend_install, 1 if scale == "smoke" else MIN_FULL_SAMPLES
+        )
         contention_metric.update(
             {
                 "lock_timeout_seconds": 0,
@@ -335,7 +343,9 @@ def run_suite(scale: str = "smoke") -> dict[str, object]:
             release_index += 1
             release_observations.append(_release_bundle_once(output))
 
-        release_metric = _measure(build_release_bundle, 2 if scale == "smoke" else 3)
+        release_metric = _measure(
+            build_release_bundle, 2 if scale == "smoke" else MIN_FULL_SAMPLES
+        )
         bundle_sizes = {item[0] for item in release_observations}
         bundle_digests = {item[1] for item in release_observations}
         deterministic = len(bundle_sizes) == 1 and len(bundle_digests) == 1

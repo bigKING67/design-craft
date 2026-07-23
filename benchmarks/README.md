@@ -23,8 +23,9 @@ The smoke suite records:
   install target was created;
 - two operational npm release-package builds whose size and SHA-256 must match.
 
-The full suite adds the 100k-file tree, increases sample counts, and repeats the
-installer and release-package cases. Native evidence collection and final
+The full suite adds the 100k-file tree and records at least 20 samples for every
+metric so p95 is not a single maximum observation. Release maturity runs this
+suite without competing maturity gates. Native evidence collection and final
 release certification are intentionally not benchmark fixtures: those require
 real current-source workflow or device evidence and must not be fabricated for
 timing.

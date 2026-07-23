@@ -8,6 +8,7 @@ SCHEMA = "design-craft.benchmark-result.v1"
 COMPARISON_SCHEMA = "design-craft.benchmark-comparison.v1"
 RELATIVE_REGRESSION_LIMIT = 0.15
 ABSOLUTE_REGRESSION_LIMIT_MS = 50.0
+MIN_FULL_SAMPLES = 20
 INCREMENTAL_FILE_COUNTS = (1, 10, 100)
 CACHE_CAPACITY = 32
 COMMIT_PATTERN = re.compile(r"[0-9a-f]{40}")
@@ -214,6 +215,17 @@ def result_errors(payload: object, *, label: str) -> list[str]:
             f"{label}: {error}"
             for error in specialized_metric_errors(str(name), metric)
         )
+        if scale == "full" and isinstance(metric, dict):
+            iterations = metric.get("iterations")
+            if (
+                isinstance(iterations, int)
+                and not isinstance(iterations, bool)
+                and iterations < MIN_FULL_SAMPLES
+            ):
+                errors.append(
+                    f"{label}: full metric {name} must use at least "
+                    f"{MIN_FULL_SAMPLES} samples"
+                )
     return errors
 
 
