@@ -2,6 +2,11 @@
 
 All notable local changes to `design-craft` are recorded here.
 
+## 0.5.3 - Unreleased
+
+- Refresh Codex, Pi, and comparative current-source evidence after the
+  certification receipt fix changed the release-candidate skill tree.
+
 ## 0.5.2 - 2026-07-24
 
 - Normalize the `actions/upload-artifact` certification digest output from raw
