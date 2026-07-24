@@ -2,6 +2,23 @@
 
 All notable local changes to `design-craft` are recorded here.
 
+## 0.5.1 - Unreleased
+
+- Split final certification from publication so evidence and exact assets can
+  be certified without granting release-write or attestation permissions, and
+  split publication itself into read-only verification plus a digest-only write
+  job that executes no repository validation code.
+- Made native release-evidence bindings artifact-relative and independently
+  relocatable while retaining temporary read compatibility for v0.5.0 absolute
+  runner paths.
+- Added benchmark result schema v2 with stable runner-family identity, explicit
+  v1 migration, and diagnostic-only kernel/image patch metadata.
+- Added a fail-closed `RELEASE_GOVERNANCE_TOKEN` preflight with machine-readable
+  credential and Administration-permission error classification.
+- Archived the exact v0.5.0 comparative and cross-agent evidence under immutable
+  history roots and reset active v0.5.1 task directories to definition/pending
+  state instead of presenting released evidence as current-source proof.
+
 ## 0.5.0 - 2026-07-23
 
 - Added a five-Skill Emil Kowalski absorption contract and human-readable

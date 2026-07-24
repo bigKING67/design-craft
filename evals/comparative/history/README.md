@@ -14,3 +14,7 @@ python3 scripts/design_craft_comparative_validate.py \
 
 History validation does not claim that an archived run used today's Skill
 tree. Current certification requires new runs in the active case directories.
+
+`v0.5.0/` preserves the four ablations admitted by the `v0.5.0` Operational 95
+release. Active directories retain definitions only until a complete new
+`v0.5.1` run is collected.

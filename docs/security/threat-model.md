@@ -54,8 +54,15 @@ levels are explicit; missing evidence never promotes a release automatically.
 Upstreams are pinned and reviewed separately from the canonical skill. Actions
 use full commit SHAs. Release assets use exact per-level allowlists. The package
 checksum, release manifest, and SPDX file inventory bind the package bytes;
-GitHub attestations must be produced only by the release workflow with scoped
-permissions. Workflow artifacts are downloaded only after exact Native and,
+GitHub attestations and Release writes exist only in the publication workflow;
+the certification workflow is read-only and emits a digest-bound, relocatable
+artifact. Publication requires an explicit successful certification run ID,
+artifact ID, and SHA-256 digest. A read-only job revalidates the complete bundle;
+only a dependent job receives write authority, and it executes no repository
+validation code before rechecking the same immutable REST ZIP digest. Release
+governance reads use a dedicated
+`RELEASE_GOVERNANCE_TOKEN` with Administration read and fail closed on missing
+or insufficient permissions. Workflow artifacts are downloaded only after exact Native and,
 for Certified, physical-device run observations validate workflow identity,
 repository, run ID/attempt, ref, source commit, status, conclusion, and URL.
 Release assets are assembled and validated in same-filesystem staging before a

@@ -112,7 +112,11 @@
       "properties": {
         "native": {"type": "string", "minLength": 1},
         "schema": {"const": "design-craft.native-runtime-evidence.v3"},
-        "evidence_path": {"type": "string", "minLength": 1},
+        "evidence_path": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$)).+$"
+        },
         "evidence_sha256": {"$ref": "#/$defs/sha256"},
         "source_commit": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
         "platform": {"enum": ["ios", "android"]},

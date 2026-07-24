@@ -85,8 +85,44 @@ def load_release_evidence(path: Path, level: ReleaseLevel) -> dict[str, object]:
     return payload
 
 
+def _resolve_evidence_path(
+    binding: dict[str, object],
+    *,
+    evidence_root: Path | None,
+    check_id: str,
+) -> Path:
+    raw_path = binding.get("evidence_path")
+    if not isinstance(raw_path, str) or not raw_path:
+        raise ValueError(f"passing release evidence is missing {check_id}.evidence_path")
+    relative_path = Path(raw_path)
+    if relative_path.is_absolute() or ".." in relative_path.parts:
+        raise ValueError(f"{check_id}.evidence_path must stay relative to its evidence root")
+
+    if evidence_root is not None:
+        root = evidence_root.expanduser().resolve()
+        resolved = (root / relative_path).resolve()
+        if resolved != root and root not in resolved.parents:
+            raise ValueError(f"{check_id}.evidence_path escapes its evidence root")
+        return resolved
+
+    legacy_source = binding.get("evidence_source_path")
+    if isinstance(legacy_source, str) and legacy_source:
+        resolved = Path(legacy_source).expanduser()
+        if not resolved.is_absolute():
+            resolved = REPO_ROOT / resolved
+        return resolved.resolve()
+
+    resolved = (REPO_ROOT / relative_path).resolve()
+    if resolved != REPO_ROOT and REPO_ROOT not in resolved.parents:
+        raise ValueError(f"{check_id}.evidence_path escapes the repository root")
+    return resolved
+
+
 def collect_native_evidence(
-    evidence: dict[str, object], level: ReleaseLevel
+    evidence: dict[str, object],
+    level: ReleaseLevel,
+    *,
+    evidence_root: Path | None = None,
 ) -> dict[str, dict[str, object]]:
     checks = evidence.get("checks")
     if not isinstance(checks, list):
@@ -103,18 +139,11 @@ def collect_native_evidence(
         binding = check.get("evidence")
         if not isinstance(binding, dict):
             raise ValueError(f"passing release evidence has invalid {check_id} binding")
-        evidence_path = binding.get("evidence_path")
-        if not isinstance(evidence_path, str) or not evidence_path:
-            raise ValueError(f"passing release evidence is missing {check_id}.evidence_path")
-        source_path = binding.get("evidence_source_path", evidence_path)
-        if not isinstance(source_path, str) or not source_path:
-            raise ValueError(
-                f"passing release evidence is missing {check_id}.evidence_source_path"
-            )
-        resolved = Path(source_path).expanduser()
-        if not resolved.is_absolute():
-            resolved = REPO_ROOT / resolved
-        resolved = resolved.resolve()
+        resolved = _resolve_evidence_path(
+            binding,
+            evidence_root=evidence_root,
+            check_id=check_id,
+        )
         if not resolved.is_file() or _sha256(resolved) != binding.get("evidence_sha256"):
             raise ValueError(
                 f"{check_id} evidence file digest does not match the release report"
@@ -189,13 +218,18 @@ def build_assets(
     *,
     level: ReleaseLevel,
     evidence_path: Path,
+    evidence_root: Path | None = None,
     force: bool = False,
 ) -> dict[str, object]:
     version = _version()
     expected = level.assets(version)
     generated_names = expected[:4]
     evidence = load_release_evidence(evidence_path, level)
-    native_evidence = collect_native_evidence(evidence, level)
+    native_evidence = collect_native_evidence(
+        evidence,
+        level,
+        evidence_root=evidence_root,
+    )
     if output_dir.is_symlink():
         raise ValueError(f"release output directory is unsafe: {output_dir}")
     output_dir.mkdir(parents=True, exist_ok=True)

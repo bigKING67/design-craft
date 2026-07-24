@@ -218,6 +218,7 @@ and the live branch/tag rulesets. Use the explicit targets:
 make release-readiness-operational BENCHMARK_BASELINE=<path>
 make release-tag-verify-operational BENCHMARK_BASELINE=<path>
 make release-assets-build-operational \
+  NATIVE_EVIDENCE_ROOT=/path/to/native-evidence \
   NATIVE_RUN_OBSERVATION=/tmp/native-run.json
 make release-final-verify-operational BENCHMARK_BASELINE=<path>
 
@@ -225,13 +226,23 @@ make release-readiness-certified BENCHMARK_BASELINE=<path>
 make release-tag-verify-certified BENCHMARK_BASELINE=<path>
 NATIVE_RUN_OBSERVATION=/tmp/native-run.json \
 PHYSICAL_RUN_OBSERVATION=/tmp/physical-run.json \
+NATIVE_EVIDENCE_ROOT=/path/to/combined-native-evidence \
 make release-assets-build-certified
 make release-final-verify-certified BENCHMARK_BASELINE=<path>
 ```
 
-The manual Release workflow publishes exactly four Operational assets or seven
-Certified assets, produces SPDX and provenance attestations, never publishes to
-npm, and refuses to replace an existing version's assets. A later Certified
+The manual Release certification workflow has read-only repository permissions
+and produces a relocatable, digest-bound artifact containing exactly four
+Operational assets or seven Certified assets plus their evidence and selected
+run observations. It requires `RELEASE_GOVERNANCE_TOKEN` with repository
+Administration read and fails closed during its early preflight if the secret is
+missing or under-scoped. The separate publication workflow accepts the exact
+certification run ID, artifact ID, and SHA-256 digest, revalidates the complete
+bundle in a read-only job, then gives a dependent publication job only the same
+immutable artifact ID and digest. The write-authority job rechecks the REST ZIP
+digest and annotated tag target, executes no repository validation code, and
+only then produces provenance attestations and the GitHub Release. Neither
+workflow publishes to npm or replaces an existing version. A later Certified
 claim therefore requires a new version rather than mutating an Operational
 release in place.
 
@@ -613,8 +624,14 @@ Before committing a release:
     release manifest must match every inner native evidence digest, artifact
     record, workflow binding, and selected run. Asset replacement is staged and
     rolls back on publish failure.
-20. Trigger `.github/workflows/release.yml` manually with its explicit
-    confirmation. Do not publish to npm and do not replace an existing release.
-21. Run `release-final-verify-operational` or
+20. Configure `RELEASE_GOVERNANCE_TOKEN` with repository Administration read,
+    then trigger `.github/workflows/release-certify.yml` with its explicit
+    confirmation. Record the completed run ID, uploaded artifact ID, and the
+    artifact's `sha256:<digest>` output. Certification has no publication or
+    attestation permission.
+21. Trigger `.github/workflows/release-publish.yml` with that exact run ID,
+    artifact ID, digest, tag, level, and explicit publication confirmation. Do
+    not publish to npm and do not replace an existing release.
+22. Run `release-final-verify-operational` or
     `release-final-verify-certified` to re-download the published asset set and
     verify tag, workflow, manifest, SBOM, attestation inputs, and live rulesets.

@@ -64,9 +64,13 @@ def validate_release_metadata(
         "native_runtime": "design-craft.native-runtime-evidence.v3",
         "release_verification": "design-craft.release-evidence.v1",
         "github_checks": "design-craft.github-checks.v2",
+        "github_governance": "design-craft.github-governance.v2",
+        "github_artifact_observation": "design-craft.github-artifact-observation.v1",
     }
     expected_maintenance = {
         "release_assets": "design-craft.release-assets.v2",
+        "release_certification": "design-craft.release-certification.v1",
+        "benchmark_result": "design-craft.benchmark-result.v2",
         "maturity": "design-craft.maturity.v2",
         "release_policy": "design-craft.release-policy.v1",
     }

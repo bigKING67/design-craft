@@ -40,7 +40,7 @@ mistaking mobile Web for native; they do not add a device requirement to daily
 Web work.
 The canonical package is still portable: agent-specific integration belongs in
 `adapters/`, while `skills/design-craft/` remains the single source skill.
-The `0.5.0` development contract defines an `operational_95` release level for
+The `0.5.1` development contract defines an `operational_95` release level for
 Codex/Pi and Simulator/Emulator current-source evidence, benchmark regression,
 clean-checkout provenance, and repository governance. It reserves
 `certified_100` for the additional Cursor, Claude, and physical-device proof.
@@ -706,6 +706,7 @@ build assets:
 make release-tag-verify-operational \
   BENCHMARK_BASELINE=benchmarks/baselines/v0.5.0-<runner-id>.json
 make release-assets-build-operational \
+  NATIVE_EVIDENCE_ROOT=/path/to/native-evidence \
   NATIVE_RUN_OBSERVATION=/tmp/native-run.json
 make release-assets-verify-operational
 ```
@@ -730,10 +731,12 @@ python3 -m tools.design_craft release run-observation \
 python3 -m tools.design_craft release evidence-bindings \
   --level certified_100 \
   --evidence dist/evidence/certified_100-final.json \
+  --evidence-root /path/to/combined-native-evidence \
   --native-observation /tmp/native-run.json \
   --physical-observation /tmp/physical-run.json
 make release-assets-build-certified \
   CERTIFIED_FINAL_EVIDENCE=dist/evidence/certified_100-final.json \
+  NATIVE_EVIDENCE_ROOT=/path/to/combined-native-evidence \
   NATIVE_RUN_OBSERVATION=/tmp/native-run.json \
   PHYSICAL_RUN_OBSERVATION=/tmp/physical-run.json \
   NATIVE_IOS_SOURCE=/path/to/native-runtime-ios-<tag-run-id> \
@@ -741,13 +744,27 @@ make release-assets-build-certified \
   NATIVE_REAL_DEVICE_ROOT=/path/to/native-runtime-physical-<run-id>
 ```
 
-`.github/workflows/release.yml` is a manual, confirmation-gated final publisher.
-It never publishes to npm, rejects an existing GitHub Release instead of
-replacing assets in place, generates provenance attestations, and publishes the
-exact four- or seven-asset set. An Operational release can only become Certified
-in a new version. After publication, use `make release-final-verify-operational`
-or `make release-final-verify-certified` to download and revalidate the exact
-Release assets and selected tag-run bindings.
+Final certification and publication are separate trust boundaries.
+`.github/workflows/release-certify.yml` has read-only repository permissions,
+requires a `RELEASE_GOVERNANCE_TOKEN` with repository Administration read, and
+uploads a relocatable certification artifact containing final evidence, selected
+run observations, native evidence records, and the exact four- or seven-asset
+set. It cannot attest or publish a GitHub Release. The token is used only for
+the governance preflight and live governance gate; missing or insufficient
+permissions fail before the expensive certification work begins.
+
+`.github/workflows/release-publish.yml` accepts an explicit successful
+certification run ID, artifact ID, and `sha256:<digest>`. It re-observes the run
+and artifact in a read-only verification job, downloads the exact artifact ID,
+checks the REST ZIP against the supplied digest, and validates source commit,
+annotated tag, release level, every bundled digest, native run binding, and exact
+asset allowlist. Only a dependent publication job receives attestation and
+`contents: write`; that job executes no repository validation code and releases
+only the same immutable artifact ZIP after rechecking its digest and tag target.
+Neither workflow publishes to npm, and an existing GitHub Release is never
+replaced in place. An Operational release can only become Certified in a new
+version. After publication, use `make release-final-verify-operational` or
+`make release-final-verify-certified` to revalidate the published asset set.
 
 The gate split is documented in `docs/maintenance.md`. The portable gate checks
 package shape, syntax, bundled runtime independence, platform fixtures,

@@ -10,8 +10,9 @@ scorecard, and expected findings for all three benchmark tasks. Do not update
 their hashes to match a newer active prompt; run the active case again instead.
 
 `2026-07-12-v3/` preserves the later score-v3/run-v2 tranche that was current
-before the scorecard JSON and score-v4 contracts were introduced. Validate all
-archived tranches separately with:
+before the scorecard JSON and score-v4 contracts were introduced. `v0.5.0/`
+preserves the score-v4/run-v2 Codex and Pi tranche admitted by the `v0.5.0`
+Operational 95 release. Validate all archived tranches separately with:
 
 ```bash
 python3 scripts/design_craft_cross_agent_validate.py \

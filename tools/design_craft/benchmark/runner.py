@@ -17,6 +17,7 @@ from .contract import (
     CACHE_CAPACITY,
     INCREMENTAL_FILE_COUNTS,
     MIN_FULL_SAMPLES,
+    POLICY_VERSION,
     RELATIVE_REGRESSION_LIMIT,
     SCHEMA,
     compare_results,
@@ -118,14 +119,32 @@ def _git_value(*args: str) -> str:
     return result.stdout.strip() if result.returncode == 0 else "unavailable"
 
 
-def _runner_id() -> str:
-    return "-".join(
-        (
-            platform.system().lower(),
-            platform.machine().lower(),
-            f"python{sys.version_info.major}.{sys.version_info.minor}",
-        )
+def _normalized_arch() -> str:
+    value = platform.machine().lower()
+    return {"amd64": "x86_64", "arm64": "aarch64"}.get(value, value)
+
+
+def _runner_image() -> str:
+    value = os.environ.get("ImageOS", "").strip().lower()
+    known = {
+        "ubuntu24": "ubuntu-24.04",
+        "ubuntu22": "ubuntu-22.04",
+        "macos15": "macos-15",
+        "macos14": "macos-14",
+    }
+    return known.get(value, value or platform.system().lower())
+
+
+def _node_version() -> str:
+    result = subprocess.run(
+        ["node", "--version"],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.DEVNULL,
+        text=True,
+        check=False,
     )
+    value = result.stdout.strip().removeprefix("v")
+    return value or "unavailable"
 
 
 def run_suite(scale: str = "smoke") -> dict[str, object]:
@@ -366,12 +385,22 @@ def run_suite(scale: str = "smoke") -> dict[str, object]:
     return {
         "schema": SCHEMA,
         "scale": scale,
-        "runner_id": _runner_id(),
+        "runner": {
+            "os": platform.system().lower(),
+            "arch": _normalized_arch(),
+            "image": _runner_image(),
+            "image_version": os.environ.get("ImageVersion", "unavailable"),
+            "python": platform.python_version(),
+            "node": _node_version(),
+        },
+        "diagnostics": {
+            "platform": platform.platform(),
+            "kernel": platform.release(),
+        },
         "source_commit": _git_value("rev-parse", "HEAD"),
         "source_dirty": bool(_git_value("status", "--porcelain=v1", "--untracked-files=all")),
-        "python": platform.python_version(),
-        "platform": platform.platform(),
         "policy": {
+            "version": POLICY_VERSION,
             "relative_regression_limit": RELATIVE_REGRESSION_LIMIT,
             "absolute_regression_limit_ms": ABSOLUTE_REGRESSION_LIMIT_MS,
         },

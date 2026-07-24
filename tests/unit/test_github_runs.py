@@ -6,11 +6,14 @@ import unittest
 from unittest.mock import patch
 
 from tools.design_craft.release.github_runs import (
+    CERTIFICATION_WORKFLOW_NAME,
+    CERTIFICATION_WORKFLOW_PATH,
     NATIVE_WORKFLOW_NAME,
     NATIVE_WORKFLOW_PATH,
     PHYSICAL_WORKFLOW_NAME,
     PHYSICAL_WORKFLOW_PATH,
     latest_native_tag_run,
+    observe_artifact,
     observe_run,
     validate_run,
     validate_workflow_binding,
@@ -73,12 +76,122 @@ def physical_run(run_id: int = 456) -> dict[str, object]:
     }
 
 
+def certification_run(run_id: int = 789) -> dict[str, object]:
+    repository = "example/design-craft"
+    return {
+        "id": run_id,
+        "attempt": 1,
+        "workflow": CERTIFICATION_WORKFLOW_PATH,
+        "workflow_name": CERTIFICATION_WORKFLOW_NAME,
+        "event": "workflow_dispatch",
+        "head_branch": "main",
+        "head_sha": HEAD,
+        "status": "completed",
+        "conclusion": "success",
+        "url": f"https://github.com/{repository}/actions/runs/{run_id}",
+        "repository": repository,
+    }
+
+
 class NativeGitHubRunTests(unittest.TestCase):
     def test_valid_run_matches_current_tag_contract(self) -> None:
         self.assertEqual(validate_run(observed_run(), kind="native"), [])
 
     def test_valid_physical_run_matches_main_dispatch_contract(self) -> None:
         self.assertEqual(validate_run(physical_run(), kind="physical"), [])
+
+    def test_valid_certification_run_matches_main_dispatch_contract(self) -> None:
+        self.assertEqual(validate_run(certification_run(), kind="certification"), [])
+
+    def test_artifact_observation_binds_digest_and_certification_run(self) -> None:
+        run = certification_run()
+        result = subprocess.CompletedProcess(
+            ["gh", "api"],
+            0,
+            stdout=json.dumps(
+                {
+                    "id": 900,
+                    "name": "release-certification-v0.5.1-789",
+                    "size_in_bytes": 1024,
+                    "digest": f"sha256:{'a' * 64}",
+                    "expired": False,
+                    "created_at": "2026-07-23T00:00:00Z",
+                    "updated_at": "2026-07-23T00:00:01Z",
+                    "workflow_run": {
+                        "id": run["id"],
+                        "head_branch": run["head_branch"],
+                        "head_sha": run["head_sha"],
+                    },
+                }
+            ),
+            stderr="",
+        )
+        with patch("tools.design_craft.release.github_runs._run", return_value=result):
+            artifact = observe_artifact(
+                900,
+                run=run,
+                expected_name="release-certification-v0.5.1-789",
+            )
+        self.assertEqual(artifact["digest"], f"sha256:{'a' * 64}")
+        self.assertEqual(artifact["workflow_run"]["id"], run["id"])
+
+    def test_artifact_observation_rejects_wrong_run(self) -> None:
+        run = certification_run()
+        result = subprocess.CompletedProcess(
+            ["gh", "api"],
+            0,
+            stdout=json.dumps(
+                {
+                    "id": 900,
+                    "name": "release-certification-v0.5.1-789",
+                    "size_in_bytes": 1024,
+                    "digest": f"sha256:{'a' * 64}",
+                    "expired": False,
+                    "workflow_run": {
+                        "id": 999,
+                        "head_branch": "main",
+                        "head_sha": HEAD,
+                    },
+                }
+            ),
+            stderr="",
+        )
+        with patch("tools.design_craft.release.github_runs._run", return_value=result):
+            with self.assertRaisesRegex(RuntimeError, "workflow_run.id"):
+                observe_artifact(
+                    900,
+                    run=run,
+                    expected_name="release-certification-v0.5.1-789",
+                )
+
+    def test_artifact_observation_requires_server_timestamps(self) -> None:
+        run = certification_run()
+        result = subprocess.CompletedProcess(
+            ["gh", "api"],
+            0,
+            stdout=json.dumps(
+                {
+                    "id": 900,
+                    "name": "release-certification-v0.5.1-789",
+                    "size_in_bytes": 1024,
+                    "digest": f"sha256:{'a' * 64}",
+                    "expired": False,
+                    "workflow_run": {
+                        "id": run["id"],
+                        "head_branch": run["head_branch"],
+                        "head_sha": run["head_sha"],
+                    },
+                }
+            ),
+            stderr="",
+        )
+        with patch("tools.design_craft.release.github_runs._run", return_value=result):
+            with self.assertRaisesRegex(RuntimeError, "created_at"):
+                observe_artifact(
+                    900,
+                    run=run,
+                    expected_name="release-certification-v0.5.1-789",
+                )
 
     def test_selected_run_id_and_attempt_are_bound(self) -> None:
         expected = listed_run(124, conclusion="success", created_at="2026-01-01")

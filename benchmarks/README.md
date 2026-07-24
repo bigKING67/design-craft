@@ -55,14 +55,34 @@ python3 -m tools.design_craft benchmark \
 ```
 
 Do not commit a result as a release baseline until base and head have run on the
-same controlled runner. GitHub-hosted `runner_id` values describe a runner
-class, not one fixed physical host, so collect at least three full runs before
+same controlled runner family. Result schema v2 records a stable hard identity
+(`os`, `arch`, runner image family, Python major/minor, and benchmark policy)
+separately from diagnostic drift (kernel string, runner image patch, and Python
+patch). Kernel or hosted-image patch rotation therefore does not masquerade as a
+performance regression, while a real OS, architecture, image-family, or Python
+minor change still fails closed. Collect at least three full runs before
 promoting a hosted-runner baseline. At least two real artifacts must form a
 reproducible cluster under `compare_results`; never synthesize an average or
 promote the fastest isolated artifact. Record the selected run URL and artifact
-SHA-256 in the promotion PR. The comparison fails closed when schema, scale,
-runner, Python, platform, policy, metric set, sample count, numeric timing, or
-specialized safety metadata is missing or inconsistent.
+SHA-256 in the promotion PR.
+
+The v1 reader remains available only for reviewed transition. A v1 comparison
+emits an explicit warning because the old result did not bind a runner image
+family. Do not edit an old baseline in place. Migrate it to a new file with the
+reviewed identity values, then commit both provenance and the new baseline:
+
+```bash
+python3 -m tools.design_craft benchmark \
+  --migrate-v1 benchmarks/baselines/v0.5.0-linux-x86_64-python3.13.json \
+  --runner-image ubuntu-24.04 \
+  --image-version <recorded-image-version> \
+  --node-version <recorded-node-version> \
+  --output benchmarks/baselines/v0.5.0-linux-x86_64-python3.13-v2.json
+```
+
+The comparison fails closed when schema, scale, stable runner identity, policy,
+metric set, sample count, numeric timing, or specialized safety metadata is
+missing or inconsistent.
 
 `.github/workflows/benchmark.yml` runs the smoke suite for pushes and pull
 requests, and the full suite for the nightly schedule or an explicit manual

@@ -36,4 +36,12 @@ contents, and repository files are untrusted inputs. Validators must reject
 path escape, symlink traversal, malformed types, stale source bindings, and
 unsupported schemas rather than silently normalizing them.
 
+Release certification and publication are separate. Certification uses a
+dedicated `RELEASE_GOVERNANCE_TOKEN` with repository Administration read and has
+no Release-write or attestation permission. Publication accepts only an exact
+completed certification run, artifact ID, and SHA-256 digest. Its read-only job
+revalidates the self-contained bundle before a dependent write-authority job
+rechecks the same immutable ZIP digest and publishes without executing repository
+validation code. Publication never receives the governance credential.
+
 See `docs/security/threat-model.md` for the full model and recovery paths.
