@@ -40,7 +40,7 @@ mistaking mobile Web for native; they do not add a device requirement to daily
 Web work.
 The canonical package is still portable: agent-specific integration belongs in
 `adapters/`, while `skills/design-craft/` remains the single source skill.
-The `0.5.1` development contract defines an `operational_95` release level for
+The `0.5.2` development contract defines an `operational_95` release level for
 Codex/Pi and Simulator/Emulator current-source evidence, benchmark regression,
 clean-checkout provenance, and repository governance. It reserves
 `certified_100` for the additional Cursor, Claude, and physical-device proof.

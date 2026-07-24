@@ -1,6 +1,6 @@
 {
-  "blind_map_sha256": "1430b026870983c7b05d2659a2cc47b30a89f6114198a0abda01ca5e8f738c81",
-  "blind_packet_sha256": "d5a29a27506e6de76144b099258115faa568ab19f855024f932fa6c32027a57a",
+  "blind_map_sha256": "09aa27e0f1a02f3629a45332895f40f20b139a74e30d206b70738d987ae6b359",
+  "blind_packet_sha256": "5406a5d80210c0e6a45de94ee87e40a4076deadc18f7e869e42dc0e174970a5a",
   "case_id": "impeccable-production-ablation",
   "focused_variant": "impeccable",
   "judge": {
@@ -8,62 +8,62 @@
     "model": "gpt-5.6-sol",
     "model_observation": "requested_by_cli",
     "raw_output_path": "judge-output.raw.txt",
-    "raw_output_sha256": "1d24bd95b3022c571115bc99c3e28c6fd11e2424f44aca5dda62d6533635334a",
+    "raw_output_sha256": "7f8791396bd2efa45a6def67730fe0b8c4984cb51fdfa83988b3f6f331992e46",
     "reasoning": "max",
     "reasoning_observation": "requested_by_cli",
     "run_path": "run.judge.json",
-    "run_sha256": "383098c9626cfc30279a0493fab0d1a4f208b1f53804fe080c60ad52d504f130",
+    "run_sha256": "acee71e0ee577d2620f3b446a6b413a7a0af0c732579c38b2695113ef5b0738a",
     "runner_os": "macOS-15.7.7-arm64-arm-64bit-Mach-O",
     "version": "codex-cli 0.145.0"
   },
   "judgment_path": "blind-judgment.json",
   "judgment_schema_sha256": "8ab06e3fbd808dfb94de68b17ca25a94d56d3e15c485f64756f3528fdfdae4ce",
-  "judgment_sha256": "f86cee4421465d053b59a97a5bb9b21db69ffb524421d569159299797d269062",
+  "judgment_sha256": "e49d1da8d69e57e430a6f52d311c6065d6e2d12bc985ece33c5123a239322b78",
   "prompt_sha256": "8efbd7f3fc974e0abcb8ef0d736102db96436e596a93cb040717a757ff451fde",
-  "rationale": "A 以重新计算后的 96 分胜出。它最准确地落实了“静态审计 → 基线测量 → 正确性与恢复硬化 → 复测后优化 → 最后抛光”的顺序，并在每组关键发现中持续区分源码事实与待验证运行态假设。B 在触控目标、权限与错误分类方面略强，但流程顺序和静态信号措辞稍逊；C 覆盖全面，却在测量阈值、证据限定和若干实现细节上不如前两者严谨。三份输出均存在超过 180 行的范围控制问题。",
-  "recorded_at": "2026-07-24T03:21:34Z",
+  "rationale": "A 获胜。它在三份输出中最完整地满足了“先静态审计和建立基线，再进行硬化与有证据的优化”的要求，并且是唯一明确提供 p95 输入延迟、结果更新时间、长任务和 CLS 等暂定量化门槛的输出。它还在开头明确限定为只读静态审计，逐项区分源码证据与运行时假设，并为虚拟化、焦点管理和保存状态改动设置了具体回滚条件。B 与 C 的功能覆盖同样很强，但性能阈值主要停留在“保持响应”一类定性表述；B 还存在更明显的重复和范围膨胀，C 则在总序列中把优化放在无障碍适配之前。各总分均由所列七项分数重新相加得到。",
+  "recorded_at": "2026-07-24T07:54:00Z",
   "results": {
     "baseline": {
-      "blind_label": "C",
-      "criteria": {
-        "detector_reconciliation": 8,
-        "evidence_scope": 7,
-        "hostile_data": 20,
-        "measured_performance": 13,
-        "mode_sequence": 9,
-        "production_fixes": 19,
-        "responsive_accessibility": 15
-      },
-      "score": 91,
-      "summary": "覆盖了全部主要风险域，保存、抽屉、权限、失败状态、平板适配和大表性能建议均可执行；但性能验收缺少更明确的指标预算，部分“决定性”结论把未描述的标签或焦点替代样式当成已确认缺失，且篇幅超过限制。"
-    },
-    "design-craft": {
-      "blind_label": "A",
+      "blind_label": "B",
       "criteria": {
         "detector_reconciliation": 10,
         "evidence_scope": 8,
         "hostile_data": 20,
-        "measured_performance": 14,
-        "mode_sequence": 10,
-        "production_fixes": 20,
-        "responsive_accessibility": 14
-      },
-      "score": 96,
-      "summary": "顺序最严谨，先审计和建立基线，再硬化、复测优化与最后抛光；保存恢复模型、静态证据边界、验证及回滚方案最完整。主要缺口是没有把 28px 触控目标的放大措施写得足够明确，且明显超过 180 行限制。"
-    },
-    "impeccable": {
-      "blind_label": "B",
-      "criteria": {
-        "detector_reconciliation": 9,
-        "evidence_scope": 8,
-        "hostile_data": 20,
-        "measured_performance": 14,
+        "measured_performance": 13,
         "mode_sequence": 9,
         "production_fixes": 20,
         "responsive_accessibility": 15
       },
       "score": 95,
-      "summary": " hostile-data、错误恢复、权限、冲突、上传、触控目标和无障碍修复均非常具体，尤其明确提出至少 44×44 CSS px 命中区。扣分点是主序列把性能优化放在无障碍和响应式修复之前，部分静态信号表述略显确定，同样未遵守 180 行上限。"
+      "summary": "故障、权限、 hostile data、无障碍和表格语义覆盖全面，修复建议可执行；但首段把部分无障碍工作归入后期 polish，性能验收没有给出实际数值阈值，而且后半部分重复较多。"
+    },
+    "design-craft": {
+      "blind_label": "A",
+      "criteria": {
+        "detector_reconciliation": 10,
+        "evidence_scope": 9,
+        "hostile_data": 20,
+        "measured_performance": 15,
+        "mode_sequence": 10,
+        "production_fixes": 20,
+        "responsive_accessibility": 15
+      },
+      "score": 99,
+      "summary": "覆盖最完整，证据边界也最清楚；明确采用基线先行的优化顺序，并给出可量化的临时性能门槛、验收条件与回滚条件。主要扣分是内容略显冗长，范围控制仍可收紧。"
+    },
+    "impeccable": {
+      "blind_label": "C",
+      "criteria": {
+        "detector_reconciliation": 10,
+        "evidence_scope": 9,
+        "hostile_data": 20,
+        "measured_performance": 13,
+        "mode_sequence": 9,
+        "production_fixes": 20,
+        "responsive_accessibility": 15
+      },
+      "score": 96,
+      "summary": "保存状态机、冲突处理、请求时序、响应式适配和回滚方案都很具体，证据与假设分离良好；不足是性能接受门槛仍偏定性，且标题顺序将优化置于无障碍适配之前。"
     }
   },
   "schema": "design-craft.comparative-result.v3",
@@ -76,9 +76,9 @@
       "host_version": "0.80.6",
       "model": "codex/gpt-5.5",
       "output_path": "output.baseline.md",
-      "output_sha256": "eccf719aaf406b3c0eb93fcab0b06c584ce5a77541850202e559c0cddbb3acfc",
+      "output_sha256": "368748441e891e3b05137d03a2c7c3f08efa155709ca613e12ae99f9c0d4aff7",
       "run_path": "run.baseline.json",
-      "run_sha256": "d2cb3336dc2b4263ebb4ba961976d336f6fb27ac980d95e1948a4398ccf1545e",
+      "run_sha256": "b7039261e15e30707b26c8a68f7f304ef2164734afdb95dfb8e4d5fcdff3e470",
       "skill_trees": {},
       "thinking": "high"
     },
@@ -88,11 +88,11 @@
       "host_version": "0.80.6",
       "model": "codex/gpt-5.5",
       "output_path": "output.design-craft.md",
-      "output_sha256": "d631b74fed1f44b3a786e0d2c0a46533d9e9c391dd1895b35c995b821520bdc0",
+      "output_sha256": "5eb6f85049f097a8c2a9a5751eedfa9d6ca27250b72c24379e258c5b5f17b3bf",
       "run_path": "run.design-craft.json",
-      "run_sha256": "95bb31cf40ecd929b76b27904cf66037e0875fbc3fa3e4bbda48b6345ad20922",
+      "run_sha256": "8fb917eb9e4c1e3333e41ad024be0b016487db8e7802bcdf469246684c0e002d",
       "skill_trees": {
-        "skills/design-craft": "318f7552b081c4409dc773c502fd8f753e3ae452b143dbeb3c4ec8c7cab962f9"
+        "skills/design-craft": "0dbade6db9de0647c10d9ee7f2ab79c36ca588a4035c9e2d91daf7fa883436d8"
       },
       "thinking": "high"
     },
@@ -102,9 +102,9 @@
       "host_version": "0.80.6",
       "model": "codex/gpt-5.5",
       "output_path": "output.impeccable.md",
-      "output_sha256": "306f5b38cd9a7ceafd22c10aada1806ce491eef02dbd88d572ee65fa52c63185",
+      "output_sha256": "0fa79dd5d764f994d2450b1a3610934c2122bafa4b5a96ed26ab219dfe5a3cb4",
       "run_path": "run.impeccable.json",
-      "run_sha256": "115caf5e47afff0ac393d903d81f044f0dc8439ca4a490d410e6a904690947ad",
+      "run_sha256": "da16d96f8502e368095bff6865fae8d9befcb78f20b289db3574c5680363e6b1",
       "skill_trees": {
         "upstreams/impeccable/.agents/skills/impeccable": "1fe1c4b76825c9538d5379a0a5d3d00378cf9420ce498f5b9309b79c888cc410"
       },

@@ -236,11 +236,15 @@ jobs:
         run: |
           set -euo pipefail
           [[ "${CERTIFICATION_ARTIFACT_ID}" =~ ^[1-9][0-9]*$ ]]
-          [[ "${CERTIFICATION_ARTIFACT_DIGEST}" =~ ^sha256:[0-9a-f]{64}$ ]]
+          artifact_digest="${CERTIFICATION_ARTIFACT_DIGEST}"
+          if [[ "${artifact_digest}" =~ ^[0-9a-f]{64}$ ]]; then
+            artifact_digest="sha256:${artifact_digest}"
+          fi
+          [[ "${artifact_digest}" =~ ^sha256:[0-9a-f]{64}$ ]]
           {
             echo "## Release certification artifact"
             echo
             echo "- Run ID: ${GITHUB_RUN_ID}"
             echo "- Artifact ID: ${CERTIFICATION_ARTIFACT_ID}"
-            echo "- Artifact digest: ${CERTIFICATION_ARTIFACT_DIGEST}"
+            echo "- Artifact digest: ${artifact_digest}"
           } >> "${GITHUB_STEP_SUMMARY}"

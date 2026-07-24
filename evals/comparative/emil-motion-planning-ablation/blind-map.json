@@ -6,30 +6,30 @@
     "A": {
       "path": "output.design-craft.md",
       "run_path": "run.design-craft.json",
-      "run_sha256": "a4d1166281a23f9ba4610728827f2f038bd03c6842f0e05a0ab6bd4d2d38c6b8",
-      "sha256": "3f81cc382c0f5d4398fd1b5cb73f2f43ff40f5ee6f3628aec7b4611a41b61759",
+      "run_sha256": "8836fceba943f42fdb985c1670f6090c78444307bbc0790360517f2238d4b182",
+      "sha256": "2837d165fadffaa9ee7dd24883ede76e4fa483f5c47884b88172887df38f3dde",
       "variant": "design-craft"
     },
     "B": {
       "path": "output.baseline.md",
       "run_path": "run.baseline.json",
-      "run_sha256": "36641c1d684cafe97d515bb631190fbe577845d0dd6ab95af4d718b9afbae7e3",
-      "sha256": "c8a6e04ef32ecb81f2bd941d8c9c3bc7eeb46ee1cfd5880aac1ed991068d1543",
+      "run_sha256": "8b99e4646053a3a34f83364f8f97dfbe072e71c30e8d4049f3588f1a8d172ddb",
+      "sha256": "eaf8402076bce5cb254ffa018729233cb1a4ff20f07f9c7d479fe9a49a50c523",
       "variant": "baseline"
     },
     "C": {
       "path": "output.emil.md",
       "run_path": "run.emil.json",
-      "run_sha256": "1b09cef653ce036d602db47012efccdcdb167079f4f24746b8a2c92b3f781d0f",
-      "sha256": "b5ba4a4e817458ab41d9a26b8dd7995de41830307fdd625d56b83366975d511c",
+      "run_sha256": "8a08d4574a4bd968258461d4a73f3ddbeb7979f5cf1e68bc44dd3ba20ffcdcae",
+      "sha256": "23646793475a19dd9612cbe4744527bbec1f3234db55074f3054b2aca7b42727",
       "variant": "emil"
     }
   },
   "packet_path": "blind-packet.md",
-  "packet_sha256": "6a9ff62043ea1a10602584644e75566225ce9d1ffa3632db408e0cd9ef417715",
+  "packet_sha256": "40193dbf83ff1a5685b038cd3a4e8d302d7cf62657923818e22a27b1b5523fd5",
   "prompt_sha256": "81453e8d19e3de0d27bf7603b60f045cedaafa90b1a6fd7ee6dcc7249ca639ba",
   "schema": "design-craft.comparative-blind-map.v3",
   "scorecard_json_sha256": "a06d975f9da69fa9bea87362ee0e4f90bdc790e552561e6b6ac96f650bb53a88",
   "scorecard_sha256": "ea04fd4fce3cbad1a31129f3b8ea45be2bca0ec334b07598a3d5223e41260d48",
-  "seed_sha256": "6d0b9d12ecb4f31b0a62b1727d13fad6be144c5ac2973f13ce273fb725a9dbbf"
+  "seed_sha256": "4f2f11b0124a9d1d461e9271f0b9e9e5236a46d802cb58e2829fa9e92d3c6dfa"
 }
