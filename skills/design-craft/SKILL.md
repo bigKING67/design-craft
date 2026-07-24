@@ -121,7 +121,11 @@ system, data density, report grammar, or runtime truth.
    is at most N. In a multi-section audit, group related P0-P3 findings, give
    each evidence/fix once, and make later detector and validation sections
    reference those findings instead of repeating them. Complete coverage does
-   not permit exceeding the user's cap.
+   not permit exceeding the user's cap. When concrete recommendations are also
+   capped, reconcile every blocking finding and the highest-impact secondary
+   layers against the final move list. Merge adjacent repairs such as shell,
+   table, state, and visual-system fixes rather than spending multiple moves on
+   one layer while another identified problem has no implementing move.
 
 ## Reference routing
 
