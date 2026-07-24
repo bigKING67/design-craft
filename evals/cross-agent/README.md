@@ -32,11 +32,12 @@ Markdown unverified notes are accepted only in immutable history. A partial
 output/score pair, an `observed` status without artifacts, or artifacts paired
 with `pending`/`unverified` status is rejected.
 
-The score-v2 and score-v3 Codex/Pi tranches are preserved under `history/`.
-They remain historical baseline evidence only and are excluded from active
-release validation because the Skill, scorecard, runner, or score contract has
-changed. Do not restore historical outputs to active directories or edit their
-hashes; rerun the controlled host against the final clean commit instead.
+The score-v2, score-v3, and released `v0.5.0` score-v4 Codex/Pi tranches are
+preserved under `history/`. They remain historical baseline evidence only and
+are excluded from active release validation because the Skill, scorecard,
+runner, version, or score contract has changed. Do not restore historical
+outputs to active directories or edit their hashes; rerun the controlled host
+against the final clean commit instead.
 
 Validate the recorded runs with:
 

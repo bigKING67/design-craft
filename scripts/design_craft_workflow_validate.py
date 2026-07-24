@@ -50,7 +50,8 @@ def validate() -> dict:
     validate_workflow_path = ROOT / ".github/workflows/validate.yml"
     benchmark_workflow_path = ROOT / ".github/workflows/benchmark.yml"
     codeql_workflow_path = ROOT / ".github/workflows/codeql.yml"
-    release_workflow_path = ROOT / ".github/workflows/release.yml"
+    release_certify_workflow_path = ROOT / ".github/workflows/release-certify.yml"
+    release_publish_workflow_path = ROOT / ".github/workflows/release-publish.yml"
     physical_workflow_path = ROOT / ".github/workflows/physical-device.yml"
     dependabot_path = ROOT / ".github/dependabot.yml"
     ios_runner_path = ROOT / "scripts/native_runtime_ci_ios.sh"
@@ -68,7 +69,8 @@ def validate() -> dict:
         validate_workflow_path,
         benchmark_workflow_path,
         codeql_workflow_path,
-        release_workflow_path,
+        release_certify_workflow_path,
+        release_publish_workflow_path,
         physical_workflow_path,
         dependabot_path,
         ios_runner_path,
@@ -91,7 +93,8 @@ def validate() -> dict:
     validate_workflow = validate_workflow_path.read_text(encoding="utf-8")
     benchmark_workflow = benchmark_workflow_path.read_text(encoding="utf-8")
     codeql_workflow = codeql_workflow_path.read_text(encoding="utf-8")
-    release_workflow = release_workflow_path.read_text(encoding="utf-8")
+    release_certify_workflow = release_certify_workflow_path.read_text(encoding="utf-8")
+    release_publish_workflow = release_publish_workflow_path.read_text(encoding="utf-8")
     physical_workflow = physical_workflow_path.read_text(encoding="utf-8")
     dependabot = dependabot_path.read_text(encoding="utf-8")
     ios_runner = ios_runner_path.read_text(encoding="utf-8")
@@ -227,14 +230,15 @@ def validate() -> dict:
         errors.append(".github/workflows/codeql.yml must set a timeout on its analysis job")
     errors.extend(
         require_tokens(
-            release_workflow,
+            release_certify_workflow,
             (
                 "workflow_dispatch:",
                 "operational_95",
                 "certified_100",
-                "contents: write",
-                "id-token: write",
-                "attestations: write",
+                "confirm_certification:",
+                "Preflight release governance credential",
+                "RELEASE_GOVERNANCE_TOKEN",
+                "--preflight",
                 "release verify",
                 "--phase final",
                 "--require-tag-run",
@@ -243,30 +247,127 @@ def validate() -> dict:
                 "--kind native",
                 "--kind physical",
                 "release evidence-bindings",
+                "--evidence-root",
                 "--native-observation",
                 "--physical-observation",
                 "release-assets-build-operational",
                 "release-assets-build-certified",
-                "actions/attest-build-provenance@",
-                "gh release create",
-                "GitHub Release ${RELEASE_TAG} already exists",
-                "Configure isolated release paths",
+                "release certification build",
+                "release certification validate",
+                "actions/upload-artifact@",
+                "release-certification-${{ inputs.tag }}-${{ github.run_id }}",
+                "steps.certification-artifact.outputs.artifact-id",
+                "steps.certification-artifact.outputs.artifact-digest",
+                "GITHUB_STEP_SUMMARY",
+                "Configure isolated certification paths",
                 "GITHUB_ENV",
                 "RUNNER_TEMP",
             ),
-            ".github/workflows/release.yml",
+            ".github/workflows/release-certify.yml",
         )
     )
-    if "npm publish" in release_workflow:
-        errors.append(".github/workflows/release.yml must not publish to the npm registry")
-    release_job = workflow_job_block(release_workflow, "release")
-    if release_job.count("permissions:") != 1:
-        errors.append(".github/workflows/release.yml must scope write permissions to the release job")
-    release_job_header = release_job.split("    steps:", 1)[0]
-    if "${{ runner." in release_job_header:
+    for forbidden in (
+        "contents: write",
+        "id-token: write",
+        "attestations: write",
+        "actions/attest-build-provenance@",
+        "gh release create",
+        "npm publish",
+    ):
+        if forbidden in release_certify_workflow:
+            errors.append(
+                f".github/workflows/release-certify.yml must not contain publication authority: {forbidden}"
+            )
+    certify_job = workflow_job_block(release_certify_workflow, "certify")
+    if certify_job.count("permissions:") != 1:
         errors.append(
-            ".github/workflows/release.yml must not use the runner context before steps"
+            ".github/workflows/release-certify.yml must scope read permissions to the certify job"
         )
+    certify_job_header = certify_job.split("    steps:", 1)[0]
+    if "${{ runner." in certify_job_header:
+        errors.append(
+            ".github/workflows/release-certify.yml must not use the runner context before steps"
+        )
+    errors.extend(
+        require_tokens(
+            release_publish_workflow,
+            (
+                "workflow_dispatch:",
+                "certification_run_id:",
+                "certification_artifact_id:",
+                "certification_artifact_digest:",
+                "confirm_publication:",
+                "verify:",
+                "publish:",
+                "needs: verify",
+                "actions: read",
+                "contents: write",
+                "id-token: write",
+                "attestations: write",
+                "--kind certification",
+                "release artifact-observation",
+                "release certification validate",
+                "--artifact-id",
+                "--artifact-digest",
+                "actions/artifacts/${CERTIFICATION_ARTIFACT_ID}/zip",
+                "sha256sum",
+                "X-GitHub-Api-Version: 2022-11-28",
+                "actions/attest-build-provenance@",
+                "gh release create",
+                "GitHub Release ${RELEASE_TAG} already exists",
+                "Configure isolated verification paths",
+                "GITHUB_ENV",
+                "RUNNER_TEMP",
+            ),
+            ".github/workflows/release-publish.yml",
+        )
+    )
+    if "npm publish" in release_publish_workflow:
+        errors.append(
+            ".github/workflows/release-publish.yml must not publish to the npm registry"
+        )
+    if "RELEASE_GOVERNANCE_TOKEN" in release_publish_workflow:
+        errors.append(
+            ".github/workflows/release-publish.yml must consume the completed certification rather than governance credentials"
+        )
+    verify_job = workflow_job_block(release_publish_workflow, "verify")
+    if verify_job.count("permissions:") != 1:
+        errors.append(
+            ".github/workflows/release-publish.yml must scope read permissions to the verify job"
+        )
+    for forbidden in (
+        "contents: write",
+        "id-token: write",
+        "attestations: write",
+        "actions/attest-build-provenance@",
+        "gh release create",
+    ):
+        if forbidden in verify_job:
+            errors.append(
+                ".github/workflows/release-publish.yml verify job must not contain "
+                f"publication authority: {forbidden}"
+            )
+    publish_job = workflow_job_block(release_publish_workflow, "publish")
+    if publish_job.count("permissions:") != 1:
+        errors.append(
+            ".github/workflows/release-publish.yml must scope write permissions to the publish job"
+        )
+    publish_job_header = publish_job.split("    steps:", 1)[0]
+    if "${{ runner." in publish_job_header:
+        errors.append(
+            ".github/workflows/release-publish.yml must not use the runner context before steps"
+        )
+    for forbidden in (
+        "actions/checkout@",
+        "actions/setup-python@",
+        "python3 -m tools.design_craft",
+        "release certification validate",
+    ):
+        if forbidden in publish_job:
+            errors.append(
+                ".github/workflows/release-publish.yml publish job must not execute "
+                f"repository validation code: {forbidden}"
+            )
     errors.extend(
         require_tokens(
             physical_workflow,

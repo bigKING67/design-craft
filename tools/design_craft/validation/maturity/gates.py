@@ -388,8 +388,9 @@ def performance_regression(context: MaturityContext) -> MaturityGateResult:
         return _result("performance_regression", False, 0, {"baseline": str(path)}, str(exc))
     evidence = {
         "baseline": str(path),
-        "runner_id": current.get("runner_id"),
+        "runner": current.get("runner"),
         "scale": current.get("scale"),
+        "warnings": comparison.get("warnings", []),
         "comparisons": comparison.get("comparisons", []),
     }
     return _result(
@@ -478,15 +479,11 @@ def native_current_source(native: str) -> GateRunner:
             if native == "physical_device"
             else f"{'ios' if native == 'ios_simulator' else 'android'}-observed.json"
         )
-        try:
-            display_path = str(evidence_path.relative_to(context.root))
-        except ValueError:
-            display_path = evidence_path.name
+        display_path = str(evidence_path.relative_to(evidence_root))
         record_binding = {
             "native": native,
             "schema": record.get("schema") if isinstance(record, dict) else None,
             "evidence_path": display_path,
-            "evidence_source_path": str(evidence_path),
             "evidence_sha256": (
                 hashlib.sha256(evidence_path.read_bytes()).hexdigest()
                 if evidence_path.is_file()
@@ -597,9 +594,16 @@ def main_branch(context: MaturityContext) -> MaturityGateResult:
 def main_ruleset(context: MaturityContext) -> MaturityGateResult:
     return _command_gate(
         "main_ruleset",
-        [sys.executable, "scripts/design_craft_github_governance.py"],
+        [
+            sys.executable,
+            "scripts/design_craft_github_governance.py",
+            "--require-release-credential",
+        ],
         timeout=240,
-        evidence={"scope": "live_github_governance_read"},
+        evidence={
+            "scope": "live_github_governance_read",
+            "credential_env": "RELEASE_GOVERNANCE_TOKEN",
+        },
     )(context)
 
 

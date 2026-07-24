@@ -10,8 +10,10 @@ from tools.design_craft.benchmark.contract import (
     MIN_FULL_SAMPLES,
     RELATIVE_REGRESSION_LIMIT,
     SCHEMA,
+    SCHEMA_V1,
     SMOKE_METRIC_NAMES,
     compare_results,
+    migrate_v1_result,
     result_errors,
 )
 from tools.design_craft.benchmark.fixtures import (
@@ -106,22 +108,54 @@ def metrics(p95: float) -> dict[str, dict[str, object]]:
 def result(
     p95: float,
     *,
-    runner: str = "fixture",
+    os_name: str = "linux",
+    arch: str = "x86_64",
+    image: str = "ubuntu-24.04",
+    python: str = "3.13.5",
+    platform_name: str = "Linux-fixture-one",
     scale: str = "smoke",
 ) -> dict[str, object]:
     return {
         "schema": SCHEMA,
         "scale": scale,
-        "runner_id": runner,
+        "runner": {
+            "os": os_name,
+            "arch": arch,
+            "image": image,
+            "image_version": "20260720.1",
+            "python": python,
+            "node": "24.18.0",
+        },
+        "diagnostics": {
+            "platform": platform_name,
+            "kernel": platform_name,
+        },
         "source_commit": "a" * 40,
         "source_dirty": False,
-        "python": "3.13.5",
-        "platform": "fixture-platform",
         "policy": {
+            "version": "v1",
             "relative_regression_limit": RELATIVE_REGRESSION_LIMIT,
             "absolute_regression_limit_ms": ABSOLUTE_REGRESSION_LIMIT_MS,
         },
         "metrics": metrics(p95),
+    }
+
+
+def legacy_result(p95: float) -> dict[str, object]:
+    payload = result(p95)
+    return {
+        "schema": SCHEMA_V1,
+        "scale": payload["scale"],
+        "runner_id": "linux-x86_64-python3.13",
+        "source_commit": payload["source_commit"],
+        "source_dirty": payload["source_dirty"],
+        "python": "3.13.5",
+        "platform": "Linux-legacy-kernel",
+        "policy": {
+            "relative_regression_limit": RELATIVE_REGRESSION_LIMIT,
+            "absolute_regression_limit_ms": ABSOLUTE_REGRESSION_LIMIT_MS,
+        },
+        "metrics": payload["metrics"],
     }
 
 
@@ -160,8 +194,47 @@ class BenchmarkPolicyTests(unittest.TestCase):
         self.assertTrue(any(item["regressed"] for item in comparison["comparisons"]))
 
     def test_different_runner_fails_closed(self) -> None:
-        comparison = compare_results(result(100.0), result(100.0, runner="other"))
+        comparison = compare_results(
+            result(100.0),
+            result(100.0, image="macos-15"),
+        )
         self.assertFalse(comparison["ok"])
+
+    def test_kernel_and_image_patch_drift_do_not_fail(self) -> None:
+        baseline = result(100.0, platform_name="Linux-kernel-a")
+        current = result(100.0, platform_name="Linux-kernel-b")
+        current["runner"]["image_version"] = "20260721.9"
+        current["runner"]["python"] = "3.13.14"
+        comparison = compare_results(baseline, current)
+        self.assertTrue(comparison["ok"], comparison["errors"])
+
+    def test_os_arch_and_python_minor_drift_fail_closed(self) -> None:
+        cases = (
+            {"os_name": "darwin"},
+            {"arch": "aarch64"},
+            {"python": "3.12.9"},
+        )
+        for values in cases:
+            with self.subTest(values=values):
+                comparison = compare_results(result(100.0), result(100.0, **values))
+                self.assertFalse(comparison["ok"])
+
+    def test_legacy_v1_baseline_is_read_with_explicit_warning(self) -> None:
+        comparison = compare_results(legacy_result(100.0), result(100.0))
+        self.assertTrue(comparison["ok"], comparison["errors"])
+        self.assertTrue(any("legacy v1" in item for item in comparison["warnings"]))
+
+    def test_v1_migration_requires_explicit_runner_identity(self) -> None:
+        migrated = migrate_v1_result(
+            legacy_result(100.0),
+            runner_image="ubuntu-24.04",
+            image_version="20260720.1",
+            node_version="24.18.0",
+        )
+        self.assertEqual(migrated["schema"], SCHEMA)
+        self.assertEqual(migrated["runner"]["image"], "ubuntu-24.04")
+        self.assertEqual(migrated["migration"]["from_schema"], SCHEMA_V1)
+        self.assertEqual(result_errors(migrated, label="migrated"), [])
 
     def test_missing_schema_fails_closed(self) -> None:
         baseline = result(100.0)

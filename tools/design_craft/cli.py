@@ -48,6 +48,13 @@ def build_parser() -> argparse.ArgumentParser:
     benchmark.add_argument("--scale", choices=("smoke", "full"), default="smoke")
     benchmark.add_argument("--baseline", help="Compare against a benchmark result JSON.")
     benchmark.add_argument("--output", help="Write the current benchmark result JSON.")
+    benchmark.add_argument(
+        "--migrate-v1",
+        help="Explicitly migrate a v1 benchmark result instead of running benchmarks.",
+    )
+    benchmark.add_argument("--runner-image", help="Runner image family for v1 migration.")
+    benchmark.add_argument("--image-version", help="Runner image version for v1 migration.")
+    benchmark.add_argument("--node-version", help="Node version for v1 migration.")
     benchmark.add_argument("--json", action="store_true")
     quality = subparsers.add_parser("quality", help="Report independent quality domains.")
     quality.add_argument("--level", choices=("operational_95", "certified_100"), default="operational_95")
@@ -65,17 +72,34 @@ def build_parser() -> argparse.ArgumentParser:
     release_assets.add_argument("--level", choices=("operational_95", "certified_100"), required=True)
     release_assets.add_argument("--output-dir", default="dist/release")
     release_assets.add_argument("--evidence", help="Passing release evidence JSON required for builds.")
+    release_assets.add_argument(
+        "--evidence-root",
+        help="Root used to resolve artifact-relative native evidence paths.",
+    )
     release_assets.add_argument("--build", action="store_true")
     release_assets.add_argument("--force", action="store_true")
     release_assets.add_argument("--json", action="store_true")
     run_observation = release_subcommands.add_parser(
         "run-observation", help="Observe and persist one exact GitHub workflow run."
     )
-    run_observation.add_argument("--kind", choices=("native", "physical"), required=True)
+    run_observation.add_argument(
+        "--kind",
+        choices=("native", "physical", "certification"),
+        required=True,
+    )
     run_observation.add_argument("--run-id", required=True)
     run_observation.add_argument("--repository")
     run_observation.add_argument("--output", required=True)
     run_observation.add_argument("--json", action="store_true")
+    artifact_observation = release_subcommands.add_parser(
+        "artifact-observation",
+        help="Observe one exact GitHub Actions artifact from a certification run.",
+    )
+    artifact_observation.add_argument("--artifact-id", required=True)
+    artifact_observation.add_argument("--certification-observation", required=True)
+    artifact_observation.add_argument("--expected-name", required=True)
+    artifact_observation.add_argument("--output", required=True)
+    artifact_observation.add_argument("--json", action="store_true")
     evidence_bindings = release_subcommands.add_parser(
         "evidence-bindings",
         help="Bind final release evidence to selected workflow observations.",
@@ -84,9 +108,47 @@ def build_parser() -> argparse.ArgumentParser:
         "--level", choices=("operational_95", "certified_100"), required=True
     )
     evidence_bindings.add_argument("--evidence", required=True)
+    evidence_bindings.add_argument(
+        "--evidence-root",
+        required=True,
+        help="Root used to resolve artifact-relative native evidence paths.",
+    )
     evidence_bindings.add_argument("--native-observation", required=True)
     evidence_bindings.add_argument("--physical-observation")
     evidence_bindings.add_argument("--json", action="store_true")
+    certification = release_subcommands.add_parser(
+        "certification",
+        help="Build or validate an immutable release certification bundle.",
+    )
+    certification_commands = certification.add_subparsers(
+        dest="certification_command",
+        required=True,
+    )
+    certification_build = certification_commands.add_parser("build")
+    certification_build.add_argument(
+        "--level", choices=("operational_95", "certified_100"), required=True
+    )
+    certification_build.add_argument("--tag", required=True)
+    certification_build.add_argument("--evidence", required=True)
+    certification_build.add_argument("--evidence-root", required=True)
+    certification_build.add_argument("--native-observation", required=True)
+    certification_build.add_argument("--physical-observation")
+    certification_build.add_argument("--assets-dir", required=True)
+    certification_build.add_argument("--repository", required=True)
+    certification_build.add_argument("--workflow-run-id", type=int, required=True)
+    certification_build.add_argument("--workflow-run-attempt", type=int, required=True)
+    certification_build.add_argument("--output-dir", required=True)
+    certification_build.add_argument("--json", action="store_true")
+    certification_validate = certification_commands.add_parser("validate")
+    certification_validate.add_argument(
+        "--level", choices=("operational_95", "certified_100"), required=True
+    )
+    certification_validate.add_argument("--input-dir", required=True)
+    certification_validate.add_argument("--certification-observation")
+    certification_validate.add_argument("--artifact-observation")
+    certification_validate.add_argument("--artifact-id", type=int)
+    certification_validate.add_argument("--artifact-digest")
+    certification_validate.add_argument("--json", action="store_true")
     native_bundle = release_subcommands.add_parser(
         "native-bundle", help="Build or validate the Certified native evidence bundle."
     )

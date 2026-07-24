@@ -12,6 +12,7 @@ from .integrity import repository_head, repository_version
 
 
 OBSERVATION_SCHEMA = "design-craft.github-run-observation.v1"
+ARTIFACT_OBSERVATION_SCHEMA = "design-craft.github-artifact-observation.v1"
 RUN_KEYS = {
     "id",
     "attempt",
@@ -33,6 +34,16 @@ WORKFLOW_BINDING_KEYS = {
     "event",
     "head_sha",
     "ref",
+}
+ARTIFACT_KEYS = {
+    "id",
+    "name",
+    "size_in_bytes",
+    "digest",
+    "expired",
+    "created_at",
+    "updated_at",
+    "workflow_run",
 }
 
 
@@ -67,11 +78,20 @@ RUN_CONTRACTS = {
         event="workflow_dispatch",
         workflow_file="physical-device.yml",
     ),
+    "certification": RunContract(
+        kind="certification",
+        workflow_path=".github/workflows/release-certify.yml",
+        workflow_name="Release certification",
+        event="workflow_dispatch",
+        workflow_file="release-certify.yml",
+    ),
 }
 NATIVE_WORKFLOW_PATH = RUN_CONTRACTS["native"].workflow_path
 NATIVE_WORKFLOW_NAME = RUN_CONTRACTS["native"].workflow_name
 PHYSICAL_WORKFLOW_PATH = RUN_CONTRACTS["physical"].workflow_path
 PHYSICAL_WORKFLOW_NAME = RUN_CONTRACTS["physical"].workflow_name
+CERTIFICATION_WORKFLOW_PATH = RUN_CONTRACTS["certification"].workflow_path
+CERTIFICATION_WORKFLOW_NAME = RUN_CONTRACTS["certification"].workflow_name
 
 
 def _run(command: list[str]) -> subprocess.CompletedProcess[str]:
@@ -333,6 +353,178 @@ def observation_document(kind: str, run: dict[str, object]) -> dict[str, object]
     }
 
 
+def observe_artifact(
+    artifact_id: str | int,
+    *,
+    run: dict[str, object],
+    expected_name: str,
+) -> dict[str, object]:
+    raw_id = str(artifact_id)
+    if not re.fullmatch(r"[1-9][0-9]*", raw_id):
+        raise ValueError("GitHub artifact id must contain only decimal digits")
+    repository = run.get("repository")
+    if not isinstance(repository, str):
+        raise ValueError("certification run repository is invalid")
+    payload = _json_output(
+        _run(["gh", "api", f"repos/{repository}/actions/artifacts/{raw_id}"]),
+        f"GitHub artifact {raw_id}",
+    )
+    if not isinstance(payload, dict):
+        raise RuntimeError("GitHub artifact observation must be an object")
+    workflow_run = payload.get("workflow_run")
+    digest = payload.get("digest")
+    errors: list[str] = []
+    if payload.get("id") != int(raw_id):
+        errors.append("artifact API id does not match the selected artifact")
+    if payload.get("name") != expected_name:
+        errors.append("artifact name does not match the certification contract")
+    if payload.get("expired") is not False:
+        errors.append("certification artifact must not be expired")
+    if (
+        not isinstance(payload.get("size_in_bytes"), int)
+        or isinstance(payload.get("size_in_bytes"), bool)
+        or payload["size_in_bytes"] <= 0
+    ):
+        errors.append("certification artifact size must be positive")
+    if not isinstance(digest, str) or re.fullmatch(r"sha256:[0-9a-f]{64}", digest) is None:
+        errors.append("certification artifact must expose a SHA-256 digest")
+    for field in ("created_at", "updated_at"):
+        if not isinstance(payload.get(field), str) or not payload[field]:
+            errors.append(f"certification artifact must expose {field}")
+    if not isinstance(workflow_run, dict):
+        errors.append("certification artifact must include workflow_run identity")
+    else:
+        workflow_run_id = workflow_run.get("id")
+        if (
+            not isinstance(workflow_run_id, int)
+            or isinstance(workflow_run_id, bool)
+            or workflow_run_id <= 0
+        ):
+            errors.append("certification artifact workflow_run.id must be positive")
+        for artifact_key, run_key in (
+            ("id", "id"),
+            ("head_branch", "head_branch"),
+            ("head_sha", "head_sha"),
+        ):
+            if workflow_run.get(artifact_key) != run.get(run_key):
+                errors.append(
+                    f"certification artifact workflow_run.{artifact_key} must match the selected run"
+                )
+    if errors:
+        raise RuntimeError("; ".join(errors))
+    return {
+        "id": payload["id"],
+        "name": payload["name"],
+        "size_in_bytes": payload["size_in_bytes"],
+        "digest": digest,
+        "expired": payload["expired"],
+        "created_at": payload.get("created_at"),
+        "updated_at": payload.get("updated_at"),
+        "workflow_run": {
+            "id": workflow_run["id"],
+            "head_branch": workflow_run["head_branch"],
+            "head_sha": workflow_run["head_sha"],
+        },
+    }
+
+
+def artifact_observation_document(
+    artifact: dict[str, object],
+    *,
+    repository: str,
+) -> dict[str, object]:
+    if re.fullmatch(r"[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+", repository) is None:
+        raise ValueError("GitHub artifact observation repository must be owner/name")
+    return {
+        "schema": ARTIFACT_OBSERVATION_SCHEMA,
+        "source_commit": repository_head(),
+        "repository": repository,
+        "artifact": artifact,
+    }
+
+
+def load_artifact_observation(
+    path: Path,
+    *,
+    expected_repository: str | None = None,
+) -> dict[str, object]:
+    if path.is_symlink() or not path.is_file():
+        raise FileNotFoundError(f"GitHub artifact observation is missing or unsafe: {path}")
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    if not isinstance(payload, dict) or set(payload) != {
+        "schema",
+        "source_commit",
+        "repository",
+        "artifact",
+    }:
+        raise ValueError("GitHub artifact observation document fields are invalid")
+    if payload.get("schema") != ARTIFACT_OBSERVATION_SCHEMA:
+        raise ValueError(
+            f"GitHub artifact observation must use {ARTIFACT_OBSERVATION_SCHEMA}"
+        )
+    if payload.get("source_commit") != repository_head():
+        raise ValueError("GitHub artifact observation source_commit must match current HEAD")
+    repository = payload.get("repository")
+    if not isinstance(repository, str) or re.fullmatch(
+        r"[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+", repository
+    ) is None:
+        raise ValueError("GitHub artifact observation repository must be owner/name")
+    if expected_repository is not None:
+        if re.fullmatch(
+            r"[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+", expected_repository
+        ) is None:
+            raise ValueError("expected GitHub repository must be owner/name")
+        if repository != expected_repository:
+            raise ValueError(
+                "GitHub artifact observation repository does not match the certification"
+            )
+    artifact = payload.get("artifact")
+    if not isinstance(artifact, dict):
+        raise ValueError("GitHub artifact observation artifact must be an object")
+    if set(artifact) != ARTIFACT_KEYS:
+        raise ValueError("GitHub artifact observation artifact fields are invalid")
+    if not isinstance(artifact.get("id"), int) or isinstance(artifact.get("id"), bool):
+        raise ValueError("GitHub artifact observation id must be a positive integer")
+    if artifact["id"] <= 0:
+        raise ValueError("GitHub artifact observation id must be a positive integer")
+    if not isinstance(artifact.get("name"), str) or not artifact["name"]:
+        raise ValueError("GitHub artifact observation name must be non-empty")
+    if (
+        not isinstance(artifact.get("size_in_bytes"), int)
+        or isinstance(artifact.get("size_in_bytes"), bool)
+        or artifact["size_in_bytes"] <= 0
+    ):
+        raise ValueError("GitHub artifact observation size must be positive")
+    if not isinstance(artifact.get("digest"), str) or re.fullmatch(
+        r"sha256:[0-9a-f]{64}", artifact["digest"]
+    ) is None:
+        raise ValueError("GitHub artifact observation digest must be SHA-256")
+    if artifact.get("expired") is not False:
+        raise ValueError("GitHub artifact observation must not be expired")
+    for field in ("created_at", "updated_at"):
+        if not isinstance(artifact.get(field), str) or not artifact[field]:
+            raise ValueError(f"GitHub artifact observation {field} must be non-empty")
+    workflow_run = artifact.get("workflow_run")
+    if not isinstance(workflow_run, dict) or set(workflow_run) != {
+        "id",
+        "head_branch",
+        "head_sha",
+    }:
+        raise ValueError("GitHub artifact observation workflow_run is invalid")
+    workflow_run_id = workflow_run.get("id")
+    if (
+        not isinstance(workflow_run_id, int)
+        or isinstance(workflow_run_id, bool)
+        or workflow_run_id <= 0
+    ):
+        raise ValueError("GitHub artifact observation workflow_run.id must be positive")
+    if workflow_run.get("head_sha") != repository_head():
+        raise ValueError("GitHub artifact observation workflow_run must match current HEAD")
+    if workflow_run.get("head_branch") != "main":
+        raise ValueError("GitHub artifact observation workflow_run must target main")
+    return artifact
+
+
 def load_observation(path: Path, *, expected_kind: str) -> dict[str, object]:
     if path.is_symlink() or not path.is_file():
         raise FileNotFoundError(f"GitHub run observation is missing or unsafe: {path}")
@@ -393,11 +585,18 @@ __all__ = [
     "OBSERVATION_SCHEMA",
     "PHYSICAL_WORKFLOW_NAME",
     "PHYSICAL_WORKFLOW_PATH",
+    "CERTIFICATION_WORKFLOW_NAME",
+    "CERTIFICATION_WORKFLOW_PATH",
+    "ARTIFACT_OBSERVATION_SCHEMA",
     "RUN_CONTRACTS",
     "RUN_KEYS",
+    "ARTIFACT_KEYS",
     "latest_native_tag_run",
+    "load_artifact_observation",
     "load_observation",
     "observation_document",
+    "artifact_observation_document",
+    "observe_artifact",
     "observe_run",
     "validate_run",
     "validate_workflow_binding",

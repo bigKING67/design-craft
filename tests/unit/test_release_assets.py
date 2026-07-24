@@ -17,6 +17,7 @@ from tools.design_craft.release.assets import (
     validate_assets,
 )
 from tools.design_craft.release.integrity import publish_asset_set
+from tools.design_craft.release.integrity import repository_version
 from tools.design_craft.release.policy import ReleaseLevel, load_policy
 from tools.design_craft.release.run_bindings import validate_release_run_bindings
 from tools.design_craft.release.sbom import write_spdx
@@ -26,7 +27,7 @@ sys.path.insert(0, str(REPO_ROOT / "scripts"))
 from design_craft_github_checks import validate_release_native_bindings  # noqa: E402
 
 
-VERSION = "0.5.0"
+VERSION = repository_version()
 HEAD = subprocess.check_output(["git", "rev-parse", "HEAD"], text=True).strip()
 
 
@@ -43,7 +44,7 @@ def workflow(*, physical: bool = False) -> dict[str, object]:
         "url": f"https://github.com/bigKING67/design-craft/actions/runs/{run_id}",
         "event": "workflow_dispatch" if physical else "push",
         "head_sha": HEAD,
-        "ref": "refs/heads/main" if physical else "refs/tags/v0.5.0",
+        "ref": "refs/heads/main" if physical else f"refs/tags/v{VERSION}",
     }
 
 
@@ -54,7 +55,7 @@ def selected_workflow_run() -> dict[str, object]:
         "status": "completed",
         "conclusion": "success",
         "headSha": HEAD,
-        "headBranch": "v0.5.0",
+        "headBranch": f"v{VERSION}",
         "event": "push",
         "createdAt": "2026-07-23T00:00:00Z",
         "url": "https://github.com/bigKING67/design-craft/actions/runs/123",
@@ -68,7 +69,7 @@ def native_run_observation(run_id: int = 123) -> dict[str, object]:
         "workflow": ".github/workflows/native-runtime.yml",
         "workflow_name": "Native runtime evidence",
         "event": "push",
-        "head_branch": "v0.5.0",
+        "head_branch": f"v{VERSION}",
         "head_sha": HEAD,
         "status": "completed",
         "conclusion": "success",
@@ -191,7 +192,6 @@ def write_external_native_evidence(
         record_path.write_text(json.dumps(record, sort_keys=True), encoding="utf-8")
         bindings[native] = {
             **record,
-            "evidence_source_path": str(record_path),
             "evidence_sha256": sha256(record_path),
         }
     return bindings
@@ -466,7 +466,12 @@ class ReleaseAssetTests(unittest.TestCase):
                 "tools.design_craft.release.assets._version", return_value=VERSION
             ), patch("tools.design_craft.release.assets._npm_pack", side_effect=fake_pack):
                 with self.assertRaisesRegex(ValueError, "workflow binding"):
-                    build_assets(output_dir, level=level, evidence_path=evidence_path)
+                    build_assets(
+                        output_dir,
+                        level=level,
+                        evidence_path=evidence_path,
+                        evidence_root=evidence_root,
+                    )
 
     def test_operational_evidence_is_bound_to_the_selected_native_run(self) -> None:
         level = self.policy["operational_95"]
@@ -487,6 +492,7 @@ class ReleaseAssetTests(unittest.TestCase):
                     evidence_path,
                     level=level,
                     native_run=native_run_observation(),
+                    evidence_root=evidence_root,
                 )
                 self.assertTrue(result["ok"], result["errors"])
                 tampered_run = native_run_observation(999)
@@ -494,9 +500,82 @@ class ReleaseAssetTests(unittest.TestCase):
                     evidence_path,
                     level=level,
                     native_run=tampered_run,
+                    evidence_root=evidence_root,
                 )
             self.assertFalse(result["ok"])
             self.assertTrue(any("run_id" in error for error in result["errors"]))
+
+    def test_artifact_relative_evidence_survives_root_relocation(self) -> None:
+        level = self.policy["operational_95"]
+        with tempfile.TemporaryDirectory() as raw:
+            root = Path(raw)
+            original_root = root / "download-a"
+            original_root.mkdir()
+            payload = release_evidence(level)
+            bindings = write_external_native_evidence(original_root, level)
+            attach_native_bindings(payload, level, bindings)
+            self.assertTrue(
+                all("evidence_source_path" not in binding for binding in bindings.values())
+            )
+            evidence_path = root / "release-evidence.json"
+            evidence_path.write_text(json.dumps(payload), encoding="utf-8")
+            relocated_root = root / "download-b"
+            original_root.rename(relocated_root)
+
+            with patch("tools.design_craft.release.assets._head", return_value=HEAD):
+                result = validate_release_run_bindings(
+                    evidence_path,
+                    level=level,
+                    native_run=native_run_observation(),
+                    evidence_root=relocated_root,
+                )
+            self.assertTrue(result["ok"], result["errors"])
+
+    def test_legacy_absolute_evidence_source_path_remains_readable(self) -> None:
+        level = self.policy["operational_95"]
+        with tempfile.TemporaryDirectory() as raw:
+            root = Path(raw)
+            evidence_root = root / "legacy"
+            evidence_root.mkdir()
+            payload = release_evidence(level)
+            bindings = write_external_native_evidence(evidence_root, level)
+            for binding in bindings.values():
+                binding["evidence_source_path"] = str(
+                    evidence_root / str(binding["evidence_path"])
+                )
+            attach_native_bindings(payload, level, bindings)
+            evidence_path = root / "release-evidence.json"
+            evidence_path.write_text(json.dumps(payload), encoding="utf-8")
+
+            with patch("tools.design_craft.release.assets._head", return_value=HEAD):
+                result = validate_release_run_bindings(
+                    evidence_path,
+                    level=level,
+                    native_run=native_run_observation(),
+                )
+            self.assertTrue(result["ok"], result["errors"])
+
+    def test_artifact_relative_evidence_rejects_root_escape(self) -> None:
+        level = self.policy["operational_95"]
+        with tempfile.TemporaryDirectory() as raw:
+            root = Path(raw)
+            evidence_root = root / "evidence"
+            evidence_root.mkdir()
+            payload = release_evidence(level)
+            bindings = write_external_native_evidence(evidence_root, level)
+            bindings["ios_simulator"]["evidence_path"] = "../outside.json"
+            attach_native_bindings(payload, level, bindings)
+            evidence_path = root / "release-evidence.json"
+            evidence_path.write_text(json.dumps(payload), encoding="utf-8")
+
+            with patch("tools.design_craft.release.assets._head", return_value=HEAD):
+                with self.assertRaisesRegex(ValueError, "must stay relative"):
+                    validate_release_run_bindings(
+                        evidence_path,
+                        level=level,
+                        native_run=native_run_observation(),
+                        evidence_root=evidence_root,
+                    )
 
     def test_force_build_failure_preserves_existing_assets(self) -> None:
         level = self.policy["operational_95"]
@@ -531,6 +610,7 @@ class ReleaseAssetTests(unittest.TestCase):
                         output_dir,
                         level=level,
                         evidence_path=evidence_path,
+                        evidence_root=evidence_root,
                         force=True,
                     )
             self.assertEqual(

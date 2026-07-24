@@ -13,9 +13,14 @@ def validate_release_run_bindings(
     level: ReleaseLevel,
     native_run: dict[str, object],
     physical_run: dict[str, object] | None = None,
+    evidence_root: Path | None = None,
 ) -> dict[str, object]:
     evidence = load_release_evidence(evidence_path, level)
-    bindings = collect_native_evidence(evidence, level)
+    bindings = collect_native_evidence(
+        evidence,
+        level,
+        evidence_root=evidence_root,
+    )
     errors: list[str] = []
     for native, binding in bindings.items():
         is_physical = native == "physical_device"

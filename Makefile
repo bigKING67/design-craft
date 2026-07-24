@@ -4,6 +4,12 @@ INSTALL_ARGS ?=
 BENCHMARK_BASELINE ?=
 RELEASE_ASSET_DIR ?= dist/release
 RELEASE_EVIDENCE_DIR ?= dist/evidence
+NATIVE_EVIDENCE_ROOT ?= $(DESIGN_CRAFT_NATIVE_EVIDENCE_ROOT)
+CERTIFICATION_BUNDLE_DIR ?= dist/certification
+CERTIFICATION_TAG ?= v$(shell cat VERSION)
+CERTIFICATION_REPOSITORY ?=
+CERTIFICATION_RUN_ID ?=
+CERTIFICATION_RUN_ATTEMPT ?=
 OPERATIONAL_CANDIDATE_EVIDENCE ?= $(RELEASE_EVIDENCE_DIR)/operational-95-candidate.json
 OPERATIONAL_FINAL_EVIDENCE ?= $(RELEASE_EVIDENCE_DIR)/operational-95-final.json
 CERTIFIED_CANDIDATE_EVIDENCE ?= $(RELEASE_EVIDENCE_DIR)/certified-100-candidate.json
@@ -23,7 +29,9 @@ export PYTHONDONTWRITEBYTECODE := 1
 	release-readiness-operational release-tag-verify-operational release-assets-build-operational \
 	release-assets-verify-operational release-final-verify-operational release-readiness-certified \
 	release-tag-verify-certified release-assets-build-certified release-assets-verify-certified \
-	release-final-verify-certified
+	release-final-verify-certified release-certification-build-operational \
+	release-certification-verify-operational release-certification-build-certified \
+	release-certification-verify-certified
 
 validate:
 	bash scripts/validate.sh
@@ -275,8 +283,9 @@ release-tag-verify-operational:
 
 release-assets-build-operational:
 	@test -n "$(NATIVE_RUN_OBSERVATION)" || { echo "Set NATIVE_RUN_OBSERVATION to the verified native run observation JSON" >&2; exit 2; }
-	python3 -m tools.design_craft release evidence-bindings --level operational_95 --evidence "$(OPERATIONAL_FINAL_EVIDENCE)" --native-observation "$(NATIVE_RUN_OBSERVATION)"
-	python3 -m tools.design_craft release assets --level operational_95 --build --force --evidence "$(OPERATIONAL_FINAL_EVIDENCE)" --output-dir "$(RELEASE_ASSET_DIR)"
+	@test -n "$(NATIVE_EVIDENCE_ROOT)" || { echo "Set NATIVE_EVIDENCE_ROOT to the downloaded native evidence root" >&2; exit 2; }
+	python3 -m tools.design_craft release evidence-bindings --level operational_95 --evidence "$(OPERATIONAL_FINAL_EVIDENCE)" --evidence-root "$(NATIVE_EVIDENCE_ROOT)" --native-observation "$(NATIVE_RUN_OBSERVATION)"
+	python3 -m tools.design_craft release assets --level operational_95 --build --force --evidence "$(OPERATIONAL_FINAL_EVIDENCE)" --evidence-root "$(NATIVE_EVIDENCE_ROOT)" --output-dir "$(RELEASE_ASSET_DIR)"
 
 release-assets-verify-operational:
 	python3 -m tools.design_craft release assets --level operational_95 --output-dir "$(RELEASE_ASSET_DIR)"
@@ -296,9 +305,10 @@ release-tag-verify-certified:
 release-assets-build-certified:
 	@test -n "$(NATIVE_RUN_OBSERVATION)" || { echo "Set NATIVE_RUN_OBSERVATION to the verified native run observation JSON" >&2; exit 2; }
 	@test -n "$(PHYSICAL_RUN_OBSERVATION)" || { echo "Set PHYSICAL_RUN_OBSERVATION to the verified physical-device run observation JSON" >&2; exit 2; }
-	python3 -m tools.design_craft release evidence-bindings --level certified_100 --evidence "$(CERTIFIED_FINAL_EVIDENCE)" --native-observation "$(NATIVE_RUN_OBSERVATION)" --physical-observation "$(PHYSICAL_RUN_OBSERVATION)"
+	@test -n "$(NATIVE_EVIDENCE_ROOT)" || { echo "Set NATIVE_EVIDENCE_ROOT to the downloaded native evidence root" >&2; exit 2; }
+	python3 -m tools.design_craft release evidence-bindings --level certified_100 --evidence "$(CERTIFIED_FINAL_EVIDENCE)" --evidence-root "$(NATIVE_EVIDENCE_ROOT)" --native-observation "$(NATIVE_RUN_OBSERVATION)" --physical-observation "$(PHYSICAL_RUN_OBSERVATION)"
 	$(MAKE) native-release-bundle-build
-	python3 -m tools.design_craft release assets --level certified_100 --build --force --evidence "$(CERTIFIED_FINAL_EVIDENCE)" --output-dir "$(RELEASE_ASSET_DIR)"
+	python3 -m tools.design_craft release assets --level certified_100 --build --force --evidence "$(CERTIFIED_FINAL_EVIDENCE)" --evidence-root "$(NATIVE_EVIDENCE_ROOT)" --output-dir "$(RELEASE_ASSET_DIR)"
 
 release-assets-verify-certified:
 	python3 -m tools.design_craft release assets --level certified_100 --output-dir "$(RELEASE_ASSET_DIR)"
@@ -306,3 +316,26 @@ release-assets-verify-certified:
 
 release-final-verify-certified: release-tag-verify-certified release-assets-verify-certified
 	python3 scripts/design_craft_github_checks.py --level certified_100 --require-tag-run --require-release-assets
+
+release-certification-build-operational:
+	@test -n "$(NATIVE_EVIDENCE_ROOT)" || { echo "Set NATIVE_EVIDENCE_ROOT to the downloaded native evidence root" >&2; exit 2; }
+	@test -n "$(NATIVE_RUN_OBSERVATION)" || { echo "Set NATIVE_RUN_OBSERVATION to the verified native run observation JSON" >&2; exit 2; }
+	@test -n "$(CERTIFICATION_REPOSITORY)" || { echo "Set CERTIFICATION_REPOSITORY to owner/name" >&2; exit 2; }
+	@test -n "$(CERTIFICATION_RUN_ID)" || { echo "Set CERTIFICATION_RUN_ID to the certification workflow run ID" >&2; exit 2; }
+	@test -n "$(CERTIFICATION_RUN_ATTEMPT)" || { echo "Set CERTIFICATION_RUN_ATTEMPT to the certification workflow run attempt" >&2; exit 2; }
+	python3 -m tools.design_craft release certification build --level operational_95 --tag "$(CERTIFICATION_TAG)" --evidence "$(OPERATIONAL_FINAL_EVIDENCE)" --evidence-root "$(NATIVE_EVIDENCE_ROOT)" --native-observation "$(NATIVE_RUN_OBSERVATION)" --assets-dir "$(RELEASE_ASSET_DIR)" --repository "$(CERTIFICATION_REPOSITORY)" --workflow-run-id "$(CERTIFICATION_RUN_ID)" --workflow-run-attempt "$(CERTIFICATION_RUN_ATTEMPT)" --output-dir "$(CERTIFICATION_BUNDLE_DIR)"
+
+release-certification-verify-operational:
+	python3 -m tools.design_craft release certification validate --level operational_95 --input-dir "$(CERTIFICATION_BUNDLE_DIR)"
+
+release-certification-build-certified:
+	@test -n "$(NATIVE_EVIDENCE_ROOT)" || { echo "Set NATIVE_EVIDENCE_ROOT to the downloaded native evidence root" >&2; exit 2; }
+	@test -n "$(NATIVE_RUN_OBSERVATION)" || { echo "Set NATIVE_RUN_OBSERVATION to the verified native run observation JSON" >&2; exit 2; }
+	@test -n "$(PHYSICAL_RUN_OBSERVATION)" || { echo "Set PHYSICAL_RUN_OBSERVATION to the verified physical-device run observation JSON" >&2; exit 2; }
+	@test -n "$(CERTIFICATION_REPOSITORY)" || { echo "Set CERTIFICATION_REPOSITORY to owner/name" >&2; exit 2; }
+	@test -n "$(CERTIFICATION_RUN_ID)" || { echo "Set CERTIFICATION_RUN_ID to the certification workflow run ID" >&2; exit 2; }
+	@test -n "$(CERTIFICATION_RUN_ATTEMPT)" || { echo "Set CERTIFICATION_RUN_ATTEMPT to the certification workflow run attempt" >&2; exit 2; }
+	python3 -m tools.design_craft release certification build --level certified_100 --tag "$(CERTIFICATION_TAG)" --evidence "$(CERTIFIED_FINAL_EVIDENCE)" --evidence-root "$(NATIVE_EVIDENCE_ROOT)" --native-observation "$(NATIVE_RUN_OBSERVATION)" --physical-observation "$(PHYSICAL_RUN_OBSERVATION)" --assets-dir "$(RELEASE_ASSET_DIR)" --repository "$(CERTIFICATION_REPOSITORY)" --workflow-run-id "$(CERTIFICATION_RUN_ID)" --workflow-run-attempt "$(CERTIFICATION_RUN_ATTEMPT)" --output-dir "$(CERTIFICATION_BUNDLE_DIR)"
+
+release-certification-verify-certified:
+	python3 -m tools.design_craft release certification validate --level certified_100 --input-dir "$(CERTIFICATION_BUNDLE_DIR)"

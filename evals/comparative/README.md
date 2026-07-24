@@ -27,8 +27,10 @@ Active cases:
   performance planning.
 
 Active case directories are definition truth only until a complete new run is
-recorded. The 2026-07-12 result tranche is preserved byte-for-byte under
-`history/v0.4.0/`; it cannot satisfy a current-source release gate.
+recorded. The 2026-07-12 tranche is preserved under `history/v0.4.0/`, and the
+four ablations admitted by the v0.5.0 Operational 95 release are preserved
+under `history/v0.5.0/`. Neither archive can satisfy a current-source release
+gate.
 
 Run the following workflow for each active case:
 

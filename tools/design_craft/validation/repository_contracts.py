@@ -22,6 +22,10 @@ RELEASE_TARGETS = (
     "release-assets-build-certified",
     "release-assets-verify-certified",
     "release-final-verify-certified",
+    "release-certification-build-operational",
+    "release-certification-verify-operational",
+    "release-certification-build-certified",
+    "release-certification-verify-certified",
 )
 NOTICE_TOKENS = ("MIT", "Apache-2.0", "Vercel design reference history", "emilkowalski/skills")
 RETIRED_ALIAS_BOUNDARY_DOCS = (

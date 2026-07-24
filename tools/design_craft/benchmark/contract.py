@@ -4,14 +4,19 @@ import math
 import re
 
 
-SCHEMA = "design-craft.benchmark-result.v1"
-COMPARISON_SCHEMA = "design-craft.benchmark-comparison.v1"
+SCHEMA_V1 = "design-craft.benchmark-result.v1"
+SCHEMA = "design-craft.benchmark-result.v2"
+COMPARISON_SCHEMA = "design-craft.benchmark-comparison.v2"
+POLICY_VERSION = "v1"
 RELATIVE_REGRESSION_LIMIT = 0.15
 ABSOLUTE_REGRESSION_LIMIT_MS = 50.0
 MIN_FULL_SAMPLES = 20
 INCREMENTAL_FILE_COUNTS = (1, 10, 100)
 CACHE_CAPACITY = 32
 COMMIT_PATTERN = re.compile(r"[0-9a-f]{40}")
+LEGACY_RUNNER_PATTERN = re.compile(
+    r"(?P<os>[a-z0-9_]+)-(?P<arch>[a-z0-9_]+)-python(?P<python>[0-9]+\.[0-9]+)"
+)
 
 SMOKE_METRIC_NAMES = frozenset(
     {
@@ -175,32 +180,170 @@ def specialized_metric_errors(name: str, metric: object) -> list[str]:
     return errors
 
 
+def _python_minor(value: object) -> str | None:
+    if not isinstance(value, str):
+        return None
+    match = re.fullmatch(r"([0-9]+\.[0-9]+)(?:\.[0-9]+)?", value)
+    return match.group(1) if match else None
+
+
+def _policy(payload: dict[str, object]) -> dict[str, object] | None:
+    value = payload.get("policy")
+    if not isinstance(value, dict):
+        return None
+    return {
+        "version": value.get("version", POLICY_VERSION),
+        "relative_regression_limit": value.get("relative_regression_limit"),
+        "absolute_regression_limit_ms": value.get("absolute_regression_limit_ms"),
+    }
+
+
+def runner_identity(payload: dict[str, object]) -> dict[str, str] | None:
+    if payload.get("schema") == SCHEMA:
+        runner = payload.get("runner")
+        if not isinstance(runner, dict):
+            return None
+        python_minor = _python_minor(runner.get("python"))
+        required = {
+            "os": runner.get("os"),
+            "arch": runner.get("arch"),
+            "image": runner.get("image"),
+        }
+        if python_minor is None or not all(
+            isinstance(value, str) and value for value in required.values()
+        ):
+            return None
+        return {
+            "os": str(required["os"]),
+            "arch": str(required["arch"]),
+            "image": str(required["image"]),
+            "python_minor": python_minor,
+        }
+
+    runner_id = payload.get("runner_id")
+    python_minor = _python_minor(payload.get("python"))
+    if not isinstance(runner_id, str) or python_minor is None:
+        return None
+    match = LEGACY_RUNNER_PATTERN.fullmatch(runner_id)
+    if match is None or match.group("python") != python_minor:
+        return None
+    return {
+        "os": match.group("os"),
+        "arch": match.group("arch"),
+        "image": "legacy-unbound",
+        "python_minor": python_minor,
+    }
+
+
+def migrate_v1_result(
+    payload: dict[str, object],
+    *,
+    runner_image: str,
+    image_version: str,
+    node_version: str,
+) -> dict[str, object]:
+    errors = result_errors(payload, label="legacy baseline")
+    if payload.get("schema") != SCHEMA_V1:
+        raise ValueError(f"benchmark migration requires {SCHEMA_V1}")
+    if errors:
+        raise ValueError("; ".join(errors))
+    identity = runner_identity(payload)
+    assert identity is not None
+    if not all(value.strip() for value in (runner_image, image_version, node_version)):
+        raise ValueError("benchmark migration identity fields must be non-empty")
+    return {
+        "schema": SCHEMA,
+        "scale": payload["scale"],
+        "runner": {
+            "os": identity["os"],
+            "arch": identity["arch"],
+            "image": runner_image,
+            "image_version": image_version,
+            "python": payload["python"],
+            "node": node_version,
+        },
+        "diagnostics": {
+            "platform": payload["platform"],
+            "kernel": "not-recorded-v1",
+        },
+        "migration": {
+            "from_schema": SCHEMA_V1,
+            "identity_limitations": ["kernel", "image_version", "node"],
+        },
+        "source_commit": payload["source_commit"],
+        "source_dirty": payload["source_dirty"],
+        "policy": {
+            "version": POLICY_VERSION,
+            "relative_regression_limit": RELATIVE_REGRESSION_LIMIT,
+            "absolute_regression_limit_ms": ABSOLUTE_REGRESSION_LIMIT_MS,
+        },
+        "metrics": payload["metrics"],
+    }
+
+
 def result_errors(payload: object, *, label: str) -> list[str]:
     if not isinstance(payload, dict):
         return [f"{label} benchmark result must be an object"]
     errors: list[str] = []
-    if payload.get("schema") != SCHEMA:
-        errors.append(f"{label} benchmark schema must be {SCHEMA}")
+    schema = payload.get("schema")
+    if schema not in {SCHEMA_V1, SCHEMA}:
+        errors.append(f"{label} benchmark schema must be {SCHEMA_V1} or {SCHEMA}")
     scale = payload.get("scale")
     if scale not in {"smoke", "full"}:
         errors.append(f"{label} benchmark scale must be smoke or full")
-    runner_id = payload.get("runner_id")
-    if not isinstance(runner_id, str) or not runner_id.strip():
-        errors.append(f"{label} runner_id must be a non-empty string")
     source_commit = payload.get("source_commit")
     if not isinstance(source_commit, str) or COMMIT_PATTERN.fullmatch(source_commit) is None:
         errors.append(f"{label} source_commit must be a full lowercase Git SHA")
     if not isinstance(payload.get("source_dirty"), bool):
         errors.append(f"{label} source_dirty must be boolean")
-    for field in ("python", "platform"):
-        if not isinstance(payload.get(field), str) or not str(payload[field]).strip():
-            errors.append(f"{label} {field} must be a non-empty string")
+    if schema == SCHEMA_V1:
+        runner_id = payload.get("runner_id")
+        if not isinstance(runner_id, str) or not runner_id.strip():
+            errors.append(f"{label} runner_id must be a non-empty string")
+        for field in ("python", "platform"):
+            if not isinstance(payload.get(field), str) or not str(payload[field]).strip():
+                errors.append(f"{label} {field} must be a non-empty string")
+    elif schema == SCHEMA:
+        runner = payload.get("runner")
+        if not isinstance(runner, dict):
+            errors.append(f"{label} runner must be an object")
+        else:
+            for field in ("os", "arch", "image", "image_version", "python", "node"):
+                if not isinstance(runner.get(field), str) or not str(runner[field]).strip():
+                    errors.append(f"{label} runner.{field} must be a non-empty string")
+            if _python_minor(runner.get("python")) is None:
+                errors.append(f"{label} runner.python must be a semantic Python version")
+        diagnostics = payload.get("diagnostics")
+        if not isinstance(diagnostics, dict):
+            errors.append(f"{label} diagnostics must be an object")
+        else:
+            for field in ("platform", "kernel"):
+                if not isinstance(diagnostics.get(field), str) or not str(
+                    diagnostics[field]
+                ).strip():
+                    errors.append(
+                        f"{label} diagnostics.{field} must be a non-empty string"
+                    )
+        migration = payload.get("migration")
+        if migration is not None and (
+            not isinstance(migration, dict)
+            or migration.get("from_schema") != SCHEMA_V1
+            or not isinstance(migration.get("identity_limitations"), list)
+            or not all(
+                isinstance(item, str) and item
+                for item in migration.get("identity_limitations", [])
+            )
+        ):
+            errors.append(f"{label} migration metadata is invalid")
     expected_policy = {
+        "version": POLICY_VERSION,
         "relative_regression_limit": RELATIVE_REGRESSION_LIMIT,
         "absolute_regression_limit_ms": ABSOLUTE_REGRESSION_LIMIT_MS,
     }
-    if payload.get("policy") != expected_policy:
+    if _policy(payload) != expected_policy:
         errors.append(f"{label} benchmark policy does not match the comparison contract")
+    if runner_identity(payload) is None:
+        errors.append(f"{label} runner identity is invalid")
     metrics = payload.get("metrics")
     if not isinstance(metrics, dict):
         errors.append(f"{label} benchmark result must contain a metrics object")
@@ -239,16 +382,33 @@ def compare_results(
         *result_errors(current, label="current"),
     ]
     comparisons: list[dict[str, object]] = []
+    warnings: list[str] = []
     if not isinstance(baseline, dict) or not isinstance(current, dict):
         return {
             "schema": COMPARISON_SCHEMA,
             "ok": False,
             "errors": errors,
+            "warnings": warnings,
             "comparisons": comparisons,
         }
-    for field in ("runner_id", "scale", "python", "platform", "policy"):
-        if baseline.get(field) != current.get(field):
-            errors.append(f"baseline {field} must match the current benchmark")
+    if baseline.get("scale") != current.get("scale"):
+        errors.append("baseline scale must match the current benchmark")
+    if _policy(baseline) != _policy(current):
+        errors.append("baseline policy must match the current benchmark")
+    baseline_runner = runner_identity(baseline)
+    current_runner = runner_identity(current)
+    if baseline_runner is not None and current_runner is not None:
+        for field in ("os", "arch", "python_minor"):
+            if baseline_runner[field] != current_runner[field]:
+                errors.append(f"baseline runner {field} must match the current benchmark")
+        if baseline.get("schema") == SCHEMA and current.get("schema") == SCHEMA:
+            if baseline_runner["image"] != current_runner["image"]:
+                errors.append("baseline runner image must match the current benchmark")
+        else:
+            warnings.append(
+                "legacy v1 benchmark identity does not bind the runner image family; "
+                "migrate the baseline explicitly before the next release"
+            )
     baseline_metrics = baseline.get("metrics")
     current_metrics = current.get("metrics")
     if not isinstance(baseline_metrics, dict) or not isinstance(current_metrics, dict):
@@ -256,6 +416,7 @@ def compare_results(
             "schema": COMPARISON_SCHEMA,
             "ok": False,
             "errors": errors,
+            "warnings": warnings,
             "comparisons": comparisons,
         }
     if set(baseline_metrics) != set(current_metrics):
@@ -296,8 +457,9 @@ def compare_results(
         "schema": COMPARISON_SCHEMA,
         "baseline_commit": baseline.get("source_commit"),
         "current_commit": current.get("source_commit"),
-        "runner_id": current.get("runner_id"),
+        "runner": current_runner,
         "ok": not errors,
         "errors": errors,
+        "warnings": warnings,
         "comparisons": comparisons,
     }
