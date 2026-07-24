@@ -1,5 +1,5 @@
 {
-  "rationale": "A 明显胜出：它不仅最忠实地限定了静态证据边界和复用了现有项目约定，还覆盖了评分卡中特别要求的属性成本、弹层原点、动画中断、指针跟踪、速度接续及动画原语取舍。其三套计划在实施前置检查、硬边界和源码漂移停止条件方面也最接近可直接交接执行。C 排名第二，证据纪律和弹层技术判断较好，但遗漏了 sortable queue 的实施闭环；B 虽覆盖全部表面，却在高频节奏、Reduced Motion、拖拽技术方案和未验证体验断言上存在更多实质性问题。三个总分均由各项分值重新相加得到。",
+  "rationale": "A 在全部关键维度上最接近满分：它严格限定静态证据边界，完整复用现有语义 token 和按钮先例，并对锚点 origin、布局属性成本、拖拽抓取偏移、指针捕获、当前呈现值中断、速度单位与传递、动画原语能力以及最近槽位语义给出了条件化且可停止的实施路线。B 的 CSS 与覆盖层方案可靠，但拖拽部分更多是 rAF、局部 delta 和固定时长规范化，缺少完整的直接操纵及中断模型。C 虽然格式完整，却包含最危险的推测性实现：直接设置绝对坐标 transform、覆盖变换所有权、假设未证实的动画参数，并推荐 bounce。三份输出都明显超过 180 行限制，因此计划与优先级相关得分未按完全合规计满。",
   "results": [
     {
       "criteria": {
@@ -10,41 +10,41 @@
         "project_conventions": 10,
         "purpose_frequency": 10,
         "technical_accuracy": 15,
-        "verification_quality": 9
+        "verification_quality": 10
       },
       "label": "A",
-      "summary": "A 对静态证据边界、现有语义 token、按钮先例和操作频率的梳理最完整。三项计划均包含精确路径与当前摘录、目标、步骤、边界、机械检查、后续体验检查、Reduced Motion 和源码漂移停止条件；尤其准确处理了弹层原点的不确定性，以及拖拽的局部坐标、抓取偏移、指针捕获、速度传递、当前呈现值、可中断性和动画原语能力边界。扣分点是优先级表未显式列出置信度与成本，性能检查没有给出帧时间或样式重算等量化测量门槛，部分 Reduced Motion 决策仍留有条件分支，而且篇幅明显超过 180 行。",
-      "total": 96
+      "summary": "静态证据边界、语义 token 复用及三套计划最完整；拖拽方案尤其严谨，能区分指针捕获、抓取偏移、呈现值中断、速度传递与目标语义。主要不足是明显超过 180 行，且 Popover 的 Reduced Motion 方案主要依赖缩短时长。",
+      "total": 97
     },
     {
       "criteria": {
-        "accessibility_performance": 7,
-        "evidence_recon": 13,
+        "accessibility_performance": 9,
+        "evidence_recon": 15,
         "plan_self_containment": 18,
-        "prioritization": 7,
-        "project_conventions": 8,
-        "purpose_frequency": 8,
-        "technical_accuracy": 8,
+        "prioritization": 8,
+        "project_conventions": 10,
+        "purpose_frequency": 9,
+        "technical_accuracy": 10,
         "verification_quality": 9
       },
       "label": "B",
-      "summary": "B 的结构和计划字段较完整，也正确识别了 `transition: all`、`top` 动画、硬编码时长及 Reduced Motion 缺口。但它把“operators experience uneven timing”写成未经运行验证的既成体验，将高频命令面板设计为 240ms 且带 scale，并在 toast 的建议代码中仅缩短 Reduced Motion 时长而未确定移除位移。拖拽计划没有处理绝对 `clientY` 到局部位移、释放速度接续、当前呈现值或中断重抓，且示例直接访问 `window`，与其后续 SSR 检查要求不一致。优先级也未显式评估置信度和实施成本。",
-      "total": 78
+      "summary": "结构、证据声明和约定复用都很扎实，三套计划也覆盖了所需字段；但拖拽方案未充分处理指针捕获、抓取偏移、当前呈现值、速度传递和真正的中断语义，并把固定时长替换当作主要解决手段。",
+      "total": 88
     },
     {
       "criteria": {
-        "accessibility_performance": 7,
-        "evidence_recon": 15,
-        "plan_self_containment": 17,
+        "accessibility_performance": 8,
+        "evidence_recon": 14,
+        "plan_self_containment": 16,
         "prioritization": 7,
-        "project_conventions": 8,
-        "purpose_frequency": 9,
-        "technical_accuracy": 10,
+        "project_conventions": 7,
+        "purpose_frequency": 8,
+        "technical_accuracy": 6,
         "verification_quality": 8
       },
       "label": "C",
-      "summary": "C 的证据措辞谨慎，能区分静态判断与待执行的运行检查；命令面板、popover 和 toast 三项计划清楚，特别是对 trigger-aware transform origin 的条件判断比 B 更稳健。不过命令面板的 120ms fallback 绕开了已经给出的语义时长 token，并可能过度从“保持因果连续性”退到完全无动效。更大的缺口是 sortable queue 虽列为重要发现，却没有自包含实施计划，因此没有形成对坐标系、指针捕获、释放速度、动画中断、原语取舍、Reduced Motion 和专项验证的闭环。性能检查同样缺少量化测量标准，整体也超过行数预算。",
-      "total": 81
+      "summary": "能正确识别 `transition: all`、布局属性动画、硬编码时长和 Reduced Motion 缺口，计划结构也基本齐全；但拖拽示例可能用绝对 `clientY` 覆写既有 `transform`，还猜测 `animateTo` 的 spring API 并引入与产品气质冲突的 bounce，实施风险明显。",
+      "total": 74
     }
   ],
   "winner": "A"

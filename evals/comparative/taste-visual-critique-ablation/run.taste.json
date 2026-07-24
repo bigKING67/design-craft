@@ -2,7 +2,7 @@
   "command": "pi --print --no-session --no-context-files --no-skills --tools read,grep,find,ls --model codex/gpt-5.5 --thinking high --skill '$VARIANT_SKILL_1' --skill '$VARIANT_SKILL_2'",
   "contract_sha256": "9982847aa02610d7840eea6647b935c359dcdac7337bbe5ff3ebd29ee938d86b",
   "cwd": "$VARIANT_WORKSPACE",
-  "duration_seconds": 44.776,
+  "duration_seconds": 49.262,
   "host": "pi",
   "host_version": "0.80.6",
   "installed_skill_paths": {
@@ -12,7 +12,7 @@
   "model": "codex/gpt-5.5",
   "model_observation": "requested_by_cli",
   "output_path": "output.taste.md",
-  "output_sha256": "6249dea4cfdf82dcb67687c809414dac441541fe0f577f7bd2c211d6e99c85e4",
+  "output_sha256": "6e556a98167a4245e5297ae570380ffe132e2540122a268ddeb2adff443d410b",
   "prompt_sha256": "24483d75b8bec334c978ae4f120d5523ec4ee54a1b8c3bbeef97aafbd6090ed9",
   "returncode": 0,
   "runner_os": "macOS-15.7.7-arm64-arm-64bit-Mach-O",
@@ -22,15 +22,15 @@
     "upstreams/taste-skill/skills/redesign-skill": "1fd74922e6bb2011c7c0d82aefd70d0cc1dbd31bd904054bec3f6cae4d731b90",
     "upstreams/taste-skill/skills/taste-skill": "40ef50925b446e08a4ad5cead8edeb98f48982eb498b0073fe6a0b27ea736769"
   },
-  "started_at": "2026-07-24T03:06:03Z",
+  "started_at": "2026-07-24T07:32:26Z",
   "stderr_bytes": 0,
   "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
   "thinking": "high",
   "thinking_observation": "requested_by_cli",
-  "timeout_seconds": 900,
+  "timeout_seconds": 600,
   "variant": "taste",
   "workspace_kind": "repo_external_isolated_project",
-  "worktree_after_sha256": "3b088cb6fb99ba265b7d798032a74f0f418ef818b8066be7b63106ab986ab841",
-  "worktree_before_sha256": "3b088cb6fb99ba265b7d798032a74f0f418ef818b8066be7b63106ab986ab841",
+  "worktree_after_sha256": "30c7d92ff30a30c530ae87a402b0a660704352f116b914513ea3a7d4ff7b66a4",
+  "worktree_before_sha256": "30c7d92ff30a30c530ae87a402b0a660704352f116b914513ea3a7d4ff7b66a4",
   "worktree_unchanged": true
 }

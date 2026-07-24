@@ -2,6 +2,12 @@
 
 All notable local changes to `design-craft` are recorded here.
 
+## 0.5.2 - Unreleased
+
+- Normalize the `actions/upload-artifact` certification digest output from raw
+  hexadecimal or canonical `sha256:` form into the canonical release receipt
+  format, and enforce that normalization through the workflow contract gate.
+
 ## 0.5.1 - 2026-07-24
 
 - Reviewed post-candidate upstream drift without advancing compatibility pins:
