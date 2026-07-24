@@ -1,0 +1,116 @@
+{
+  "blind_map_sha256": "cf786ea470ca7adaefd71e3c99f55951bb40d608abe41f86d9f22afe27372e58",
+  "blind_packet_sha256": "853c5b3284d133160cf03323d403d55432b2a071e57d1cebc9218c0f9859aca6",
+  "case_id": "taste-visual-critique-ablation",
+  "focused_variant": "taste",
+  "judge": {
+    "host": "codex",
+    "model": "gpt-5.6-sol",
+    "model_observation": "requested_by_cli",
+    "raw_output_path": "judge-output.raw.txt",
+    "raw_output_sha256": "369a145dd883dee23413bf48b634e09ca8baeeae151ecb5728f88a2079583659",
+    "reasoning": "max",
+    "reasoning_observation": "requested_by_cli",
+    "run_path": "run.judge.json",
+    "run_sha256": "86291582f83faac45d66e94596e6317fc1d0b6d940d27f5ac342d3541e801840",
+    "runner_os": "macOS-15.7.7-arm64-arm-64bit-Mach-O",
+    "version": "codex-cli 0.145.0"
+  },
+  "judgment_path": "blind-judgment.json",
+  "judgment_schema_sha256": "f80a55f5da5692ecd98e1a34f3ab5e0884af7840e14870655dfb99dc5306cf58",
+  "judgment_sha256": "857c3805c36e76c61c20732f25b320887453648b97b6da1082a7ddaca607617e",
+  "prompt_sha256": "24483d75b8bec334c978ae4f120d5523ec4ee54a1b8c3bbeef97aafbd6090ed9",
+  "rationale": "C 胜出，因为它不仅正确把异常表格恢复为首屏主决策对象，还将视觉批评转化为三份中最具体、最可验收的实施约束：明确视口基准、命令区行数、数值列对齐、容器层级、间距节奏以及 insights 到过滤表格的直接路径。B 的覆盖面几乎相同，但若干视觉验收仍偏定性；A 同样可靠且守证据边界，但对既有 navy/ink 权威、图表与泛化 insights 的具体处置略少。",
+  "recorded_at": "2026-07-24T03:10:39Z",
+  "results": {
+    "baseline": {
+      "blind_label": "B",
+      "criteria": {
+        "anti_generic": 15,
+        "concrete_moves": 19,
+        "evidence_honesty": 10,
+        "product_fit": 15,
+        "product_hierarchy": 15,
+        "scope_discipline": 10,
+        "visual_craft": 13
+      },
+      "score": 97,
+      "summary": "围绕下一小时异常处理建立了完整的首屏、摘要、表格、状态和行动层级，并明确保留现有中性色与语义色。其量化 exception-driver 示例、非颜色依赖状态和失败状态验证尤其扎实；少量验收条件如“comfortably readable”“visually stronger”不够可测，间距和排版规格也略弱于 C。"
+    },
+    "design-craft": {
+      "blind_label": "C",
+      "criteria": {
+        "anti_generic": 15,
+        "concrete_moves": 20,
+        "evidence_honesty": 10,
+        "product_fit": 15,
+        "product_hierarchy": 15,
+        "scope_discipline": 10,
+        "visual_craft": 14
+      },
+      "score": 99,
+      "summary": "对产品决策流、反泛化判断和既有视觉权威的处理最完整。八项改造覆盖首屏、命令栏、KPI、表格、状态、行动、商品识别、容器及 insights，并提供 1366×768、两行上限、货币右对齐、固定间距节奏和可筛选异常摘要等更可观察的验收标准；仅因正文尺寸、对比度及 elevation 没有给出更精确阈值而未获视觉工艺满分。"
+    },
+    "taste": {
+      "blind_label": "A",
+      "criteria": {
+        "anti_generic": 15,
+        "concrete_moves": 18,
+        "evidence_honesty": 10,
+        "product_fit": 14,
+        "product_hierarchy": 14,
+        "scope_discipline": 10,
+        "visual_craft": 13
+      },
+      "score": 94,
+      "summary": "准确识别异常队列被埋、KPI 等权、卡片堆叠和模糊操作等核心问题，且严格遵守静态证据边界。主要扣分在于未明确保留 navy/ink 体系，也没有把泛化 insights 的替代方案和图表降级位置落实得像另外两份一样具体；部分验收条件仍以“典型视口”“视觉优先”等相对表述为主。"
+    }
+  },
+  "schema": "design-craft.comparative-result.v3",
+  "scorecard_json_sha256": "fce00a94275af2560f20e1e69edb040a5c470a03a5caa51b71bb49ab07489c75",
+  "scorecard_sha256": "a1f750a6c735ff178260bcc806a0ad089d0c4de4e2ff0cfd466ffcd08317d989",
+  "variant_runs": {
+    "baseline": {
+      "contract_sha256": "9982847aa02610d7840eea6647b935c359dcdac7337bbe5ff3ebd29ee938d86b",
+      "host": "pi",
+      "host_version": "0.80.6",
+      "model": "codex/gpt-5.5",
+      "output_path": "output.baseline.md",
+      "output_sha256": "d3c4f6567ab81660959c194f9a906863b0d6c352ab842234742beefabd6e971c",
+      "run_path": "run.baseline.json",
+      "run_sha256": "86148aed6c3dfba0199d96110af763d1accc5c1bfee6058b19119c4d31bff89f",
+      "skill_trees": {},
+      "thinking": "high"
+    },
+    "design-craft": {
+      "contract_sha256": "9982847aa02610d7840eea6647b935c359dcdac7337bbe5ff3ebd29ee938d86b",
+      "host": "pi",
+      "host_version": "0.80.6",
+      "model": "codex/gpt-5.5",
+      "output_path": "output.design-craft.md",
+      "output_sha256": "b6bf5f9a934115269a62e8bf3815c143df41ef5d28366248be6544d2674aa3a8",
+      "run_path": "run.design-craft.json",
+      "run_sha256": "3ce2e30942ac27c34476da16eee1a7e15246cef4db36ce210b6c09d55198a898",
+      "skill_trees": {
+        "skills/design-craft": "318f7552b081c4409dc773c502fd8f753e3ae452b143dbeb3c4ec8c7cab962f9"
+      },
+      "thinking": "high"
+    },
+    "taste": {
+      "contract_sha256": "9982847aa02610d7840eea6647b935c359dcdac7337bbe5ff3ebd29ee938d86b",
+      "host": "pi",
+      "host_version": "0.80.6",
+      "model": "codex/gpt-5.5",
+      "output_path": "output.taste.md",
+      "output_sha256": "6249dea4cfdf82dcb67687c809414dac441541fe0f577f7bd2c211d6e99c85e4",
+      "run_path": "run.taste.json",
+      "run_sha256": "45996afd69c8a10bae46fee21b394ca0351b0720d20c88323c3d05ab2dc003e9",
+      "skill_trees": {
+        "upstreams/taste-skill/skills/redesign-skill": "1fd74922e6bb2011c7c0d82aefd70d0cc1dbd31bd904054bec3f6cae4d731b90",
+        "upstreams/taste-skill/skills/taste-skill": "40ef50925b446e08a4ad5cead8edeb98f48982eb498b0073fe6a0b27ea736769"
+      },
+      "thinking": "high"
+    }
+  },
+  "winner": "design-craft"
+}

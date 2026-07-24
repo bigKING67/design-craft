@@ -1,0 +1,51 @@
+{
+  "rationale": "A 明显胜出：它不仅最忠实地限定了静态证据边界和复用了现有项目约定，还覆盖了评分卡中特别要求的属性成本、弹层原点、动画中断、指针跟踪、速度接续及动画原语取舍。其三套计划在实施前置检查、硬边界和源码漂移停止条件方面也最接近可直接交接执行。C 排名第二，证据纪律和弹层技术判断较好，但遗漏了 sortable queue 的实施闭环；B 虽覆盖全部表面，却在高频节奏、Reduced Motion、拖拽技术方案和未验证体验断言上存在更多实质性问题。三个总分均由各项分值重新相加得到。",
+  "results": [
+    {
+      "criteria": {
+        "accessibility_performance": 9,
+        "evidence_recon": 15,
+        "plan_self_containment": 19,
+        "prioritization": 9,
+        "project_conventions": 10,
+        "purpose_frequency": 10,
+        "technical_accuracy": 15,
+        "verification_quality": 9
+      },
+      "label": "A",
+      "summary": "A 对静态证据边界、现有语义 token、按钮先例和操作频率的梳理最完整。三项计划均包含精确路径与当前摘录、目标、步骤、边界、机械检查、后续体验检查、Reduced Motion 和源码漂移停止条件；尤其准确处理了弹层原点的不确定性，以及拖拽的局部坐标、抓取偏移、指针捕获、速度传递、当前呈现值、可中断性和动画原语能力边界。扣分点是优先级表未显式列出置信度与成本，性能检查没有给出帧时间或样式重算等量化测量门槛，部分 Reduced Motion 决策仍留有条件分支，而且篇幅明显超过 180 行。",
+      "total": 96
+    },
+    {
+      "criteria": {
+        "accessibility_performance": 7,
+        "evidence_recon": 13,
+        "plan_self_containment": 18,
+        "prioritization": 7,
+        "project_conventions": 8,
+        "purpose_frequency": 8,
+        "technical_accuracy": 8,
+        "verification_quality": 9
+      },
+      "label": "B",
+      "summary": "B 的结构和计划字段较完整，也正确识别了 `transition: all`、`top` 动画、硬编码时长及 Reduced Motion 缺口。但它把“operators experience uneven timing”写成未经运行验证的既成体验，将高频命令面板设计为 240ms 且带 scale，并在 toast 的建议代码中仅缩短 Reduced Motion 时长而未确定移除位移。拖拽计划没有处理绝对 `clientY` 到局部位移、释放速度接续、当前呈现值或中断重抓，且示例直接访问 `window`，与其后续 SSR 检查要求不一致。优先级也未显式评估置信度和实施成本。",
+      "total": 78
+    },
+    {
+      "criteria": {
+        "accessibility_performance": 7,
+        "evidence_recon": 15,
+        "plan_self_containment": 17,
+        "prioritization": 7,
+        "project_conventions": 8,
+        "purpose_frequency": 9,
+        "technical_accuracy": 10,
+        "verification_quality": 8
+      },
+      "label": "C",
+      "summary": "C 的证据措辞谨慎，能区分静态判断与待执行的运行检查；命令面板、popover 和 toast 三项计划清楚，特别是对 trigger-aware transform origin 的条件判断比 B 更稳健。不过命令面板的 120ms fallback 绕开了已经给出的语义时长 token，并可能过度从“保持因果连续性”退到完全无动效。更大的缺口是 sortable queue 虽列为重要发现，却没有自包含实施计划，因此没有形成对坐标系、指针捕获、释放速度、动画中断、原语取舍、Reduced Motion 和专项验证的闭环。性能检查同样缺少量化测量标准，整体也超过行数预算。",
+      "total": 81
+    }
+  ],
+  "winner": "A"
+}

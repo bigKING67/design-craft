@@ -3,12 +3,12 @@
   "task_id": "same-prompt-motion-review",
   "hosts": {
     "codex": {
-      "status": "pending",
-      "reason": "This active definition has not yet admitted a current-source v4 run."
+      "status": "observed",
+      "reason": "Current-source v4 score and run manifest recorded from main@7429d8d."
     },
     "pi": {
-      "status": "pending",
-      "reason": "This active definition has not yet admitted a current-source v4 run."
+      "status": "observed",
+      "reason": "Current-source v4 score and run manifest recorded from main@7429d8d."
     },
     "cursor": {
       "status": "pending",

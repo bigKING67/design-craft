@@ -18,6 +18,19 @@ All notable local changes to `design-craft` are recorded here.
 - Archived the exact v0.5.0 comparative and cross-agent evidence under immutable
   history roots and reset active v0.5.1 task directories to definition/pending
   state instead of presenting released evidence as current-source proof.
+- Recorded fresh Codex and Pi cross-agent score-v4/run-v2 evidence for the
+  dashboard, motion, and native/adaptive tasks against the clean
+  `main@7429d8d` Skill tree; Cursor and Claude remain explicitly pending.
+- Re-ran all four Pi ablations with an isolated Codex blind judge. `design-craft`
+  won motion `98/95/84`, motion planning `96/81/78`, visual critique
+  `99/97/94`, and production hardening `96/95/91` against the focused upstream
+  and no-skill variants.
+- Promoted a schema-v2 Ubuntu 24.04/Python 3.13 full benchmark baseline from
+  run `30064094199` (artifact SHA-256
+  `8294b7ef04343cd4e72c7733d530fcdbeec8681015c931592d1f0fff388ec1a9`)
+  after three hosted full runs and a passing cluster comparison with run
+  `30064371635`; the operational-candidate workflow now consumes that v0.5.1
+  baseline instead of the legacy v1 baseline.
 
 ## 0.5.0 - 2026-07-23
 

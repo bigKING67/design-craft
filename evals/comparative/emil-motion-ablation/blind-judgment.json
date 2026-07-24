@@ -1,0 +1,51 @@
+{
+  "rationale": "A 最贴合全部机器评分点，尤其是明确要求新手势从当前呈现位置接管而不跳变，并给出 CSS px/s、受限投影端点、吸附规则及速度连续性。C 是最接近的候选，但速度单位和 transform 所有权处理不够明确；B 虽然基础诊断完整，却在中断呈现值与速度投影两项核心标准上缺少可执行细节。",
+  "results": [
+    {
+      "criteria": {
+        "accessibility": 10,
+        "actionability": 9,
+        "direct_manipulation": 15,
+        "evidence_honesty": 14,
+        "interruption": 15,
+        "motion_necessity": 10,
+        "performance": 10,
+        "velocity_projection": 15
+      },
+      "label": "A",
+      "summary": "覆盖最完整：明确了抓取偏移、指针捕获、动画中断后从当前呈现位置继续、CSS px/s 速度单位、受限投影与吸附选择，并完整处理属性所有权和 Reduced Motion。静态证据下仍有一句预测性手感判断，且篇幅略超 150 行预算。",
+      "total": 98
+    },
+    {
+      "criteria": {
+        "accessibility": 10,
+        "actionability": 9,
+        "direct_manipulation": 14,
+        "evidence_honesty": 13,
+        "interruption": 9,
+        "motion_necessity": 10,
+        "performance": 10,
+        "velocity_projection": 9
+      },
+      "label": "B",
+      "summary": "能识别抓取偏移、拖拽门控、指针捕获、布局属性、transition-all、transform 冲突及 Reduced Motion，但“cancel/finish”没有要求从当前屏幕呈现值无跳变地接管，也未定义速度单位、投影端点或释放速度向 settle 的连续传递。",
+      "total": 84
+    },
+    {
+      "criteria": {
+        "accessibility": 10,
+        "actionability": 10,
+        "direct_manipulation": 15,
+        "evidence_honesty": 13,
+        "interruption": 14,
+        "motion_necessity": 10,
+        "performance": 9,
+        "velocity_projection": 14
+      },
+      "label": "C",
+      "summary": "接近完整且控制得更简洁：覆盖输入锁定、捕获、抓取偏移、实时中断、速度采样、端点投影、吸附和非空间 Reduced Motion 反馈；主要缺口是未明确速度单位，且没有清楚说明 translateY 与 active scale 的 transform 所有权分层。",
+      "total": 95
+    }
+  ],
+  "winner": "A"
+}

@@ -1,0 +1,67 @@
+{
+  "schema": "design-craft.cross-agent-score.v4",
+  "task_id": "same-prompt-dashboard-review",
+  "agent": "pi",
+  "verified": true,
+  "agent_version": "0.80.6",
+  "model": "codex/gpt-5.5",
+  "model_observation": "requested_by_cli",
+  "reasoning_profile": "high",
+  "reasoning_observation": "requested_by_cli",
+  "runner_os": "macOS-15.7.7-arm64-arm-64bit-Mach-O",
+  "date": "2026-07-24",
+  "prompt_sha256": "7fd3c7f14647c8b54cc44ef371f2d7ea56bb77efa89cb8081f09a7b41ae777d6",
+  "scorecard_json_sha256": "9b73f89575f83eecd859595a81851a57681987dbb8aee6d3b8230d5827081920",
+  "contract_sha256": "392e1903ad3e7088fc07c6794dfc98d025f310781a01a51f880fd0041ab25c8e",
+  "run_manifest_path": "run.pi.json",
+  "run_manifest_sha256": "d202c82f88d50ededa5eedda5704719f422c32750c6778bea38743f670c8e125",
+  "skill_version": "0.5.1",
+  "skill_source_commit": "7429d8d04f398494b615070e84efee43f75b0e23",
+  "skill_source_dirty": false,
+  "repo_dirty": true,
+  "release_state": "unknown",
+  "skill_tree_sha256": "318f7552b081c4409dc773c502fd8f753e3ae452b143dbeb3c4ec8c7cab962f9",
+  "skill_path": "$BENCHMARK_WORKSPACE/.pi/skills/design-craft",
+  "provenance_skill_path": "$DESIGN_CRAFT_HOME/skills/design-craft",
+  "command_summary": "pi --print --no-session --no-skills --skill '$BENCHMARK_SKILL' --no-context-files --tools read,grep,find,ls --model codex/gpt-5.5 --thinking high",
+  "output_path": "pi-output.md",
+  "output_sha256": "4b253eaf9c4e73f57380bbdc6b55eec71346e0bace456218e9f655cff280313f",
+  "score": 100,
+  "criteria": {
+    "style_authority": {
+      "passed": true,
+      "earned": 15,
+      "note": "Preserves the restrained enterprise-console authority and centers the operator's next-hour decision job."
+    },
+    "reference_selection": {
+      "passed": true,
+      "earned": 15,
+      "note": "Uses dashboard hierarchy, taste, design-move, state, accessibility, and validation guidance without unrelated domains."
+    },
+    "anti_generic_redesign": {
+      "passed": true,
+      "earned": 15,
+      "note": "Rejects equal-card soup, decorative charting, and generic tips in favor of an exception-first decision surface."
+    },
+    "evidence_level": {
+      "passed": true,
+      "earned": 15,
+      "note": "Labels the review L0 static and does not claim screenshot, DOM, browser, responsive, state, or runtime proof."
+    },
+    "verified_boundary": {
+      "passed": true,
+      "earned": 15,
+      "note": "Separates prompt facts from unverified rendering, tokens, interactions, accessibility, data behavior, and performance."
+    },
+    "design_moves": {
+      "passed": true,
+      "earned": 15,
+      "note": "Specifies lead and supporting metrics, exception queue, diagnostic chart, task-first table, contextual actions, and resilient states."
+    },
+    "scope_control": {
+      "passed": true,
+      "earned": 10,
+      "note": "Remains read-only, prioritized, dashboard-specific, and within the explicit 150-line response budget."
+    }
+  }
+}
