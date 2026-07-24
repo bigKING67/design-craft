@@ -2,7 +2,7 @@
 
 All notable local changes to `design-craft` are recorded here.
 
-## 0.5.1 - Unreleased
+## 0.5.1 - 2026-07-24
 
 - Reviewed post-candidate upstream drift without advancing compatibility pins:
   Taste sponsor-only changes are provenance-only; Impeccable's
