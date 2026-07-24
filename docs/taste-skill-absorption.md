@@ -2,7 +2,7 @@
 
 This document records the deliberate baseline-fusion boundary for
 `https://github.com/Leonxlnx/taste-skill` at commit
-`98565e65bc3274ddf6eb0838734341714057178b`. The compatibility submodule stays
+`e988add20dab0fa97d7a76781c48961c8184288e`. The compatibility submodule stays
 pinned at `b17742737e796305d829b3ad39eda3add0d79060`.
 
 ## Contents
@@ -82,13 +82,14 @@ The cumulative state is selective absorption: high-value design judgment and
 redesign behavior are local, while specialized style, image-generation,
 Stitch, brand-kit, and output-policy Skills remain deliberately independent.
 The latest reviewed range from
-`b17742737e796305d829b3ad39eda3add0d79060` through
-`98565e65bc3274ddf6eb0838734341714057178b` changes README sponsorship and
-sponsor image assets only. Its latest-range status is `provenance-only`; the
-submodule does not need to advance for those repository-presentation changes.
+`98565e65bc3274ddf6eb0838734341714057178b` through
+`e988add20dab0fa97d7a76781c48961c8184288e` contains four commits that change
+only README sponsor presentation. Its latest-range status is
+`provenance-only`; the submodule does not need to advance for those
+repository-presentation changes.
 
 Current independent blind evidence is recorded in
 `evals/comparative/taste-visual-critique-ablation/`: `design-craft` 99,
-focused taste upstream 98, no-skill baseline 93. The first controlled run
+focused taste upstream 94, no-skill baseline 97. The first controlled run
 exposed an incomplete move-budget rule; the Skill was repaired and the final
 evidence was rerun rather than editing the judge result.

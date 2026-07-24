@@ -2,7 +2,7 @@
 
 This document records the deliberate fusion and runtime boundary for
 `https://github.com/pbakaus/impeccable` at commit
-`bdaa5a4eb9ad2f5b9ce6164a9ded049da9c00d58`. The compatibility submodule stays
+`08676d575721a2f3f9c30fc4807d1f61e1462b3b`. The compatibility submodule stays
 pinned at `630fc2682a5bd39b25a8e61f74b6b3f14f2b1e21`.
 
 ## Contents
@@ -81,8 +81,21 @@ host's existing execution contracts.
 
 ## Latest reviewed range
 
-The range from `630fc2682a5bd39b25a8e61f74b6b3f14f2b1e21` through
-`bdaa5a4eb9ad2f5b9ce6164a9ded049da9c00d58` is `selective_absorbed`:
+The latest range from `bdaa5a4eb9ad2f5b9ce6164a9ded049da9c00d58`
+through `08676d575721a2f3f9c30fc4807d1f61e1462b3b` is `partial`:
+
+| Capability | Status | Local target or boundary |
+| --- | --- | --- |
+| Workspace-relative card and image paths | absorbed | Local artifact-relative, path-safe, and relocatable evidence contracts already enforce the durable boundary. |
+| Skill invocation as blanket subagent authorization | intentionally-rejected | User and host permissions remain authoritative; only an actual authorized spawn is reported as delegation. |
+| Mandatory finish-review subagent | intentionally-rejected | Independent review is useful when available and authorized, but the baseline must not invent permission or require unavailable runtime capability. |
+| Generated provider copies and v4.0.2 metadata synchronization | provenance-only | Provider packaging and version mirrors do not change the selected local product behavior. |
+| Transient hard-cap exception for optional imagery | provenance-only | The exception was reverted before the reviewed range head and is not final upstream behavior. |
+
+### Cumulative selected boundary
+
+The cumulative absorption state remains `selective_absorbed` through
+`fc3dc501a6f0e4f238a230b0b30148490a65171a`:
 
 | Capability | Status | Local target or boundary |
 | --- | --- | --- |
@@ -96,6 +109,9 @@ The range from `630fc2682a5bd39b25a8e61f74b6b3f14f2b1e21` through
 | `fc3dc50..bdaa5a4` live overlay/resume changes, TanStack adapters, deferred source writes, resolution caching, injection/progress coordination, tests, and generated providers | intentionally-rejected | The tail changes only the upstream live/provider runtime; no selected `design-craft` behavior was imported |
 | Universal category, font, framework, and library prescriptions | intentionally-rejected | project authority and observed performance/accessibility evidence win |
 | Promotional or "award-winning" tone | intentionally-rejected | local output remains factual and evidence-led |
+
+The compatibility pin and local behavior boundary do not advance for the
+latest range.
 
 ## Runtime and packaging boundary
 
@@ -126,5 +142,5 @@ duplicative live/provider/package runtime and prescriptive ecosystem choices
 remain intentionally outside the product.
 
 Current independent blind evidence is recorded in
-`evals/comparative/impeccable-production-ablation/`: `design-craft` 98,
-focused Impeccable upstream 95, no-skill baseline 94.
+`evals/comparative/impeccable-production-ablation/`: `design-craft` 96,
+focused Impeccable upstream 95, no-skill baseline 91.
