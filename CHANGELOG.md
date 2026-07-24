@@ -4,6 +4,10 @@ All notable local changes to `design-craft` are recorded here.
 
 ## 0.5.1 - Unreleased
 
+- Reviewed post-candidate upstream drift without advancing compatibility pins:
+  Taste sponsor-only changes are provenance-only; Impeccable's
+  workspace-relative artifact guidance is already represented, while forced
+  subagent authorization and provider/runtime copies remain rejected.
 - Split final certification from publication so evidence and exact assets can
   be certified without granting release-write or attestation permissions, and
   split publication itself into read-only verification plus a digest-only write
@@ -23,7 +27,7 @@ All notable local changes to `design-craft` are recorded here.
   `main@7429d8d` Skill tree; Cursor and Claude remain explicitly pending.
 - Re-ran all four Pi ablations with an isolated Codex blind judge. `design-craft`
   won motion `98/95/84`, motion planning `96/81/78`, visual critique
-  `99/97/94`, and production hardening `96/95/91` against the focused upstream
+  `99/94/97`, and production hardening `96/95/91` against the focused upstream
   and no-skill variants.
 - Promoted a schema-v2 Ubuntu 24.04/Python 3.13 full benchmark baseline from
   run `30064094199` (artifact SHA-256
