@@ -157,7 +157,7 @@ def validate() -> dict:
                 "benchmark-result-full.json",
                 "release-readiness-operational",
                 "DESIGN_CRAFT_NATIVE_EVIDENCE_ROOT",
-                "v0.5.0-linux-x86_64-python3.13.json",
+                "v0.5.1-linux-x86_64-python3.13.json",
                 "operational-95-candidate.json",
                 "actions/upload-artifact@",
                 "retention-days: 30",

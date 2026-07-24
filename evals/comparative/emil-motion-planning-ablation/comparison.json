@@ -1,0 +1,120 @@
+{
+  "blind_map_sha256": "6fd7251695b3fb9ebba99eea86f0b72112e04ca0eb4e4decc161d87058a5727c",
+  "blind_packet_sha256": "6a9ff62043ea1a10602584644e75566225ce9d1ffa3632db408e0cd9ef417715",
+  "case_id": "emil-motion-planning-ablation",
+  "focused_variant": "emil",
+  "judge": {
+    "host": "codex",
+    "model": "gpt-5.6-sol",
+    "model_observation": "requested_by_cli",
+    "raw_output_path": "judge-output.raw.txt",
+    "raw_output_sha256": "d8dad964a2b99f9fe3e2d098234c9be2df610d05b894a68e3af32b4524645d8e",
+    "reasoning": "max",
+    "reasoning_observation": "requested_by_cli",
+    "run_path": "run.judge.json",
+    "run_sha256": "1f66a417fa12cb8981b4fbb41ab98723e91eeece9476d5e7f09c79e8f0d663c8",
+    "runner_os": "macOS-15.7.7-arm64-arm-64bit-Mach-O",
+    "version": "codex-cli 0.145.0"
+  },
+  "judgment_path": "blind-judgment.json",
+  "judgment_schema_sha256": "b90b0fc1ec877d783cbffba9848944df30f73b9a7270c094a1cab2d7c37d9e71",
+  "judgment_sha256": "1f4bf942894d4d7add3d4491c355950adc72c35721ab4a82acd405a7b9b0c703",
+  "prompt_sha256": "81453e8d19e3de0d27bf7603b60f045cedaafa90b1a6fd7ee6dcc7249ca639ba",
+  "rationale": "A 明显胜出：它不仅最忠实地限定了静态证据边界和复用了现有项目约定，还覆盖了评分卡中特别要求的属性成本、弹层原点、动画中断、指针跟踪、速度接续及动画原语取舍。其三套计划在实施前置检查、硬边界和源码漂移停止条件方面也最接近可直接交接执行。C 排名第二，证据纪律和弹层技术判断较好，但遗漏了 sortable queue 的实施闭环；B 虽覆盖全部表面，却在高频节奏、Reduced Motion、拖拽技术方案和未验证体验断言上存在更多实质性问题。三个总分均由各项分值重新相加得到。",
+  "recorded_at": "2026-07-24T03:04:24Z",
+  "results": {
+    "baseline": {
+      "blind_label": "B",
+      "criteria": {
+        "accessibility_performance": 7,
+        "evidence_recon": 13,
+        "plan_self_containment": 18,
+        "prioritization": 7,
+        "project_conventions": 8,
+        "purpose_frequency": 8,
+        "technical_accuracy": 8,
+        "verification_quality": 9
+      },
+      "score": 78,
+      "summary": "B 的结构和计划字段较完整，也正确识别了 `transition: all`、`top` 动画、硬编码时长及 Reduced Motion 缺口。但它把“operators experience uneven timing”写成未经运行验证的既成体验，将高频命令面板设计为 240ms 且带 scale，并在 toast 的建议代码中仅缩短 Reduced Motion 时长而未确定移除位移。拖拽计划没有处理绝对 `clientY` 到局部位移、释放速度接续、当前呈现值或中断重抓，且示例直接访问 `window`，与其后续 SSR 检查要求不一致。优先级也未显式评估置信度和实施成本。"
+    },
+    "design-craft": {
+      "blind_label": "A",
+      "criteria": {
+        "accessibility_performance": 9,
+        "evidence_recon": 15,
+        "plan_self_containment": 19,
+        "prioritization": 9,
+        "project_conventions": 10,
+        "purpose_frequency": 10,
+        "technical_accuracy": 15,
+        "verification_quality": 9
+      },
+      "score": 96,
+      "summary": "A 对静态证据边界、现有语义 token、按钮先例和操作频率的梳理最完整。三项计划均包含精确路径与当前摘录、目标、步骤、边界、机械检查、后续体验检查、Reduced Motion 和源码漂移停止条件；尤其准确处理了弹层原点的不确定性，以及拖拽的局部坐标、抓取偏移、指针捕获、速度传递、当前呈现值、可中断性和动画原语能力边界。扣分点是优先级表未显式列出置信度与成本，性能检查没有给出帧时间或样式重算等量化测量门槛，部分 Reduced Motion 决策仍留有条件分支，而且篇幅明显超过 180 行。"
+    },
+    "emil": {
+      "blind_label": "C",
+      "criteria": {
+        "accessibility_performance": 7,
+        "evidence_recon": 15,
+        "plan_self_containment": 17,
+        "prioritization": 7,
+        "project_conventions": 8,
+        "purpose_frequency": 9,
+        "technical_accuracy": 10,
+        "verification_quality": 8
+      },
+      "score": 81,
+      "summary": "C 的证据措辞谨慎，能区分静态判断与待执行的运行检查；命令面板、popover 和 toast 三项计划清楚，特别是对 trigger-aware transform origin 的条件判断比 B 更稳健。不过命令面板的 120ms fallback 绕开了已经给出的语义时长 token，并可能过度从“保持因果连续性”退到完全无动效。更大的缺口是 sortable queue 虽列为重要发现，却没有自包含实施计划，因此没有形成对坐标系、指针捕获、释放速度、动画中断、原语取舍、Reduced Motion 和专项验证的闭环。性能检查同样缺少量化测量标准，整体也超过行数预算。"
+    }
+  },
+  "schema": "design-craft.comparative-result.v3",
+  "scorecard_json_sha256": "a06d975f9da69fa9bea87362ee0e4f90bdc790e552561e6b6ac96f650bb53a88",
+  "scorecard_sha256": "ea04fd4fce3cbad1a31129f3b8ea45be2bca0ec334b07598a3d5223e41260d48",
+  "variant_runs": {
+    "baseline": {
+      "contract_sha256": "9982847aa02610d7840eea6647b935c359dcdac7337bbe5ff3ebd29ee938d86b",
+      "host": "pi",
+      "host_version": "0.80.6",
+      "model": "codex/gpt-5.5",
+      "output_path": "output.baseline.md",
+      "output_sha256": "c8a6e04ef32ecb81f2bd941d8c9c3bc7eeb46ee1cfd5880aac1ed991068d1543",
+      "run_path": "run.baseline.json",
+      "run_sha256": "36641c1d684cafe97d515bb631190fbe577845d0dd6ab95af4d718b9afbae7e3",
+      "skill_trees": {},
+      "thinking": "high"
+    },
+    "design-craft": {
+      "contract_sha256": "9982847aa02610d7840eea6647b935c359dcdac7337bbe5ff3ebd29ee938d86b",
+      "host": "pi",
+      "host_version": "0.80.6",
+      "model": "codex/gpt-5.5",
+      "output_path": "output.design-craft.md",
+      "output_sha256": "3f81cc382c0f5d4398fd1b5cb73f2f43ff40f5ee6f3628aec7b4611a41b61759",
+      "run_path": "run.design-craft.json",
+      "run_sha256": "a4d1166281a23f9ba4610728827f2f038bd03c6842f0e05a0ab6bd4d2d38c6b8",
+      "skill_trees": {
+        "skills/design-craft": "318f7552b081c4409dc773c502fd8f753e3ae452b143dbeb3c4ec8c7cab962f9"
+      },
+      "thinking": "high"
+    },
+    "emil": {
+      "contract_sha256": "9982847aa02610d7840eea6647b935c359dcdac7337bbe5ff3ebd29ee938d86b",
+      "host": "pi",
+      "host_version": "0.80.6",
+      "model": "codex/gpt-5.5",
+      "output_path": "output.emil.md",
+      "output_sha256": "b5ba4a4e817458ab41d9a26b8dd7995de41830307fdd625d56b83366975d511c",
+      "run_path": "run.emil.json",
+      "run_sha256": "1b09cef653ce036d602db47012efccdcdb167079f4f24746b8a2c92b3f781d0f",
+      "skill_trees": {
+        "upstreams/emilkowalski-skills/skills/apple-design": "84ebad0905bc9274fc22eb0b100778adaee20e6d479a69168b5f3a2f018e19de",
+        "upstreams/emilkowalski-skills/skills/improve-animations": "b4813f60575f3e1e3d916bb76def2b5821e91194fc6896e6d47177cc22a9e488",
+        "upstreams/emilkowalski-skills/skills/review-animations": "b86f754de11344856c2e7ae5c809eb134c8b8c23920baa44adaa06e77cf4ad00"
+      },
+      "thinking": "high"
+    }
+  },
+  "winner": "design-craft"
+}
