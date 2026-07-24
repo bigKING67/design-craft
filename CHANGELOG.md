@@ -2,7 +2,7 @@
 
 All notable local changes to `design-craft` are recorded here.
 
-## 0.5.2 - Unreleased
+## 0.5.2 - 2026-07-24
 
 - Normalize the `actions/upload-artifact` certification digest output from raw
   hexadecimal or canonical `sha256:` form into the canonical release receipt
