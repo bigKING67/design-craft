@@ -1,5 +1,5 @@
 {
-  "rationale": "A 是唯一同时完整命中所有关键检查点的输出：它明确指出动画期间的输入锁定，要求捕获活动指针并保留抓取偏移，维持一对一跟随，从当前 presentation value 可中断地重抓，使用 CSS px/s 速度、投影端点与滞回选择吸附状态，并把释放速度带入 settle。它还同时拒绝 top、transition: all 和冲突的 transform 所有权，给出非前庭性的 Reduced Motion 反馈路径，严格区分静态已验证与运行时未验证内容，并用足够小的验证计划在篇幅限制内收口。C 技术覆盖接近，但证据措辞、速度单位和篇幅合规性较弱；B 则缺失最关键的中途重抓连续性与完整速度投影链路。",
+  "rationale": "A 的覆盖最完整且证据校准最好：它明确声明仅基于静态源码，不冒充浏览器、设备、帧率或体感验证，同时逐项给出了当前呈现值接管、取消并重定向、CSS px/s 速度、受限投影端点和 snap 语义选择。C 的技术深度接近 A，但存在确定性运行体感断言和无来源的 10,000 行场景；B 同样有该无来源条件，而且速度部分缺少单位、投影端点及速度连续传递，因此 A 胜出。",
   "results": [
     {
       "criteria": {
@@ -13,38 +13,38 @@
         "velocity_projection": 15
       },
       "label": "A",
-      "summary": "完整覆盖静态证据边界、输入锁定、指针捕获、抓取偏移、一对一跟随、呈现值中断、CSS px/s 速度、投影吸附、性能约束、Reduced Motion 与最小验证计划，并保持在篇幅预算内。",
+      "summary": "静态证据边界最严谨，完整覆盖输入锁定、指针捕获、抓取偏移、一对一跟随、从当前呈现值无跳变中断、以 px/s 表示的释放速度、受限投影落点、合成属性纪律和非前庭化 Reduced Motion 路径；实施步骤与最小运行验证计划也完整且保持在范围内。",
       "total": 100
     },
     {
       "criteria": {
         "accessibility": 10,
-        "actionability": 8,
-        "direct_manipulation": 11,
-        "evidence_honesty": 12,
-        "interruption": 5,
-        "motion_necessity": 9,
+        "actionability": 10,
+        "direct_manipulation": 15,
+        "evidence_honesty": 13,
+        "interruption": 15,
+        "motion_necessity": 10,
         "performance": 10,
-        "velocity_projection": 8
+        "velocity_projection": 9
       },
       "label": "B",
-      "summary": "性能、指针捕获、抓取偏移、Reduced Motion 和实施步骤较完整，但遗漏了 animating 导致的重新抓取锁定，也没有要求从当前屏幕呈现值无跳变地中断；速度方案缺少明确单位、端点投影和初始速度继承，且篇幅略超预算。",
-      "total": 73
+      "summary": "直接操控、可中断性、性能、Reduced Motion 和验证计划均很扎实，但无依据地引入了“10,000-row”场景，并作出部分体感预测；速度方案只给出方向偏置和阈值思路，没有明确速度单位、投影终点计算，也没有充分说明如何把释放速度连续传入 settle。",
+      "total": 92
     },
     {
       "criteria": {
         "accessibility": 10,
-        "actionability": 7,
+        "actionability": 10,
         "direct_manipulation": 15,
         "evidence_honesty": 11,
         "interruption": 15,
         "motion_necessity": 10,
         "performance": 10,
-        "velocity_projection": 13
+        "velocity_projection": 15
       },
       "label": "C",
-      "summary": "直接操控和中断设计非常完整，也明确使用速度投影选择吸附点；但未明确速度单位及释放速度如何注入最终 settle，并以未提供的 10,000 行场景和较确定的运行时影响表述削弱证据诚实度，整体明显超过 150 行预算。",
-      "total": 91
+      "summary": "除证据措辞外几乎完整命中全部技术要求，尤其明确了 px/s 速度、投影落点、snap 选择以及从实时呈现位置无跳变接管；扣分主要来自把静态分析写成“will feel”式确定体感结论，并同样虚构了未提供的“10,000-row”产品条件。",
+      "total": 96
     }
   ],
   "winner": "A"

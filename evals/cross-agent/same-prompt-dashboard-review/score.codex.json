@@ -9,24 +9,24 @@
   "reasoning_profile": "max",
   "reasoning_observation": "requested_by_cli",
   "runner_os": "macOS-15.7.7-arm64-arm-64bit-Mach-O",
-  "date": "2026-07-24",
+  "date": "2026-07-25",
   "prompt_sha256": "7fd3c7f14647c8b54cc44ef371f2d7ea56bb77efa89cb8081f09a7b41ae777d6",
   "scorecard_json_sha256": "9b73f89575f83eecd859595a81851a57681987dbb8aee6d3b8230d5827081920",
-  "contract_sha256": "392e1903ad3e7088fc07c6794dfc98d025f310781a01a51f880fd0041ab25c8e",
+  "contract_sha256": "907627714e2c4078558dba2e0449c2df2bf1d6d7db5e91e0f1e8b2017c22d0c9",
   "run_manifest_path": "run.codex.json",
-  "run_manifest_sha256": "15ac21051a009d2354203e34d99bad34ef85d58eb393f0afee48cf4d749c79a9",
-  "skill_version": "0.5.1",
-  "skill_source_commit": "7429d8d04f398494b615070e84efee43f75b0e23",
+  "run_manifest_sha256": "d987928438dd5e0744bdac25a1fc7b4b2068ea842d8441aab1e8caf66f1b5dc0",
+  "skill_version": "0.5.3",
+  "skill_source_commit": "47bbb40664ac35523d8dfb11ba310567e2802ccc",
   "skill_source_dirty": false,
   "repo_dirty": true,
   "release_state": "unknown",
-  "skill_tree_sha256": "318f7552b081c4409dc773c502fd8f753e3ae452b143dbeb3c4ec8c7cab962f9",
+  "skill_tree_sha256": "64a3997fa784e6614350506cc4a608d72451cdcc6a6b7df3c6d65234c2662230",
   "skill_path": "$BENCHMARK_WORKSPACE/.agents/skills/design-craft",
   "provenance_skill_path": "$DESIGN_CRAFT_HOME/skills/design-craft",
   "command_summary": "codex exec --ephemeral --sandbox read-only --skip-git-repo-check --ignore-rules -C '$BENCHMARK_WORKSPACE' --model gpt-5.6-sol -c 'model_reasoning_effort=\"max\"' --output-last-message '$BENCHMARK_WORKSPACE/.design-craft-host-output.md' -",
   "output_path": "codex-output.md",
-  "output_sha256": "5b6ad1689f515d99170185002eb50a1213da6e555fef2fa2b61a272cbc2e9cc7",
-  "score": 100,
+  "output_sha256": "e3c8bffcdadbe90f10c2c6cbd6b716de5027c09e81487cdb08361476c25edabc",
+  "score": 95,
   "criteria": {
     "style_authority": {
       "passed": true,
@@ -59,9 +59,9 @@
       "note": "Specifies lead and supporting metrics, exception queue, diagnostic chart, task-first table, contextual actions, and resilient states."
     },
     "scope_control": {
-      "passed": true,
-      "earned": 10,
-      "note": "Remains read-only, prioritized, dashboard-specific, and within the explicit 150-line response budget."
+      "passed": false,
+      "earned": 5,
+      "note": "The review stays dashboard-specific and read-only but is 172 lines, exceeding the explicit 150-line hard cap by 22 lines."
     }
   }
 }

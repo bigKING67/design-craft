@@ -1,85 +1,96 @@
-## 1. Diagnosis
+## 1. Diagnosis — evidence label
 
-**Diagnosis — Evidence: static product description + product authority only.** The surface reads like a generic analytics dashboard, but the product’s real job is an exception triage workspace, so the highest-priority decisions are delayed, visually flattened, and under-specified for real operational use.
+**Diagnosis:** The surface reads as a generic analytics dashboard rather than an hour-prioritized exception workspace: the urgent merchandising decisions are visually delayed, equally weighted, and under-specified at the table/action layer.  
+**Evidence label:** Static product-surface description only; no browser, DOM, runtime, responsive, or accessibility-tree validation claimed.
+
+---
 
 ## 2. Blocking findings
 
-1. **Primary workflow is below the fold.**  
-   The exception table is the core object for “find what needs action in the next hour,” but it appears after header clutter, fragmented page metadata, eight equal KPIs, a chart card, and generic insight cards.
+1. **Primary job is below the fold.**  
+   The exception table is the core “find what needs action in the next hour” surface, but it starts below KPI cards, chart cards, and generic insight cards.
 
-2. **Priority hierarchy is inverted or absent.**  
-   Revenue risk, blocked SKUs, sell-through, and page views receive equal visual treatment, making urgent operational risk look equivalent to passive analytics.
+2. **Urgency hierarchy is flattened.**  
+   Revenue risk, blocked SKUs, sell-through, and page views receive equal KPI treatment, so operationally urgent exceptions are visually equivalent to background telemetry.
 
-3. **The table does not support fast exception scanning.**  
-   Product, issue, owner, deadline, financial impact, status, and action all use similar weight; long names truncate too early; status is color-dot-only; actions are unlabeled icons.
+3. **Table is not scannable enough for action.**  
+   Product, issue, owner, deadline, impact, status, and action use similar weight; the user cannot quickly rank “what matters now.”
 
-4. **Generic “insights” dilute trust.**  
-   Copy like “Monitor performance closely” is not decision-grade for merchandising analysts because it names no product, threshold, owner, impact, or next action.
+4. **Status and actions are ambiguous.**  
+   Small colored dots without text and three unlabeled icons force memory, guessing, and hover dependence in a high-pressure operations flow.
 
-5. **Critical production states are undefined.**  
-   Empty, loading, error, focus, narrow-laptop, and long-translation states are not described, which blocks confidence in a dense operational surface.
+5. **The visual system over-containers everything.**  
+   Borders, radius, and soft shadows on every region create card soup, reduce density, and weaken the calm, precise navy/ink operations tone.
+
+---
 
 ## 3. Secondary findings
 
-1. **Header has too many equal competitors.**  
-   Six equal nav links, global search, three icon buttons, and a bright “Create” button compete with exception triage.
+1. **Header competes with the work.**  
+   Six equal nav links, global search, three icon buttons, and a bright blue Create button make the top bar feel like a general SaaS shell, not an exception triage cockpit.
 
-2. **Page command area is fragmented.**  
-   Title, subtitle, date range, export, and refresh status spread across four weakly aligned rows, increasing scan cost before work begins.
+2. **Page metadata is fragmented.**  
+   Title, subtitle, date range, export, and refresh status across four weakly aligned rows create avoidable scanning cost before the analyst reaches data.
 
-3. **Over-cardification weakens density.**  
-   Borders, 16px radius, and soft shadows on every region create a SaaS-template feel and reduce the calm precision expected of an operations workspace.
+3. **Generic insights reduce credibility.**  
+   Copy like “Monitor performance closely” does not explain a specific exception, cause, threshold, owner, or next action.
 
-4. **Typography is too timid for high-stakes scanning.**  
-   12–13px low-contrast gray body text and similar weights make owner, deadline, impact, and status harder to distinguish.
+4. **Typography and contrast sound too light for dense operations.**  
+   12–13px low-contrast gray body text risks fatigue and undermines precision, especially in long sessions.
 
-5. **Spacing lacks operational rhythm.**  
-   Gaps from 8px to 48px without clear grouping make the page feel assembled rather than composed.
+5. **Missing edge-state definitions are material.**  
+   Empty, loading, error, keyboard-focus, narrow-laptop, and long-translation states are not cosmetic here; they determine whether the workspace remains usable under real operational conditions.
+
+---
 
 ## 4. Concrete redesign moves with acceptance criteria
 
-1. **Replace the fragmented hero rows with one compact command band.**  
-   Keep title, date range, refresh status, export, and relevant filters on one aligned horizontal grid beneath the global header.  
-   **Acceptance:** User can identify current scope, freshness, and available export/refresh controls in one scan line.
+1. **Rebuild the top of page around triage, not navigation.**  
+   Acceptance: within the first viewport, the analyst can see the page title, active date range, refresh recency, total urgent exceptions, and the top rows of the exception table.
 
-2. **Make “exceptions needing action in the next hour” the lead object.**  
-   Put a lead summary and the exception table/queue above the chart block.  
-   **Acceptance:** At 1366×768, the first screen shows the exception count, total financial exposure, SLA/deadline pressure, and the first actionable rows.
+2. **Compress page metadata into one aligned command bar.**  
+   Acceptance: title/subtitle sit as one block; date range, export, and refresh status align on the same row or a single secondary row with consistent spacing.
 
-3. **Convert the eight KPI cards into a priority hierarchy.**  
-   Promote revenue risk, blocked SKUs, and urgent deadlines; demote page views and passive diagnostics into a compact secondary strip.  
-   **Acceptance:** The highest-risk metric is visually dominant, and every emphasized number includes period, comparison, threshold, or owner context.
+3. **Replace eight equal KPI cards with a priority strip.**  
+   Acceptance: only 3–4 metrics appear above the table, led by “Revenue risk,” “Blocked SKUs,” “Deadline within 1h,” or equivalent action-driving measures; page views becomes secondary or moves below.
 
-4. **Remove generic insight cards unless they become evidence-backed action cards.**  
-   Each retained insight must name the affected product/segment, observed change, threshold crossed, financial or operational impact, and recommended owner/action.  
-   **Acceptance:** No insight can read as reusable dashboard filler.
+4. **Demote or contextualize the area chart.**  
+   Acceptance: the chart no longer pushes exceptions below the fold unless it directly explains the selected exception set; generic insight cards are removed or replaced with specific rule-based findings.
 
-5. **Rebuild the table around triage anatomy.**  
-   Recommended order: product identity, issue/severity, financial impact, deadline/SLA, owner, status, next action; group secondary metadata behind row expansion or lower-emphasis columns.  
-   **Acceptance:** A row can be understood left-to-right as “what is wrong, how bad is it, who owns it, when is it due, what do I do?”
+5. **Make the exception table the main composition anchor.**  
+   Acceptance: default sort prioritizes urgency and financial impact; deadline, issue severity, and impact have stronger visual weight than owner or routine metadata.
 
-6. **Make status and actions text-supported, not icon/color-only.**  
-   Replace colored dots with labeled status pills using semantic amber/red/neutral treatment; replace three unlabeled icons with one primary text action plus a labeled overflow menu.  
-   **Acceptance:** Status remains understandable without color, and every row action has a visible or accessible name and keyboard path.
+6. **Use explicit status and action language.**  
+   Acceptance: status appears as text-bearing chips such as “Blocked,” “At risk,” “Needs owner,” or “Due <1h”; row actions use visible labels or a labeled primary action plus overflow menu, not three unlabeled icons.
 
-7. **Calm the surface system.**  
-   Reduce nested cards, reserve elevation for overlays or selected/active regions, use subtle dividers and spacing before shadows, keep the navy/ink neutral system and semantic amber/red status colors.  
-   **Acceptance:** The page uses fewer surface layers, clearer grouping, and no decorative gradients/glass/illustration.
+7. **Harden table content for real merchandising data.**  
+   Acceptance: long product names have a wider first column, two-line allowance or expandable detail, and a reliable full-name reveal; financial impact remains readable and aligned; translations do not break row height unpredictably.
 
-8. **Define resilient state variants as part of the design, not afterthoughts.**  
-   Specify populated, empty, loading, partial error, full error, stale refresh, long product name, long translation, keyboard focus, disabled action, and narrow-laptop behavior.  
-   **Acceptance:** Each state gives a clear next step and preserves table scanability.
+8. **Tighten the visual system for calm density.**  
+   Acceptance: use navy/ink neutrals and semantic amber/red only for meaning; remove decorative shadows from routine regions; use a consistent spacing rhythm such as 8/16/24/32; body text is at least comfortably readable with higher contrast, with 12px reserved for metadata.
+
+---
 
 ## 5. Score band
 
-**Static score band: 58–66 / 100.**  
-Justification: the surface has a coherent enterprise-neutral direction and preserves real workflows/data, but the core exception workflow is buried, hierarchy is flat, table affordances are weak, and state/accessibility/responsive behavior is unproven from the supplied description.
+**Static evidence score band: 52–60 / 100.**  
+Justification: the surface appears structurally complete and uses a restrained neutral/status palette, but the current hierarchy actively works against the primary job by burying exceptions, flattening urgency, and making table actions/statuses ambiguous. This score could move materially if runtime evidence shows strong keyboard flow, responsive triage behavior, and robust state handling not described here.
+
+---
 
 ## 6. Smallest validation plan that could change the verdict
 
-1. **Desktop first-screen check:** 1440×900 and 1366×768; verify whether exception count, risk, and first actionable rows appear without scrolling.  
-2. **Narrow-laptop check:** 1280×720; check command band wrapping, table overflow, sticky header/controls if present, and action visibility.  
-3. **Table stress data:** long product names, long owner names, long translated issue/status labels, high currency values, overdue deadlines, multiple severity levels.  
-4. **State pass:** populated, zero exceptions, loading, stale refresh, partial API failure, full API failure, disabled action, permission-limited user.  
-5. **Keyboard pass:** tab through header, filters, table rows, status/action controls, overflow menus, and return focus after any menu/dialog.  
-6. **Status/action comprehension check:** confirm every status and row action is understandable without relying on color or unlabeled icons.
+1. **First-viewport check at common desktop and narrow-laptop widths.**  
+   Verify whether urgent exceptions and their top actions are visible without scrolling.
+
+2. **Real data table pass.**  
+   Test long product names, high financial values, many urgent rows, missing owners, overdue deadlines, and translated labels.
+
+3. **State coverage pass.**  
+   Review loading, empty, partial-error, full-error, stale-refresh, and no-results states for the table and KPI area.
+
+4. **Keyboard-only task path.**  
+   Confirm the analyst can search/filter, reach the first urgent row, identify status, open the action, and recover focus without mouse dependence.
+
+5. **Contrast and focus-visible check.**  
+   Validate low-contrast gray text, semantic status colors, icon controls, and focus states against the navy/ink system.

@@ -1,48 +1,48 @@
 {
-  "rationale": "A 获胜。它在三份输出中最完整地满足了“先静态审计和建立基线，再进行硬化与有证据的优化”的要求，并且是唯一明确提供 p95 输入延迟、结果更新时间、长任务和 CLS 等暂定量化门槛的输出。它还在开头明确限定为只读静态审计，逐项区分源码证据与运行时假设，并为虚拟化、焦点管理和保存状态改动设置了具体回滚条件。B 与 C 的功能覆盖同样很强，但性能阈值主要停留在“保持响应”一类定性表述；B 还存在更明显的重复和范围膨胀，C 则在总序列中把优化放在无障碍适配之前。各总分均由所列七项分数重新相加得到。",
+  "rationale": "C以最完整的数据安全与恢复机制、最严谨的重试和并发写入约束、覆盖渲染、过滤、图片与布局的测量方案，以及明确的验收、回滚和分阶段发布条件取得最高分。A的总体顺序更纯粹、实现建议同样扎实，但触控目标修复和可量化性能门槛略弱；B的平板与可访问性细节突出，却在顶层流程中先优化、后做可访问性润色和测量回归，弱化了“测量优先”与阻断项优先级。三者均保持只读和证据边界，但都未严格满足180行限制。",
   "results": [
     {
       "criteria": {
         "detector_reconciliation": 10,
-        "evidence_scope": 9,
+        "evidence_scope": 8,
         "hostile_data": 20,
-        "measured_performance": 15,
+        "measured_performance": 14,
         "mode_sequence": 10,
         "production_fixes": 20,
-        "responsive_accessibility": 15
+        "responsive_accessibility": 14
       },
       "label": "A",
-      "summary": "覆盖最完整，证据边界也最清楚；明确采用基线先行的优化顺序，并给出可量化的临时性能门槛、验收条件与回滚条件。主要扣分是内容略显冗长，范围控制仍可收紧。",
-      "total": 99
+      "summary": "审计、加固、可访问性与状态恢复、实测优化、视觉润色的顺序最清晰；失败状态机和验收回滚方案也很具体。主要扣分是没有明确落实触控目标尺寸、性能阈值偏定性，而且明显超过了180行限制。",
+      "total": 96
+    },
+    {
+      "criteria": {
+        "detector_reconciliation": 10,
+        "evidence_scope": 9,
+        "hostile_data": 19,
+        "measured_performance": 13,
+        "mode_sequence": 8,
+        "production_fixes": 19,
+        "responsive_accessibility": 15
+      },
+      "label": "B",
+      "summary": "响应式和可访问性方案最明确，包括平板横竖屏策略、44px触控目标、对话框语义和焦点恢复。弱点是顶层顺序把性能优化放在可访问性处理之前、把测量回归放在优化之后，性能基线与阈值也较笼统。",
+      "total": 93
     },
     {
       "criteria": {
         "detector_reconciliation": 10,
         "evidence_scope": 8,
         "hostile_data": 20,
-        "measured_performance": 13,
-        "mode_sequence": 9,
-        "production_fixes": 20,
-        "responsive_accessibility": 15
-      },
-      "label": "B",
-      "summary": "故障、权限、 hostile data、无障碍和表格语义覆盖全面，修复建议可执行；但首段把部分无障碍工作归入后期 polish，性能验收没有给出实际数值阈值，而且后半部分重复较多。",
-      "total": 95
-    },
-    {
-      "criteria": {
-        "detector_reconciliation": 10,
-        "evidence_scope": 9,
-        "hostile_data": 20,
-        "measured_performance": 13,
+        "measured_performance": 15,
         "mode_sequence": 9,
         "production_fixes": 20,
         "responsive_accessibility": 15
       },
       "label": "C",
-      "summary": "保存状态机、冲突处理、请求时序、响应式适配和回滚方案都很具体，证据与假设分离良好；不足是性能接受门槛仍偏定性，且标题顺序将优化置于无障碍适配之前。",
-      "total": 96
+      "summary": "覆盖最完整且最接近生产实施：请求与版本标识、幂等重试、冲突恢复、上传状态、虚拟化回退、性能预算和发布监控形成了完整闭环。顶层顺序中运行时基线晚于加固与后文“变更前基线”略有矛盾，并且篇幅明显超过180行。",
+      "total": 97
     }
   ],
-  "winner": "A"
+  "winner": "C"
 }

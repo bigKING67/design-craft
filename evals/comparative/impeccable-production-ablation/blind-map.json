@@ -4,32 +4,32 @@
   "judgment_schema_sha256": "8ab06e3fbd808dfb94de68b17ca25a94d56d3e15c485f64756f3528fdfdae4ce",
   "outputs": {
     "A": {
-      "path": "output.design-craft.md",
-      "run_path": "run.design-craft.json",
-      "run_sha256": "8fb917eb9e4c1e3333e41ad024be0b016487db8e7802bcdf469246684c0e002d",
-      "sha256": "5eb6f85049f097a8c2a9a5751eedfa9d6ca27250b72c24379e258c5b5f17b3bf",
-      "variant": "design-craft"
-    },
-    "B": {
       "path": "output.baseline.md",
       "run_path": "run.baseline.json",
-      "run_sha256": "b7039261e15e30707b26c8a68f7f304ef2164734afdb95dfb8e4d5fcdff3e470",
-      "sha256": "368748441e891e3b05137d03a2c7c3f08efa155709ca613e12ae99f9c0d4aff7",
+      "run_sha256": "cc3b84a6ffe8f5b0703560351e0526c088ce1b7da427d847445980aa3258eb6d",
+      "sha256": "fd9396f73dc7d71a671bd2887224be2bf8ab83f7f3c955f7d43722b3913b924f",
       "variant": "baseline"
     },
-    "C": {
+    "B": {
       "path": "output.impeccable.md",
       "run_path": "run.impeccable.json",
-      "run_sha256": "da16d96f8502e368095bff6865fae8d9befcb78f20b289db3574c5680363e6b1",
-      "sha256": "0fa79dd5d764f994d2450b1a3610934c2122bafa4b5a96ed26ab219dfe5a3cb4",
+      "run_sha256": "230f63084fe7c83723a532da121def94599318eeca1e80a006db9855e6d07066",
+      "sha256": "2beb8b4fb0def1022e5815bf6b1d4cb0d242d29f348a0325540d7e94c97d6ec3",
       "variant": "impeccable"
+    },
+    "C": {
+      "path": "output.design-craft.md",
+      "run_path": "run.design-craft.json",
+      "run_sha256": "6b76a2e1629e57f5350732e091d617f51c44d15f78ac2d9998115e844d19f8a6",
+      "sha256": "2747e38f4549947677b3ca772c054b77bcae6347295aca463fcd62b6aff86fc0",
+      "variant": "design-craft"
     }
   },
   "packet_path": "blind-packet.md",
-  "packet_sha256": "5406a5d80210c0e6a45de94ee87e40a4076deadc18f7e869e42dc0e174970a5a",
+  "packet_sha256": "36e7657f9f477e93e75a39c344345c756468dac71d92166e2e2f25b3a6b2fe5a",
   "prompt_sha256": "8efbd7f3fc974e0abcb8ef0d736102db96436e596a93cb040717a757ff451fde",
   "schema": "design-craft.comparative-blind-map.v3",
   "scorecard_json_sha256": "1941a30865724592c32ea8a4440e36e85cedc2d19bad7d65c9e4300de81ccd7b",
   "scorecard_sha256": "b82445ccf5f79e3dcebbf76c7b4133151b0f54a6c8ddc3e348d7d0d5348230a2",
-  "seed_sha256": "4f2f11b0124a9d1d461e9271f0b9e9e5236a46d802cb58e2829fa9e92d3c6dfa"
+  "seed_sha256": "5f0dba27a9e35a794186195b8077d383d60d3ed183311d21b197fd9ddbdb31d3"
 }

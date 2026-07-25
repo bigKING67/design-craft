@@ -2,6 +2,15 @@
 
 All notable local changes to `design-craft` are recorded here.
 
+## 0.5.3 - Unreleased
+
+- Refresh Codex, Pi, and comparative current-source evidence after the
+  certification receipt fix changed the release-candidate skill tree.
+- Make capped critique outputs reconcile identified blockers and high-impact
+  secondary layers with the final redesign move budget.
+- Preserve hash-bound model output whitespace and recognize common Chinese
+  wording for concrete design changes in cross-agent validation.
+
 ## 0.5.2 - 2026-07-24
 
 - Normalize the `actions/upload-artifact` certification digest output from raw
