@@ -1,119 +1,164 @@
-## 1. 证据级别与设计解读
+## 1. 证据级别与设计判断
 
-**结论：Block，不建议进入实现批准。** 动效本身有正当目的，但当前静态实现把直接操控做成了慢、不可安全中断、坐标所有权不清晰的 `top` 动画。
+- **模式**：`design-craft` / `critique`
+- **平台**：Web
+- **证据级别**：**L0 静态源码审查**。只有产品说明和局部 JS/CSS，没有渲染、computed style、事件轨迹或帧时间证据。
+- **风格权威**：以题面给出的“calm utility UI、动效只服务因果关系和直接操控”为准。
+- **实施批准结论**：**Block**。保留底部面板运动的理由成立，但当前代码没有建立可靠的直接操控模型，也没有满足 Reduced Motion 要求。
+- **设计解读**：我把它读作一个供高频日常运营人员使用的 Web 操作面板，气质应克制、稳定，优先保证拖拽因果清晰、随时可接管，并在状态切换时保留任务上下文。
 
-- **Evidence level：Static-only / source evidence。**
-- 使用：`design-craft`，模式为 `critique`，平台为 Web。
-- 静态代码可以证明已声明的事件路径、属性和值，以及所给片段中缺失的分支；不能证明实际手感、帧率、computed style、浏览器合成行为或真机触控结果。
-- **Design read：**这是一个供运营人员高频使用的 Web bottom sheet，风格是克制的工具型 UI，核心目标是在 `collapsed / half / full` 间移动时保持直接操控感和任务上下文。
+一句话诊断：**当前实现把拖拽当成“不断改 `top` 后播放固定补间”，而不是一个可中断、带速度连续性的直接操控系统。**
 
-## 2. 哪些动效应该存在
+## 2. 哪些运动应该存在
 
 **应该存在：**
 
-1. `pointerdown` 时的即时、轻量确认。
-2. 拖动期间与指针严格对应的空间反馈——这是直接操控，不应被“缓动”。
-3. 松手后到合法 snap point 的短促 settle，用来解释状态归位。
-4. 被中途重新抓取时，从当前屏幕位置无跳变地交回控制权。
+- pointer-down 时立即出现局部、低幅度的抓取反馈。
+- 超过意图阈值后，面板与指针保持 1:1 跟随。
+- 松手后，从当前屏幕位置和当前释放速度出发，短促地收敛到合法状态。
+- 程序化切换 `collapsed / half / full` 时，可以有简短、可中断的位移，以解释状态空间关系。
 
-**不应该动画化：**
+**不应该存在：**
 
-- 指针与 sheet 之间的跟随过程。
-- 整张 sheet 的 `scale(0.96)` 按压效果及内部文字、控件的缩放。
-- `top`、布局尺寸或 `transition: all`。
-- 固定 `480ms ease-in` 的长距离归位。
-- 装饰性 bounce、内容重排、与状态无关的视差。
-- Reduced Motion 下的大距离自动位移、投射惯性和橡皮筋效果。
+- 不应对整个 sheet 做 `scale(0.96)`；它会让内容、边缘和抓取点一起漂移。
+- 不应使用 `transition: all`。
+- 不应在拖拽热路径或 settle 中动画 `top`。
+- 不应使用固定 `480ms ease-in`；它先迟钝、后加速，与释放动作脱节。
+- 不应在 settle 期间锁住重新抓取。
+- 不应默认加入弹跳、长惯性或跨多个状态的抛掷。
+- Reduced Motion 下不应保留投射、橡皮筋、过冲或大距离自动滑行。
 
-## 3. 阻塞发现，按优先级排序
+## 3. 阻断发现，按优先级排序
 
-### P0-1：事件路径不是一个受控的 drag session
+### B1 · P0 — 当前事件通道不构成有效的 1:1 拖拽
 
-`animating` 只阻止 `pointerdown`；`pointermove` 和 `pointerup` 没有 `dragging`、`pointerId` 或按钮状态门禁。任何送达该 listener 的 `pointermove` 都会改写 `top`，未开始拖动的 `pointerup` 也会触发 settle。
+- `pointermove` 没有检查 active drag、`pointerId` 或 `buttons`，因此源码允许未按下时的移动事件也写入位置。
+- `startY` 在所示代码中没有被使用；`event.clientY` 被直接赋给相对布局属性 `top`。
+- 这没有保存 grab offset，也没有把 viewport 坐标明确转换到 sheet/container 坐标。
+- 没有 pointer capture、`pointercancel` 或 `lostpointercapture` 处理，指针离开 sheet 后不能保证继续跟踪和收尾。
+- 没有合法边界；所示逻辑可把 sheet 拖过 `full` 或 `collapsed`。
 
-同时未看到 `setPointerCapture`、`pointercancel`、`lostpointercapture` 或多指过滤。指针离开 sheet 后可能丢失后续事件；这在静态层面已经不足以支撑可靠的直接操控。
+### B2 · P0 — settle 不可中断，且输入与动画所有权不一致
 
-### P0-2：没有保持 grab offset，也没有建立统一坐标系
+- `animating` 只拒绝 `pointerdown`，但 `pointermove` 和 `pointerup` 仍可继续写入或启动动画。
+- 用户无法在动画中途重新抓住当前屏幕位置；这破坏了直接操控的核心承诺。
+- inline `top`、WAAPI `top`、`fill: "forwards"` 与 CSS transition 同时参与状态表达，缺少单一 presentation-value owner。
+- 逻辑目标、底层样式值和屏幕当前值可能分离；实际优先级表现仍需浏览器验证。
 
-`startY` 在所给证据中写入后未使用；`event.clientY` 是 viewport 坐标，却被直接赋给通常相对 containing block 的 `top`，而且指针位置被当成 sheet 顶边。
+### B3 · P0 — 没有可见的 Reduced Motion 路径
 
-因此代码没有表达“用户抓住 sheet 的哪个位置”。若 containing block 不是 viewport 原点，或用户不是从顶边抓取，存在首帧跳变和持续偏移风险；实际偏移量仍需 runtime 验证。
+- 所示 JS/CSS 没有 `prefers-reduced-motion` 分支。
+- 该交互包含最长 `480ms` 的明显空间位移，直接触碰题面明确的无障碍要求。
+- Reduced Motion 不能只把时长略微缩短；必须取消额外惯性、橡皮筋和大距离自动 travel，同时保留状态确认。
 
-### P0-3：声明的 CSS 会破坏 1:1 跟随，并建立 layout 热路径
+### B4 · P1 — 释放物理量被清零，目标选择与速度没有分层
 
-`transition: all 300ms` 会把可过渡的 `top` 更新变成追赶指针的过渡，而不是直接跟随；每个 move 又写入布局属性 `top`。这同时带来输入滞后、CSS transition 与 WAAPI 所有权冲突，以及持续 layout/paint 的风险。
+- 当前只对 `sheet.offsetTop` 做 `nearestSnapPoint`，没有采样或传递释放速度。
+- `ease-in` 等价于松手后重新从近似静止开始，再向目标加速；手指运动与面板运动不连续。
+- “速度传入 settle”是必须修复的连续性问题。
+- “用 projected endpoint 改选目标”则是独立产品决策；现有证据只支持 nearest-current-position 语义，不能静默改成动量选点。
 
-静态代码足以判定该属性策略不适合 drag；实际延迟、掉帧和重排成本尚未测量。
+### B5 · P1 — 属性和按压反馈与高频工具场景冲突
 
-### P0-4：settle 不可中断，presentation value 与逻辑值没有统一所有者
-
-`if (animating) return` 明确拒绝在 settle 中重新抓取。代码也没有取消旧动画、读取当前屏幕位置和速度、再把控制权交给新手势的路径。
-
-`fill: "forwards"` 保持动画视觉结果，而 inline `top` 仍可能停留在释放位置；后续又混用 `offsetTop`。此外 `.finished.then(...)` 没有 cancellation/rejection cleanup。该结构无法可靠表达 presentation-value interruption。
-
-### P1-5：释放物理和无障碍策略均不成立
-
-固定 `480ms ease-in` 在高频工具界面中起步迟缓，并完全忽略释放速度。缺少 velocity handoff 是确定问题；是否用 projected endpoint 改变 snap 目标，则是尚未明确的产品语义，不能擅自替换当前 nearest-position 规则。
-
-所给片段也没有 Reduced Motion 分支。整张 sheet 的 `scale(0.96)` 是大面积、非因果反馈，还会缩放任务内容；它不适合替代明确的抓取反馈。
+- `top` 是布局属性；在 pointermove 热路径和 WAAPI 中持续改变它存在 layout 成本风险。
+- `transition: all 300ms` 可能使每个位置更新都追赶前一个目标，也会把无关属性意外纳入动画。
+- 整体 `scale(0.96)` 幅度过大，并会缩放任务内容；对全天重复使用的运营界面属于不必要的视觉扰动。
+- **这里只能确认源码风险，不能声称已经发生掉帧或卡顿。**
 
 ## 4. 八个具体设计动作
 
-1. **建立单一位置所有者。**  
-   将 sheet 的布局基准固定，只由一个手势/动画控制器写入 `translateY`；删除 `transition: all` 和逐帧 `top` 动画。sheet 位移与 handle 按压反馈使用不同 wrapper，避免多个行为争用 `transform`。
+1. **把 pointer-down 反馈限制在 drag handle**
+   - handle 立即切换为 `cursor: grabbing`，并用约 `80–120ms` 的颜色、明度或轻微 `scaleX` 反馈。
+   - 不缩放 sheet 本体，不改变内容尺寸。
+   - 只在专用 handle 设置适当的 `touch-action: none`，避免整张 sheet 阻断内容滚动。
 
-2. **把 pointer-down 反馈限制在拖拽 handle。**  
-   按下立即切换 `cursor: grabbing`，并用 handle 颜色、粗细或约 `scale(0.98)` 的 `80–120ms` 反馈确认抓取；不要缩放整张 sheet，也不要等待越过拖动阈值才反馈。
+2. **建立明确的拖拽会话**
+   - pointer-down 记录唯一 `pointerId`、container 坐标系、当前 presentation Y 和 `grabOffset = pointerY - sheetTop`。
+   - 以 `8–12 CSS px` 作为初始方向意图阈值；阈值前保持 tap 可能性，阈值后正式进入 drag。
+   - 捕获该 pointer，忽略其他指针，并在 `pointerup`、`pointercancel`、`lostpointercapture` 中统一清理。
 
-3. **实现完整的 1:1 drag session。**  
-   记录唯一 `pointerId`、当前 presentation Y、containing-block 坐标和 `grabOffset`；以 `8–12 CSS px` 作为待实测的意图阈值，确认拖动后调用 `setPointerCapture`。仅处理该 pointer，并覆盖 `pointerup`、`pointercancel`、`lostpointercapture`；`touch-action: none` 只放在 handle，避免破坏 sheet 内容滚动。通过 display clock/rAF 合并更新，位置为同一坐标系中的 `pointerY - grabOffset`，不加 easing。
+3. **用单一 transform owner 做 1:1 tracking**
+   - sheet 保持稳定布局基线，位置统一由 `translateY(y)` 表示。
+   - 每个显示帧应用最新的 `y = pointerY - containerOrigin - grabOffset`；坐标和速度统一使用 CSS px。
+   - 删除 `transition: all` 和 `top` 动画。
+   - 外层拥有 drag translation，内层 handle 拥有 press feedback，避免两个行为争写同一个 `transform`。
 
-4. **允许从 presentation value 中断。**  
-   新的 `pointerdown` 即使发生在 settle 中也必须生效：控制器冻结当前屏幕 Y 和当前动画速度，取消旧 settle，再从该值交给 drag；不得从旧 snap target 重启，也不得依赖 `animating` 输入锁。
+4. **从 presentation value 中断，而不是用 `animating` 锁输入**
+   - 动画控制器持续拥有当前屏幕 `y` 和 `velocity`。
+   - settle 中再次 pointer-down 时，先在当前 presentation Y 停止 settle，再以该位置计算 grab offset；视觉跳变目标为零。
+   - 删除输入锁；重新松手或程序化 retarget 时，从当前 `y/v` 开始新 settle。
+   - 收敛完成后明确提交逻辑状态与最终 transform，不依赖永久 `fill: forwards`。
 
-5. **分离速度测量、目标选择和 settle。**  
-   保留最近约 `80–120ms` 的单调时间戳样本，以 CSS px 和 `performance.now()` 计算 `releaseVelocity`，单位明确为 `CSS px/s`，并做安全限幅。先按产品规则选择 target，再把测得速度转换成动画 API 所需单位，作为 settle 的 initial velocity。以近临界阻尼、无 overshoot 的 spring 为起点，例如 `damping ratio ≈ 1.0`、`response ≈ 0.28–0.35s`，而不是固定 `480ms`。
+5. **测量并传递释放速度**
+   - 保存最近约 `80–120ms` 的单调时间戳和位置样本，输出单位为 **CSS px/s**。
+   - 用多个样本而不是最后两个噪声事件计算速度，并从一个待实测的安全范围开始，例如 `±2400px/s`。
+   - settle 使用无过冲或近临界阻尼：起点可取 damping ratio `1.0`、response `0.28–0.35s`。
+   - 把测得的速度作为 spring 初速度；若 API 接受相对速度，则转换为 `v / (target - current)`。
 
-6. **把 projected endpoint 作为独立、需授权的产品决策。**  
-   若确认允许 flick/momentum targeting，可先实验：  
-   `projectedY = clamp(currentY + velocityPxPerSec * 0.18s, minSnapY, maxSnapY)`，再选择最近 snap；默认限制一次只跨到相邻状态，除非产品明确允许跳过 `half`。若未授权，则继续用当前位置选择最近 snap，但仍必须传递 release velocity，不能把 target selection 与 velocity continuity 混为一件事。
+6. **把 projected endpoint 作为有边界、需授权的目标策略**
+   - 可审计候选：`vBound = clamp(v, -2400, 2400) px/s`，`p = clamp(y + vBound * 0.16s, fullY, collapsedY)`。
+   - 再把投射距离限制为最多一个相邻 snap gap，避免高频工具中意外跳过任务上下文。
+   - 只有产品确认 momentum-based targeting 后，才使用 `nearestSnapPoint(p)`。
+   - 未确认前继续使用 `nearestSnapPoint(y)`，但仍把真实释放速度交给 settle；目标选择与速度连续性不得混为一件事。
 
-7. **给自然边界增加渐进阻力。**  
-   合法范围限定在 `minSnapY…maxSnapY`；越界距离为 `o` 时，可用  
-   `resisted = (o * D * 0.55) / (D + 0.55 * abs(o))`  
-   作为待实测起点，其中 `D` 是有效拖动跨度。松手后回到边界且不 bounce；不得直接让 `clientY` 把 sheet 拉到任意位置。
+7. **加入克制的软边界**
+   - 在 `fullY…collapsedY` 内保持严格 1:1。
+   - 越界量 `o` 可映射为  
+     `sign(o) * (abs(o) * D * 0.55) / (D + 0.55 * abs(o))`，再把显示越界限制在约 `24–32px`。
+   - 松手后回到边界，默认无弹跳；inner content 可滚动时必须先完成垂直拖 sheet 与滚内容的方向仲裁。
 
-8. **提供明确的 Reduced Motion 路径。**  
-   在 `prefers-reduced-motion: reduce` 下保留用户主动控制的 1:1 跟随，但关闭 projected momentum、橡皮筋和 overshoot。释放或程序化切换状态时，大距离几何变化直接完成；用短促的 handle 颜色/透明度变化、持久的状态标记以及可访问状态值反馈 `collapsed / half / full`，而不是播放大距离自动移动。
+8. **定义真正的 Reduced Motion 状态机**
+   - 保留用户主动控制的 1:1 drag，但关闭 endpoint projection、橡皮筋、过冲和长距离惯性 settle。
+   - 若剩余距离很小，可用最多约 `80ms` 的克制收敛；距离较大则直接落到目标状态，不播放整张 sheet 的长滑行。
+   - 程序化状态变化以立即换位加局部 `80–120ms` handle/state-label 颜色或 opacity 反馈代替大 travel。
+   - settle 后更新明确的 `collapsed / half / full` 可见状态和可访问状态文本，避免只靠位置表达结果。
 
 ## 5. 已验证与未验证
 
-**从所给代码中可确认：**
+**由所给源码直接确认：**
 
-- `pointermove` 直接执行 `sheet.style.top = event.clientY`。
-- `startY` 在所给片段中没有参与位置计算。
-- 没有展示 drag-active、`pointerId`、pointer capture 或 cancel cleanup。
-- settle 使用 `top`、`480ms`、`ease-in`、`fill: "forwards"`。
-- settle 期间 `pointerdown` 被拒绝。
-- CSS 声明了 `transition: all 300ms` 和整张 sheet 的 `scale(0.96)`。
-- 所给 JS/CSS 中没有 Reduced Motion、速度采样、边界阻力或 presentation-value interruption 分支。
+- `pointermove` 无拖拽状态或 pointer 身份门禁。
+- 所示 `startY` 未参与位置计算。
+- `clientY` 被直接写入 `top`。
+- settle 使用 `top`、`480ms`、`ease-in` 和 `fill: "forwards"`。
+- `animating` 拒绝 pointer-down，但不拒绝 move/up。
+- CSS 含 `transition: all 300ms` 和整体 `scale(0.96)`。
+- 所示范围内没有 capture、速度采样、软边界、presentation-value interruption 或 Reduced Motion 分支。
 
-**本轮未验证：**
+**未验证，不能据此断言：**
 
-- 完整 CSS cascade、computed `transition-property`、containing block 和 snap-point 几何。
-- 实际是否出现跳变、跟手延迟、layout thrash、掉帧或动画层冲突。
-- 当前 nearest-position 语义是否为产品明确要求，以及是否允许 flick 跳过 `half`。
-- 完整项目其他位置是否已有 pointer capture、Reduced Motion 或动画控制器。
-- 响应式、内容滚动与 handle 手势仲裁。
-- Chromium、Safari 及真实触控设备上的手感。
-- 60Hz/120Hz 下的速度估计与 spring 参数。
+- 实际是否跳动、滞后、掉帧或触发布局抖动。
+- `transition`、WAAPI 和其他未展示样式最终形成的 computed behavior。
+- offset parent、滚动容器、snap point 数值及真实可拖范围。
+- 其他文件是否补充了 capture、Reduced Motion、键盘控制或状态语义。
+- 鼠标、触控板、触屏、多指、浏览器差异和 inner-scroll 仲裁表现。
+- 桌面、窄屏、短视口、60Hz/120Hz 或任何真实设备体验。
 
-## 6. 实现批准前的最小浏览器/设备验证计划
+本次没有修改文件，也没有执行浏览器、响应式或设备验证。
 
-1. **桌面浏览器交互录制：**在主支持浏览器中记录 event timestamp、pointer Y、presentation Y、release velocity、projected endpoint、selected target；覆盖慢拖、快 flick、反向拖、越界、松手在元素外、`pointercancel`、第二指针和 settle 中重新抓取。
-2. **computed style 与帧时间线：**确认 drag 期间只有一个位置控制器写 `transform`，不存在 `transition: all` 或逐帧 `top`；在代表性数据负载下录制 Performance trace，检查 gesture hot path 是否发生同步布局、长任务和持续掉帧。
-3. **Reduced Motion 与响应式：**分别在正常/Reduced Motion 下验证三种状态、程序化切换、窄 viewport、桌面 viewport、resize/orientation 后 snap 重算；Reduced Motion 必须没有大距离自动 travel，状态反馈仍清楚。
-4. **至少一台主要支持的真实触控设备：**验证 handle 与内容滚动的手势仲裁、抓取偏移、边界阻力、快速反向和中断。若产品同时正式支持 Safari 与 Chromium 移动端，则每个引擎至少一台；触控手感未通过真机前不批准。
-5. **批准门槛：**重新抓取无可见跳变；抓取点不漂移；快速释放方向与 target 符合已批准语义；Reduced Motion 无大范围自动移动；trace 中无 drag 驱动的重复布局热路径。
+## 6. 实施批准前的最小浏览器/设备验证
 
-本轮为纯静态只读评审：未修改文件，也未执行浏览器、响应式或真实设备验证。
+1. **桌面主支持浏览器，记录 pointer trace**
+   - 记录 `pointerY`、presentation Y、grab offset、时间戳和状态。
+   - 验证未按下移动不会移动 sheet；超过阈值后跟踪误差目标为同帧约 `≤2px`，离开 handle 后仍能完成拖拽。
+
+2. **中途接管**
+   - 分别在 settle 约 25%、50%、75% 时重新抓取并反向拖动。
+   - 验收：不拒绝输入、无可见位置跳变、没有旧动画继续争写位置。
+
+3. **速度、目标与边界矩阵**
+   - 在相近释放位置分别用慢拖、快速上甩和快速下甩测试。
+   - 分别确认“现有 nearest 语义”和“经授权的 projection 语义”；验证速度被传入 settle，但不会意外跨越未允许的状态。
+   - 向两个端点外拉，确认阻力连续、可恢复且没有硬碰撞感。
+
+4. **computed style 与 Performance trace**
+   - 确认位置只由指定 transform layer 拥有，`transition-property` 不为 `all`，拖拽期间没有由该控制器反复触发的 Layout 或长任务。
+   - 至少检查目标环境的 60Hz；若 120Hz 设备属于支持范围，再补 120Hz。
+
+5. **Reduced Motion 与响应式**
+   - 在浏览器媒体模拟和真实 OS Reduced Motion 设置下各跑一次。
+   - 覆盖正常桌面、窄视口和短高度视口；验证无投射、弹性或长滑行，同时状态反馈仍清楚。
+
+6. **至少一台主支持的真实触屏设备**
+   - 在实际 Safari 或 Chrome 中测试 handle、内容滚动、pointer cancel、快速反向、多指干扰和动态 viewport。
+   - 如果产品同时正式支持 iOS 与 Android，则两端都应通过后再批准，而不能用桌面指针测试替代触感结论。

@@ -2,6 +2,30 @@
 
 All notable local changes to `design-craft` are recorded here.
 
+## 0.5.4 - 2026-07-25
+
+- Keep live upstream freshness in release-candidate readiness while making
+  final tag certification depend only on the committed review snapshot and
+  lock parity, so external commits after tagging cannot change an immutable
+  version's certification result.
+- Review Impeccable `08676d5..73819ff` without advancing the compatibility pin:
+  retain local artifact-evidence and anti-radial-glow behavior while rejecting
+  random concept selection, forced reviewer/documenter delegation, and the
+  upstream hook/provider/full-detector runtime boundary.
+- Make bounded production audits use one non-repeating finding ledger, require
+  concrete rendered/recovery behavior for every missing state, and keep global
+  state concurrency claims conditional unless the call path proves overlap.
+- Bound rendered UI verification to one batched inspection and one confirmation
+  pass, avoiding costly per-tweak screenshot loops without weakening required
+  desktop, mobile, or state coverage.
+- Keep mutable upstream review heads and provenance-only ranges in repository
+  governance metadata rather than the installed Skill source map, so review-only
+  drift no longer invalidates current-source behavioral evidence.
+- Make capped production audits use no more than eight compact ledger entries,
+  require exact replacement behavior for cited fixed responsive geometry, and
+  keep unmeasured static performance risks at P1 unless source or runtime proof
+  establishes release-blocking failure.
+
 ## 0.5.3 - 2026-07-25
 
 - Refresh Codex, Pi, and comparative current-source evidence after the

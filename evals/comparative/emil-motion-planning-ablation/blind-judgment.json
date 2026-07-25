@@ -1,51 +1,51 @@
 {
-  "rationale": "C 最符合全部高权重要求：它不仅诚实限定静态证据，还对拖拽热路径给出了坐标、捕获、速度、当前呈现值和可中断 settle 的完整推理，同时用停止条件约束未知 animateTo 能力。A 是稳健的次优方案，token、Reduced Motion 和计划结构都很好，但对队列中断性及动画原语的分析明显较浅。B 虽然格式完整，却引入未经证实且可能单位不兼容的 spring/bounce 配置，并包含对 keyframes 的过度概括，因此技术准确性、项目一致性和产品克制性均落后。三者都未遵守 180 行上限，但这一共同缺陷不足以改变排序。",
+  "rationale": "A 明显胜出：它不仅覆盖了静态 recon 和既有语义 token，还逐项处理评分卡要求的属性成本、变换原点、直接操控坐标、释放速度、动画打断与原语能力未知等关键技术点；所有运行时体验均作为待验证项而非已验证事实。C 的方案较稳健但技术覆盖和优先级论证不足；B 虽最具代码化外观，却引入未给出的变量和未经确认的动画 API 语义，实施风险最高。三者共同问题是未遵守 180 行限制。",
   "results": [
     {
       "criteria": {
         "accessibility_performance": 9,
         "evidence_recon": 15,
-        "plan_self_containment": 18,
-        "prioritization": 7,
-        "project_conventions": 10,
-        "purpose_frequency": 10,
-        "technical_accuracy": 12,
-        "verification_quality": 9
-      },
-      "label": "A",
-      "summary": "静态证据边界、motion 分布、频率和既有 token/Reduced Motion precedent 识别准确，三份计划也基本具备路径、原摘录、步骤、边界、检查和漂移停止条件。主要扣分在于优先级表没有显式评估 confidence 与 implementation cost，CommandPalette 新 CSS 的确切落点仍含糊，队列方案虽然正确识别 clientY 坐标与逐帧写入问题，却没有充分处理当前呈现值、中途重抓、活动 settle 的取消/重定向以及动画原语取舍；同时篇幅明显超过 180 行。",
-      "total": 90
-    },
-    {
-      "criteria": {
-        "accessibility_performance": 8,
-        "evidence_recon": 14,
         "plan_self_containment": 17,
-        "prioritization": 8,
-        "project_conventions": 7,
-        "purpose_frequency": 7,
-        "technical_accuracy": 8,
-        "verification_quality": 8
-      },
-      "label": "B",
-      "summary": "Recon、优先级结构和各计划必备栏目较完整，也正确指出 transition: all、top 动画、硬编码时长及 Reduced Motion 缺口。但技术方案存在明显冒进：把 keyframes 概括为更不适合动态 stack 缺乏充分依据，引入 @starting-style 却未先建立项目浏览器支持边界，队列方案又臆造 animateTo 的 spring API、秒/毫秒单位、bounce 参数和直接覆盖 transform 的实现；这既偏离已有 token 体系，也与安静、克制的产品性格冲突。篇幅同样超过 180 行。",
-      "total": 77
-    },
-    {
-      "criteria": {
-        "accessibility_performance": 9,
-        "evidence_recon": 15,
-        "plan_self_containment": 18,
-        "prioritization": 8,
+        "prioritization": 9,
         "project_conventions": 10,
         "purpose_frequency": 10,
         "technical_accuracy": 15,
         "verification_quality": 10
       },
-      "label": "C",
-      "summary": "对静态证据与未验证边界的表达最严谨，并完整覆盖属性成本、锚点 origin、坐标空间、pointer capture、grab offset、当前呈现值、速度单位、动画中断/重定向以及 target-selection 语义边界。三个计划持续复用现有 token 和按钮 precedent，没有把候选 API 当成已确认事实，机械检查与后续 feel 场景也最有针对性。扣分点是优先级表仍未显式列出 confidence/cost，CommandPalette CSS 的最终文件归属略含糊，缺少明确的性能面板或 trace 测量步骤，且输出超过 180 行。",
+      "label": "A",
+      "summary": "静态证据边界、运动分布、频率与产品目的交代最完整；对属性成本、弹层原点、拖拽坐标、当前呈现值、打断、速度传递和动画原语能力边界的处理最严谨。三项计划均包含路径、原摘录、步骤、边界、检查、Reduced Motion 与漂移停止条件。主要扣分是明显超过 180 行，而且性能验证虽有大数据量与交互检查，仍缺少更明确的量化 trace 指标。",
       "total": 95
+    },
+    {
+      "criteria": {
+        "accessibility_performance": 8,
+        "evidence_recon": 14,
+        "plan_self_containment": 14,
+        "prioritization": 8,
+        "project_conventions": 7,
+        "purpose_frequency": 9,
+        "technical_accuracy": 7,
+        "verification_quality": 9
+      },
+      "label": "B",
+      "summary": "结构完整，能够识别高频命令面板、transition: all、top 动画、硬编码时长及 Reduced Motion 缺口，检查项也明确标为后续执行。但弹层方案凭空引入未提供的 transform-origin 变量；拖拽方案可能用绝对 clientY 覆盖现有 transform，并猜测 animateTo 支持特定 spring、bounce、velocity、duration 单位，形成明显的原语和框架假设。内容同样超出 180 行。",
+      "total": 76
+    },
+    {
+      "criteria": {
+        "accessibility_performance": 8,
+        "evidence_recon": 13,
+        "plan_self_containment": 16,
+        "prioritization": 7,
+        "project_conventions": 9,
+        "purpose_frequency": 8,
+        "technical_accuracy": 10,
+        "verification_quality": 9
+      },
+      "label": "C",
+      "summary": "整体谨慎复用现有时长、缓动和 80ms Reduced Motion 先例，三项计划的必需栏目基本齐全；拖拽部分先检查 CSS 消费者与动画 API，比直接猜测实现安全。不过把未展示 Reduced Motion 分支表述为系统性不一致略超出证据，优先级偏向治理项而非按频率、成本和信心充分分层，并遗漏了对 popover 中心原点、拖拽打断及当前呈现值连续性的具体处理。输出也超过 180 行。",
+      "total": 80
     }
   ],
-  "winner": "C"
+  "winner": "A"
 }

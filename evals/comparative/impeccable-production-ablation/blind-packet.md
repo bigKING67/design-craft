@@ -205,928 +205,570 @@ Generated from `scorecard.json`; do not edit by hand.
 
 ## Output A
 
-## 1. Sequencing + verdict
+## 1) Correct sequence + verdict
 
-**Correct sequence:** audit evidence → harden correctness and failure handling → stabilize accessibility/state recovery → optimize measured hot paths → apply visual polish within the existing design system.
+**Sequence:** static audit → P0/P1 hardening for data loss and failure states → performance optimization of table/filter/image hot paths → accessibility and responsive fixes → visual polish only after behavior is safe → measured release with rollback gates.
 
-**One-line verdict:** This surface is not production-hardened for a 10,000-row operations workflow; the main risks are silent data loss, inaccessible drawer/actions, missing failure states, tablet breakage, and unbounded rendering/filtering.
-
----
-
-## 2. Prioritized findings: evidence vs. runtime hypotheses
-
-### P0 — Must fix before production confidence
-
-#### P0.1 Silent save failure and weak save state recovery  
-**Source evidence:**  
-```tsx
-try {
-  await api.save(product);
-} catch {}
-setSaving(false);
-```
-
-**Decisive static signal:** errors are swallowed; no user-visible failure, retry, rollback, conflict handling, or telemetry hook is represented.
-
-**Risk:** operators may believe edits saved when they failed. This is especially dangerous with autosave and bulk workflows.
-
-**Runtime context needed:** whether `api.save` has upstream retries, whether the drawer shows per-field dirty state elsewhere, and whether server-side versioning prevents lost updates.
+**One-line verdict:** The surface is not production-ready for operations use: the static evidence shows high data-loss risk, missing recovery states, table-scale performance risk, and accessibility/responsive blockers, but it can be hardened without a ground-up redesign.
 
 ---
 
-#### P0.2 Missing production failure states  
-**Source evidence:** source notes say blank loading body and no states for empty results, 401/403, 409, 429, 500, timeout, offline, retry, or partial batch failure.
+## 2) Prioritized findings: evidence vs runtime hypotheses
 
-**Decisive static signal:** absence of represented branches for critical operational states.
+### P0 — Blocking / data-loss risk
 
-**Risk:** users cannot distinguish “still loading,” “no results,” “not permitted,” “conflict,” “rate limited,” or “data unavailable.”
+**P0.1 Silent save failure hides failed writes**
+- **Source evidence:** `catch {}` swallows `api.save(product)` errors; `saving` returns false regardless of outcome.
+- **Impact:** Operators can believe a product was saved when it was not.
+- **Runtime hypothesis:** Actual backend errors, timeouts, or conflicts may be more or less common; frequency needs measurement.
+- **Fix:** Return explicit save states: `idle | saving | saved | failed | conflict | offline | retrying`. Preserve failed draft, show inline error, expose retry, and never mark success without confirmation.
 
-**Runtime context needed:** exact API error shape and whether failures can occur per row, per product, per image, or per bulk action.
+**P0.2 Drawer can close during pending save**
+- **Source evidence:** “Escape closes it even while a save is pending.”
+- **Impact:** Unsaved edits can be lost or become ambiguous.
+- **Runtime hypothesis:** Whether form state survives drawer unmount is unknown.
+- **Fix:** While save is pending, disable destructive close or require confirmation. If close is allowed, keep draft state and show recoverable “save still pending / failed” status.
 
----
-
-#### P0.3 Drawer can lose or corrupt work during pending save  
-**Source evidence:** drawer does not trap focus/background interaction; Escape closes it even while save is pending.
-
-**Decisive static signal:** closing during pending mutation is explicitly allowed.
-
-**Risk:** interrupted saves, lost edits, duplicate edits, stale drawer state, or accidental background actions while editing.
-
-**Runtime context needed:** whether close discards local draft, whether save is idempotent, and whether product versions are checked.
-
----
-
-#### P0.4 Icon-only save/close without described accessible names  
-**Source evidence:** save and close are icon-only; screen-reader labels are not described.
-
-**Decisive static signal:** icon-only controls require explicit accessible names.
-
-**Risk:** keyboard and screen-reader users cannot reliably understand or operate primary drawer actions.
-
-**Runtime context needed:** whether the actual icon button component injects `aria-label`, tooltip text as accessible name, or hidden text.
+**P0.3 Conflict and auth states are absent**
+- **Source evidence:** 401/403, 409 conflict, 429, 500, timeout, offline, retry, and partial batch failure states are not represented.
+- **Impact:** Operators cannot resolve permission loss, stale edits, rate limits, or partial bulk failures.
+- **Runtime hypothesis:** Exact API status mapping needs project context.
+- **Fix:** Add state-specific UI: re-auth/permission message, conflict compare/refresh, retry-after handling, offline queue notice, and per-row partial failure summary.
 
 ---
 
-### P1 — High-priority hardening
+### P1 — Major release blockers
 
-#### P1.1 All 10,000 rows render at once  
-**Source evidence:**  
-```tsx
-{rows.map((row) => <ProductRow key={row.id} row={row} />)}
-```
-Product context confirms 10,000-row table.
+**P1.1 All 10,000 rows render at once**
+- **Source evidence:** `{rows.map((row) => <ProductRow ... />)}` with 10,000-row context.
+- **Impact:** Slow initial render, heavy reconciliation, poor keyboard/search responsiveness.
+- **Runtime hypothesis:** Exact frame drops depend on row complexity and device.
+- **Fix:** Window visible rows with overscan, preserve selection across offscreen rows, keep row height deterministic, and avoid remounting edited rows unnecessarily.
 
-**Decisive static signal:** unbounded row rendering is present in the shown route.
+**P1.2 Filtering is synchronous on every keystroke**
+- **Source evidence:** Additional note says filtering recalculates synchronously on every keystroke.
+- **Impact:** Input lag on the main workflow.
+- **Runtime hypothesis:** Cost depends on predicate complexity and row shape.
+- **Fix:** Debounce or defer filter computation, memoize derived rows, tokenize searchable fields once, and keep input controlled responsiveness separate from expensive table updates.
 
-**Risk:** slow initial render, expensive updates, poor keyboard interaction, memory pressure, and jank during filtering.
+**P1.3 Drawer lacks modal accessibility containment**
+- **Source evidence:** “The drawer traps neither focus nor background interaction.”
+- **Impact:** Keyboard and screen-reader users can interact with obscured content; focus can escape the task context.
+- **Runtime hypothesis:** Underlying markup may have partial semantics, but the stated behavior is already enough to fail.
+- **Fix:** Use dialog semantics or equivalent: labelled drawer, initial focus, focus trap, inert/blocked background, restore focus to opener, Escape behavior gated by dirty/saving state.
 
-**Runtime context needed:** row complexity, image behavior, memoization inside `ProductRow`, device class, and actual render timings.
+**P1.4 Icon-only save/close controls are under-specified**
+- **Source evidence:** “Save and close are icon-only”; screen-reader labels are not described.
+- **Impact:** Assistive tech and some sighted users may not know what actions do.
+- **Runtime hypothesis:** Hidden labels may exist elsewhere, but not in the provided facts.
+- **Fix:** Add accessible names, visible tooltip/help where useful, disabled/loading labels, and confirm destructive close when dirty.
 
----
+**P1.5 Focus indicators are explicitly removed**
+- **Source evidence:** `.icon-button { ... outline: none; }`
+- **Impact:** Keyboard users can lose location, especially in dense table/drawer flows.
+- **Runtime hypothesis:** A replacement `:focus-visible` style could exist elsewhere, but none is shown.
+- **Fix:** Restore visible `:focus-visible` using existing focus token; minimum 2px high-contrast ring or equivalent offset state.
 
-#### P1.2 Filtering recalculates synchronously on every keystroke  
-**Source evidence:** additional notes state synchronous recalculation on every keystroke.
-
-**Decisive static signal:** known hot path tied to user input.
-
-**Risk:** input lag, dropped keystrokes, blocked autosave/status updates, and degraded tablet performance.
-
-**Runtime context needed:** filter complexity, number of fields searched, locale comparison cost, and whether filtering also mutates selection state.
-
----
-
-#### P1.3 Fixed desktop minimum width and fixed drawer width break tablet support  
-**Source evidence:**  
-```css
-.page { min-width: 1180px; }
-.drawer { position: fixed; right: 0; width: 520px; height: 100vh; }
-```
-
-**Decisive static signal:** layout has hard desktop assumptions.
-
-**Risk:** tablet users get horizontal clipping, unreachable controls, obscured table content, or drawer overflow.
-
-**Runtime context needed:** supported tablet widths, whether the page sits inside a scroll container, and whether the design system has responsive drawer/table primitives.
+**P1.6 Tablet support conflicts with fixed desktop width**
+- **Source evidence:** `.page { min-width: 1180px; }`; tablet behavior not described.
+- **Impact:** Likely horizontal overflow or unusable drawer/table on tablets.
+- **Runtime hypothesis:** A parent shell may provide horizontal scroll, but usability remains unproven.
+- **Fix:** Define tablet behavior: pinned horizontal table scroll with sticky key columns, drawer width clamped to viewport, filters wrapping/collapsing predictably, touch targets enlarged.
 
 ---
 
-#### P1.4 Focus visibility is removed  
-**Source evidence:**  
-```css
-.icon-button { width: 28px; height: 28px; outline: none; }
-```
+### P2 — Important hardening/polish
 
-**Decisive static signal:** default focus outline is removed.
+**P2.1 Blank loading state creates false emptiness**
+- **Source evidence:** Initial/filter loading render a blank table body.
+- **Impact:** Users cannot distinguish loading, empty results, failed load, or filtered-out inventory.
+- **Runtime hypothesis:** Loading duration unknown.
+- **Fix:** Use table skeleton rows for initial/filter load; use explicit empty state with active filter summary and clear-filter action.
 
-**Risk:** keyboard users lose visible focus on critical actions.
+**P2.2 Hostile product data can break table clarity**
+- **Source evidence:** Names 1–200 chars; prices may be missing; labels can expand 60%; images absent or 8MB.
+- **Impact:** Truncation hides critical product identity; missing prices/images may look like load failures; translations may overflow.
+- **Runtime hypothesis:** Actual localization strings and image dimensions need fixture coverage.
+- **Fix:** Add long-name title/secondary line pattern, missing-price placeholder distinct from zero, image fallback state, localized label wrapping, and max-width/min-width rules per column.
 
-**Runtime context needed:** whether a replacement `:focus-visible` style exists elsewhere with sufficient contrast.
+**P2.3 Image layout shift and memory risk**
+- **Source evidence:** Image dimensions are not reserved; some images are 8MB.
+- **Impact:** Row jumpiness, expensive decode, slower scroll.
+- **Runtime hypothesis:** CDN resizing/lazy loading unknown.
+- **Fix:** Reserve aspect-ratio boxes, lazy-load offscreen images, request thumbnails for rows, decode async where supported, cap upload previews.
 
----
+**P2.4 `transition: all` on rows and drawer is unsafe**
+- **Source evidence:** `.product-row, .drawer { transition: all 300ms ease-in; }`
+- **Impact:** Accidental layout-property animation, sluggish drawer, unnecessary repaint/reflow, poor reduced-motion behavior.
+- **Runtime hypothesis:** Which properties actually change requires code review/runtime inspection.
+- **Fix:** Transition only `transform`, `opacity`, or tokenized color where needed; shorten to ~150–250ms for product UI; add reduced-motion alternative.
 
-#### P1.5 Motion is too broad and lacks reduced-motion handling  
-**Source evidence:**  
-```css
-.product-row, .drawer { transition: all 300ms ease-in; }
-```
-Reduced motion is not described.
+**P2.5 Global `saving` state is too coarse**
+- **Source evidence:** Single `saving` boolean at page level passed to `EditDrawer`.
+- **Impact:** One save can disable or misrepresent unrelated edits; concurrent saves are ambiguous.
+- **Runtime hypothesis:** UI may allow only one open drawer, but bulk actions also exist.
+- **Fix:** Track save state by product id or operation id. Keep separate autosave, manual save, and bulk save statuses.
 
-**Decisive static signal:** `transition: all` can animate layout, color, size, transform, and other unintended properties.
-
-**Risk:** jank, delayed state response, uncomfortable motion, and unpredictable animation when rows update.
-
-**Runtime context needed:** which properties actually change, whether global reduced-motion CSS exists, and whether the drawer uses transform or layout animation.
-
----
-
-### P2 — Important production polish and resilience
-
-#### P2.1 Hostile data is not fully handled  
-**Source evidence:** names can be 1–200 characters; prices may be missing; translations may expand labels by 60%; images can be absent or 8MB.
-
-**Risk:** truncation hides critical product identity, missing prices look like bugs, translated labels overflow, and large/absent images cause layout instability.
-
-**Runtime context needed:** product naming rules, currency requirements, image CDN behavior, and localized copy length.
-
----
-
-#### P2.2 Image dimensions are not reserved  
-**Source evidence:** additional notes state dimensions are not reserved.
-
-**Risk:** layout shift, row height changes, scroll-position jumps, and slower perceived loading.
-
-**Runtime context needed:** actual image component, thumbnail service, and table row height strategy.
+**P2.6 Permission affordances are missing**
+- **Source evidence:** “Permission-specific affordances are not described”; 401/403 states absent.
+- **Impact:** Users may attempt unavailable edits/uploads/bulk actions and discover failure late.
+- **Runtime hypothesis:** Permission model unknown.
+- **Fix:** Render disabled/hidden actions according to permission policy, with reason text for disabled controls and audit-safe messaging.
 
 ---
 
-#### P2.3 Permission-specific affordances are absent  
-**Source evidence:** permission-specific affordances are not described.
+### P3 — Polish / lower-risk improvements
 
-**Risk:** users may attempt actions they cannot complete, or unauthorized users may see misleading destructive/edit affordances.
+**P3.1 Ellipsis needs disclosure behavior**
+- **Source evidence:** `.product-name { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }`
+- **Impact:** Long names are preserved visually but not fully discoverable.
+- **Runtime hypothesis:** Native title or detail drawer may already reveal full name.
+- **Fix:** Ensure full name is available in drawer, accessible name, copy affordance, or non-blocking tooltip.
 
-**Runtime context needed:** whether permissions are enforced only server-side or also reflected in UI capabilities.
-
----
-
-#### P2.4 Autosave status appears global and underspecified  
-**Source evidence:** single `saving` boolean shared by `EditDrawer`.
-
-**Risk:** concurrent saves, row-level edits, image uploads, and bulk actions cannot express distinct pending/error/saved states.
-
-**Runtime context needed:** whether only one drawer edit can occur at a time and whether uploads share the same save channel.
+**P3.2 Column widths may not survive localization**
+- **Source evidence:** Fixed grid columns: `64px 280px 1fr 120px 96px`; translations may expand labels by 60%.
+- **Impact:** Header/control labels may clip.
+- **Runtime hypothesis:** Actual column content unknown.
+- **Fix:** Test with pseudo-localized strings and allow key labels to wrap or abbreviate with accessible full text.
 
 ---
 
-### P3 — Lower-priority polish after hardening
+## 3) Concrete fixes by area
 
-#### P3.1 Blank loading state weakens operator confidence  
-**Source evidence:** blank table body during initial/filter loading.
+**Hostile data**
+- Add fixtures for 1-char and 200-char names, missing price, zero price, absent image, 8MB image, long SKU/category, and pseudo-localized labels.
+- Use explicit placeholders: “No price set,” “No image,” “Unavailable,” not blank cells.
+- Reserve image dimensions and request table thumbnails, not full uploads, for row display.
 
-**Risk:** users may think data disappeared.
+**Failures and recovery**
+- Replace swallowed errors with typed outcomes.
+- Show autosave state with timestamp and failed/retry state.
+- Keep dirty draft after failed save or accidental close.
+- For 409: show “This product changed elsewhere” with refresh/compare/reapply choices.
+- For bulk partial failure: report affected rows, successful count, failed count, retry only failed.
 
----
+**Responsive/tablet**
+- Remove hard `min-width: 1180px` as the only strategy.
+- Define tablet breakpoint behavior: horizontal table scroller, sticky identifier column, drawer `width: min(520px, 100vw)` or tablet-specific full-height panel.
+- Increase touch targets to at least 44px on tablet, especially icon buttons.
 
-#### P3.2 Dense icon target size may be hostile on tablet  
-**Source evidence:**  
-```css
-.icon-button { width: 28px; height: 28px; }
-```
+**Accessibility**
+- Restore `:focus-visible`.
+- Use semantic buttons for icon actions with accessible names.
+- Drawer needs role/dialog semantics, labelled title, focus trap, inert background, Escape rules, and focus return.
+- Define keyboard table navigation: tab order, row action access, bulk selection behavior, and visible selected state.
+- Add reduced-motion handling for drawer/row transitions.
 
-**Risk:** difficult touch interaction and low error tolerance.
+**State recovery**
+- Model row edits as durable draft state until confirmed saved.
+- Add operation IDs to prevent late responses overwriting newer edits.
+- On offline/timeout, keep local draft and display “not synced” rather than clearing saving.
+- Make close behavior conditional: clean closes immediately; dirty/saving requires save, discard, or keep editing.
 
-**Runtime context needed:** whether visible size differs from hit area through padding or wrapper styles.
-
----
-
-## 3. Concrete fixes
-
-### Hostile data
-
-- Render missing prices as an intentional placeholder such as `—` plus accessible text like “No price set,” not an empty cell.
-- Preserve product-name truncation for table density, but expose the full name through a non-hover-only mechanism: accessible label, details cell, drawer header, or keyboard-reachable disclosure.
-- Test 1-character and 200-character names, long unbroken strings, translated labels at +60%, missing images, and large images.
-- Reserve image aspect ratio or fixed thumbnail slots before image load.
-- Use product-image placeholders for absent images.
-- Prefer thumbnail URLs for table rows; keep full-size images out of the row list.
-- Validate uploads before sending: file size, type, dimensions, failure copy, retry affordance.
-
-### Failure handling
-
-Replace `saving: boolean` with explicit mutation state:
-
-```ts
-type SaveState =
-  | { status: 'idle' }
-  | { status: 'saving'; productId: string }
-  | { status: 'saved'; productId: string; savedAt: number }
-  | { status: 'error'; productId: string; reason: string; retryable: boolean }
-  | { status: 'conflict'; productId: string };
-```
-
-Handle at minimum:
-
-- **401:** session expired; preserve draft, prompt re-authentication.
-- **403:** show permission-specific disabled state and explanation.
-- **409:** show conflict state with server/client comparison or reload/apply path.
-- **429:** honor retry-after where available; avoid repeated immediate retries.
-- **500/timeout:** show retry and preserve unsaved draft.
-- **Offline:** queue or hold draft locally; mark “not saved.”
-- **Partial batch failure:** report per-row success/failure, not only a global banner.
-
-Also:
-
-- Never swallow save errors.
-- Use `finally` for pending cleanup.
-- Prevent duplicate submissions while the same product is saving.
-- Keep dirty state visible until server acknowledgement.
-- Make autosave status specific: “Saving,” “Saved 10:42,” “Couldn’t save,” “Conflict,” “Offline — changes not saved.”
-
-### Responsive layout
-
-- Remove unconditional `min-width: 1180px` from the page shell.
-- If the table must remain wide, put horizontal overflow on the table region, not the whole route.
-- Keep filters, autosave status, drawer controls, and bulk-action bars reachable without horizontal scrolling.
-- Use drawer width like `width: min(520px, 100vw)` or a tablet-specific full-height panel.
-- Ensure the drawer does not obscure required save/close controls or trap content below viewport height.
-- Define tablet behavior explicitly: which columns collapse, which remain sticky, and how bulk selection remains accessible.
-
-### Accessibility
-
-- Add a real focus trap for the drawer while open.
-- Restore focus to the invoking row/action when the drawer closes.
-- Prevent background interaction while the drawer is active, using inert/aria-hidden behavior where appropriate.
-- Do not allow Escape to close during an irreversible pending save; either block it with explanation or require confirmation if dirty.
-- Give icon-only save/close buttons accessible names.
-- Restore visible keyboard focus using `:focus-visible`.
-- Make autosave changes available through a polite live region.
-- Ensure disabled and pending states are announced and visually distinct.
-- Provide keyboard navigation for rows, selection, drawer fields, save, close, retry, and bulk actions.
-- Add reduced-motion handling:
-  - avoid `transition: all`;
-  - animate only `transform`/`opacity` where needed;
-  - disable or shorten nonessential motion under `prefers-reduced-motion`.
-
-### State recovery
-
-- Preserve unsaved drawer drafts across transient failures.
-- Track product version/etag for conflict detection.
-- Keep selection stable across filtering where appropriate, with clear counts: selected visible vs. selected total.
-- On reload or route change with dirty edits, warn or recover draft.
-- For image uploads, separate upload state from product metadata save state.
-- Avoid closing or clearing the drawer until save success, explicit discard, or conflict resolution.
-
-### Performance
-
-- Virtualize or window the 10,000-row list/table.
-- Keep row heights predictable if possible; if variable, measure carefully and avoid layout thrash.
-- Memoize derived filtered rows with correct dependencies.
-- Debounce or defer filter input work so typing remains responsive.
-- Avoid recreating heavy row props/functions for every row render.
-- Memoize `ProductRow` if row props are stable.
-- Move expensive search normalization outside the keystroke path where possible.
-- Reserve image dimensions and lazy-load below-the-fold thumbnails.
-- Avoid animating table rows with broad transitions during bulk updates/filter changes.
+**Performance**
+- Virtualize/window 10,000 rows.
+- Memoize filtered rows and row render props.
+- Defer expensive filtering from keystroke input.
+- Avoid global `saving` rerendering all rows.
+- Lazy-load and size row images.
+- Replace `transition: all` with specific composited properties.
 
 ---
 
-## 4. Static signals: decisive vs. context-dependent
+## 4) Static detector-like signal reconciliation
 
-### Decisive from the supplied source
+**Decisive from static evidence**
+- `catch {}` is a real silent-failure defect.
+- Rendering `rows.map` for 10,000 rows is a real scale risk.
+- `outline: none` without shown replacement is a serious focus-risk signal.
+- `transition: all` is a real animation/performance smell.
+- `min-width: 1180px` conflicts with stated tablet support unless an explicit overflow strategy exists.
+- Missing represented states for 401/403/409/429/500/offline/partial failure is a production hardening gap.
 
-- `catch {}` means save failures are swallowed at this layer.
-- A single `saving` boolean cannot express conflict, retry, offline, partial failure, or multiple concurrent operations.
-- `rows.map(...)` renders every row represented by `rows`.
-- `transition: all` is unsafe for a large interactive table and drawer.
-- `outline: none` removes default focus indication unless replaced elsewhere.
-- `min-width: 1180px` and `width: 520px` encode desktop assumptions.
-- Blank loading and absent error/empty states are production-state gaps.
-- No focus trap/background isolation for the drawer is an accessibility and data-safety gap.
-- Closing with Escape during pending save is unsafe without confirmation or recovery.
-
-### Needs project/runtime context
-
-- Exact performance severity of 10,000 rows depends on row complexity, device class, memoization, image loading, and browser behavior.
-- Actual accessibility compliance depends on hidden labels, shared button components, global focus styles, and semantic table/grid implementation.
-- Permission risk depends on server enforcement and how UI capabilities are derived.
-- Tablet severity depends on supported breakpoints and surrounding layout containers.
-- Conflict severity depends on backend versioning and whether stale writes are rejected.
-- Image impact depends on CDN thumbnails, intrinsic dimensions, caching, and upload pipeline.
-- Whether a new virtualization primitive is needed depends on existing design-system/table capabilities.
+**Needs project/runtime context**
+- Exact accessibility pass/fail for ProductRow semantics, table roles, labels, and reading order.
+- Actual contrast ratios and focus-ring visibility.
+- Actual render time, memory, and input latency.
+- Whether existing design tokens already provide responsive/focus/error states.
+- Whether API client already retries, times out, cancels, or maps error types.
+- Whether image CDN/upload pipeline already resizes or validates files.
+- Whether permissions are enforced server-side only or also available client-side.
 
 ---
 
-## 5. Measurement-first validation plan with acceptance and rollback
+## 5) Measurement-first validation plan with rollback/acceptance
 
-### Baseline before changes
+**Before changes**
+- Capture baseline on representative data: 10,000 rows, long names, missing prices/images, large images, pseudo-localized labels, and failure responses.
+- Measure initial render time, filter input latency, drawer open/close responsiveness, save failure recovery, and row scroll smoothness.
+- Record keyboard-only completion path: filter → open drawer → edit → save → close → bulk select.
 
-Use a production-like fixture set:
+**Acceptance conditions**
+- Failed save is visible, recoverable, and never reported as success.
+- Dirty/saving drawer cannot lose edits through Escape or background interaction.
+- 401/403/409/429/500/timeout/offline/partial batch states have distinct user actions.
+- 10,000-row table remains responsive during scroll and filtering on target hardware.
+- Filter input remains responsive while results update.
+- Tablet layout has no uncontrolled page-level overflow except intentional table scrolling.
+- All icon-only controls have accessible names and visible focus.
+- Reduced-motion mode removes nonessential motion while preserving state feedback.
+- Images do not cause major row layout shift.
 
-- 10,000 products.
-- Long names up to 200 characters.
-- Missing prices.
-- Missing images.
-- Large image references/uploads.
-- Expanded translated labels.
-- Mixed permissions.
-- Simulated 401, 403, 409, 429, 500, timeout, offline, and partial batch failure responses.
+**Rollback conditions**
+- Save success/failure ambiguity remains.
+- Conflict/offline paths can still discard edits.
+- Table optimization breaks selection, edit targeting, or bulk actions.
+- Accessibility containment blocks normal keyboard escape/recovery.
+- Tablet changes hide required columns/actions without an alternate path.
+- Performance work introduces stale rows, wrong filters, or mismatched save status.
 
-### Validate hardening first
-
-Acceptance:
-
-- Save failure is visible and recoverable.
-- Draft is not lost on failed save, timeout, offline, conflict, or session expiry.
-- Pending save cannot be accidentally dismissed without safe handling.
-- Partial batch failure identifies failed rows and next action.
-- Empty, loading, forbidden, unauthorized, conflict, rate-limit, server-error, offline, and retry states are distinct.
-
-Rollback condition:
-
-- Any change causes silent save success/failure ambiguity or draft loss.
-
-### Validate accessibility
-
-Acceptance:
-
-- Drawer traps focus while open.
-- Focus returns to the opener after close.
-- Save/close/retry/bulk actions have accessible names.
-- Keyboard-only users can complete filter, select, edit, save, retry, and close flows.
-- Visible focus is present and high contrast.
-- Reduced-motion mode preserves state feedback without broad animation.
-- Autosave status changes are announced without being noisy.
-
-Rollback condition:
-
-- Keyboard path regresses, focus becomes invisible, or background interaction remains possible while drawer is open.
-
-### Validate responsive/tablet behavior
-
-Acceptance:
-
-- Tablet widths keep filters, table controls, drawer actions, autosave, and bulk actions reachable.
-- Horizontal scrolling, if required, is limited to the table region.
-- Drawer fits the viewport and does not hide primary actions.
-- Long labels and translated text do not overlap controls.
-
-Rollback condition:
-
-- Any supported tablet viewport blocks save/close, hides status, or creates whole-page horizontal scrolling that traps core controls.
-
-### Validate performance
-
-Measure before and after:
-
-- Initial table readiness with 10,000 rows.
-- Filter keystroke latency.
-- Row selection responsiveness.
-- Drawer open/close responsiveness.
-- Bulk selection update time.
-- Scroll smoothness.
-- Layout shift from images.
-- Memory growth during repeated filtering/editing.
-
-Acceptance targets should be set from current product standards, but minimum production gates should include:
-
-- Filtering does not visibly block typing.
-- Scrolling remains stable with 10,000 rows.
-- Drawer interaction stays responsive during table updates.
-- Image loading does not shift rows unexpectedly.
-- Bulk selection does not re-render unrelated heavy content unnecessarily.
-
-Rollback condition:
-
-- Virtualization/windowing breaks selection, keyboard navigation, row focus, or screen-reader semantics.
-- Filtering optimization returns stale or incorrect rows.
-- Image optimization hides errors or prevents retry.
-
-### Release approach
-
-- Ship in small hardening slices: save/error state machine, drawer accessibility, failure states, responsive containment, then row/filter performance.
-- Keep old behavior behind a short-lived rollback path where feasible.
-- Monitor save failures, retries, conflicts, abandoned dirty drawers, upload failures, and filter latency after release.
-- Do not introduce a new design language or dependency unless existing primitives cannot meet the measured production requirements.
+**Release approach**
+- Ship behind a guarded rollout if possible: first error-state/save recovery, then table/windowing, then responsive/a11y polish.
+- Keep telemetry focused on task health: save failures, retry success, conflict frequency, filter latency, drawer abandon rate, and bulk partial failures.
+- Roll back the smallest layer that regresses task completion; do not roll back visual polish together with data-safety fixes unless they are coupled.
 
 
 ## Output B
 
-## 1. Sequencing + verdict
+## 1. Correct sequence + verdict
 
-**Correct sequence:** static audit → P0/P1 production hardening → performance optimization → responsive/accessibility polish → measured regression audit.
+**Sequence:** static audit → define baseline measurements → harden data/failure/recovery/accessibility blockers → optimize measured table/filter/image hot paths → polish visual states within the existing system → release validation with rollback gates.
 
-**Verdict:** Not release-ready for operations use: the current surface risks silent data loss, inaccessible drawer interactions, and severe 10,000-row responsiveness failures; this is a hardening/optimization pass, not a redesign.
-
----
-
-## 2. Prioritized findings: evidence vs. runtime hypotheses
-
-### P0 — Blocking
-
-**P0.1 Silent save failure creates false success**
-- **Static evidence:** `catch {}` swallows all save errors; `setSaving(false)` runs after failure with no error state, retry, rollback, or user message.
-- **Impact:** Operators can believe a product was saved when it was not.
-- **Runtime hypothesis:** Exact autosave UI copy/status is unknown, but the provided save path has no represented failure branch.
-
-**P0.2 Unsafe save/close lifecycle can lose edits**
-- **Static evidence:** Drawer closes on Escape even while save is pending; drawer does not trap focus or background interaction.
-- **Impact:** Pending or dirty edits may be abandoned, duplicated, or saved against stale context.
-- **Runtime hypothesis:** Actual draft persistence is not shown; if none exists, this is a data-loss path.
-
-**P0.3 Required production failure states are absent**
-- **Static evidence:** Empty results, 401/403, 409 conflict, 429, 500, timeout, offline, retry, and partial batch failure states are explicitly not represented.
-- **Impact:** Operators cannot distinguish “no data,” “not allowed,” “stale conflict,” “rate limited,” and “system failed.”
-- **Runtime hypothesis:** Backend may emit these states correctly, but the product surface currently has no described UI contract for them.
+**Verdict:** Not production-ready for a 10,000-row operations editor: the supplied source shows decisive save-error invisibility, missing recovery states, drawer accessibility gaps, hostile-data fragility, and high-risk unbounded rendering; fix by hardening the existing workflow, not redesigning it.
 
 ---
 
-### P1 — Major
+## 2. Prioritized findings: source evidence vs runtime hypotheses
 
-**P1.1 10,000 rows render synchronously**
-- **Static evidence:** `{rows.map(...)}` renders every row; notes say filtering recalculates synchronously on every keystroke.
-- **Impact:** Typing, bulk selection, drawer edits, and scrolling are likely to jank or freeze on realistic hardware.
-- **Runtime hypothesis:** Actual frame drops require measurement, but the implementation pattern is a known hot path.
-
-**P1.2 Drawer is not accessible as a modal editing surface**
-- **Static evidence:** No focus trap, no background interaction lock, Escape closes during pending save, icon-only Save/Close.
-- **Impact:** Keyboard and screen-reader users can lose context, tab behind the drawer, or activate destructive/ambiguous controls.
-- **Runtime hypothesis:** Hidden labels may exist elsewhere, but the notes explicitly say labels and keyboard behavior are not described.
-
-**P1.3 Focus visibility is suppressed**
-- **Static evidence:** `.icon-button { outline: none; }`; no replacement `:focus-visible` state is described.
-- **Impact:** Keyboard-heavy operators lose their position, especially in dense rows and drawer actions.
-- **Runtime hypothesis:** Another stylesheet could restore focus, but this rule is a decisive risk until proven otherwise.
-
-**P1.4 Tablet support is structurally unplanned**
-- **Static evidence:** `.page { min-width: 1180px; }`; fixed 520px drawer; fixed table columns.
-- **Impact:** Tablet users may get horizontal overflow, clipped drawer content, or unusable touch controls.
-- **Runtime hypothesis:** A parent shell could provide scrolling, but that is not equivalent to tablet adaptation.
-
-**P1.5 Hostile product data is not contained**
-- **Static evidence:** Product names can reach 200 chars; prices may be missing; labels can expand 60%; images can be absent or 8MB.
-- **Impact:** Rows can lose meaning, controls can overflow, missing prices can be mistaken for zero, and images can cause layout shift or slow rendering.
-- **Runtime hypothesis:** API normalization or CDN processing may help, but the UI layer still needs explicit display rules.
-
-**P1.6 Permission-specific affordances are missing**
-- **Static evidence:** 401/403 and permission-specific affordances are not represented.
-- **Impact:** Users may attempt actions they cannot complete or misinterpret authorization as system failure.
-- **Runtime hypothesis:** Role data may exist elsewhere; the surface still needs visible disabled/hidden/action-reason states.
+| ID | Pri | Finding | Source evidence | Runtime/context boundary | Concrete fix / acceptance |
+|---|---:|---|---|---|---|
+| F1 | P0 | Save failures can be silent, causing false confidence and possible data loss. | `catch {}` swallows errors; `setSaving(false)` runs without error state; autosave/status behavior not represented. | Exact server/API semantics and whether parent state mutates optimistically are unknown. | Return typed save result; show success/error/conflict/offline states; retain dirty edits after failure; expose retry; log/report errors; never mark failed save as saved. Acceptance: forced 500/timeout/offline keeps drawer data, announces failure, and allows retry without losing edits. |
+| F2 | P0 | Pending save can be interrupted by drawer close. | Notes: Escape closes drawer even while save is pending. | Whether close also discards local edits is not shown, but the interruption path is explicit. | While saving: disable destructive close or require confirmation; allow cancel only if request is abortable and state is recoverable; show “Saving…” with deterministic completion/failure. Acceptance: Escape during pending save cannot silently discard or hide unsaved state. |
+| F3 | P1 | Required operational failure states are absent. | Notes explicitly list missing empty, 401/403, 409, 429, 500, timeout, offline, retry, partial batch failure; loading renders blank body. | Exact visual components are unknown, but absence is stated in supplied scope. | Add table-body states: skeleton/progress for loading; empty result with filter reset; permission-specific locked affordances; conflict compare/reload/apply path; rate-limit wait/retry; server/timeout/offline retry; partial batch result summary with per-row status. Acceptance: every listed state renders clear cause, next action, and preserves filters/selection/drawer context where safe. |
+| F4 | P1 | Drawer is not accessible as a modal editing surface. | Notes: no focus trap, no background interaction blocking; Save/close are icon-only. CSS: fixed drawer. | Whether drawer is intended modal or non-modal needs product confirmation; current notes describe unsafe modal-like behavior. | If modal: use dialog semantics, labelled title, focus trap, restore focus on close, background inert, Escape policy aware of dirty/saving state. If non-modal: keep table keyboard reachable intentionally and define focus order. Icon buttons need accessible names and visible labels/tooltips where appropriate. |
+| F5 | P1 | Keyboard and visible focus support are likely broken for controls. | `.icon-button { width:28px; height:28px; outline:none; }`; notes: keyboard navigation, screen-reader labels, focus-visible not described. | Inherited focus styles could compensate, but `outline:none` is a decisive risk until replaced. | Restore `:focus-visible` ring using existing tokens; ensure 44px-ish tablet hit area or project-approved equivalent; add `aria-label`/text labels; define row, selection, bulk-action, drawer tab order. Acceptance: keyboard-only user can filter, select rows, open/edit/save/close drawer with visible focus. |
+| F6 | P1 | 10,000-row rendering and synchronous filtering are hot-path risks. | `rows.map(...)` renders all rows; notes: all 10,000 rows render; filtering recalculates synchronously on every keystroke. | Actual latency/FPS is unmeasured; static source proves unbounded work, not exact user-perceived lag. | Virtualize table/window rows; memoize filtered results; defer or debounce filter input; keep selection state independent of rendered window; avoid recreating row props unnecessarily. Acceptance: defined keystroke and scroll budgets pass on target desktop/tablet hardware. |
+| F7 | P1 | Layout is brittle on tablet and constrained desktop widths. | `.page { min-width:1180px; }`; fixed grid columns; `.drawer { width:520px; height:100vh; }`; tablet behavior not described. | Exact tablet viewport targets unknown. | Keep table horizontally scrollable inside data region, not whole page; keep filters and critical actions reachable; bound drawer with `width:min(520px,100vw)` or approved full-screen tablet drawer; reserve safe-area/viewport height handling. Acceptance: tablet can filter, inspect, edit, save without hidden critical actions. |
+| F8 | P2 | Hostile data can damage scannability and correctness. | Names 1–200 chars; translations +60%; missing prices; absent/8MB images; `.product-name` truncates only one field. | Actual column renderers unknown. | Define per-field fallbacks: missing price as explicit “Not set”/em dash with edit affordance; long names truncate with accessible full value; labels wrap or use responsive copy; absent images use stable placeholder; reject/compress oversized uploads with progress/error. |
+| F9 | P2 | Image loading may cause layout shift and memory/network pressure. | Image dimensions not reserved; some images absent or 8MB. | Actual image components and CDN behavior unknown. | Reserve width/height/aspect ratio; lazy-load offscreen images; generate thumbnails; enforce upload size/type validation; show per-image upload progress and failure. Acceptance: no visible row jump when images load; 8MB upload has clear progress/failure path. |
+| F10 | P2 | Motion choices are broad and potentially uncomfortable/performance-hostile. | `.product-row, .drawer { transition: all 300ms ease-in; }`; reduced motion not described. | Actual animated properties and frame behavior need runtime inspection. | Replace `transition: all` with named properties, mostly transform/opacity; use faster, interruptible drawer motion; disable or simplify under reduced motion while preserving state feedback. |
+| F11 | P2 | Single `saving` boolean is too coarse for complex operations. | `const [saving,setSaving]`; passed to one `EditDrawer`. | Source does not prove concurrent saves or bulk operations share this flag. | Track save state by product/request ID; distinguish idle/dirty/saving/saved/error/conflict; prevent stale completion from overwriting newer edits. |
+| F12 | P3 | Blank loading body and missing disabled states reduce trust. | Notes: blank body during initial/filter loading; disabled/permission affordances not described. | Visual severity depends on surrounding chrome. | Use compact skeleton or progress row; disable unavailable actions with reason; keep existing density and table grammar. |
 
 ---
 
-### P2 — Minor but important
+## 3. Concrete hardening/polish moves by area
 
-**P2.1 Blank initial/filter loading state**
-- **Static evidence:** Initial and filter loading render a blank table body.
-- **Impact:** Operators cannot tell whether data is loading, filtered out, broken, or delayed.
-- **Runtime hypothesis:** Duration determines severity; even short blanks undermine trust in repeated workflows.
-
-**P2.2 Global `saving` state is too coarse**
-- **Static evidence:** Single `saving` boolean for the page/drawer.
-- **Impact:** One save can disable or mislabel unrelated actions; concurrent edits have no per-product status.
-- **Runtime hypothesis:** If only one product can ever be edited, impact is smaller, but autosave and bulk operations usually need scoped state.
-
-**P2.3 `transition: all 300ms ease-in` is too broad**
-- **Static evidence:** `.product-row, .drawer { transition: all 300ms ease-in; }`
-- **Impact:** Layout/color/size changes can animate accidentally; 300ms ease-in feels delayed for operations UI and may hurt performance.
-- **Runtime hypothesis:** Actual animated properties depend on state changes, but `all` is a static anti-pattern.
-
-**P2.4 Reduced motion is absent**
-- **Static evidence:** No `prefers-reduced-motion` handling described.
-- **Impact:** Users requesting reduced motion still receive drawer/row transitions.
-- **Runtime hypothesis:** Global CSS may exist, but this component-level motion needs an explicit fallback.
+- **Hostile data:** add field-level display contracts for long names, missing prices, long translations, absent images, oversized uploads, and upload failures; preserve full values through accessible labels/tooltips or detail cells.
+- **Failures/recovery:** model request state explicitly: loading, empty, unauthorized, forbidden, conflict, rate-limited, server error, timeout, offline, partial success, dirty, saving, saved, failed; each state needs message, action, and preserved context.
+- **Responsive layout:** remove page-level forced overflow as the only strategy; confine horizontal overflow to the table; keep filters/bulk actions/drawer controls reachable; cap drawer width to viewport or switch to an approved tablet full-screen drawer.
+- **Accessibility:** restore visible focus, label icon-only controls, define keyboard row navigation/selection, trap or intentionally manage drawer focus, restore focus on close, block background interaction if modal, and announce save/error state changes.
+- **State recovery:** never clear local edits or dirty state on failed save; handle 409 with compare/reload/apply choice; protect pending saves from Escape/close; support retry without resetting filters, selection, or drawer content.
+- **Performance:** virtualize 10,000 rows, memoize/defer filtering, reserve image dimensions, thumbnail/lazy-load images, isolate row re-renders, and measure before/after rather than relying on static smell alone.
 
 ---
 
-### P3 — Polish
+## 4. Static detector-like signal reconciliation
 
-**P3.1 Ellipsis alone may hide critical product identity**
-- **Static evidence:** `.product-name` truncates with ellipsis.
-- **Impact:** Operators may not distinguish similar SKUs without a title/detail affordance or secondary identifier.
-- **Runtime hypothesis:** ProductRow may show SKU/image elsewhere; verify with real dense data.
+**Decisive from supplied source/scope:**
+- `catch {}` with no error branch proves save errors are swallowed in this snippet.
+- Explicit notes prove missing listed states in the supplied surface description.
+- `rows.map` plus 10,000-row note proves unbounded initial row rendering.
+- Fixed `min-width:1180px`, fixed columns, and fixed 520px drawer prove responsive constraints exist.
+- `outline:none` proves native outline is removed on `.icon-button`.
+- Explicit notes prove no drawer focus trap/background blocking and icon-only save/close.
 
-**P3.2 28px icon buttons are cramped**
-- **Static evidence:** `.icon-button { width: 28px; height: 28px; }`
-- **Impact:** Fine for mouse precision, weak for tablet and accessibility; increases mis-taps.
-- **Runtime hypothesis:** Hit area could be larger via padding, but the declared box is below common touch target expectations.
-
----
-
-## 3. Concrete fixes
-
-### Hostile data
-- Define display contracts for every nullable/long field:
-  - Missing price: show “Not priced” or an em dash with a tooltip/explanation; never silently render blank or `0`.
-  - Long product names: preserve table density with truncation, but expose full name via accessible title/details cell.
-  - Expanded translations: reserve flexible label space; avoid fixed labels that assume English length.
-  - Missing images: stable placeholder with meaningful alt text or decorative handling when appropriate.
-  - 8MB images: use server/CDN thumbnails for the table, validate upload size/type, show upload progress, errors, and retry.
-- Reserve image dimensions/aspect ratio in rows and drawer to prevent layout shift.
-
-### Failures and recovery
-- Replace `catch {}` with explicit save states: `idle → dirty → saving → saved | error | conflict | offline | rateLimited`.
-- Persist the edited draft until the server confirms success.
-- On timeout/offline/429/500: keep changes visible, show retry, and avoid claiming saved.
-- On 409 conflict: show “server version changed” with compare/overwrite/reload choices.
-- On partial batch failure: show counts, failed row identities, reasons, and retry only failed items.
-- On 401/403: show permission-specific messaging and disable/hide actions with a reason.
-
-### Drawer lifecycle
-- While save is pending:
-  - Disable Escape close, or convert it into a confirmation that preserves the draft.
-  - Prevent background edits that can invalidate the drawer context.
-  - Keep Save/Close labels available to assistive tech and visible enough for keyboard-heavy users.
-- Restore focus to the invoking row/control after close.
-- If dirty changes exist, require save/discard confirmation.
-
-### Responsive layout
-- Do not rely on `min-width: 1180px` as the tablet strategy.
-- Keep the desktop workflow, but add structural breakpoints:
-  - Desktop: dense table + side drawer.
-  - Tablet landscape: table with horizontal overflow only for data columns, sticky identity/actions, drawer width capped by viewport.
-  - Tablet portrait: drawer becomes near-full-width overlay or full-screen edit panel.
-- Use `max-width: min(520px, 100vw)` or equivalent for the drawer; account for safe areas.
-- Ensure touch targets are at least 44px where tablet interaction is supported.
-
-### Accessibility
-- Give icon-only Save/Close accessible names; consider visible text where space allows.
-- Add focus trap, `aria-modal`/dialog semantics, background inerting, and focus restoration for the drawer.
-- Restore visible keyboard focus with `:focus-visible`; never remove outline without replacement.
-- Define keyboard behavior for table navigation, selection, edit open/close, save, cancel, and bulk actions.
-- Ensure loading, error, conflict, and autosave status changes are announced without being noisy.
-- Add reduced-motion CSS: disable or shorten nonessential transitions; preserve instant state feedback.
-
-### Performance
-- Virtualize the 10,000-row table or otherwise render only visible rows plus overscan.
-- Memoize row components and derived filtered data; keep selection/save state scoped to avoid rerendering every row.
-- Debounce or defer filter keystrokes; cancel stale filter/save requests where applicable.
-- Avoid `transition: all`; animate only `transform` and `opacity` for drawer movement.
-- Lazy-load row images, reserve dimensions, and use thumbnails.
-- Keep bulk selection operations set-based and avoid cloning/sorting the full row array on every interaction.
+**Needs project/runtime context before final severity or implementation choice:**
+- Exact perceived slowness, FPS, input delay, layout shift, and memory impact.
+- Whether inherited CSS restores focus visibility despite `outline:none`.
+- Whether the drawer is intended modal, modeless inspector, or hybrid.
+- Whether optimistic updates mutate `rows` before save confirmation.
+- Whether global `saving` conflicts with concurrent saves or bulk operations.
+- Exact tablet breakpoints, supported browsers, API retry semantics, image CDN behavior, and permission model.
 
 ---
 
-## 4. Static signals: decisive vs. needing runtime context
+## 5. Measurement-first validation plan with rollback/acceptance
 
-### Decisive from the provided source/facts
-- `catch {}` with no error state is a real silent-failure path.
-- Rendering `rows.map(...)` for 10,000 rows is a real scalability risk.
-- Synchronous filtering on every keystroke is a real input hot path.
-- `transition: all` is a real implementation smell.
-- `outline: none` without described replacement is a real accessibility risk.
-- `min-width: 1180px`, fixed grid columns, and fixed 520px drawer are real responsive risks.
-- Missing represented states for auth, conflict, rate limit, offline, timeout, empty, retry, and partial failure is a real production-state gap.
+1. **Baseline first, before optimization claims**
+   - Measure initial render, filter keystroke latency, scroll responsiveness, drawer open/close responsiveness, image load shift, and save-state transitions on target desktop and tablet-class hardware.
+   - Record row count, image mix, network profiles, and browser versions.
 
-### Needs project/runtime context before final severity locking
-- Exact frame time, memory use, and input delay on target hardware.
-- Whether `ProductRow` internally uses table/grid semantics, memoization, labels, or image sizing.
-- Whether global styles restore focus-visible or reduced-motion behavior.
-- Whether image processing, thumbnailing, and upload validation happen outside this surface.
-- Whether API saves are idempotent, abortable, retry-safe, and conflict-aware.
-- Whether permission metadata is available client-side.
-- Whether tablet support means full editing parity or limited review/edit workflows.
+2. **Failure-state validation**
+   - Inject or mock 401/403/409/429/500/timeout/offline/partial batch responses.
+   - Acceptance: every state renders cause + next action; filters/selection/drawer edits survive where appropriate; failed save never appears successful.
 
----
+3. **Accessibility validation**
+   - Keyboard-only pass for filters, table rows, selection, bulk actions, drawer open/save/close.
+   - Screen-reader/name pass for icon buttons, drawer title, save status, errors.
+   - Acceptance: visible focus at all times, no background focus leak for modal drawer, Escape cannot destroy pending/dirty work.
 
-## 5. Measurement-first validation plan
+4. **Responsive validation**
+   - Test supported desktop widths and tablet widths/orientations.
+   - Acceptance: table may scroll within its region, but primary actions, filters, drawer controls, and status remain reachable.
 
-### Baseline before fixes
-- Create fixtures for: 10,000 rows, 200-character names, missing prices, 60% longer labels, absent images, 8MB uploads, auth failures, conflicts, offline, timeout, 429, 500, and partial batch failure.
-- Record current interaction budgets for initial render, filter typing, row selection, drawer open/close, save, upload, and bulk actions.
-- Capture keyboard-only task completion paths for filtering, selecting, opening drawer, saving, handling errors, and closing.
+5. **Performance validation**
+   - Compare baseline vs virtualized/deferred implementation.
+   - Acceptance targets should be set by the product team, but release should require no obvious typing stalls while filtering, smooth practical scrolling through 10,000 rows, bounded row renders, and no major image-induced layout jumps.
 
-### Acceptance conditions
-- **Data safety:** no save failure is silent; dirty edits survive failed saves; pending saves cannot be accidentally dismissed without preservation/confirmation.
-- **Failure clarity:** every listed production state has a distinct UI state, operator-readable copy, and next action.
-- **Performance:** 10,000-row filtering and selection remain responsive on target desktop hardware; tablet remains usable with defined row/image budgets.
-- **Accessibility:** drawer traps focus, restores focus, exposes named controls, preserves visible focus, supports Escape safely, and announces status changes appropriately.
-- **Responsive:** supported tablet widths have no inaccessible controls, clipped drawer actions, or unusable fixed-width assumptions.
-- **Motion:** reduced-motion mode preserves state feedback without unnecessary transitions.
+6. **Rollback conditions**
+   - Roll back if virtualization breaks selection, row identity, keyboard navigation, screen-reader order, bulk operations, or edit-drawer context.
+   - Roll back if new save guards block legitimate recovery, hide API errors, or make offline/conflict resolution worse.
+   - Roll back if responsive changes hide columns/actions without an accessible way to reach them.
 
-### Rollback conditions
-- Roll back or feature-flag virtualization if bulk selection, row identity, keyboard navigation, or scroll restoration regresses.
-- Roll back drawer lifecycle changes if operators cannot recover drafts or if save/cancel semantics become ambiguous.
-- Roll back image/upload changes if upload success rate or preview reliability drops.
-- Do not ship polish-only changes until P0 data integrity and P1 performance/accessibility risks are resolved.
+7. **Release acceptance**
+   - Ship only when P0 issues are closed, P1 issues have verified behavior or explicit product sign-off, performance measurements meet agreed budgets, and all newly added states preserve the existing workflow and design system.
 
 
 ## Output C
 
-## 1) Sequence and verdict
+## 1) Correct sequencing + verdict
 
-**Correct sequence:** audit static evidence → harden data integrity/failure recovery/accessibility blockers → establish runtime baselines → optimize only proven hot paths → polish motion/responsive details without changing the workflow.
+**Sequencing:** audit static risks → harden correctness/failure/state recovery → fix accessibility and keyboard safety → optimize measured hot paths → polish responsive layout, motion, and visual states without changing the workflow.
 
-**One-line verdict:** The surface has the right inventory-editor shape, but it is **not production-ready for 10,000-row operations use** until save failure visibility, drawer safety, failure states, accessibility, hostile data, and table performance are hardened.
+**Verdict:** Static evidence shows this inventory editor is not production-hardened yet: silent save failure, missing recovery states, unsafe drawer behavior, unbounded 10,000-row rendering, and incomplete accessibility should block release before visual polish.
 
 ---
 
 ## 2) Prioritized findings
 
-### P0 — Silent save failure and unsafe state recovery
+### P0 — Data-loss and false-success risk in saving
+- **Source evidence:** `catch {}` swallows `api.save(product)` failures; `saving` is reset with no error state, retry path, conflict handling, or user-visible failure.
+- **Source evidence:** Escape closes the drawer even while save is pending.
+- **Source evidence:** 409 conflict, timeout, offline, retry, and partial batch failure states are not represented.
+- **Runtime hypothesis:** Users may believe edits are saved when they are not; pending edits may be lost if the drawer closes during save or network failure.
 
-**Source evidence**
-- `catch {}` swallows save failures.
-- `setSaving(false)` is not in `finally`.
-- `saving` is a single page-level boolean, not per product/batch/request.
-- Notes say 409 conflict, timeout, offline, retry, and partial batch failure states are not represented.
-- Drawer can close with Escape while a save is pending.
-
-**Runtime hypothesis / risk**
-- Operators can believe changes were saved when they were not.
-- Concurrent saves may race: one request can clear `saving` while another is still pending.
-- Conflict resolution and autosave trust are undefined.
-
-**Production impact**
-- Data loss, duplicate work, incorrect inventory records, and low operator trust.
+**Fix:** Replace silent catch with explicit save result states: `idle | dirty | saving | saved | failed | conflict | offline`. Use `finally` for cleanup, surface errors inline and in autosave status, block or confirm close while dirty/saving, and preserve the draft until server acknowledgement.
 
 ---
 
-### P0 — Drawer is not a safe modal editing surface
+### P0 — Missing production failure and permission states
+- **Source evidence:** Empty results, 401/403, 409, 429, 500, timeout, offline, retry, and partial batch failure states are absent.
+- **Source evidence:** Permission-specific affordances are not described.
+- **Runtime hypothesis:** Operators may see blank content or disabled workflows without knowing whether data is loading, unavailable, unauthorized, filtered out, rate-limited, or partially saved.
 
-**Source evidence**
-- Drawer traps neither focus nor background interaction.
-- Escape closes it even while save is pending.
-- Save and close are icon-only.
-- `.drawer { position: fixed; right: 0; width: 520px; height: 100vh; }`
-
-**Runtime hypothesis / risk**
-- Keyboard and screen-reader users can tab into the table behind the drawer.
-- Users can accidentally close or mutate background state during an edit.
-- Pending edits may be lost or become ambiguous.
-
-**Production impact**
-- Accessibility blocker and workflow-safety blocker for the primary edit task.
+**Fix:** Add explicit state surfaces while preserving the existing page structure:
+- loading: table skeleton or calm loading rows, not blank body;
+- empty: “No products match these filters” with clear filter reset;
+- 401/403: auth/permission message with allowed next action;
+- 409: conflict resolver showing local vs server value;
+- 429/timeout/offline: retry with backoff and offline persistence;
+- 500: retryable server failure message;
+- partial batch failure: per-row failure summary and retry failed only.
 
 ---
 
-### P0 — 10,000-row rendering and filtering are structurally unbounded
+### P1 — Drawer is not a safe modal/editing surface
+- **Source evidence:** Drawer traps neither focus nor background interaction.
+- **Source evidence:** Escape closes it even during pending save.
+- **Source evidence:** Save and close are icon-only.
+- **Runtime hypothesis:** Keyboard and screen-reader users can lose context, interact behind the drawer, or trigger destructive close behavior accidentally.
 
-**Source evidence**
-- `{rows.map((row) => <ProductRow ... />)}` renders every row.
-- Notes say all 10,000 rows render at once.
-- Notes say filtering recalculates synchronously on every keystroke.
-- Image dimensions are not reserved.
-
-**Runtime hypothesis / risk**
-- Actual frame rate, memory, and input latency require profiling, but the static shape is already an unbounded hot path.
-- Large or missing images can worsen layout shift and scroll instability.
-
-**Production impact**
-- Filtering, bulk selection, scrolling, and drawer edits may feel unreliable at stated scale.
-
----
-
-### P1 — Missing production failure-state coverage
-
-**Source evidence**
-- Initial and filter loading render a blank table body.
-- Empty results, 401/403, 409, 429, 500, timeout, offline, retry, and partial batch failure states are absent.
-
-**Runtime hypothesis / risk**
-- Operators cannot distinguish loading from empty, unauthorized, failed, rate-limited, stale, or partially applied states.
-
-**Production impact**
-- Support burden rises; users retry blindly; partial failures can corrupt operational intent.
+**Fix:** Treat the drawer as a controlled editing region:
+- `role="dialog"` or equivalent semantic pattern with labelled title;
+- focus moves into drawer on open and returns to the invoking row on close;
+- trap focus while open and make background inert/unreachable;
+- Escape closes only when clean, or opens a discard/pending-save confirmation;
+- save/close buttons get visible text or robust accessible names;
+- pending save disables destructive close or requires confirmation.
 
 ---
 
-### P1 — Responsive/tablet behavior is not production-specified
+### P1 — 10,000-row rendering and synchronous filtering are hot-path risks
+- **Source evidence:** `{rows.map(...)}` renders all rows at once.
+- **Source evidence:** Source notes say filtering recalculates synchronously on every keystroke.
+- **Source evidence:** Image dimensions are not reserved.
+- **Runtime hypothesis:** Initial render, filter typing, selection updates, image loading, and scrolling may produce long tasks, input delay, memory pressure, and layout shift.
 
-**Source evidence**
-- `.page { min-width: 1180px; }`
-- `.drawer { width: 520px; }`
-- Tablet behavior is not described.
-
-**Runtime hypothesis / risk**
-- On tablet-width viewports, the fixed page width plus fixed drawer can force horizontal scrolling, clipped controls, or unreachable table columns.
-- Whether an outer shell compensates is unknown from the snippet.
-
-**Production impact**
-- Tablet support is currently a claim, not a verified contract.
-
----
-
-### P1 — Hostile data is under-modeled
-
-**Source evidence**
-- Product names can be 1–200 characters.
-- `.product-name` uses single-line truncation.
-- Prices may be missing.
-- Translations may expand labels by 60%.
-- Images may be absent or 8MB.
-
-**Runtime hypothesis / risk**
-- Truncation may hide the only distinguishing product text.
-- Missing prices may be confused with zero or loading.
-- Expanded labels can break fixed columns/buttons.
-- 8MB images can delay edits/uploads without progress or compression.
-
-**Production impact**
-- Operators may edit the wrong item or lose confidence in row state.
+**Fix:** Keep the workflow but change the implementation:
+- render a windowed/virtualized table body or equivalent internal windowing;
+- memoize row rendering and derived filtered rows;
+- debounce or defer filter work while keeping input responsive;
+- avoid global `saving` re-rendering every row if save is drawer/row-specific;
+- reserve thumbnail dimensions and lazy-load non-critical images;
+- keep selection state stable by product id, not visible index.
 
 ---
 
-### P1 — Accessibility contract is incomplete
+### P1 — Accessibility gaps are source-visible
+- **Source evidence:** `.icon-button { outline: none; }`.
+- **Source evidence:** Save and close are icon-only.
+- **Source evidence:** Keyboard navigation, screen-reader labels, focus-visible, and reduced motion are not described.
+- **Source evidence:** `.product-row, .drawer { transition: all 300ms ease-in; }`.
+- **Runtime hypothesis:** Focus may become invisible, controls may be unnamed, motion may be excessive, and table/drawer navigation may be unreliable.
 
-**Source evidence**
-- `.icon-button { width: 28px; height: 28px; outline: none; }`
-- Save and close are icon-only.
-- Keyboard navigation, screen-reader labels, focus-visible, and permission-specific affordances are not described.
-
-**Runtime hypothesis / risk**
-- `outline: none` may be compensated elsewhere, but no replacement focus style is shown.
-- 28px controls are likely too small for tablet comfort unless another hit area exists.
-- Table semantics, bulk-selection labels, and autosave announcements are unknown.
-
-**Production impact**
-- Keyboard-heavy operations users lose speed and confidence; assistive technology support is likely incomplete.
-
----
-
-### P2 — Motion implementation is broad and potentially disruptive
-
-**Source evidence**
-- `.product-row, .drawer { transition: all 300ms ease-in; }`
-- Reduced motion is not described.
-
-**Runtime hypothesis / risk**
-- `transition: all` can animate layout, color, width, height, or other accidental properties.
-- `ease-in` can feel sluggish for entrance/opening transitions.
-- Actual jank requires runtime validation.
-
-**Production impact**
-- Motion may reduce perceived responsiveness in a dense operations workflow.
+**Fix:** Restore accessible interaction:
+- use `:focus-visible` styling aligned to the design system;
+- add accessible names to icon buttons;
+- provide keyboard row selection, bulk selection, and drawer controls;
+- expose autosave and errors through a polite/assertive live region as appropriate;
+- respect `prefers-reduced-motion`;
+- transition only safe properties such as `transform` and `opacity`, not `all`.
 
 ---
 
-### P2 — Permission-specific affordances are absent
+### P2 — Responsive/tablet layout is under-specified and brittle
+- **Source evidence:** `.page { min-width: 1180px; }`.
+- **Source evidence:** drawer is fixed `width: 520px; height: 100vh; right: 0`.
+- **Source evidence:** tablet behavior is not described.
+- **Runtime hypothesis:** Tablet users may get clipped content, unreachable controls, body scroll conflicts, or a drawer that consumes too much of the viewport.
 
-**Source evidence**
-- Permission-specific affordances are not described.
-- 401/403 states are absent.
-
-**Runtime hypothesis / risk**
-- Users may see controls they cannot use, or errors only after attempting an action.
-
-**Production impact**
-- Avoidable failed actions and unclear responsibility boundaries.
-
----
-
-### P3 — Polish gaps reduce operational clarity
-
-**Source evidence**
-- Blank loading body.
-- Icon-only primary drawer actions.
-- Global `saving` boolean.
-- Single-line truncation without described reveal path.
-
-**Runtime hypothesis / risk**
-- The UI may look visually calm but fail to communicate enough state during repeated work.
-
-**Production impact**
-- Lower scannability, more hesitation, more support tickets.
+**Fix:** Preserve desktop-first layout but add adaptive constraints:
+- make the table region horizontally scrollable instead of forcing the entire page;
+- use `width: min(520px, calc(100vw - safe margins))` for the drawer;
+- handle tablet breakpoints with reduced columns, sticky key columns, or detail expansion;
+- lock background scroll while drawer is open;
+- account for safe areas and dynamic viewport height where relevant.
 
 ---
 
-## 3) Concrete fixes
+### P2 — Hostile product data will break polish and comprehension
+- **Source evidence:** product names can be 1–200 characters.
+- **Source evidence:** prices may be missing.
+- **Source evidence:** translations may expand labels by 60%.
+- **Source evidence:** images may be absent or 8MB.
+- **Source evidence:** product names are truncated with ellipsis.
+- **Runtime hypothesis:** Operators may lose identifying information, see ambiguous blanks, suffer layout shift, or wait on oversized media.
 
-### Data integrity and save recovery
+**Fix:** Harden data rendering:
+- preserve full product name in accessible text and a deliberate reveal pattern;
+- render missing prices as explicit “No price” / “Not set”, not blank;
+- allow labels/buttons to grow or wrap where safe;
+- reserve image boxes and provide absent-image placeholders;
+- validate upload size/type before upload, show progress, and support retry/cancel;
+- compress or resize large images server-side or in the existing upload pipeline if available.
 
-- Replace `catch {}` with typed error handling and user-visible outcomes.
-- Use `try/catch/finally` so pending state always resolves when the request settles.
-- Track save state by product/request, not only one global `saving` boolean.
-- Add request IDs or version tokens so stale responses cannot overwrite newer edits.
-- Represent autosave states explicitly: `idle`, `dirty`, `saving`, `saved`, `failed`, `conflict`, `offline`, `retrying`.
-- Block, confirm, or defer drawer close while a save is pending or dirty.
-- Add 409 conflict handling: compare server version, show conflicting fields, allow reload/merge/retry.
-- Add retry with backoff for timeout/429/offline where safe; never retry non-idempotent writes without an idempotency key.
-- Preserve drafts locally during network loss, route changes, and drawer close attempts.
+---
 
-### Failure states
+### P3 — Motion and visual polish should come after hardening
+- **Source evidence:** `transition: all 300ms ease-in` on rows and drawer.
+- **Runtime hypothesis:** Broad transitions can animate layout/color/size unexpectedly, create sluggish interaction, and conflict with reduced-motion needs.
 
-- Initial load: show skeleton or structured loading rows, not a blank body.
-- Filter load: preserve previous rows with a “updating results” state, or show a scoped loading state.
-- Empty results: show filter-aware empty copy and clear-filter action.
-- 401/403: show session/permission state with no destructive controls.
-- 429: show rate-limit explanation and retry timing if available.
-- 500/timeout/offline: show recoverable error, retry, and unsaved-change preservation.
-- Partial batch failure: show batch summary, failed row list, retry failed only, and export/copy diagnostics if appropriate.
+**Fix:** Replace with intentional motion:
+- drawer: transform-based open/close transition;
+- row updates: subtle background/color transition only where meaningful;
+- reduced motion: instant state change with non-motion feedback;
+- no transition on layout-heavy table properties.
+
+---
+
+## 3) Concrete production fixes by area
 
 ### Hostile data
+- Add display contracts for long names, missing prices, absent images, oversized images, and expanded translations.
+- Reserve image dimensions in every row.
+- Use explicit placeholders instead of blanks.
+- Keep full identifiers available to assistive tech and keyboard users.
+- Validate upload type/size early and show upload progress/error/retry.
 
-- Product names: preserve row density, but provide an accessible full-name reveal via cell expansion, tooltip/popover, or drawer detail.
-- Missing prices: render a distinct placeholder such as “—”/“Not set”; never conflate with zero.
-- Long translations: avoid fixed-label assumptions; allow buttons and form labels to wrap or use minmax layouts.
-- Images: reserve dimensions, use placeholders for missing assets, lazy-load thumbnails, validate size/type, compress or resize before upload when allowed, and show upload progress/failure/retry.
-- Ensure row identity remains visible when text truncates: SKU/image/name should not all disappear or collapse at once.
+### Failures
+- Stop swallowing errors.
+- Use typed API outcomes for success, validation failure, auth failure, conflict, rate limit, timeout, offline, and server failure.
+- Add retry paths with idempotency/version protection.
+- Add per-row and batch-level partial failure summaries.
+- Keep failed drafts recoverable until explicitly discarded.
 
 ### Responsive layout
-
-- Replace global `min-width: 1180px` as the only layout strategy with a responsive shell.
-- Keep desktop density, but define tablet behavior explicitly:
-  - horizontal table scroll with sticky key columns, or
-  - column-priority hiding with drawer detail, if already consistent with the system.
-- Use drawer width like `clamp(360px, 42vw, 520px)` or a tablet-specific full-width/near-full-width drawer.
-- Ensure drawer plus table never makes primary actions unreachable.
-- Reserve safe spacing for touch targets without making the desktop table overly loose.
+- Keep the existing table workflow but constrain overflow to the table area.
+- Make the drawer viewport-aware.
+- Define tablet behavior for filters, columns, bulk actions, and drawer open state.
+- Avoid page-level horizontal scrolling where possible.
 
 ### Accessibility
+- Restore visible focus.
+- Label icon-only controls.
+- Add drawer focus trap, background inertness, initial focus, and focus return.
+- Protect pending saves from Escape/discard.
+- Add keyboard affordances for row navigation, selection, bulk actions, and save.
+- Respect reduced motion.
+- Announce autosave/failure states.
 
-- Treat the drawer as a modal editing surface when open:
-  - `role="dialog"` or equivalent semantic structure,
-  - accessible title,
-  - focus moves into drawer on open,
-  - focus trap while open,
-  - background inert/disabled,
-  - focus returns to the invoking row/control on close.
-- Save/close icon buttons need accessible names; consider visible text where the workflow needs clarity.
-- Restore visible focus styling; do not rely on `outline: none` without a replacement.
-- Define keyboard row navigation, selection behavior, and drawer shortcuts.
-- Announce autosave changes through an appropriate live region.
-- Do not let Escape discard pending/dirty work without confirmation.
-- Add reduced-motion handling that preserves state feedback without large transitions.
+### State recovery
+- Track dirty state separately from saving state.
+- Persist local draft while save is pending or failed.
+- Restore filters, selection, drawer target, and unsaved draft after refresh when safe.
+- Resolve conflicts using server versioning or ETags.
+- Prevent stale saves from overwriting newer edits.
 
 ### Performance
-
-- Virtualize the table or otherwise window rendered rows; keep selection and focus stable across virtualization.
-- Memoize filtered results with correct dependencies.
-- Debounce or defer filter input work so typing remains responsive.
-- Use stable row props/callbacks and memoized row components where useful.
-- Move very heavy filtering/search transforms to a worker only if measurement shows main-thread pressure remains.
-- Reserve image dimensions and lazy-load thumbnails.
-- Replace `transition: all` with specific properties, preferably `transform` and `opacity` for drawer motion.
-- Avoid animating grid dimensions, width, height, or layout-affecting properties in the table hot path.
+- Window the 10,000-row table.
+- Memoize filtered rows and row components.
+- Defer/debounce filtering work.
+- Avoid global state changes that re-render all rows.
+- Reserve image layout and lazy-load thumbnails.
+- Limit transitions to compositor-friendly properties.
 
 ---
 
-## 4) Detector-like signals: decisive vs context-dependent
+## 4) Static signals: decisive vs needing runtime context
 
-### Decisive from supplied evidence
+### Decisive from the provided source/static facts
+- Empty `catch {}` means save failures are hidden.
+- No represented error states means failure UX is incomplete.
+- `rows.map` over all rows means the implementation attempts full render.
+- Synchronous filtering on every keystroke is a hot-path risk.
+- `outline: none` without described replacement is an accessibility failure risk.
+- Icon-only save/close without labels is unsafe.
+- Drawer without focus trap/background isolation is not accessible modal behavior.
+- `transition: all` is unsafe for a large table and drawer.
+- Fixed `min-width: 1180px` and fixed `520px` drawer need tablet handling.
 
-- `catch {}` proves save errors are swallowed in the shown flow.
-- `rows.map(...)` plus the note proves 10,000 product rows are rendered at once.
-- Missing state notes decisively establish absent represented states within the supplied scope.
-- Drawer notes decisively establish no focus trap/background lock in the described implementation.
-- `transition: all` decisively exists for `.product-row` and `.drawer`.
-- `min-width: 1180px` and fixed `520px` drawer decisively exist in the provided CSS.
-- `outline: none` decisively removes the default outline for `.icon-button` in this snippet.
-
-### Needs project/runtime context before final severity or implementation choice
-
-- Whether another stylesheet restores focus-visible styling.
-- Whether `ProductRow` is cheap enough for some machines, though the unbounded render remains a structural risk.
-- Actual filter latency, memory, scroll FPS, and layout shift.
-- Whether existing API clients already apply timeouts, retries, idempotency, or auth handling.
-- Whether an outer layout already supplies tablet scrolling or responsive constraints.
-- Whether image processing is handled before these components receive image data.
-- Whether table semantics, accessible names, and live regions exist inside omitted components.
-- Whether the design system already has modal, drawer, toast, status, table, and skeleton primitives that should be reused.
+### Needs project/runtime context before final severity or exact fix
+- Exact render time, memory use, input delay, and scroll performance.
+- Whether `ProductRow` internally memoizes, labels controls, or reserves media.
+- Existing design-system tokens for focus, error, loading, and motion.
+- Whether the API client already supports retries, aborts, idempotency, or auth handling.
+- Actual permission model and which actions should be hidden, disabled, or explained.
+- Real tablet breakpoints and supported device sizes.
+- Actual screen-reader output and keyboard order.
+- Real image CDN/upload behavior and whether thumbnails are pre-generated.
 
 ---
 
-## 5) Measurement-first validation plan
+## 5) Measurement-first validation plan with rollback/acceptance
 
 ### Baseline before changes
+- Measure initial render with 10,000 rows.
+- Measure filter keystroke latency and long tasks.
+- Measure drawer open/close interaction latency.
+- Measure scroll smoothness and memory use.
+- Measure image layout shift with absent and large images.
+- Exercise mocked responses for 401, 403, 409, 429, 500, timeout, offline, and partial batch failure.
 
-- Define canonical datasets:
-  - 10,000 rows,
-  - 200-character names,
-  - missing prices,
-  - 60% longer translated labels,
-  - absent images,
-  - multiple 8MB images,
-  - mixed permissions,
-  - partial batch failures.
-- Measure initial render, filter keystroke latency, scroll smoothness, memory, image layout shift, drawer open/close cost, and save-state timing.
-- Run failure scenarios for 401, 403, 409, 429, 500, timeout, offline, retry success, retry failure, and partial batch failure.
-- Audit keyboard path: filters → table → row actions → drawer → save/close → return focus.
-- Audit screen-reader names and announcements for icon buttons, table selection, drawer title, errors, and autosave status.
+### Validation after hardening
+- Save failure is visible and recoverable.
+- Pending save cannot be silently discarded.
+- Dirty draft survives failed save and intentional close rules are clear.
+- Conflict state prevents stale overwrite.
+- Partial batch save reports failed rows and allows retry failed only.
 
-### Acceptance conditions
+### Accessibility validation
+- Keyboard can reach filters, table rows, bulk actions, drawer fields, save, and close.
+- Focus is visible.
+- Drawer traps focus and restores it on close.
+- Background is not interactive while drawer is open.
+- Icon buttons have accessible names.
+- Autosave and failure states are announced appropriately.
+- Reduced-motion mode removes nonessential animation while preserving state feedback.
 
-- No save failure is silent.
-- Dirty/pending edits cannot be accidentally discarded.
-- Every listed failure state has a visible, recoverable UI state.
-- Conflict handling prevents stale overwrite.
-- Drawer traps focus, blocks background interaction, labels controls, restores focus, and handles Escape safely.
-- 10,000-row filtering and scrolling meet agreed latency/frame budgets on target hardware.
-- Images do not cause meaningful layout shift in the table.
-- Tablet viewport has reachable filters, rows, drawer controls, and save/close actions.
-- Reduced-motion mode removes nonessential movement while preserving state feedback.
-- Permission-restricted users see disabled/hidden/explained actions before failure.
+### Performance acceptance targets
+- Only visible rows plus modest overscan render during normal table use.
+- Filter typing remains responsive at 10,000 rows.
+- No avoidable large layout shifts from images.
+- Row selection and drawer save do not re-render the full table unnecessarily.
+- Motion does not animate layout-heavy properties.
+
+### Responsive acceptance
+- Desktop workflow remains intact.
+- Tablet viewport does not lose critical actions.
+- Drawer remains usable without covering all context unless intentionally full-screen.
+- Table overflow is contained and predictable.
 
 ### Rollback conditions
+- Roll back windowing/filter changes if selection, bulk actions, or row identity become inconsistent.
+- Roll back save-state changes if they block legitimate saves or discard confirmed user intent incorrectly.
+- Roll back drawer changes if focus becomes trapped with no escape path.
+- Roll back responsive changes if desktop operator density or existing workflows regress.
 
-- Save error rate, conflict rate, or support-reported lost edits increases.
-- Filter latency or scroll performance regresses beyond the agreed budget.
-- Virtualization breaks selection, focus restoration, row identity, or bulk actions.
-- Drawer changes trap users or block legitimate background workflow unexpectedly.
-- Tablet layout hides primary actions or increases task completion time.
-- New retry behavior creates duplicate writes or stale overwrites.
-
-### Rollout strategy
-
-- Ship hardening behind narrow flags where possible: save-state handling, drawer safety, virtualization, and upload pipeline can be staged separately.
-- Keep a fallback table path until selection, focus, and bulk actions are verified with large datasets.
-- Instrument save outcomes, conflict frequency, retry behavior, filter latency, row render count, image failures, and drawer abandonment.
-- Release only when production metrics and operator task checks confirm the workflow is safer without becoming slower or unfamiliar.
+### Release condition
+Ship only when correctness and recovery are safe, keyboard/accessibility paths are verified, 10,000-row interactions meet agreed latency targets, and all listed failure states have deliberate user-facing outcomes.

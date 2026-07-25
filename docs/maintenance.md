@@ -192,8 +192,12 @@ Expected result:
 - Use `INSTALL_ARGS=--no-prune-backups` when a maintenance run must preserve
   every historical backup; default installs retain the newest ten per skill.
 
-Mutable remote review is part of `release-readiness-operational` and
-`release-readiness-certified`, not the deterministic source gate.
+Mutable remote review is part of candidate
+`release-readiness-operational` and `release-readiness-certified`, not the
+deterministic source gate or final tag certification. Final certification
+verifies the committed upstream review snapshot and lock parity from the tag;
+it must not change outcome because an external repository advances after the
+tag was created.
 
 Check whether the canonical skill copy or separate Codex route-pack has drifted:
 
@@ -205,7 +209,7 @@ make sync-status-remote
 Operational release readiness requires a committed matching-runner benchmark
 baseline, Codex/Pi current-source score v4, current comparative evaluation,
 current iOS Simulator and Android Emulator evidence v3, clean worktree,
-installed provenance, and live upstream review. Cursor, Claude, and
+installed provenance, and live upstream review at candidate time. Cursor, Claude, and
 physical-device status remain explicitly unverified.
 
 Certified readiness strictly extends Operational with Cursor, Claude, and a

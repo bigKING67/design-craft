@@ -26,11 +26,14 @@ CORE_GATES = (
     "l4_evidence_contract",
 )
 
-RELEASE_GATES = (
+IMMUTABLE_RELEASE_GATES = (
     "performance_regression",
     "comparative_evaluation",
     "clean_worktree",
     "install_provenance",
+)
+
+LIVE_CANDIDATE_GATES = (
     "upstream_remote_review",
 )
 
@@ -68,13 +71,15 @@ def load_profile(name: str, phase: str) -> MaturityProfile:
         "main_branch",
         "main_ruleset",
     ) if phase == "final" else ()
+    candidate_gates = LIVE_CANDIDATE_GATES if phase == "candidate" else ()
     return MaturityProfile(
         name=name,
         scope="release_candidate" if phase == "candidate" else "release_final",
         release_level_score=level.score,
         required_gate_ids=(
             *CORE_GATES,
-            *RELEASE_GATES,
+            *IMMUTABLE_RELEASE_GATES,
+            *candidate_gates,
             *host_gates,
             *native_gates,
             *final_gates,
@@ -101,6 +106,9 @@ def check_profile_invariants() -> list[str]:
     missing = required_operational - set(operational.required_gate_ids)
     if missing:
         errors.append(f"operational_95 is missing required gates: {sorted(missing)}")
+    operational_final = load_profile("operational_95", "final")
+    if "upstream_remote_review" in operational_final.required_gate_ids:
+        errors.append("final certification must not depend on mutable upstream HEAD")
     if not set(operational.required_gate_ids) < set(certified.required_gate_ids):
         errors.append("certified_100 must strictly extend operational_95")
     for gate in (

@@ -15,6 +15,13 @@ You may still require an explicit bound for work that is demonstrably
 unbounded, while leaving the implementation choice contingent on measurement
 and project constraints.
 
+Calibrate severity separately from architecture risk. A direct map of 10,000
+rows or synchronous filtering is decisive evidence of unbounded work, but not
+by itself proof of user-visible latency or a P0 release blocker. Keep it at P1
+until target-device measurement establishes severe task failure, unless the
+source already proves guaranteed exhaustion, data loss, or inability to
+complete the stated job.
+
 When acceptance conditions are requested but the project has no performance
 budget, propose provisional numeric thresholds and label them for ratification
 instead of saying only "responsive" or "fast". Match them to the actual device,

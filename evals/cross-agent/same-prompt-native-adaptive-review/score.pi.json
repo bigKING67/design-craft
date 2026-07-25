@@ -14,54 +14,54 @@
   "scorecard_json_sha256": "260126ae8e6eb6765184f92ad040b5e32995c941f559d654a303a0d5305e210f",
   "contract_sha256": "907627714e2c4078558dba2e0449c2df2bf1d6d7db5e91e0f1e8b2017c22d0c9",
   "run_manifest_path": "run.pi.json",
-  "run_manifest_sha256": "ef6ad0416334a23ea57281cc7f95341c8b10fdc11396ff61383f171a096e7921",
-  "skill_version": "0.5.3",
-  "skill_source_commit": "47bbb40664ac35523d8dfb11ba310567e2802ccc",
+  "run_manifest_sha256": "2e7a4913f1d7c3a3c762738820e66e046f2039af9e8a16c4d2fe47bcdcda20bd",
+  "skill_version": "0.5.4",
+  "skill_source_commit": "0239d83a826a51206953c411c564da72c51c4425",
   "skill_source_dirty": false,
   "repo_dirty": true,
   "release_state": "unknown",
-  "skill_tree_sha256": "64a3997fa784e6614350506cc4a608d72451cdcc6a6b7df3c6d65234c2662230",
+  "skill_tree_sha256": "0aacdc6e7ec587121f24fce3b055814b907aebda0663d54d42e84d36f2b5e5f5",
   "skill_path": "$BENCHMARK_WORKSPACE/.pi/skills/design-craft",
   "provenance_skill_path": "$DESIGN_CRAFT_HOME/skills/design-craft",
   "command_summary": "pi --print --no-session --no-skills --skill '$BENCHMARK_SKILL' --no-context-files --tools read,grep,find,ls --model codex/gpt-5.5 --thinking high",
   "output_path": "pi-output.md",
-  "output_sha256": "ad196b52e120e07212506cee7d3a7d489d7bfcefbecafe0c4fb9720770a76c6e",
+  "output_sha256": "ac24cca23fcc47608c6fd3c6018a2cb99ec76ce38d2367b5547340770e8a5fb6",
   "score": 100,
   "criteria": {
     "style_authority": {
       "passed": true,
       "earned": 15,
-      "note": "Separates adaptive product semantics from platform-native navigation, controls, typography, materials, motion, and layout."
+      "note": "Resolves the adaptive product context while keeping shared content and semantic roles distinct from platform-native navigation, controls, materials, motion, and layout."
     },
     "reference_selection": {
       "passed": true,
       "earned": 15,
-      "note": "Applies product context, iOS, Android, adaptive layout, accessibility, interaction, motion, and runtime-validation guidance."
+      "note": "Applies product, iOS, Android, adaptive layout, accessibility, interaction-physics, motion, design-system, source-audit, and runtime-validation guidance."
     },
     "anti_generic_redesign": {
       "passed": true,
       "earned": 15,
-      "note": "Repairs native trust and task flow without identical visual skins, Web-shaped controls, or decorative redesign."
+      "note": "Repairs native trust, task recovery, accessibility, adaptive structure, controls, theming, and motion without decorative generic styling."
     },
     "evidence_level": {
       "passed": true,
       "earned": 15,
-      "note": "Labels the review L0 static and denies source, build, simulator, emulator, hardware, accessibility-tree, and performance proof."
+      "note": "Labels the review static prompt-only and explicitly denies source, build, screenshot, accessibility-tree, Simulator, Emulator, device, and performance evidence."
     },
     "verified_boundary": {
       "passed": true,
       "earned": 15,
-      "note": "Separates supplied implementation facts from unverified targets, gestures, persistence, runtime behavior, haptics, and devices."
+      "note": "Confines verified facts to the supplied description and lists unknown accessibility, contrast, gestures, window behavior, recovery, performance, and hardware evidence."
     },
     "design_moves": {
       "passed": true,
       "earned": 15,
-      "note": "Covers native navigation, adaptive structures, target sizes, scalable type, native controls, semantic themes, accessible motion, recovery, and parity."
+      "note": "Provides eight concrete moves spanning adaptive layouts, native navigation, target sizes, scalable type, platform controls, semantic tokens, accessible motion, width-aware navigation, and parity."
     },
     "scope_control": {
       "passed": true,
       "earned": 10,
-      "note": "Stays read-only, prioritized, platform-conformance focused, and within the explicit 150-line response budget."
+      "note": "Uses 112 logical lines, exactly five blockers and eight moves, and stays within native UI conformance and decisive source, build, Simulator, Emulator, and real-device validation."
     }
   }
 }
