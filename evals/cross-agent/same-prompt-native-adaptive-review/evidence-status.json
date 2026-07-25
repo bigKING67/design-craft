@@ -4,11 +4,11 @@
   "hosts": {
     "codex": {
       "status": "observed",
-      "reason": "Current-source v4 score and run manifest recorded from release-candidate skill tree at 47bbb40."
+      "reason": "Current-source v4 score and run manifest recorded from clean source commit 358a4e2 and skill tree 2fa7933."
     },
     "pi": {
       "status": "observed",
-      "reason": "Current-source v4 score and run manifest recorded from release-candidate skill tree at 47bbb40."
+      "reason": "Current-source v4 score and run manifest recorded from clean source commit 358a4e2 and skill tree 2fa7933."
     },
     "cursor": {
       "status": "pending",
