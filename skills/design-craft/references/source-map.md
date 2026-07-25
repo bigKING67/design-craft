@@ -14,24 +14,24 @@ upstream files directly.
 
 ## Upstreams
 
+Mutable remote review state is repository governance metadata recorded in
+`upstreams.lock.json` and the matching absorption matrices under `docs/`. The
+installed Skill records only pinned compatibility and selected-behavior
+boundaries, so provenance-only upstream changes do not invalidate behavioral
+evidence for an otherwise unchanged Skill tree.
+
 ### Leonxlnx/taste-skill
 
 - URL: `https://github.com/Leonxlnx/taste-skill`
 - License: MIT
-- Local path: `upstreams/taste-skill`
-- Initial pinned commit:
-  `06d6028b5c623016c59ce8536f578e5a1127b499`
-- Initial commit note:
-  `2026-06-21T00:54:21+02:00 docs(readme): remove sponsor table and tighten logo-to-text spacing`
+- Canonical provenance path: `upstreams/taste-skill`
 - Pinned compatibility commit:
   `b17742737e796305d829b3ad39eda3add0d79060`
-- Current reviewed remote commit:
-  `e988add20dab0fa97d7a76781c48961c8184288e`
+- Selected-behavior boundary:
+  `06d6028b5c623016c59ce8536f578e5a1127b499`
 - Cumulative status: `selective_absorbed`; behavior through the initial
   `06d6028b5c623016c59ce8536f578e5a1127b499` snapshot is represented in the
   local visual-judgment, product-taste, design-move, and design-system layers.
-- Latest-range status: `provenance_only`; the range from `98565e6` through
-  `e988add` changes README sponsor presentation only.
 - Contract: `docs/taste-skill-absorption.md`, validated by
   `scripts/design_craft_taste_absorption.py` in the canonical repository.
 - Primary material to inspect:
@@ -50,62 +50,21 @@ preflight thinking.
 
 - URL: `https://github.com/pbakaus/impeccable`
 - License: Apache-2.0
-- Local path: `upstreams/impeccable`
-- Initial pinned commit:
-  `d2ab4ddee6fa63002fae680652b5fbd31735e280`
-- Initial commit note:
-  `2026-06-22T16:01:16-07:00 Make Copilot built-in note a callout block under the Install header`
+- Canonical provenance path: `upstreams/impeccable`
 - Pinned compatibility commit:
   `630fc2682a5bd39b25a8e61f74b6b3f14f2b1e21`
-- Current selected-behavior boundary and reviewed remote commit:
-  `fc3dc501a6f0e4f238a230b0b30148490a65171a` selected behavior;
-  `73819ff5736cf95270e6a3e6faf3f21e27d96f94` reviewed remote head
+- Selected-behavior boundary:
+  `8634c538fbf860fcdd2a54c31676beb78a44eff4`
 - Cumulative status: `selective_absorbed` for the command taxonomy,
   brief/change-scope authority, surface modes, craft floor, applicable scoring,
-  detector/native guidance, hardening, measurement, and evidence contracts.
-- Latest-range status: `partial` for the reviewed range from `08676d5` through
-  `73819ff`; durable artifact-evidence and anti-radial-glow behavior is already
-  local, while forced reviewer/documenter agents and hook/provider/detector
-  runtime remain outside the baseline.
+  detector/native guidance, hardening, measurement, evidence contracts, and
+  at-most-two batched rendered-verification passes.
 - Contract: `docs/impeccable-absorption.md`, validated by
   `scripts/design_craft_impeccable_absorption.py` in the canonical repository.
-- 2026-06-30 absorption note:
-  remote updates were reviewed and selectively absorbed for critique method
-  provenance, explicit degraded/single-context reporting, `.impeccable`
-  ephemeral artifact guidance, harness/subagent capability caveats, and install
-  symlink hardening provenance. Dependency bumps and generated provider output
-  remain upstream provenance only.
-- 2026-07-10 absorption note:
-  selectively absorbed platform routing, native audit/adapt guidance, iOS and
-  Android quality rules, mechanical pre-scan discipline, and detector/design
-  system corrections. Generated provider bundles, site output, dependencies,
-  and store packaging remain provenance only.
-- 2026-07-11 review note:
-  the new range changes only GitHub sheriff automation and its tests. It is
-  repository-operations provenance and adds no design-craft behavior.
-- 2026-07-23 absorption note:
-  selectively absorbed explicit brief authority, refinement-versus-redesign
-  boundaries, evidence-based visual authority, four per-surface modes,
-  post-direction craft verification, applicable-denominator critique scoring,
-  and additional anti-generic signals. Random concept generation, mandatory
-  context/menu flow, live/provider/hooks runtime, asset generation, the full
-  detector/vendor bundle, generated provider copies, promotional tone, and
-  universal ecosystem prescriptions remain rejected.
-- 2026-07-23 follow-up review note:
-  the `fc3dc50..bdaa5a4` tail changes upstream live overlay verification,
-  disconnect recovery, TanStack live adapters, source-write/cache/injection
-  coordination, tests, and generated providers. Those remain inside the
-  intentionally rejected upstream live/provider boundary; no selected local
-  behavior was imported.
-- 2026-07-25 review note:
-  the `08676d5..73819ff` range adds build-persistent direction contracts,
-  detector false-positive fixes, a radial spotlight signal, mandatory
-  reviewer/documenter agents, hook-path fixes, and generated provider/runtime
-  maintenance. Runtime evidence over stale intent and the anti-glow behavior
-  are already represented locally. Random concept selection, forced
-  delegation, and the upstream hook/provider/full-detector runtime remain
-  intentionally outside the baseline, so neither compatibility pin nor local
-  behavior boundary advances.
+- Stable boundary: random concept selection, forced delegation, upstream
+  live/provider/hooks runtime, full detector/vendor bundles, generated provider
+  copies, promotional tone, and universal ecosystem prescriptions remain
+  outside the baseline.
 - Primary material to inspect:
   - `.agents/skills/impeccable/SKILL.md`
   - `site/content/skills/*.md`
@@ -121,50 +80,22 @@ production-readiness flows.
 
 - URL: `https://github.com/emilkowalski/skills`
 - License: MIT
-- Local path: `upstreams/emilkowalski-skills`
-- Initial pinned commit:
-  `a47903a06a05d2e24c483bd8961c85969a51a494`
-- Initial commit note:
-  `2026-06-29T15:30:16+02:00 Update README.md`
+- Canonical provenance path: `upstreams/emilkowalski-skills`
 - Pinned compatibility commit:
   `7bb7061b5cf7de15ea1aeaf00fbd9e6592a20fce`
-- Current selected-behavior boundary:
+- Selected-behavior boundary:
   `d62b0d8f9a8eb795a512b76239bb873ab9ac7cd5`
-- Current reviewed remote commit:
-  `e695d13cb298db0f46d5ef05be2ad13fa12908a6`
 - Cumulative status: `selective_absorbed`; the motion-opportunity gate is local,
   while the opinionated library picker and Base UI-only prescription are
   intentionally rejected.
-- Latest-range status: `selective_absorbed` for the range from `7bb7061`
-  through `e695d13`; the `f6f79ca..e695d13` tail is README-only provenance.
-- 2026-07-10 decision: `absorbed`; original design-craft references now cover
+- Stable selected behavior: original design-craft references cover
   product-design principles, Apple-style direct manipulation,
   presentation-value interruption, spring response/damping, velocity handoff,
   momentum projection, rubber-banding, accessibility variants, and optical
   typography.
-- 2026-07-11 audit-to-plan absorption note: selectively absorbed the new
-  `improve-animations` recon, frequency mapping, eight-dimension audit, finding
-  vetting, impact/effort prioritization, self-contained plan, and reconciliation
-  workflow into original design-craft guidance and templates. Absolute upstream
-  heuristics remain calibrated by project authority and runtime evidence.
-- 2026-07-11 provenance note: the following `b024c8b` commit changes only README
-  newsletter copy; no additional behavior was imported.
-- 2026-07-12 provenance note: `4691d39` and merge commit `7bb7061` correct two
-  README typos only; no additional behavior was imported.
-- 2026-07-23 provenance note: `e695d13` changes README wording only; no
-  additional behavior was imported.
-- 2026-07-12 five-Skill deep-audit note: all five `SKILL.md` entrypoints plus
-  `AUDIT.md`, `PLAN-TEMPLATE.md`, and `STANDARDS.md` are now mapped in
-  `docs/emilkowalski-absorption.md` and checked by
-  `scripts/design_craft_emil_absorption.py`. This pass added original local web
-  motion recipes, component-lifecycle craft, optical typography detail, and
-  the previously omitted spring/ambient/principle vocabulary. The upstream
-  Skill tree has no non-Markdown implementation files to vendor.
-- 2026-07-23 latest-range note: `find-animation-opportunities` is already
-  represented by the local purpose/frequency/speed/function gate, missed
-  opportunities, explicit rejection, and bounded output. `pick-ui-library` and
-  the Base UI-only substitution are rejected as universal product policy;
-  README and link corrections remain provenance only.
+- Stable boundary: absolute heuristics remain calibrated by project authority
+  and runtime evidence; opinionated library substitution and README-only
+  provenance do not enter the installed behavior layer.
 - Primary material to inspect:
   - `skills/emil-design-eng/SKILL.md`
   - `skills/apple-design/SKILL.md`
@@ -275,7 +206,7 @@ When updating upstreams:
 
 1. Run `scripts/upstream_absorption_report.py --remote` when you need to know
    whether a remote head changed without mutating submodules. The pinned
-   compatibility commit may intentionally lag the reviewed remote head.
+   compatibility commit may intentionally lag repository review metadata.
 2. Run `scripts/sync_upstreams.sh --name <name> --commit <40-char-sha>` only
    after selecting an explicit commit; the helper never advances review or
    absorption metadata automatically.
@@ -284,11 +215,12 @@ When updating upstreams:
    `candidate_absorb`, `provenance_only`, or `manual_review` without fetching or
    editing submodules.
 4. Inspect upstream changelogs and key skill/command files.
-5. Update this source map only after deciding what the fusion layer should
-   absorb.
-6. Update the matching absorption matrix and strict validator. Keep the pinned
-   source, cumulative behavior boundary, and latest reviewed commit range
-   separate.
+5. Update this source map only when the pinned compatibility commit or selected
+   behavior boundary changes. Provenance-only reviews must not change the
+   installed Skill tree.
+6. Record every mutable review range and decision in `upstreams.lock.json` and
+   the matching absorption matrix, then update the strict validator when local
+   behavior coverage changes.
 7. Never overwrite `skills/design-craft` automatically from upstream.
 
 ## Attribution rule

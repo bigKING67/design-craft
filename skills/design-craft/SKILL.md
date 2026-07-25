@@ -115,7 +115,12 @@ system, data density, report grammar, or runtime truth.
 6. Implement minimally, verify with the most relevant commands, and use a real
    browser for visible UI, interaction, responsive, report, dashboard, download,
    upload, or login-state changes. When the route requires screenshot evidence,
-   report only actual screenshot artifacts, not planned screenshots.
+   report only actual screenshot artifacts, not planned screenshots. For visible
+   UI work, use at most two batched verification passes when screenshots or
+   rendered inspection are required: capture the required desktop, mobile, and
+   state set together, apply the material fixes as one batch, then run one
+   confirmation pass. Do not start a per-tweak screenshot loop; use live mode
+   only when the user explicitly needs interactive iteration.
 7. Before returning, enforce every explicit response-size constraint. For a
    limit of N lines, count newline-delimited lines and rewrite until the result
    is at most N. In a multi-section audit, group related P0-P3 findings, give

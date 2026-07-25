@@ -2,7 +2,7 @@
 
 This document records the deliberate fusion and runtime boundary for
 `https://github.com/pbakaus/impeccable` at commit
-`73819ff5736cf95270e6a3e6faf3f21e27d96f94`. The compatibility submodule stays
+`af78b1e512148e2a2f2d2ded6786d265ea420191`. The compatibility submodule stays
 pinned at `630fc2682a5bd39b25a8e61f74b6b3f14f2b1e21`.
 
 ## Contents
@@ -43,7 +43,7 @@ host's existing execution contracts.
 | Upstream command | Status | Local expression |
 | --- | --- | --- |
 | `/shape` | absorbed | `shape` mode and product/design brief |
-| `/craft` | absorbed | `craft` mode and implementation/verification loop |
+| `/craft` | absorbed | `craft` mode and bounded implementation/verification passes |
 | `/critique` | absorbed | bounded read-only product/visual judgment |
 | `/audit` | absorbed | accessibility, responsive, performance, theming, and anti-pattern audit |
 | `/polish` | absorbed | final-state visual and interaction refinement |
@@ -81,21 +81,19 @@ host's existing execution contracts.
 
 ## Latest reviewed range
 
-The latest range from `08676d575721a2f3f9c30fc4807d1f61e1462b3b`
-through `73819ff5736cf95270e6a3e6faf3f21e27d96f94` is `partial`:
+The latest range from `73819ff5736cf95270e6a3e6faf3f21e27d96f94`
+through `af78b1e512148e2a2f2d2ded6786d265ea420191` is
+`selective_absorbed`:
 
 | Capability | Status | Local target or boundary |
 | --- | --- | --- |
-| Build-persistent direction contract and evidence-over-intention documentation | partial | Local runtime/project evidence already outranks plans and stale docs. Random concept selection and a mandatory post-build documenter remain rejected; `DESIGN.md` evolves only with project/user authority. |
-| Detector hardening for `form.id`, non-rendered text, and translucent gradients | provenance-only | These fixes are valuable in the upstream JavaScript detector but do not apply to the local shell/static scanners. The full detector/vendor runtime remains outside the package boundary. |
-| Decorative radial spotlight glow signal | partial | `visual-judgment.md` already rejects generic zero-offset radial halos and colored glow contextually; the upstream parser implementation is not vendored. |
-| Mandatory finish reviewer/documenter agents and asset gate | intentionally-rejected | Independent review and real assets remain quality goals, but Skills cannot grant subagent authority or require a host capability that was not authorized and executed. |
-| Codex hook-path, generated provider, suite-registration, and build-test maintenance | provenance-only | These changes maintain upstream packaging and generated runtimes without changing the selected local product behavior. |
+| Two bounded rendered-verification rounds | absorbed | `SKILL.md` batches required desktop, mobile, and state inspection into one pass, applies material fixes together, and permits one confirmation pass instead of a per-tweak screenshot loop. |
+| Generated provider synchronization | provenance-only | The generated provider copy follows the source change but remains inside the rejected upstream provider/package runtime boundary. |
 
 ### Cumulative selected boundary
 
 The cumulative absorption state remains `selective_absorbed` through
-`fc3dc501a6f0e4f238a230b0b30148490a65171a`:
+`8634c538fbf860fcdd2a54c31676beb78a44eff4`:
 
 | Capability | Status | Local target or boundary |
 | --- | --- | --- |
@@ -103,6 +101,7 @@ The cumulative absorption state remains `selective_absorbed` through
 | Refinement preserves; redesign replaces the visual world without replacing product truth | absorbed | `visual-judgment.md`, existing-redesign playbook |
 | Per-surface `Persuade`, `Operate`, `Read`, and `Experience` modes | absorbed | `surface-playbooks.md` |
 | Direction-first craft floor and applicable-denominator critique scoring | absorbed | `impeccable-workflow.md` |
+| At-most-two batched rendered-verification passes | absorbed | `SKILL.md`; per-tweak screenshot loops remain outside the default workflow |
 | Radial halo/spotlight glow, repeated kicker, meaningless section number, fake cursor/pulse, shape-assembled illustration, and aphoristic-copy signals | absorbed | `visual-judgment.md`; treated as contextual signals, not universal bans |
 | Random concept seeds, mandatory context loader and no-argument menu | intentionally-rejected | local routing and project discovery remain deterministic and task-led |
 | Live/browser/provider/hooks/doctor runtime, asset generation, full detector/vendor bundle, generated provider copies | intentionally-rejected | browser67, host tools, and existing repository governance own these boundaries |
@@ -110,8 +109,9 @@ The cumulative absorption state remains `selective_absorbed` through
 | Universal category, font, framework, and library prescriptions | intentionally-rejected | project authority and observed performance/accessibility evidence win |
 | Promotional or "award-winning" tone | intentionally-rejected | local output remains factual and evidence-led |
 
-The compatibility pin and local behavior boundary do not advance for the
-latest range.
+The compatibility pin remains unchanged. The selected-behavior boundary
+advances only through the bounded-verification source commit; the generated
+provider follow-up remains provenance-only.
 
 ## Runtime and packaging boundary
 

@@ -15,6 +15,12 @@ All notable local changes to `design-craft` are recorded here.
 - Make bounded production audits use one non-repeating finding ledger, require
   concrete rendered/recovery behavior for every missing state, and keep global
   state concurrency claims conditional unless the call path proves overlap.
+- Bound rendered UI verification to one batched inspection and one confirmation
+  pass, avoiding costly per-tweak screenshot loops without weakening required
+  desktop, mobile, or state coverage.
+- Keep mutable upstream review heads and provenance-only ranges in repository
+  governance metadata rather than the installed Skill source map, so review-only
+  drift no longer invalidates current-source behavioral evidence.
 
 ## 0.5.3 - 2026-07-25
 

@@ -70,6 +70,7 @@ COVERAGE = {
             "Contextual static signals",
             "explicit line, word, section, or item limit",
             "count newline-delimited lines",
+            "at most two batched verification passes",
             "44 CSS pixels",
             "provisional numeric thresholds",
         ],

@@ -34,6 +34,16 @@ RETIRED_ALIAS_BOUNDARY_DOCS = (
     "docs/maintenance.md",
 )
 RETIRED_ALIAS_BOUNDARY = "outside the v0.5 installer boundary"
+SOURCE_MAP_MUTABLE_MARKERS = (
+    "Current reviewed remote commit:",
+    "Latest-range status:",
+    "reviewed remote head",
+)
+SOURCE_MAP_AUTHORITY_TOKENS = (
+    "Mutable remote review state",
+    "`upstreams.lock.json`",
+    "absorption matrices",
+)
 
 
 def _load_required(path: Path) -> dict[str, object]:
@@ -49,6 +59,44 @@ def _load_required(path: Path) -> dict[str, object]:
         ):
             raise ValueError(f"required file registry {key} must contain unique strings")
     return payload
+
+
+def _validate_source_map_contract(
+    source_map: str, upstream_lock: dict[str, object]
+) -> list[str]:
+    errors: list[str] = []
+    for marker in SOURCE_MAP_MUTABLE_MARKERS:
+        if marker in source_map:
+            errors.append(
+                f"installed source map must not mirror mutable review state: {marker}"
+            )
+    for token in SOURCE_MAP_AUTHORITY_TOKENS:
+        if token not in source_map:
+            errors.append(f"installed source map must declare governance authority: {token}")
+
+    upstreams = upstream_lock.get("upstreams", {})
+    if not isinstance(upstreams, dict):
+        return [*errors, "upstreams.lock.json must contain an upstreams object"]
+    for name, raw_metadata in upstreams.items():
+        if not isinstance(raw_metadata, dict):
+            errors.append(f"{name}: upstream metadata must be an object")
+            continue
+        pinned = raw_metadata.get("commit")
+        selected = raw_metadata.get("behavior_absorbed_through_commit")
+        reviewed = raw_metadata.get("reviewed_through_commit")
+        for label, value in (("compatibility pin", pinned), ("selected behavior", selected)):
+            if not isinstance(value, str) or not value:
+                errors.append(f"{name}: missing {label} boundary")
+            elif value not in source_map:
+                errors.append(f"{name}: source map is missing {label} boundary {value}")
+        if (
+            isinstance(reviewed, str)
+            and reviewed
+            and reviewed not in {pinned, selected}
+            and reviewed in source_map
+        ):
+            errors.append(f"{name}: source map must not mirror reviewed head {reviewed}")
+    return errors
 
 
 def validate(root: Path = REPO_ROOT) -> dict[str, object]:
@@ -103,6 +151,16 @@ def validate(root: Path = REPO_ROOT) -> dict[str, object]:
             errors.append(f"THIRD_PARTY_NOTICES.md is missing {token}")
 
     skill = (root / "skills/design-craft/SKILL.md").read_text(encoding="utf-8")
+    try:
+        source_map = (root / "skills/design-craft/references/source-map.md").read_text(
+            encoding="utf-8"
+        )
+        upstream_lock = json.loads(
+            (root / "upstreams.lock.json").read_text(encoding="utf-8")
+        )
+        errors.extend(_validate_source_map_contract(source_map, upstream_lock))
+    except (OSError, json.JSONDecodeError) as exc:
+        errors.append(f"source-map governance contract is invalid: {exc}")
     for reference in sorted((root / "skills/design-craft/references").glob("*.md")):
         text = reference.read_text(encoding="utf-8")
         if len(text.splitlines()) > 100 and "## Contents" not in text:
