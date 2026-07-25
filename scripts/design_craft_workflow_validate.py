@@ -200,6 +200,8 @@ def validate() -> dict:
                 "native-runtime-android-${NATIVE_RUN_ID}",
                 "release-readiness-operational",
                 "DESIGN_CRAFT_NATIVE_EVIDENCE_ROOT",
+                "Run immutable full benchmark",
+                "BENCHMARK_RESULT=benchmark-result-full.json",
                 "operational-candidate-${{ github.run_id }}",
                 "operational-95-candidate.json",
                 "if: always()",
@@ -207,6 +209,10 @@ def validate() -> dict:
             ".github/workflows/benchmark.yml operational-candidate",
         )
     )
+    if operational_candidate_job.count("--scale full") != 1:
+        errors.append(
+            ".github/workflows/benchmark.yml operational-candidate must run the full benchmark exactly once"
+        )
     errors.extend(
         require_tokens(
             codeql_workflow,
@@ -236,6 +242,7 @@ def validate() -> dict:
                 "operational_95",
                 "certified_100",
                 "confirm_certification:",
+                "benchmark_run_id:",
                 "Preflight release governance credential",
                 "RELEASE_GOVERNANCE_TOKEN",
                 "--preflight",
@@ -245,11 +252,21 @@ def validate() -> dict:
                 "actions: read",
                 "release run-observation",
                 "--kind native",
+                "--kind benchmark",
                 "--kind physical",
                 "release evidence-bindings",
                 "--evidence-root",
                 "--native-observation",
+                "--benchmark-observation",
+                "--benchmark-result",
                 "--physical-observation",
+                "Download immutable benchmark evidence",
+                "operational-candidate-${BENCHMARK_RUN_ID}",
+                "benchmark-result-full.json",
+                "benchmark/dist/evidence/operational-95-candidate.json",
+                "Upload release verification diagnostics",
+                "release-verification-${{ inputs.tag }}-${{ github.run_id }}",
+                "if: always()",
                 "release-assets-build-operational",
                 "release-assets-build-certified",
                 "release certification build",
@@ -269,6 +286,10 @@ def validate() -> dict:
             ".github/workflows/release-certify.yml",
         )
     )
+    if "tools.design_craft benchmark" in release_certify_workflow:
+        errors.append(
+            ".github/workflows/release-certify.yml must verify immutable benchmark evidence without rerunning timings"
+        )
     for forbidden in (
         "contents: write",
         "id-token: write",

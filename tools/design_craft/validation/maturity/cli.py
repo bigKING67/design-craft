@@ -27,6 +27,16 @@ def run_maturity(args: Namespace, parser: argparse.ArgumentParser | None = None)
         args.profile,
         phase=args.phase,
         baseline_path=args.baseline.expanduser().resolve() if args.baseline else None,
+        benchmark_result_path=(
+            args.benchmark_result.expanduser().resolve()
+            if args.benchmark_result
+            else None
+        ),
+        benchmark_observation_path=(
+            args.benchmark_observation.expanduser().resolve()
+            if args.benchmark_observation
+            else None
+        ),
         jobs=args.jobs,
     )
     report = build_report(evaluation, phase=args.phase, root=str(REPO_ROOT))
@@ -51,6 +61,8 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--profile", choices=PROFILE_NAMES, default="development")
     parser.add_argument("--phase", choices=PHASES, default="candidate")
     parser.add_argument("--baseline", type=Path)
+    parser.add_argument("--benchmark-result", type=Path)
+    parser.add_argument("--benchmark-observation", type=Path)
     parser.add_argument("--jobs", type=int, default=0)
     parser.add_argument("--json", action="store_true")
     parser.add_argument("--check", action="store_true")

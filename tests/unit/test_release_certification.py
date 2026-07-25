@@ -21,10 +21,13 @@ from tools.design_craft.release.policy import load_policy
 from tests.unit.test_release_assets import (
     HEAD,
     VERSION,
+    attach_benchmark_binding,
     attach_native_bindings,
+    benchmark_run_observation,
     native_run_observation,
     release_evidence,
     write_assets,
+    write_benchmark_result,
     write_external_native_evidence,
 )
 
@@ -106,6 +109,9 @@ class ReleaseCertificationTests(unittest.TestCase):
         evidence_root = root / "native-evidence-source"
         evidence_root.mkdir()
         payload = release_evidence(self.level)
+        benchmark_result = root / "benchmark-result-full.json"
+        write_benchmark_result(benchmark_result)
+        attach_benchmark_binding(payload, benchmark_result)
         attach_native_bindings(
             payload,
             self.level,
@@ -119,6 +125,12 @@ class ReleaseCertificationTests(unittest.TestCase):
             "native",
             native_run_observation(),
         )
+        benchmark_observation = root / "benchmark-run.json"
+        write_observation(
+            benchmark_observation,
+            "benchmark",
+            benchmark_run_observation(),
+        )
         assets_dir = root / "release-assets"
         assets_dir.mkdir()
         write_assets(assets_dir, self.level)
@@ -130,6 +142,8 @@ class ReleaseCertificationTests(unittest.TestCase):
             evidence_path=evidence_path,
             evidence_root=evidence_root,
             native_observation=native_observation,
+            benchmark_observation=benchmark_observation,
+            benchmark_result=benchmark_result,
             physical_observation=None,
             assets_dir=assets_dir,
             repository=REPOSITORY,
@@ -148,6 +162,29 @@ class ReleaseCertificationTests(unittest.TestCase):
             result = validate_certification_bundle(relocated, level=self.level)
             self.assertTrue(result["ok"], result["errors"])
             self.assertEqual(result["artifact_name"], artifact_name(f"v{VERSION}", 789))
+            self.assertTrue(
+                (relocated / "observations/benchmark-run.json").is_file()
+            )
+            self.assertTrue(
+                (relocated / "benchmark/benchmark-result-full.json").is_file()
+            )
+
+    def test_benchmark_result_tamper_is_rejected_after_relocation(self) -> None:
+        with tempfile.TemporaryDirectory() as raw:
+            root = Path(raw)
+            bundle = self.build_fixture(root)
+            benchmark_result = bundle / "benchmark/benchmark-result-full.json"
+            benchmark_result.write_bytes(benchmark_result.read_bytes() + b"\n")
+            result = validate_certification_bundle(bundle, level=self.level)
+            self.assertFalse(result["ok"])
+            self.assertTrue(
+                any(
+                    "digest mismatch" in error
+                    or "benchmark_result_sha256" in error
+                    for error in result["errors"]
+                ),
+                result["errors"],
+            )
 
     def test_publication_validation_binds_run_artifact_id_and_digest(self) -> None:
         with tempfile.TemporaryDirectory() as raw:

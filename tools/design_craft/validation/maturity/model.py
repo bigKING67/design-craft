@@ -11,6 +11,8 @@ class MaturityContext:
     profile: str
     phase: str
     baseline_path: Path | None
+    benchmark_result_path: Path | None = None
+    benchmark_observation_path: Path | None = None
 
 
 @dataclass(frozen=True)

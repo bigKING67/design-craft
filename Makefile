@@ -2,6 +2,8 @@ DESIGN_CRAFT_SKILL_ROOT ?= $(HOME)/.agents/skills
 SKILL_CREATOR_QUICK_VALIDATE ?=
 INSTALL_ARGS ?=
 BENCHMARK_BASELINE ?=
+BENCHMARK_RESULT ?=
+BENCHMARK_RUN_OBSERVATION ?=
 RELEASE_ASSET_DIR ?= dist/release
 RELEASE_EVIDENCE_DIR ?= dist/evidence
 NATIVE_EVIDENCE_ROOT ?= $(DESIGN_CRAFT_NATIVE_EVIDENCE_ROOT)
@@ -274,17 +276,21 @@ github-governance-apply:
 
 release-readiness-operational: publish-local
 	@test -n "$(BENCHMARK_BASELINE)" || { echo "Set BENCHMARK_BASELINE to a committed benchmark baseline" >&2; exit 2; }
-	python3 -m tools.design_craft release verify --level operational_95 --phase candidate --baseline "$(BENCHMARK_BASELINE)" --output "$(OPERATIONAL_CANDIDATE_EVIDENCE)"
+	python3 -m tools.design_craft release verify --level operational_95 --phase candidate --baseline "$(BENCHMARK_BASELINE)" $(if $(BENCHMARK_RESULT),--benchmark-result "$(BENCHMARK_RESULT)",) --output "$(OPERATIONAL_CANDIDATE_EVIDENCE)"
 
 release-tag-verify-operational:
 	@test -n "$(BENCHMARK_BASELINE)" || { echo "Set BENCHMARK_BASELINE to a committed benchmark baseline" >&2; exit 2; }
-	python3 -m tools.design_craft release verify --level operational_95 --phase final --baseline "$(BENCHMARK_BASELINE)" --output "$(OPERATIONAL_FINAL_EVIDENCE)"
+	@test -n "$(BENCHMARK_RESULT)" || { echo "Set BENCHMARK_RESULT to the selected full benchmark result" >&2; exit 2; }
+	@test -n "$(BENCHMARK_RUN_OBSERVATION)" || { echo "Set BENCHMARK_RUN_OBSERVATION to the verified benchmark run observation JSON" >&2; exit 2; }
+	python3 -m tools.design_craft release verify --level operational_95 --phase final --baseline "$(BENCHMARK_BASELINE)" --benchmark-result "$(BENCHMARK_RESULT)" --benchmark-observation "$(BENCHMARK_RUN_OBSERVATION)" --output "$(OPERATIONAL_FINAL_EVIDENCE)"
 	python3 scripts/design_craft_github_checks.py --level operational_95 --require-tag-run
 
 release-assets-build-operational:
 	@test -n "$(NATIVE_RUN_OBSERVATION)" || { echo "Set NATIVE_RUN_OBSERVATION to the verified native run observation JSON" >&2; exit 2; }
+	@test -n "$(BENCHMARK_RUN_OBSERVATION)" || { echo "Set BENCHMARK_RUN_OBSERVATION to the verified benchmark run observation JSON" >&2; exit 2; }
+	@test -n "$(BENCHMARK_RESULT)" || { echo "Set BENCHMARK_RESULT to the selected full benchmark result" >&2; exit 2; }
 	@test -n "$(NATIVE_EVIDENCE_ROOT)" || { echo "Set NATIVE_EVIDENCE_ROOT to the downloaded native evidence root" >&2; exit 2; }
-	python3 -m tools.design_craft release evidence-bindings --level operational_95 --evidence "$(OPERATIONAL_FINAL_EVIDENCE)" --evidence-root "$(NATIVE_EVIDENCE_ROOT)" --native-observation "$(NATIVE_RUN_OBSERVATION)"
+	python3 -m tools.design_craft release evidence-bindings --level operational_95 --evidence "$(OPERATIONAL_FINAL_EVIDENCE)" --evidence-root "$(NATIVE_EVIDENCE_ROOT)" --native-observation "$(NATIVE_RUN_OBSERVATION)" --benchmark-observation "$(BENCHMARK_RUN_OBSERVATION)" --benchmark-result "$(BENCHMARK_RESULT)"
 	python3 -m tools.design_craft release assets --level operational_95 --build --force --evidence "$(OPERATIONAL_FINAL_EVIDENCE)" --evidence-root "$(NATIVE_EVIDENCE_ROOT)" --output-dir "$(RELEASE_ASSET_DIR)"
 
 release-assets-verify-operational:
@@ -295,18 +301,22 @@ release-final-verify-operational: release-tag-verify-operational release-assets-
 
 release-readiness-certified: publish-local
 	@test -n "$(BENCHMARK_BASELINE)" || { echo "Set BENCHMARK_BASELINE to a committed benchmark baseline" >&2; exit 2; }
-	python3 -m tools.design_craft release verify --level certified_100 --phase candidate --baseline "$(BENCHMARK_BASELINE)" --output "$(CERTIFIED_CANDIDATE_EVIDENCE)"
+	python3 -m tools.design_craft release verify --level certified_100 --phase candidate --baseline "$(BENCHMARK_BASELINE)" $(if $(BENCHMARK_RESULT),--benchmark-result "$(BENCHMARK_RESULT)",) --output "$(CERTIFIED_CANDIDATE_EVIDENCE)"
 
 release-tag-verify-certified:
 	@test -n "$(BENCHMARK_BASELINE)" || { echo "Set BENCHMARK_BASELINE to a committed benchmark baseline" >&2; exit 2; }
-	python3 -m tools.design_craft release verify --level certified_100 --phase final --baseline "$(BENCHMARK_BASELINE)" --output "$(CERTIFIED_FINAL_EVIDENCE)"
+	@test -n "$(BENCHMARK_RESULT)" || { echo "Set BENCHMARK_RESULT to the selected full benchmark result" >&2; exit 2; }
+	@test -n "$(BENCHMARK_RUN_OBSERVATION)" || { echo "Set BENCHMARK_RUN_OBSERVATION to the verified benchmark run observation JSON" >&2; exit 2; }
+	python3 -m tools.design_craft release verify --level certified_100 --phase final --baseline "$(BENCHMARK_BASELINE)" --benchmark-result "$(BENCHMARK_RESULT)" --benchmark-observation "$(BENCHMARK_RUN_OBSERVATION)" --output "$(CERTIFIED_FINAL_EVIDENCE)"
 	python3 scripts/design_craft_github_checks.py --level certified_100 --require-tag-run
 
 release-assets-build-certified:
 	@test -n "$(NATIVE_RUN_OBSERVATION)" || { echo "Set NATIVE_RUN_OBSERVATION to the verified native run observation JSON" >&2; exit 2; }
 	@test -n "$(PHYSICAL_RUN_OBSERVATION)" || { echo "Set PHYSICAL_RUN_OBSERVATION to the verified physical-device run observation JSON" >&2; exit 2; }
+	@test -n "$(BENCHMARK_RUN_OBSERVATION)" || { echo "Set BENCHMARK_RUN_OBSERVATION to the verified benchmark run observation JSON" >&2; exit 2; }
+	@test -n "$(BENCHMARK_RESULT)" || { echo "Set BENCHMARK_RESULT to the selected full benchmark result" >&2; exit 2; }
 	@test -n "$(NATIVE_EVIDENCE_ROOT)" || { echo "Set NATIVE_EVIDENCE_ROOT to the downloaded native evidence root" >&2; exit 2; }
-	python3 -m tools.design_craft release evidence-bindings --level certified_100 --evidence "$(CERTIFIED_FINAL_EVIDENCE)" --evidence-root "$(NATIVE_EVIDENCE_ROOT)" --native-observation "$(NATIVE_RUN_OBSERVATION)" --physical-observation "$(PHYSICAL_RUN_OBSERVATION)"
+	python3 -m tools.design_craft release evidence-bindings --level certified_100 --evidence "$(CERTIFIED_FINAL_EVIDENCE)" --evidence-root "$(NATIVE_EVIDENCE_ROOT)" --native-observation "$(NATIVE_RUN_OBSERVATION)" --benchmark-observation "$(BENCHMARK_RUN_OBSERVATION)" --benchmark-result "$(BENCHMARK_RESULT)" --physical-observation "$(PHYSICAL_RUN_OBSERVATION)"
 	$(MAKE) native-release-bundle-build
 	python3 -m tools.design_craft release assets --level certified_100 --build --force --evidence "$(CERTIFIED_FINAL_EVIDENCE)" --evidence-root "$(NATIVE_EVIDENCE_ROOT)" --output-dir "$(RELEASE_ASSET_DIR)"
 
@@ -320,10 +330,12 @@ release-final-verify-certified: release-tag-verify-certified release-assets-veri
 release-certification-build-operational:
 	@test -n "$(NATIVE_EVIDENCE_ROOT)" || { echo "Set NATIVE_EVIDENCE_ROOT to the downloaded native evidence root" >&2; exit 2; }
 	@test -n "$(NATIVE_RUN_OBSERVATION)" || { echo "Set NATIVE_RUN_OBSERVATION to the verified native run observation JSON" >&2; exit 2; }
+	@test -n "$(BENCHMARK_RUN_OBSERVATION)" || { echo "Set BENCHMARK_RUN_OBSERVATION to the verified benchmark run observation JSON" >&2; exit 2; }
+	@test -n "$(BENCHMARK_RESULT)" || { echo "Set BENCHMARK_RESULT to the selected full benchmark result" >&2; exit 2; }
 	@test -n "$(CERTIFICATION_REPOSITORY)" || { echo "Set CERTIFICATION_REPOSITORY to owner/name" >&2; exit 2; }
 	@test -n "$(CERTIFICATION_RUN_ID)" || { echo "Set CERTIFICATION_RUN_ID to the certification workflow run ID" >&2; exit 2; }
 	@test -n "$(CERTIFICATION_RUN_ATTEMPT)" || { echo "Set CERTIFICATION_RUN_ATTEMPT to the certification workflow run attempt" >&2; exit 2; }
-	python3 -m tools.design_craft release certification build --level operational_95 --tag "$(CERTIFICATION_TAG)" --evidence "$(OPERATIONAL_FINAL_EVIDENCE)" --evidence-root "$(NATIVE_EVIDENCE_ROOT)" --native-observation "$(NATIVE_RUN_OBSERVATION)" --assets-dir "$(RELEASE_ASSET_DIR)" --repository "$(CERTIFICATION_REPOSITORY)" --workflow-run-id "$(CERTIFICATION_RUN_ID)" --workflow-run-attempt "$(CERTIFICATION_RUN_ATTEMPT)" --output-dir "$(CERTIFICATION_BUNDLE_DIR)"
+	python3 -m tools.design_craft release certification build --level operational_95 --tag "$(CERTIFICATION_TAG)" --evidence "$(OPERATIONAL_FINAL_EVIDENCE)" --evidence-root "$(NATIVE_EVIDENCE_ROOT)" --native-observation "$(NATIVE_RUN_OBSERVATION)" --benchmark-observation "$(BENCHMARK_RUN_OBSERVATION)" --benchmark-result "$(BENCHMARK_RESULT)" --assets-dir "$(RELEASE_ASSET_DIR)" --repository "$(CERTIFICATION_REPOSITORY)" --workflow-run-id "$(CERTIFICATION_RUN_ID)" --workflow-run-attempt "$(CERTIFICATION_RUN_ATTEMPT)" --output-dir "$(CERTIFICATION_BUNDLE_DIR)"
 
 release-certification-verify-operational:
 	python3 -m tools.design_craft release certification validate --level operational_95 --input-dir "$(CERTIFICATION_BUNDLE_DIR)"
@@ -332,10 +344,12 @@ release-certification-build-certified:
 	@test -n "$(NATIVE_EVIDENCE_ROOT)" || { echo "Set NATIVE_EVIDENCE_ROOT to the downloaded native evidence root" >&2; exit 2; }
 	@test -n "$(NATIVE_RUN_OBSERVATION)" || { echo "Set NATIVE_RUN_OBSERVATION to the verified native run observation JSON" >&2; exit 2; }
 	@test -n "$(PHYSICAL_RUN_OBSERVATION)" || { echo "Set PHYSICAL_RUN_OBSERVATION to the verified physical-device run observation JSON" >&2; exit 2; }
+	@test -n "$(BENCHMARK_RUN_OBSERVATION)" || { echo "Set BENCHMARK_RUN_OBSERVATION to the verified benchmark run observation JSON" >&2; exit 2; }
+	@test -n "$(BENCHMARK_RESULT)" || { echo "Set BENCHMARK_RESULT to the selected full benchmark result" >&2; exit 2; }
 	@test -n "$(CERTIFICATION_REPOSITORY)" || { echo "Set CERTIFICATION_REPOSITORY to owner/name" >&2; exit 2; }
 	@test -n "$(CERTIFICATION_RUN_ID)" || { echo "Set CERTIFICATION_RUN_ID to the certification workflow run ID" >&2; exit 2; }
 	@test -n "$(CERTIFICATION_RUN_ATTEMPT)" || { echo "Set CERTIFICATION_RUN_ATTEMPT to the certification workflow run attempt" >&2; exit 2; }
-	python3 -m tools.design_craft release certification build --level certified_100 --tag "$(CERTIFICATION_TAG)" --evidence "$(CERTIFIED_FINAL_EVIDENCE)" --evidence-root "$(NATIVE_EVIDENCE_ROOT)" --native-observation "$(NATIVE_RUN_OBSERVATION)" --physical-observation "$(PHYSICAL_RUN_OBSERVATION)" --assets-dir "$(RELEASE_ASSET_DIR)" --repository "$(CERTIFICATION_REPOSITORY)" --workflow-run-id "$(CERTIFICATION_RUN_ID)" --workflow-run-attempt "$(CERTIFICATION_RUN_ATTEMPT)" --output-dir "$(CERTIFICATION_BUNDLE_DIR)"
+	python3 -m tools.design_craft release certification build --level certified_100 --tag "$(CERTIFICATION_TAG)" --evidence "$(CERTIFIED_FINAL_EVIDENCE)" --evidence-root "$(NATIVE_EVIDENCE_ROOT)" --native-observation "$(NATIVE_RUN_OBSERVATION)" --benchmark-observation "$(BENCHMARK_RUN_OBSERVATION)" --benchmark-result "$(BENCHMARK_RESULT)" --physical-observation "$(PHYSICAL_RUN_OBSERVATION)" --assets-dir "$(RELEASE_ASSET_DIR)" --repository "$(CERTIFICATION_REPOSITORY)" --workflow-run-id "$(CERTIFICATION_RUN_ID)" --workflow-run-attempt "$(CERTIFICATION_RUN_ATTEMPT)" --output-dir "$(CERTIFICATION_BUNDLE_DIR)"
 
 release-certification-verify-certified:
 	python3 -m tools.design_craft release certification validate --level certified_100 --input-dir "$(CERTIFICATION_BUNDLE_DIR)"

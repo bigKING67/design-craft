@@ -54,6 +54,8 @@ def build_certification_bundle(
     evidence_path: Path,
     evidence_root: Path,
     native_observation: Path,
+    benchmark_observation: Path,
+    benchmark_result: Path,
     physical_observation: Path | None,
     assets_dir: Path,
     repository: str,
@@ -87,6 +89,10 @@ def build_certification_bundle(
         evidence_root=evidence_root,
     )
     native_run = load_observation(native_observation, expected_kind="native")
+    benchmark_run = load_observation(
+        benchmark_observation,
+        expected_kind="benchmark",
+    )
     physical_run = (
         load_observation(physical_observation, expected_kind="physical")
         if physical_observation is not None
@@ -96,6 +102,8 @@ def build_certification_bundle(
         evidence_path,
         level=level,
         native_run=native_run,
+        benchmark_run=benchmark_run,
+        benchmark_result_path=benchmark_result,
         physical_run=physical_run,
         evidence_root=evidence_root,
     )
@@ -114,6 +122,14 @@ def build_certification_bundle(
         staging.mkdir()
         _copy_file(evidence_path, staging / "evidence/release-evidence.json")
         _copy_file(native_observation, staging / "observations/native-run.json")
+        _copy_file(
+            benchmark_observation,
+            staging / "observations/benchmark-run.json",
+        )
+        _copy_file(
+            benchmark_result,
+            staging / "benchmark/benchmark-result-full.json",
+        )
         if physical_observation is not None:
             _copy_file(
                 physical_observation,
@@ -321,11 +337,17 @@ def validate_certification_bundle(
     evidence_path = root / "evidence/release-evidence.json"
     native_root = root / "native-evidence"
     native_observation = root / "observations/native-run.json"
+    benchmark_observation = root / "observations/benchmark-run.json"
+    benchmark_result = root / "benchmark/benchmark-result-full.json"
     physical_observation = root / "observations/physical-run.json"
     if not errors:
         try:
             load_release_evidence(evidence_path, level)
             native_run = load_observation(native_observation, expected_kind="native")
+            benchmark_run = load_observation(
+                benchmark_observation,
+                expected_kind="benchmark",
+            )
             physical_run = (
                 load_observation(physical_observation, expected_kind="physical")
                 if level.name == "certified_100"
@@ -335,6 +357,8 @@ def validate_certification_bundle(
                 evidence_path,
                 level=level,
                 native_run=native_run,
+                benchmark_run=benchmark_run,
+                benchmark_result_path=benchmark_result,
                 physical_run=physical_run,
                 evidence_root=native_root,
             )

@@ -18,6 +18,10 @@ on:
         description: Successful Native runtime evidence tag run ID
         type: string
         required: true
+      benchmark_run_id:
+        description: Successful tag-bound Operational candidate benchmark run ID
+        type: string
+        required: true
       physical_device_run_id:
         description: Required for certified_100; successful Physical device evidence run ID
         type: string
@@ -49,6 +53,7 @@ jobs:
       RELEASE_LEVEL: ${{ inputs.release_level }}
       RELEASE_TAG: ${{ inputs.tag }}
       NATIVE_RUN_ID: ${{ inputs.native_run_id }}
+      BENCHMARK_RUN_ID: ${{ inputs.benchmark_run_id }}
       PHYSICAL_DEVICE_RUN_ID: ${{ inputs.physical_device_run_id }}
       BENCHMARK_BASELINE: ${{ inputs.benchmark_baseline }}
       CONFIRM_CERTIFICATION: ${{ inputs.confirm_certification }}
@@ -77,6 +82,8 @@ jobs:
         run: |
           echo "DESIGN_CRAFT_NATIVE_EVIDENCE_ROOT=${RUNNER_TEMP}/native-evidence" >> "${GITHUB_ENV}"
           echo "NATIVE_RUN_OBSERVATION=${RUNNER_TEMP}/native-run-observation.json" >> "${GITHUB_ENV}"
+          echo "BENCHMARK_RUN_OBSERVATION=${RUNNER_TEMP}/benchmark-run-observation.json" >> "${GITHUB_ENV}"
+          echo "BENCHMARK_RESULT=${RUNNER_TEMP}/benchmark/benchmark-result-full.json" >> "${GITHUB_ENV}"
           echo "PHYSICAL_RUN_OBSERVATION=${RUNNER_TEMP}/physical-run-observation.json" >> "${GITHUB_ENV}"
       - name: Verify immutable certification inputs
         env:
@@ -88,6 +95,7 @@ jobs:
           test "${RELEASE_TAG}" = "${expected_tag}"
           test "${CONFIRM_CERTIFICATION}" = "certify-${RELEASE_TAG}"
           [[ "${NATIVE_RUN_ID}" =~ ^[1-9][0-9]*$ ]]
+          [[ "${BENCHMARK_RUN_ID}" =~ ^[1-9][0-9]*$ ]]
           if [[ "${RELEASE_LEVEL}" = certified_100 ]]; then
             [[ "${PHYSICAL_DEVICE_RUN_ID}" =~ ^[1-9][0-9]*$ ]]
           else
@@ -115,6 +123,10 @@ jobs:
             --kind native \
             --run-id "${NATIVE_RUN_ID}" \
             --output "${NATIVE_RUN_OBSERVATION}"
+          python3 -m tools.design_craft release run-observation \
+            --kind benchmark \
+            --run-id "${BENCHMARK_RUN_ID}" \
+            --output "${BENCHMARK_RUN_OBSERVATION}"
           if [[ "${RELEASE_LEVEL}" = certified_100 ]]; then
             python3 -m tools.design_craft release run-observation \
               --kind physical \
@@ -143,6 +155,18 @@ jobs:
               --dir "${RUNNER_TEMP}/native-physical"
             cp -R "${RUNNER_TEMP}/native-physical/." "${DESIGN_CRAFT_NATIVE_EVIDENCE_ROOT}/"
           fi
+      - name: Download immutable benchmark evidence
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "${RUNNER_TEMP}/benchmark"
+          gh run download "${BENCHMARK_RUN_ID}" \
+            --name "operational-candidate-${BENCHMARK_RUN_ID}" \
+            --dir "${RUNNER_TEMP}/benchmark"
+          test -f "${BENCHMARK_RESULT}"
+          test -f "${RUNNER_TEMP}/benchmark/dist/evidence/operational-95-candidate.json"
       - name: Install and verify the canonical skill
         run: |
           bash scripts/install_local.sh
@@ -159,6 +183,8 @@ jobs:
             --level "${RELEASE_LEVEL}" \
             --phase final \
             --baseline "${BENCHMARK_BASELINE}" \
+            --benchmark-result "${BENCHMARK_RESULT}" \
+            --benchmark-observation "${BENCHMARK_RUN_OBSERVATION}" \
             --output "${evidence}"
           python3 scripts/design_craft_github_checks.py \
             --level "${RELEASE_LEVEL}" \
@@ -168,11 +194,25 @@ jobs:
             --evidence "${evidence}"
             --evidence-root "${DESIGN_CRAFT_NATIVE_EVIDENCE_ROOT}"
             --native-observation "${NATIVE_RUN_OBSERVATION}"
+            --benchmark-observation "${BENCHMARK_RUN_OBSERVATION}"
+            --benchmark-result "${BENCHMARK_RESULT}"
           )
           if [[ "${RELEASE_LEVEL}" = certified_100 ]]; then
             binding_args+=(--physical-observation "${PHYSICAL_RUN_OBSERVATION}")
           fi
           python3 -m tools.design_craft release evidence-bindings "${binding_args[@]}"
+      - name: Upload release verification diagnostics
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: release-verification-${{ inputs.tag }}-${{ github.run_id }}
+          path: |
+            dist/evidence/${{ inputs.release_level }}-final.json
+            ${{ runner.temp }}/native-run-observation.json
+            ${{ runner.temp }}/benchmark-run-observation.json
+            ${{ runner.temp }}/benchmark/benchmark-result-full.json
+          if-no-files-found: warn
+          retention-days: 90
       - name: Build exact release asset set
         shell: bash
         run: |
@@ -184,6 +224,8 @@ jobs:
               RELEASE_ASSET_DIR=dist/release \
               NATIVE_EVIDENCE_ROOT="${DESIGN_CRAFT_NATIVE_EVIDENCE_ROOT}" \
               NATIVE_RUN_OBSERVATION="${NATIVE_RUN_OBSERVATION}" \
+              BENCHMARK_RUN_OBSERVATION="${BENCHMARK_RUN_OBSERVATION}" \
+              BENCHMARK_RESULT="${BENCHMARK_RESULT}" \
               PHYSICAL_RUN_OBSERVATION="${PHYSICAL_RUN_OBSERVATION}" \
               NATIVE_IOS_SOURCE="${RUNNER_TEMP}/native-ios" \
               NATIVE_ANDROID_SOURCE="${RUNNER_TEMP}/native-android" \
@@ -194,6 +236,8 @@ jobs:
               OPERATIONAL_FINAL_EVIDENCE="${evidence}" \
               NATIVE_EVIDENCE_ROOT="${DESIGN_CRAFT_NATIVE_EVIDENCE_ROOT}" \
               NATIVE_RUN_OBSERVATION="${NATIVE_RUN_OBSERVATION}" \
+              BENCHMARK_RUN_OBSERVATION="${BENCHMARK_RUN_OBSERVATION}" \
+              BENCHMARK_RESULT="${BENCHMARK_RESULT}" \
               RELEASE_ASSET_DIR=dist/release
             make release-assets-verify-operational RELEASE_ASSET_DIR=dist/release
           fi
@@ -207,6 +251,8 @@ jobs:
             --evidence "dist/evidence/${RELEASE_LEVEL}-final.json"
             --evidence-root "${DESIGN_CRAFT_NATIVE_EVIDENCE_ROOT}"
             --native-observation "${NATIVE_RUN_OBSERVATION}"
+            --benchmark-observation "${BENCHMARK_RUN_OBSERVATION}"
+            --benchmark-result "${BENCHMARK_RESULT}"
             --assets-dir dist/release
             --repository "${GITHUB_REPOSITORY}"
             --workflow-run-id "${GITHUB_RUN_ID}"

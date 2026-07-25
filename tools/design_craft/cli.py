@@ -33,6 +33,8 @@ def build_parser() -> argparse.ArgumentParser:
     )
     maturity.add_argument("--phase", choices=("candidate", "final"), default="candidate")
     maturity.add_argument("--baseline", type=Path)
+    maturity.add_argument("--benchmark-result", type=Path)
+    maturity.add_argument("--benchmark-observation", type=Path)
     maturity.add_argument("--jobs", type=int, default=0)
     maturity.add_argument("--json", action="store_true")
     maturity.add_argument("--check", action="store_true")
@@ -66,6 +68,14 @@ def build_parser() -> argparse.ArgumentParser:
     release_verify.add_argument("--level", choices=("operational_95", "certified_100"), required=True)
     release_verify.add_argument("--phase", choices=("candidate", "final"), default="candidate")
     release_verify.add_argument("--baseline", help="Benchmark baseline JSON.")
+    release_verify.add_argument(
+        "--benchmark-result",
+        help="Precomputed full benchmark result JSON for deterministic verification.",
+    )
+    release_verify.add_argument(
+        "--benchmark-observation",
+        help="Exact benchmark workflow observation required for final verification.",
+    )
     release_verify.add_argument("--output", help="Write the release evidence report.")
     release_verify.add_argument("--json", action="store_true")
     release_assets = release_subcommands.add_parser("assets", help="Build or validate exact release assets.")
@@ -84,7 +94,7 @@ def build_parser() -> argparse.ArgumentParser:
     )
     run_observation.add_argument(
         "--kind",
-        choices=("native", "physical", "certification"),
+        choices=("native", "physical", "benchmark", "certification"),
         required=True,
     )
     run_observation.add_argument("--run-id", required=True)
@@ -114,6 +124,8 @@ def build_parser() -> argparse.ArgumentParser:
         help="Root used to resolve artifact-relative native evidence paths.",
     )
     evidence_bindings.add_argument("--native-observation", required=True)
+    evidence_bindings.add_argument("--benchmark-observation", required=True)
+    evidence_bindings.add_argument("--benchmark-result", required=True)
     evidence_bindings.add_argument("--physical-observation")
     evidence_bindings.add_argument("--json", action="store_true")
     certification = release_subcommands.add_parser(
@@ -132,6 +144,8 @@ def build_parser() -> argparse.ArgumentParser:
     certification_build.add_argument("--evidence", required=True)
     certification_build.add_argument("--evidence-root", required=True)
     certification_build.add_argument("--native-observation", required=True)
+    certification_build.add_argument("--benchmark-observation", required=True)
+    certification_build.add_argument("--benchmark-result", required=True)
     certification_build.add_argument("--physical-observation")
     certification_build.add_argument("--assets-dir", required=True)
     certification_build.add_argument("--repository", required=True)

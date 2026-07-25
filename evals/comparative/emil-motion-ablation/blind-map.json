@@ -4,32 +4,32 @@
   "judgment_schema_sha256": "6fc7376df30d7cff1ac8faf21ce6bcd63c76f72365458cfe0812ec88b16cd701",
   "outputs": {
     "A": {
-      "path": "output.design-craft.md",
-      "run_path": "run.design-craft.json",
-      "run_sha256": "9bea9f146744cf61d3ba17e01e9efc4c70bb9354cdb427c9a13c3ad1f4b74a47",
-      "sha256": "d5dce90c721f0eb72204038bf0aec85cdbf59debb926902f301858e7d7ce81dc",
-      "variant": "design-craft"
-    },
-    "B": {
       "path": "output.emil.md",
       "run_path": "run.emil.json",
-      "run_sha256": "bf443e67b213f26ba2a67c52b089db31cf7e1259d46677ccc8f39d49ca83ead9",
-      "sha256": "682eab5fd32e8884a4489afaa71972948838c092522e5f10bf8b582d4dd4fb1e",
+      "run_sha256": "7319c4e6f996f3cee563889b6f604b692f327ac7cec9101db7732f24cb972ab1",
+      "sha256": "d95afd1f75249d6d356db83de12226acbe5f240df6a1d516125d4a7169116df0",
       "variant": "emil"
     },
-    "C": {
+    "B": {
       "path": "output.baseline.md",
       "run_path": "run.baseline.json",
-      "run_sha256": "8cee6aaaf4bbd08ce6a72ed0851e8a53abe1c86fc16f245bfc0dc9b1126424d8",
-      "sha256": "f0370fd26d90b081a8fa6c786c6bfb1da8b945c653894fb4741076ec49e4c73b",
+      "run_sha256": "5f9af4e1e6296dbbb327faa59ca886b5987cdf360b85625bef020cfb46191f8c",
+      "sha256": "6c4dc8427ccc4a8307a76a56cffc6492eae481283ee9f055725663b49e3ef64a",
       "variant": "baseline"
+    },
+    "C": {
+      "path": "output.design-craft.md",
+      "run_path": "run.design-craft.json",
+      "run_sha256": "7074c6f291eafce0a581ed39898a0098b6c9c47e0da0b47ab160f18358b41e7e",
+      "sha256": "83ee807d5707c3ab2c81065e5deaa0080eef061cc8b8558812a3eb871dd18075",
+      "variant": "design-craft"
     }
   },
   "packet_path": "blind-packet.md",
-  "packet_sha256": "b302db02f1c66b2417563b827b924cfb8dd9de2c488f00846a8f2737eb5eaed3",
+  "packet_sha256": "5c1819c86e64853345ebb3ca7fb7819a8ac26c4255f747112345bb27885cb1b0",
   "prompt_sha256": "32a158dae9908cefce2747965d6451cf024eb3a877438295898a75412e11e0c8",
   "schema": "design-craft.comparative-blind-map.v3",
   "scorecard_json_sha256": "8138c39d53d54e9513c89c172ab2cc5b53135fb06c58c4f42f99179b3b2f1c7e",
   "scorecard_sha256": "89663cb8f65c3bd9387414a1f79fcf0789dad360d4287d15130189ed7c11ee72",
-  "seed_sha256": "5abb5e8a1a8a0374ae1dd2c922220949c455b8474497f2b2c196c9f160921ee6"
+  "seed_sha256": "e1eb8422c0442d65191f6933ff649b16aab65972a9f3ebb3b4fa59b3b7469950"
 }

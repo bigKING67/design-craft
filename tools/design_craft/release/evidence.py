@@ -43,6 +43,8 @@ def evaluate_release(
     level: ReleaseLevel,
     *,
     baseline_path: Path | None,
+    benchmark_result_path: Path | None = None,
+    benchmark_observation_path: Path | None = None,
     phase: str = "candidate",
 ) -> dict[str, object]:
     if phase not in {"candidate", "final"}:
@@ -52,6 +54,8 @@ def evaluate_release(
         level.name,
         phase=phase,
         baseline_path=baseline_path,
+        benchmark_result_path=benchmark_result_path,
+        benchmark_observation_path=benchmark_observation_path,
     )
     maturity = build_report(evaluation, phase=phase, root=str(REPO_ROOT))
     gate_checks = [

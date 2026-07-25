@@ -33,6 +33,8 @@ def evaluate_maturity(
     *,
     phase: str = "candidate",
     baseline_path: Path | None = None,
+    benchmark_result_path: Path | None = None,
+    benchmark_observation_path: Path | None = None,
     jobs: int = 0,
     root: Path = REPO_ROOT,
 ) -> dict[str, object]:
@@ -42,6 +44,8 @@ def evaluate_maturity(
         profile=profile_name,
         phase=phase,
         baseline_path=baseline_path,
+        benchmark_result_path=benchmark_result_path,
+        benchmark_observation_path=benchmark_observation_path,
     )
     worker_count = jobs if jobs > 0 else min(4, os.cpu_count() or 2)
     results: dict[str, MaturityGateResult] = {}
