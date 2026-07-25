@@ -2,7 +2,7 @@
   "command": "pi --print --no-session --no-context-files --no-skills --tools read,grep,find,ls --model codex/gpt-5.5 --thinking high --skill '$VARIANT_SKILL_1'",
   "contract_sha256": "9982847aa02610d7840eea6647b935c359dcdac7337bbe5ff3ebd29ee938d86b",
   "cwd": "$VARIANT_WORKSPACE",
-  "duration_seconds": 151.081,
+  "duration_seconds": 146.366,
   "host": "pi",
   "host_version": "0.80.6",
   "installed_skill_paths": {
@@ -11,7 +11,7 @@
   "model": "codex/gpt-5.5",
   "model_observation": "requested_by_cli",
   "output_path": "output.impeccable.md",
-  "output_sha256": "2beb8b4fb0def1022e5815bf6b1d4cb0d242d29f348a0325540d7e94c97d6ec3",
+  "output_sha256": "c8381f0c03df0903f1bef1935077b3dcb8314e1adcedc721976565f2968be8a2",
   "prompt_sha256": "8efbd7f3fc974e0abcb8ef0d736102db96436e596a93cb040717a757ff451fde",
   "returncode": 0,
   "runner_os": "macOS-15.7.7-arm64-arm-64bit-Mach-O",
@@ -20,15 +20,15 @@
   "skill_trees": {
     "upstreams/impeccable/.agents/skills/impeccable": "1fe1c4b76825c9538d5379a0a5d3d00378cf9420ce498f5b9309b79c888cc410"
   },
-  "started_at": "2026-07-24T10:51:33Z",
+  "started_at": "2026-07-25T01:57:46Z",
   "stderr_bytes": 0,
   "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
   "thinking": "high",
   "thinking_observation": "requested_by_cli",
-  "timeout_seconds": 600,
+  "timeout_seconds": 300,
   "variant": "impeccable",
   "workspace_kind": "repo_external_isolated_project",
-  "worktree_after_sha256": "af3641f0e99df6e33e683fc5930035a38935e227f44c5b06ba9411fd93df7f78",
-  "worktree_before_sha256": "af3641f0e99df6e33e683fc5930035a38935e227f44c5b06ba9411fd93df7f78",
+  "worktree_after_sha256": "7d0baa625aeac4cd46eb2ce7a2b9c83e0717a7c1b3fbdcecc024ec32a398bd43",
+  "worktree_before_sha256": "7d0baa625aeac4cd46eb2ce7a2b9c83e0717a7c1b3fbdcecc024ec32a398bd43",
   "worktree_unchanged": true
 }
