@@ -1,6 +1,6 @@
 {
-  "blind_map_sha256": "a9488a4ec45a0312d37b3585ad86ce1cf057686a016c70f3d0328d290cc0178c",
-  "blind_packet_sha256": "94d33856b32f3cf8b6104f257459610b20a38701c2fbb7590ba93956e50e08ce",
+  "blind_map_sha256": "dbc034b71e8350813cf1ce341e9a2713ca54c4fce57c0ded1bad2f4a408fa9b3",
+  "blind_packet_sha256": "62d8a02712fbee7ef2783f15fa7e3b38afcbb2795934459186c2b0092d819304",
   "case_id": "taste-visual-critique-ablation",
   "focused_variant": "taste",
   "judge": {
@@ -8,36 +8,50 @@
     "model": "gpt-5.6-sol",
     "model_observation": "requested_by_cli",
     "raw_output_path": "judge-output.raw.txt",
-    "raw_output_sha256": "eb2c56d77de5065467689509d50190193ca5f2c4887f358dc21cdbe305ed6103",
+    "raw_output_sha256": "2b3418050bda5fae2cc0b3f34d56abbf607ae7dd3a18bac61a6dc18f54b1f0ef",
     "reasoning": "max",
     "reasoning_observation": "requested_by_cli",
     "run_path": "run.judge.json",
-    "run_sha256": "b7155c4fc899000999b4ed917a607ec8ba246ee99bc982274dd431209ed09fb9",
+    "run_sha256": "34da453d9257d54487048e581a9f040cd3dda1237fbd8650d457c998350c3201",
     "runner_os": "macOS-15.7.7-arm64-arm-64bit-Mach-O",
     "version": "codex-cli 0.145.0"
   },
   "judgment_path": "blind-judgment.json",
   "judgment_schema_sha256": "f80a55f5da5692ecd98e1a34f3ab5e0884af7840e14870655dfb99dc5306cf58",
-  "judgment_sha256": "e0003fc058241c26e9c01f0265f8d38722699eca232ec48c33180a564f835cc1",
+  "judgment_sha256": "dbf88651a58a31ed22f7f155b23ba84088ee01269b05764652d11c8293237d52",
   "prompt_sha256": "24483d75b8bec334c978ae4f120d5523ec4ee54a1b8c3bbeef97aafbd6090ed9",
-  "rationale": "A 在三者中覆盖最均衡：不仅把下一小时异常队列提升为首要决策面，还明确降级被动指标、约束图表用途、替换泛化洞察，并落实语义色、间距、边框、阴影和文字可读性。C 的状态验收更细，但视觉工艺有明显的正文排版缺口；B 的量化标准较强，却遗漏部分图表与洞察整改，验证方案也稍显重复。",
-  "recorded_at": "2026-07-24T10:38:33Z",
+  "rationale": "B wins by a narrow margin over A because it connects every major region to the next-hour decision flow while offering the strongest concrete surface-craft rules: lead-versus-support metric hierarchy, operational KPI context, a named diagnostic purpose for the chart, semantic rather than decorative trend color, right-aligned financial values, a defined spacing scale, and disciplined elevation. A is nearly equivalent and is stronger on explicit loading, empty, error, and focus-state redesign criteria, but it leaves the chart's resulting role less fully resolved. C remains strong and compliant, yet several acceptance criteria are less measurable and its invented example figures are less disciplined relative to the instruction to preserve real product data.",
+  "recorded_at": "2026-07-25T02:11:44Z",
   "results": {
     "baseline": {
       "blind_label": "C",
       "criteria": {
         "anti_generic": 15,
-        "concrete_moves": 19,
-        "evidence_honesty": 10,
+        "concrete_moves": 18,
+        "evidence_honesty": 9,
         "product_fit": 14,
-        "product_hierarchy": 15,
+        "product_hierarchy": 14,
         "scope_discipline": 10,
-        "visual_craft": 12
+        "visual_craft": 13
       },
-      "score": 95,
-      "summary": "生产状态、长文本、表格层级和动作 affordance 的验收最细，范围控制良好；但遗漏了正文低对比和字号的直接修正，并提出了静态证据未确认存在的 SKU、渠道或店铺上下文。"
+      "score": 93,
+      "summary": "C correctly identifies the buried workflow, equal KPI emphasis, generic insight copy, and excessive containment, then supplies a strong first-viewport and table-triage redesign. It is less exact about type sizing, contrast, numeric alignment, spacing tokens, and production-state acceptance behavior; its illustrative summaries also introduce exact fictional values rather than explicitly requiring aggregates derived from the preserved data, and the analyst timing exercise exceeds the smallest requested browser, responsive, and state check."
     },
     "design-craft": {
+      "blind_label": "B",
+      "criteria": {
+        "anti_generic": 15,
+        "concrete_moves": 19,
+        "evidence_honesty": 10,
+        "product_fit": 15,
+        "product_hierarchy": 15,
+        "scope_discipline": 10,
+        "visual_craft": 15
+      },
+      "score": 99,
+      "summary": "B provides the most complete hierarchy from lead risk through supporting context to diagnostic evidence and the action table. Its semantic sparkline rule, explicit spacing scale, elevation policy, numeric alignment, action grammar, and operational chart question make the visual critique especially implementation-ready; the only small gap is that missing states are validated but not fully specified as a redesign move."
+    },
+    "taste": {
       "blind_label": "A",
       "criteria": {
         "anti_generic": 15,
@@ -49,21 +63,7 @@
         "visual_craft": 14
       },
       "score": 98,
-      "summary": "最完整地把首屏、风险指标、图表、泛化洞察、异常表格和表面系统重新排序，并同时给出可观察的验收标准；主要不足是状态设计更多留在验证计划中，正文字号标准也仍略显模糊。"
-    },
-    "taste": {
-      "blind_label": "B",
-      "criteria": {
-        "anti_generic": 15,
-        "concrete_moves": 18,
-        "evidence_honesty": 10,
-        "product_fit": 15,
-        "product_hierarchy": 15,
-        "scope_discipline": 9,
-        "visual_craft": 12
-      },
-      "score": 94,
-      "summary": "首屏行数、五秒扫描和文本膨胀等标准清晰可测，状态覆盖也较完整；但没有直接解决图表及泛化洞察的内容价值，字体、间距修正不够具体，且验证计划存在窄屏检查重复。"
+      "summary": "A tightly reorients the surface around first-viewport exceptions, preserves the existing operational authority, and uniquely turns missing production states into concrete acceptance criteria. It loses only minor craft and coverage points because the chart and generic insight region are criticized but not given as explicit a diagnostic role as in B, and some typography and spacing criteria remain non-numeric."
     }
   },
   "schema": "design-craft.comparative-result.v3",
@@ -76,9 +76,9 @@
       "host_version": "0.80.6",
       "model": "codex/gpt-5.5",
       "output_path": "output.baseline.md",
-      "output_sha256": "7b7614089318f81427194ebe6fe55cbba420a376c87faa78d9cc4368bd77df71",
+      "output_sha256": "b8a867ae61cd488307681fa77d837f85abd20325e55824698216c6ace332ecdc",
       "run_path": "run.baseline.json",
-      "run_sha256": "e2b6fff07a1cf64c0185e417fb29ec64c8ec3b9154bb11d597004d8a40c811d3",
+      "run_sha256": "64bb02d3b18c7ff09082c90c09a6cf79b59bba43ca311b2ec9581c5f1e848e6f",
       "skill_trees": {},
       "thinking": "high"
     },
@@ -88,11 +88,11 @@
       "host_version": "0.80.6",
       "model": "codex/gpt-5.5",
       "output_path": "output.design-craft.md",
-      "output_sha256": "184a096b6f9d5bb2bf0462e8172a3d4f9b536e10189ab8151c24fe5576166b93",
+      "output_sha256": "eb7e35aa9dc47a3dccadfa018e4b03a51ba73fc4b81d9cc22696eb3d6e564f41",
       "run_path": "run.design-craft.json",
-      "run_sha256": "ea52a603a542bd56086d7642216797e1e6f513888604553dbde057cf8784f350",
+      "run_sha256": "18774469d989d915fd6bd5bcc126b810b4b68c84bd51ebb5291673a0ef986dd3",
       "skill_trees": {
-        "skills/design-craft": "64a3997fa784e6614350506cc4a608d72451cdcc6a6b7df3c6d65234c2662230"
+        "skills/design-craft": "f3672d8158d5b2acf09725eb6c6a1bc4928afaf81fcec3f7ee03897a03a8cbe0"
       },
       "thinking": "high"
     },
@@ -102,9 +102,9 @@
       "host_version": "0.80.6",
       "model": "codex/gpt-5.5",
       "output_path": "output.taste.md",
-      "output_sha256": "8b13f390f0a2bb780f4e07344401ef89d24b1bf46dad4fec709b227f9b72fee9",
+      "output_sha256": "efd0d97793ce7cbe1d4f2738420eb77c26a2551f923289ebfb23f385564d443f",
       "run_path": "run.taste.json",
-      "run_sha256": "56de994848c433cf71782936e4185544240f7dc058dbb40026e4bb140f9e90f5",
+      "run_sha256": "c3406ac643287f776349280a1c6df1200d3693d5208fc019a6d9303f0b51eaa2",
       "skill_trees": {
         "upstreams/taste-skill/skills/redesign-skill": "1fd74922e6bb2011c7c0d82aefd70d0cc1dbd31bd904054bec3f6cae4d731b90",
         "upstreams/taste-skill/skills/taste-skill": "40ef50925b446e08a4ad5cead8edeb98f48982eb498b0073fe6a0b27ea736769"
