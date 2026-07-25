@@ -2,7 +2,7 @@
 
 All notable local changes to `design-craft` are recorded here.
 
-## 0.5.3 - Unreleased
+## 0.5.3 - 2026-07-25
 
 - Refresh Codex, Pi, and comparative current-source evidence after the
   certification receipt fix changed the release-candidate skill tree.
