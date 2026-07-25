@@ -2,7 +2,7 @@
 
 This document records the deliberate fusion and runtime boundary for
 `https://github.com/pbakaus/impeccable` at commit
-`08676d575721a2f3f9c30fc4807d1f61e1462b3b`. The compatibility submodule stays
+`73819ff5736cf95270e6a3e6faf3f21e27d96f94`. The compatibility submodule stays
 pinned at `630fc2682a5bd39b25a8e61f74b6b3f14f2b1e21`.
 
 ## Contents
@@ -81,16 +81,16 @@ host's existing execution contracts.
 
 ## Latest reviewed range
 
-The latest range from `bdaa5a4eb9ad2f5b9ce6164a9ded049da9c00d58`
-through `08676d575721a2f3f9c30fc4807d1f61e1462b3b` is `partial`:
+The latest range from `08676d575721a2f3f9c30fc4807d1f61e1462b3b`
+through `73819ff5736cf95270e6a3e6faf3f21e27d96f94` is `partial`:
 
 | Capability | Status | Local target or boundary |
 | --- | --- | --- |
-| Workspace-relative card and image paths | absorbed | Local artifact-relative, path-safe, and relocatable evidence contracts already enforce the durable boundary. |
-| Skill invocation as blanket subagent authorization | intentionally-rejected | User and host permissions remain authoritative; only an actual authorized spawn is reported as delegation. |
-| Mandatory finish-review subagent | intentionally-rejected | Independent review is useful when available and authorized, but the baseline must not invent permission or require unavailable runtime capability. |
-| Generated provider copies and v4.0.2 metadata synchronization | provenance-only | Provider packaging and version mirrors do not change the selected local product behavior. |
-| Transient hard-cap exception for optional imagery | provenance-only | The exception was reverted before the reviewed range head and is not final upstream behavior. |
+| Build-persistent direction contract and evidence-over-intention documentation | partial | Local runtime/project evidence already outranks plans and stale docs. Random concept selection and a mandatory post-build documenter remain rejected; `DESIGN.md` evolves only with project/user authority. |
+| Detector hardening for `form.id`, non-rendered text, and translucent gradients | provenance-only | These fixes are valuable in the upstream JavaScript detector but do not apply to the local shell/static scanners. The full detector/vendor runtime remains outside the package boundary. |
+| Decorative radial spotlight glow signal | partial | `visual-judgment.md` already rejects generic zero-offset radial halos and colored glow contextually; the upstream parser implementation is not vendored. |
+| Mandatory finish reviewer/documenter agents and asset gate | intentionally-rejected | Independent review and real assets remain quality goals, but Skills cannot grant subagent authority or require a host capability that was not authorized and executed. |
+| Codex hook-path, generated provider, suite-registration, and build-test maintenance | provenance-only | These changes maintain upstream packaging and generated runtimes without changing the selected local product behavior. |
 
 ### Cumulative selected boundary
 
@@ -103,7 +103,7 @@ The cumulative absorption state remains `selective_absorbed` through
 | Refinement preserves; redesign replaces the visual world without replacing product truth | absorbed | `visual-judgment.md`, existing-redesign playbook |
 | Per-surface `Persuade`, `Operate`, `Read`, and `Experience` modes | absorbed | `surface-playbooks.md` |
 | Direction-first craft floor and applicable-denominator critique scoring | absorbed | `impeccable-workflow.md` |
-| Radial halo, repeated kicker, meaningless section number, fake cursor/pulse, shape-assembled illustration, and aphoristic-copy signals | absorbed | `visual-judgment.md`; treated as contextual signals, not universal bans |
+| Radial halo/spotlight glow, repeated kicker, meaningless section number, fake cursor/pulse, shape-assembled illustration, and aphoristic-copy signals | absorbed | `visual-judgment.md`; treated as contextual signals, not universal bans |
 | Random concept seeds, mandatory context loader and no-argument menu | intentionally-rejected | local routing and project discovery remain deterministic and task-led |
 | Live/browser/provider/hooks/doctor runtime, asset generation, full detector/vendor bundle, generated provider copies | intentionally-rejected | browser67, host tools, and existing repository governance own these boundaries |
 | `fc3dc50..bdaa5a4` live overlay/resume changes, TanStack adapters, deferred source writes, resolution caching, injection/progress coordination, tests, and generated providers | intentionally-rejected | The tail changes only the upstream live/provider runtime; no selected `design-craft` behavior was imported |
@@ -142,5 +142,5 @@ duplicative live/provider/package runtime and prescriptive ecosystem choices
 remain intentionally outside the product.
 
 Current independent blind evidence is recorded in
-`evals/comparative/impeccable-production-ablation/`: `design-craft` 96,
-focused Impeccable upstream 95, no-skill baseline 91.
+`evals/comparative/impeccable-production-ablation/`: `design-craft` 97,
+focused Impeccable upstream 93, no-skill baseline 96.

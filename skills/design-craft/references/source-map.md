@@ -26,12 +26,12 @@ upstream files directly.
 - Pinned compatibility commit:
   `b17742737e796305d829b3ad39eda3add0d79060`
 - Current reviewed remote commit:
-  `98565e65bc3274ddf6eb0838734341714057178b`
+  `e988add20dab0fa97d7a76781c48961c8184288e`
 - Cumulative status: `selective_absorbed`; behavior through the initial
   `06d6028b5c623016c59ce8536f578e5a1127b499` snapshot is represented in the
   local visual-judgment, product-taste, design-move, and design-system layers.
-- Latest-range status: `provenance_only`; the range from `b177427` through
-  `98565e6` changes README sponsorship and sponsor image assets only.
+- Latest-range status: `provenance_only`; the range from `98565e6` through
+  `e988add` changes README sponsor presentation only.
 - Contract: `docs/taste-skill-absorption.md`, validated by
   `scripts/design_craft_taste_absorption.py` in the canonical repository.
 - Primary material to inspect:
@@ -59,13 +59,14 @@ preflight thinking.
   `630fc2682a5bd39b25a8e61f74b6b3f14f2b1e21`
 - Current selected-behavior boundary and reviewed remote commit:
   `fc3dc501a6f0e4f238a230b0b30148490a65171a` selected behavior;
-  `bdaa5a4eb9ad2f5b9ce6164a9ded049da9c00d58` reviewed remote head
+  `73819ff5736cf95270e6a3e6faf3f21e27d96f94` reviewed remote head
 - Cumulative status: `selective_absorbed` for the command taxonomy,
   brief/change-scope authority, surface modes, craft floor, applicable scoring,
   detector/native guidance, hardening, measurement, and evidence contracts.
-- Latest-range status: `selective_absorbed` for the reviewed range from
-  `630fc268` through `bdaa5a4`; the `fc3dc50..bdaa5a4` tail is intentionally
-  rejected live/provider runtime provenance.
+- Latest-range status: `partial` for the reviewed range from `08676d5` through
+  `73819ff`; durable artifact-evidence and anti-radial-glow behavior is already
+  local, while forced reviewer/documenter agents and hook/provider/detector
+  runtime remain outside the baseline.
 - Contract: `docs/impeccable-absorption.md`, validated by
   `scripts/design_craft_impeccable_absorption.py` in the canonical repository.
 - 2026-06-30 absorption note:
@@ -96,6 +97,15 @@ preflight thinking.
   coordination, tests, and generated providers. Those remain inside the
   intentionally rejected upstream live/provider boundary; no selected local
   behavior was imported.
+- 2026-07-25 review note:
+  the `08676d5..73819ff` range adds build-persistent direction contracts,
+  detector false-positive fixes, a radial spotlight signal, mandatory
+  reviewer/documenter agents, hook-path fixes, and generated provider/runtime
+  maintenance. Runtime evidence over stale intent and the anti-glow behavior
+  are already represented locally. Random concept selection, forced
+  delegation, and the upstream hook/provider/full-detector runtime remain
+  intentionally outside the baseline, so neither compatibility pin nor local
+  behavior boundary advances.
 - Primary material to inspect:
   - `.agents/skills/impeccable/SKILL.md`
   - `site/content/skills/*.md`

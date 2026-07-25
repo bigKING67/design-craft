@@ -69,6 +69,13 @@ class MaturityProfileTests(unittest.TestCase):
         self.assertIn("main_branch", final.required_gate_ids)
         self.assertIn("main_ruleset", final.required_gate_ids)
 
+    def test_final_phase_uses_committed_upstream_snapshot(self) -> None:
+        candidate = load_profile("operational_95", "candidate")
+        final = load_profile("operational_95", "final")
+        self.assertIn("upstream_remote_review", candidate.required_gate_ids)
+        self.assertNotIn("upstream_remote_review", final.required_gate_ids)
+        self.assertIn("upstream_lock_parity", final.required_gate_ids)
+
 
 if __name__ == "__main__":
     unittest.main()

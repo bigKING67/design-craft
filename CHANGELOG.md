@@ -2,6 +2,17 @@
 
 All notable local changes to `design-craft` are recorded here.
 
+## 0.5.4 - 2026-07-25
+
+- Keep live upstream freshness in release-candidate readiness while making
+  final tag certification depend only on the committed review snapshot and
+  lock parity, so external commits after tagging cannot change an immutable
+  version's certification result.
+- Review Impeccable `08676d5..73819ff` without advancing the compatibility pin:
+  retain local artifact-evidence and anti-radial-glow behavior while rejecting
+  random concept selection, forced reviewer/documenter delegation, and the
+  upstream hook/provider/full-detector runtime boundary.
+
 ## 0.5.3 - 2026-07-25
 
 - Refresh Codex, Pi, and comparative current-source evidence after the
