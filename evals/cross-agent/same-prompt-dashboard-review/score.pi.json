@@ -14,34 +14,34 @@
   "scorecard_json_sha256": "9b73f89575f83eecd859595a81851a57681987dbb8aee6d3b8230d5827081920",
   "contract_sha256": "907627714e2c4078558dba2e0449c2df2bf1d6d7db5e91e0f1e8b2017c22d0c9",
   "run_manifest_path": "run.pi.json",
-  "run_manifest_sha256": "1cc1e337ed56d59c02571cb5760a6221a28eef5779cb3e31638011b6f546528a",
+  "run_manifest_sha256": "0b70d8231deeb25e5fd19071d03c4ca7bee3afa61f829978a67754dbdc844297",
   "skill_version": "0.5.4",
-  "skill_source_commit": "358a4e2e11843618574037c49965f35910c1c170",
+  "skill_source_commit": "b995ca5efcf141e03842712ed23b659cb47abeae",
   "skill_source_dirty": false,
   "repo_dirty": true,
   "release_state": "unknown",
-  "skill_tree_sha256": "2fa7933e9c4eb429de29e5efb1047dfc69e952284de99ace2f6b39c7901d6766",
+  "skill_tree_sha256": "f3672d8158d5b2acf09725eb6c6a1bc4928afaf81fcec3f7ee03897a03a8cbe0",
   "skill_path": "$BENCHMARK_WORKSPACE/.pi/skills/design-craft",
   "provenance_skill_path": "$DESIGN_CRAFT_HOME/skills/design-craft",
   "command_summary": "pi --print --no-session --no-skills --skill '$BENCHMARK_SKILL' --no-context-files --tools read,grep,find,ls --model codex/gpt-5.5 --thinking high",
   "output_path": "pi-output.md",
-  "output_sha256": "53ae1c1f46d227fb73dc46838197c3f6616ef21a9e64b49bc5fd94475fd19de9",
+  "output_sha256": "ca005528d430bffec98ceac8d6258fb76b82eb44af0e751340ad733ca42aa40d",
   "score": 100,
   "criteria": {
     "style_authority": {
       "passed": true,
       "earned": 15,
-      "note": "Preserves the restrained, dense-but-calm, token-backed enterprise-console authority and centers the operator's next-hour decision job."
+      "note": "Preserves the restrained, dense-but-calm, token-backed enterprise-console authority and centers the operator's next-hour triage job."
     },
     "reference_selection": {
       "passed": true,
       "earned": 15,
-      "note": "Uses only relevant dashboard hierarchy, taste, design-move, table, token, resilient-state, accessibility, and validation guidance without unrelated domains."
+      "note": "Uses relevant dashboard hierarchy, taste, design-move, table, token, resilient-state, accessibility, and validation guidance without unrelated domains."
     },
     "anti_generic_redesign": {
       "passed": true,
       "earned": 15,
-      "note": "Rejects equal-card soup, decorative charting, and generic tips in favor of a lead/support hierarchy, exception queue, diagnostic evidence, and task-first work area."
+      "note": "Rejects equal-card soup, decorative charting, and generic tips in favor of lead and supporting metrics, an exception queue, diagnostic evidence, and a task-first work area."
     },
     "evidence_level": {
       "passed": true,
@@ -51,17 +51,17 @@
     "verified_boundary": {
       "passed": true,
       "earned": 15,
-      "note": "Separates prompt facts from unverified rendering, token use, metric contracts, table behavior, interactions, accessibility, responsiveness, and runtime behavior."
+      "note": "Separates prompt facts from unverified rendering, token use, metric contracts, table behavior, interactions, accessibility, responsiveness, and performance."
     },
     "design_moves": {
       "passed": true,
       "earned": 15,
-      "note": "Provides exactly eight concrete moves covering command context, lead and support metrics, exception queue, diagnostic chart, contextual actions, task-first table, semantic visuals, and resilient states."
+      "note": "Provides exactly eight concrete moves covering lead and support metrics, exception queue, command context, diagnostic chart, task-first table, contextual actions, enterprise visuals, and resilient states."
     },
     "scope_control": {
       "passed": true,
       "earned": 10,
-      "note": "Remains read-only, prioritized, and dashboard-specific at 101 logical lines, with exactly five blocking findings and eight concrete moves."
+      "note": "Remains read-only, prioritized, and dashboard-specific at 81 logical lines, with exactly five blocking findings and eight concrete moves."
     }
   }
 }

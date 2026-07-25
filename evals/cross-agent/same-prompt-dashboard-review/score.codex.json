@@ -14,34 +14,34 @@
   "scorecard_json_sha256": "9b73f89575f83eecd859595a81851a57681987dbb8aee6d3b8230d5827081920",
   "contract_sha256": "907627714e2c4078558dba2e0449c2df2bf1d6d7db5e91e0f1e8b2017c22d0c9",
   "run_manifest_path": "run.codex.json",
-  "run_manifest_sha256": "693d475a513b66d20e8d0147b42b7be48ad61f7ed1838ab10d7c4bd36c37ee77",
+  "run_manifest_sha256": "ffcc109bdc4790e07a6a5338f7965ca3b01c42ab6fe4b5424e41ee82115a8cb7",
   "skill_version": "0.5.4",
-  "skill_source_commit": "358a4e2e11843618574037c49965f35910c1c170",
+  "skill_source_commit": "b995ca5efcf141e03842712ed23b659cb47abeae",
   "skill_source_dirty": false,
   "repo_dirty": true,
   "release_state": "unknown",
-  "skill_tree_sha256": "2fa7933e9c4eb429de29e5efb1047dfc69e952284de99ace2f6b39c7901d6766",
+  "skill_tree_sha256": "f3672d8158d5b2acf09725eb6c6a1bc4928afaf81fcec3f7ee03897a03a8cbe0",
   "skill_path": "$BENCHMARK_WORKSPACE/.agents/skills/design-craft",
   "provenance_skill_path": "$DESIGN_CRAFT_HOME/skills/design-craft",
   "command_summary": "codex exec --ephemeral --sandbox read-only --skip-git-repo-check --ignore-rules -C '$BENCHMARK_WORKSPACE' --model gpt-5.6-sol -c 'model_reasoning_effort=\"max\"' --output-last-message '$BENCHMARK_WORKSPACE/.design-craft-host-output.md' -",
   "output_path": "codex-output.md",
-  "output_sha256": "4fed20b7230f3e7ff30e2e78d98c0293b1087ff60a02f57bb104070901b3e086",
-  "score": 100,
+  "output_sha256": "f84686a25e8408f0201d6e6c4311dd057c4ad3206a94390f460378d4fbee13b2",
+  "score": 95,
   "criteria": {
     "style_authority": {
       "passed": true,
       "earned": 15,
-      "note": "Preserves the restrained, dense-but-calm, non-marketing, token-backed enterprise-console authority and centers the operator's next-hour decision job."
+      "note": "Preserves the restrained, dense-but-calm, non-marketing, token-backed enterprise-console authority and centers the operator's next-hour triage job."
     },
     "reference_selection": {
       "passed": true,
       "earned": 15,
-      "note": "Uses only relevant dashboard hierarchy, taste, design-move, table, token, resilient-state, accessibility, and validation guidance without unrelated domains."
+      "note": "Uses relevant dashboard hierarchy, taste, design-move, table, token, resilient-state, accessibility, and validation guidance without unrelated domains."
     },
     "anti_generic_redesign": {
       "passed": true,
       "earned": 15,
-      "note": "Rejects equal-card soup, decorative charting, and generic tips in favor of a lead/support hierarchy, exception queue, diagnostic evidence, and task-first work area."
+      "note": "Rejects equal-card soup, decorative charting, and generic tips in favor of lead and supporting metrics, an exception queue, diagnostic evidence, and a task-first work area."
     },
     "evidence_level": {
       "passed": true,
@@ -51,17 +51,17 @@
     "verified_boundary": {
       "passed": true,
       "earned": 15,
-      "note": "Separates prompt-level facts and design judgments from unverified rendering, tokens, data semantics, interactions, accessibility, responsiveness, and operator outcomes."
+      "note": "Separates prompt-level facts and design judgments from unverified rendering, tokens, data semantics, interactions, accessibility, responsiveness, and performance."
     },
     "design_moves": {
       "passed": true,
       "earned": 15,
-      "note": "Provides exactly eight concrete moves covering command context, lead and support metrics, exception queue, diagnostic chart, contextual actions, task-first table, semantic visuals, and resilient states."
+      "note": "Provides exactly eight concrete moves covering command context, lead and support metrics, exception queue, diagnostic chart, task-first table, contextual actions, semantic visuals, and resilient states."
     },
     "scope_control": {
-      "passed": true,
-      "earned": 10,
-      "note": "Remains read-only, prioritized, and dashboard-specific at 116 logical lines, with exactly five blocking findings and eight concrete moves."
+      "passed": false,
+      "earned": 5,
+      "note": "The review remains read-only, dashboard-specific, and limited to five blockers and eight moves, but its 186 logical lines exceed the explicit 150-line hard cap by 36 lines."
     }
   }
 }
