@@ -14,54 +14,54 @@
   "scorecard_json_sha256": "5b0b6a0d6df83ce49b9e2c598a9cdd79149efca50a9e12069667bc008462d183",
   "contract_sha256": "907627714e2c4078558dba2e0449c2df2bf1d6d7db5e91e0f1e8b2017c22d0c9",
   "run_manifest_path": "run.pi.json",
-  "run_manifest_sha256": "a5874bec6e90ef8d75aa2f6925b055528bb2af8ee98ddc1ede3560c0c9e4cb62",
+  "run_manifest_sha256": "086fe9f44e156492ba69878d195dbdd0dd77bd614ee02dd19a927c3f5bafd729",
   "skill_version": "0.5.4",
-  "skill_source_commit": "358a4e2e11843618574037c49965f35910c1c170",
+  "skill_source_commit": "b995ca5efcf141e03842712ed23b659cb47abeae",
   "skill_source_dirty": false,
   "repo_dirty": true,
   "release_state": "unknown",
-  "skill_tree_sha256": "2fa7933e9c4eb429de29e5efb1047dfc69e952284de99ace2f6b39c7901d6766",
+  "skill_tree_sha256": "f3672d8158d5b2acf09725eb6c6a1bc4928afaf81fcec3f7ee03897a03a8cbe0",
   "skill_path": "$BENCHMARK_WORKSPACE/.pi/skills/design-craft",
   "provenance_skill_path": "$DESIGN_CRAFT_HOME/skills/design-craft",
   "command_summary": "pi --print --no-session --no-skills --skill '$BENCHMARK_SKILL' --no-context-files --tools read,grep,find,ls --model codex/gpt-5.5 --thinking high",
   "output_path": "pi-output.md",
-  "output_sha256": "eb5ea84a96c093ec36d066d88516ab1e11d89d7d8324031c54d81f8aff921bdd",
-  "score": 100,
+  "output_sha256": "3696cf220a717a0debab1c69e91a1a78a1aad2d4536e293c5a00692b15419c0b",
+  "score": 96,
   "criteria": {
     "style_authority": {
       "passed": true,
-      "earned": 15,
-      "note": "Reads the product as a calm web operations surface for repeat use and prioritizes task-context continuity, low surprise, direct manipulation, and Reduced Motion safety."
+      "earned": 14,
+      "note": "Correctly centers a calm repeatedly used web operations sheet and context-preserving direct manipulation, but introduces a desktop qualifier not supplied by the prompt."
     },
     "reference_selection": {
       "passed": true,
       "earned": 15,
-      "note": "Selects direct-manipulation, pointer ownership, transform tracking, interruption, velocity, endpoint projection, snap hysteresis, boundary resistance, accessibility, and runtime-validation guidance."
+      "note": "Selects direct-manipulation, active-pointer ownership, transform tracking, presentation-value interruption, velocity handoff, endpoint projection, boundary resistance, Reduced Motion, accessibility, performance, and touch validation guidance."
     },
     "anti_generic_redesign": {
       "passed": true,
       "earned": 15,
-      "note": "Limits motion to causal tracking, settle, and state legibility while rejecting eased pointer tracking, transition-all, whole-sheet scale, and disruptive background or Reduced Motion travel."
+      "note": "Limits motion to causal input acknowledgement, 1:1 drag, short settle, and snap-state feedback while rejecting eased pointer tracking, layout animation, transition-all, whole-sheet scale, and large Reduced Motion travel."
     },
     "evidence_level": {
       "passed": true,
       "earned": 15,
-      "note": "Labels the result static-code only and avoids claiming measured smoothness, frame rate, computed-style behavior, touch feel, responsive behavior, or device/browser performance."
+      "note": "Labels the review static-code only and avoids claiming observed smoothness, computed-style conflict, frame rate, touch feel, responsive behavior, or full-component accessibility."
     },
     "verified_boundary": {
       "passed": true,
       "earned": 15,
-      "note": "Clearly separates source-visible timing, properties, input lock, and missing branches from unverified cascade interaction, presentation state, touch behavior, layout cost, accessibility, and responsiveness."
+      "note": "Clearly separates snippet-visible values and missing mechanisms from unverified runtime cascade interaction, presentation state, compensating code, device touch, responsiveness, and performance."
     },
     "design_moves": {
       "passed": true,
-      "earned": 15,
-      "note": "Provides exactly eight concrete moves covering handle feedback, pointer capture and drag state, grab-offset transform tracking, presentation-value interruption, release velocity passed into settle after unit conversion, bounded projection with hysteresis, rubber-band resistance, and Reduced Motion."
+      "earned": 14,
+      "note": "Provides eight moves covering pointer capture, grab-offset transform tracking, interruption, measured CSS-px/s release velocity as settle initial velocity, bounded authorized projection, resistance, cleanup, and Reduced Motion; the action titled hysteresis does not specify snap-target hysteresis behavior beyond an unrelated drag intent threshold."
     },
     "scope_control": {
-      "passed": true,
-      "earned": 10,
-      "note": "Stays read-only, concise, and motion-specific, with exactly five prioritized findings, eight concrete moves, and 111 logical lines within the 150-line cap."
+      "passed": false,
+      "earned": 8,
+      "note": "Remains read-only and motion-specific and respects the five-finding and eight-move limits, but contains 175 logical lines, exceeding the explicit 150-line cap by 25 lines."
     }
   }
 }
