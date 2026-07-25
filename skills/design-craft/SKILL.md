@@ -126,6 +126,15 @@ system, data density, report grammar, or runtime truth.
    layers against the final move list. Merge adjacent repairs such as shell,
    table, state, and visual-system fixes rather than spending multiple moves on
    one layer while another identified problem has no implementing move.
+   For prompts that separately request findings, area fixes, detector
+   reconciliation, and validation, keep one finding ledger: record source fact,
+   runtime hypothesis, implementation behavior, recovery action, and acceptance
+   once, then reference the finding ID or use a compact coverage matrix. A
+   missing loading, empty, error, permission, conflict, offline, or partial
+   state is not covered until the response names what renders, what the user can
+   do, what context survives, and how the result is verified. Draft to roughly
+   75 percent of an explicit line cap before the final count so formatting and
+   required headings cannot push the result over budget.
 
 ## Reference routing
 
@@ -263,6 +272,10 @@ unverified:
   component, inherited styles, API semantics, or runtime evidence rules out a
   compensating path. State what evidence would resolve the risk instead of
   upgrading a detector-like signal into whole-product proof.
+  A single global boolean proves coarse state ownership; it does not prove that
+  overlapping requests or bulk operations share that state. Describe the
+  concurrency failure conditionally unless the supplied call paths establish
+  simultaneous lifecycles.
 - Direct manipulation: for drag, swipe, sheet, drawer, reorder, momentum, or
   scrubbing work, reject input lockout and require pointer/native capture, grab
   offset, 1:1 tracking, explicit coordinate space and velocity units,

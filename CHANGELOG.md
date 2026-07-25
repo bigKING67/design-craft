@@ -12,6 +12,9 @@ All notable local changes to `design-craft` are recorded here.
   retain local artifact-evidence and anti-radial-glow behavior while rejecting
   random concept selection, forced reviewer/documenter delegation, and the
   upstream hook/provider/full-detector runtime boundary.
+- Make bounded production audits use one non-repeating finding ledger, require
+  concrete rendered/recovery behavior for every missing state, and keep global
+  state concurrency claims conditional unless the call path proves overlap.
 
 ## 0.5.3 - 2026-07-25
 
