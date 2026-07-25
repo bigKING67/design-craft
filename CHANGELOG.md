@@ -26,6 +26,9 @@ All notable local changes to `design-craft` are recorded here.
 - Split the 883-line cross-agent validator into score, run-evidence,
   current-source, output, task, fixture, and CLI modules while preserving its
   compatibility entrypoint and current/history evidence boundaries.
+- Split the 692-line maturity gate catalog into development, evidence,
+  repository, execution, and registry modules while preserving all gate IDs,
+  public imports, profiles, and process behavior.
 
 ## 0.5.6 - 2026-07-25
 
