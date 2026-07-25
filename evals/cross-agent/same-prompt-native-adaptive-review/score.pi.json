@@ -1,5 +1,5 @@
 {
-  "schema": "design-craft.cross-agent-score.v4",
+  "schema": "design-craft.cross-agent-score.v5",
   "task_id": "same-prompt-native-adaptive-review",
   "agent": "pi",
   "verified": true,
@@ -12,56 +12,60 @@
   "date": "2026-07-25",
   "prompt_sha256": "61f2e14e7f03ad0f21bff2db3770e0b6c0ffba120aa7598dab1f73411256b2bd",
   "scorecard_json_sha256": "260126ae8e6eb6765184f92ad040b5e32995c941f559d654a303a0d5305e210f",
-  "contract_sha256": "907627714e2c4078558dba2e0449c2df2bf1d6d7db5e91e0f1e8b2017c22d0c9",
+  "contract_sha256": "b6875edb7d8c1e7a70f14d6bf6bc08bafa12c5ea910e9655fbbdbc5f62890b12",
   "run_manifest_path": "run.pi.json",
-  "run_manifest_sha256": "2e7a4913f1d7c3a3c762738820e66e046f2039af9e8a16c4d2fe47bcdcda20bd",
-  "skill_version": "0.5.4",
-  "skill_source_commit": "0239d83a826a51206953c411c564da72c51c4425",
+  "run_manifest_sha256": "1974759a3b2e504af87817ef7e4e0b49f6557ef8038724a2e21b04cfac68b1d0",
+  "skill_version": "0.5.6",
+  "skill_source_commit": "199277d062137971ffadc0e1c47ec013ba03b4bc",
   "skill_source_dirty": false,
   "repo_dirty": true,
   "release_state": "unknown",
-  "skill_tree_sha256": "0aacdc6e7ec587121f24fce3b055814b907aebda0663d54d42e84d36f2b5e5f5",
+  "skill_tree_sha256": "0bd975aa6f74b8af9c4ddd9c5182358a458c35212886e455e47b8e03434eb599",
   "skill_path": "$BENCHMARK_WORKSPACE/.pi/skills/design-craft",
+  "behavior_domain": "skill-native-adaptive-review",
+  "behavior_sha256": "7d6056df8879470c0d1391bb26e9e0d33b5d7a31ad601514c2deaba273b5ecba",
+  "behavior_source_dirty": false,
+  "projected_skill_tree_sha256": "1cee7ae9bab2c95c080f096f6d28b290abe1eedc3029cc992acacfc8d80f4a6f",
   "provenance_skill_path": "$DESIGN_CRAFT_HOME/skills/design-craft",
   "command_summary": "pi --print --no-session --no-skills --skill '$BENCHMARK_SKILL' --no-context-files --tools read,grep,find,ls --model codex/gpt-5.5 --thinking high",
   "output_path": "pi-output.md",
-  "output_sha256": "ac24cca23fcc47608c6fd3c6018a2cb99ec76ce38d2367b5547340770e8a5fb6",
+  "output_sha256": "b1662c75388a5bfef99937327ed5037a0d43c01290dcf2a164a6c252b0ed8482",
   "score": 100,
   "criteria": {
     "style_authority": {
       "passed": true,
       "earned": 15,
-      "note": "Resolves the adaptive product context while keeping shared content and semantic roles distinct from platform-native navigation, controls, materials, motion, and layout."
+      "note": "Treats the screen as an adaptive repeated-use operations surface and evaluates platform trust, task continuity, accessibility, and device-class behavior rather than imposing a generic visual restyle."
     },
     "reference_selection": {
       "passed": true,
       "earned": 15,
-      "note": "Applies product, iOS, Android, adaptive layout, accessibility, interaction-physics, motion, design-system, source-audit, and runtime-validation guidance."
+      "note": "Applies only the projected native/adaptive product-context, platform-conformance, accessibility, motion, and validation guidance relevant to the supplied iOS and Android scenario."
     },
     "anti_generic_redesign": {
       "passed": true,
       "earned": 15,
-      "note": "Repairs native trust, task recovery, accessibility, adaptive structure, controls, theming, and motion without decorative generic styling."
+      "note": "Rejects the fixed Web/Cupertino port without prescribing generic glass, gradient, card, or decoration-led changes; every recommendation is tied to a concrete platform or task failure."
     },
     "evidence_level": {
       "passed": true,
       "earned": 15,
-      "note": "Labels the review static prompt-only and explicitly denies source, build, screenshot, accessibility-tree, Simulator, Emulator, device, and performance evidence."
+      "note": "Labels the review as L0 static or prose-only evidence and does not claim source, build, Simulator, Emulator, accessibility-tree, performance, or physical-device verification."
     },
     "verified_boundary": {
       "passed": true,
       "earned": 15,
-      "note": "Confines verified facts to the supplied description and lists unknown accessibility, contrast, gestures, window behavior, recovery, performance, and hardware evidence."
+      "note": "Separates facts supplied by the prompt from unverified source, build, runtime, responsive, accessibility, Simulator, Emulator, and real-device behavior."
     },
     "design_moves": {
       "passed": true,
       "earned": 15,
-      "note": "Provides eight concrete moves spanning adaptive layouts, native navigation, target sizes, scalable type, platform controls, semantic tokens, accessible motion, width-aware navigation, and parity."
+      "note": "Provides eight concrete native/adaptive moves covering platform navigation, task persistence, adaptive layout, native controls and icons, accessible targets, scalable type, semantic themes, and reduced-motion behavior."
     },
     "scope_control": {
       "passed": true,
       "earned": 10,
-      "note": "Uses 112 logical lines, exactly five blockers and eight moves, and stays within native UI conformance and decisive source, build, Simulator, Emulator, and real-device validation."
+      "note": "Stays read-only and limited to the supplied adaptive screen, with explicit iOS and Android contracts plus a minimal source, build, simulator, emulator, and device validation plan."
     }
   }
 }

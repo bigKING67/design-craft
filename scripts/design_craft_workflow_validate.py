@@ -44,6 +44,51 @@ def workflow_job_block(text: str, job_name: str) -> str:
     return text[start_match.start() : end]
 
 
+def benchmark_artifact_contract_errors(
+    benchmark_workflow: str,
+    release_certify_workflow: str,
+) -> list[str]:
+    errors: list[str] = []
+    operational = workflow_job_block(benchmark_workflow, "operational-candidate")
+    errors.extend(
+        require_tokens(
+            operational,
+            (
+                '${RUNNER_TEMP}/operational-candidate/benchmark-result-full.json',
+                '${RUNNER_TEMP}/operational-candidate/dist/evidence/operational-95-candidate.json',
+                "OPERATIONAL_CANDIDATE_EVIDENCE=",
+                '${{ runner.temp }}/operational-candidate/benchmark-result-full.json',
+                '${{ runner.temp }}/operational-candidate/dist/evidence/operational-95-candidate.json',
+            ),
+            ".github/workflows/benchmark.yml operational-candidate staging",
+        )
+    )
+    for forbidden in (
+        "--output benchmark-result-smoke.json",
+        "--output benchmark-result-full.json",
+        "BENCHMARK_RESULT=benchmark-result-full.json",
+        "path: benchmark-result-smoke.json",
+        "path: benchmark-result-full.json",
+    ):
+        if forbidden in benchmark_workflow:
+            errors.append(
+                ".github/workflows/benchmark.yml must not write benchmark evidence "
+                f"into the source checkout: {forbidden}"
+            )
+    errors.extend(
+        require_tokens(
+            release_certify_workflow,
+            (
+                'BENCHMARK_RESULT=${RUNNER_TEMP}/benchmark/benchmark-result-full.json',
+                'test -f "${BENCHMARK_RESULT}"',
+                'test -f "${RUNNER_TEMP}/benchmark/dist/evidence/operational-95-candidate.json"',
+            ),
+            ".github/workflows/release-certify.yml benchmark artifact consumer",
+        )
+    )
+    return errors
+
+
 def validate() -> dict:
     errors: list[str] = []
     native_workflow_path = ROOT / ".github/workflows/native-runtime.yml"
@@ -63,6 +108,9 @@ def validate() -> dict:
     maturity_entrypoint_path = ROOT / "scripts/design_craft_maturity.py"
     git_attributes_path = ROOT / ".gitattributes"
     ios_fixture_path = ROOT / "evals/native-runtime/fixtures/ios/App.swift"
+    ios_observation_path = (
+        ROOT / "tools/design_craft/release/native_ios_observation.py"
+    )
 
     required_paths = (
         native_workflow_path,
@@ -82,6 +130,7 @@ def validate() -> dict:
         maturity_entrypoint_path,
         git_attributes_path,
         ios_fixture_path,
+        ios_observation_path,
     )
     for path in required_paths:
         if not path.is_file():
@@ -105,6 +154,7 @@ def validate() -> dict:
     maturity_validator = maturity_validator_path.read_text(encoding="utf-8")
     git_attributes = git_attributes_path.read_text(encoding="utf-8")
     ios_fixture = ios_fixture_path.read_text(encoding="utf-8")
+    ios_observation = ios_observation_path.read_text(encoding="utf-8")
 
     errors.extend(
         require_tokens(
@@ -155,6 +205,8 @@ def validate() -> dict:
                 "--scale full",
                 "benchmark-result-smoke.json",
                 "benchmark-result-full.json",
+                '${RUNNER_TEMP}/benchmark-result-smoke.json',
+                '${RUNNER_TEMP}/benchmark-result-full.json',
                 "release-readiness-operational",
                 "DESIGN_CRAFT_NATIVE_EVIDENCE_ROOT",
                 "v0.5.1-linux-x86_64-python3.13.json",
@@ -201,7 +253,7 @@ def validate() -> dict:
                 "release-readiness-operational",
                 "DESIGN_CRAFT_NATIVE_EVIDENCE_ROOT",
                 "Run immutable full benchmark",
-                "BENCHMARK_RESULT=benchmark-result-full.json",
+                "OPERATIONAL_CANDIDATE_EVIDENCE=",
                 "operational-candidate-${{ github.run_id }}",
                 "operational-95-candidate.json",
                 "if: always()",
@@ -213,6 +265,12 @@ def validate() -> dict:
         errors.append(
             ".github/workflows/benchmark.yml operational-candidate must run the full benchmark exactly once"
         )
+    errors.extend(
+        benchmark_artifact_contract_errors(
+            benchmark_workflow,
+            release_certify_workflow,
+        )
+    )
     errors.extend(
         require_tokens(
             codeql_workflow,
@@ -446,11 +504,15 @@ def validate() -> dict:
                 "launch_log=",
                 "simulator-selection.txt",
                 "runtime-events.txt",
+                "runtime-poll-observations.jsonl",
+                "native_ios_observation",
+                "marker_visibility_grace",
+                "openurl-${phase}-exit.txt",
+                "attempt=${live_attempt}",
                 "open-confirmation.png",
                 'tap --label "Open"',
                 "confirmation_tap_point",
                 "coordinate-tap.log",
-                "url-received:designcraft-evidence:",
                 "26a64009c09a3ae980b1f1b4b377bd2a2dd96cbbde24821935e47352cb71cc69",
             ),
             "scripts/native_runtime_ci_ios.sh",
@@ -462,6 +524,29 @@ def validate() -> dict:
         errors.append("iOS fixture must log receipt of the real runtime URL")
     if "createDirectory" not in ios_fixture or "runtime-events.txt" not in ios_fixture:
         errors.append("iOS fixture must preserve observable URL and marker-write diagnostics")
+    for token in (
+        "Runtime interaction pending",
+        "interaction-confirmed:\\(attempt)",
+        "Runtime interaction confirmed attempt=\\(attempt)",
+    ):
+        if token not in ios_fixture:
+            errors.append(f"iOS fixture missing correlated marker contract: {token}")
+    if 'rm -f "${interaction_marker}"' in ios_runner:
+        errors.append("iOS runner must not delete the persistent interaction marker")
+    errors.extend(
+        require_tokens(
+            ios_observation,
+            (
+                "url_receipt",
+                "app_confirmation",
+                "marker_confirmed",
+                "fallback_allowed",
+                "openurl_nonzero_after_delivery",
+                "url-received:designcraft-evidence:",
+            ),
+            "tools/design_craft/release/native_ios_observation.py",
+        )
+    )
 
     errors.extend(
         require_tokens(

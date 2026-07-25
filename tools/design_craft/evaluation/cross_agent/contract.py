@@ -13,7 +13,9 @@ from ...repo import REPO_ROOT
 OBSERVED_SCHEMA_V2 = "design-craft.cross-agent-score.v2"
 OBSERVED_SCHEMA_V3 = "design-craft.cross-agent-score.v3"
 OBSERVED_SCHEMA_V4 = "design-craft.cross-agent-score.v4"
+OBSERVED_SCHEMA_V5 = "design-craft.cross-agent-score.v5"
 RUN_SCHEMA_V2 = "design-craft.cross-agent-run.v2"
+RUN_SCHEMA_V3 = "design-craft.cross-agent-run.v3"
 STATUS_SCHEMA = "design-craft.cross-agent-status.v1"
 HOSTS = ("codex", "pi", "cursor", "claude")
 HOST_STATES = {"observed", "pending", "unverified"}
@@ -57,6 +59,10 @@ CURRENT_SCORE_KEYS = {
     "repo_dirty",
     "release_state",
     "skill_tree_sha256",
+    "behavior_domain",
+    "behavior_sha256",
+    "behavior_source_dirty",
+    "projected_skill_tree_sha256",
     "skill_path",
     "provenance_skill_path",
     "command_summary",
@@ -83,7 +89,11 @@ CURRENT_RUN_KEYS = {
     "output_path",
     "output_sha256",
     "skill_path",
-    "skill_tree_sha256",
+    "source_skill_tree_sha256",
+    "behavior_domain",
+    "behavior_sha256",
+    "behavior_source_dirty",
+    "projected_skill_tree_sha256",
     "skill_install_mode",
     "workspace_kind",
     "cwd",
@@ -100,10 +110,12 @@ CROSS_AGENT_CONTRACT_FILES = (
     "scripts/design_craft_cross_agent_run.py",
     "scripts/design_craft_cross_agent_validate.py",
     "scripts/design_craft_evidence_common.py",
+    "tools/design_craft/evaluation/evidence_graph.py",
     "tools/design_craft/evaluation/cross_agent/contract.py",
     "tools/design_craft/evaluation/cross_agent/history.py",
     "contracts/evaluation/scorecard.schema.json",
     "contracts/evaluation/evidence-status.schema.json",
+    "contracts/evaluation/evidence-graph.schema.json",
     "contracts/evaluation/cross-agent-score.schema.json",
     "contracts/evaluation/cross-agent-run.schema.json",
     "adapters/codex/README.md",

@@ -2,6 +2,33 @@
 
 All notable local changes to `design-craft` are recorded here.
 
+## 0.5.6 - 2026-07-25
+
+- Preserve `v0.5.5` as a failed release-candidate record: tag-bound Native run
+  `30148003556` attempt 2 succeeded, but Operational candidate run
+  `30149383541` failed because its benchmark output dirtied the checkout and
+  Codex/Pi evidence still described the older `0.5.4` behavior source. No final
+  certification or GitHub Release was created, and the tag is not moved.
+- Add Evidence Graph v2 with explicit behavioral, performance, native-runtime,
+  and release domains. Cross-agent score v5/run v3 and comparative run/result
+  v4 now execute exact task/case Skill projections, retain full-tree forensic
+  provenance, and verify the domain fingerprint at both the recorded source
+  commit and the current checkout.
+- Keep old cross-agent score v2-v4/run v2 and comparative run/result v3 evidence
+  read-only; projection evidence must come from a real new host run rather than
+  transcribing an earlier full-tree result.
+- Separate comparative definition validation from observed-evidence admission,
+  so source gates can create the clean immutable commit required by projected
+  runners while Operational gates still require fresh run/result v4 evidence.
+- Stage smoke, full, and Operational-candidate benchmark outputs under
+  `RUNNER_TEMP`, preserve the final certification artifact layout, and add
+  negative workflow-contract tests that reject checkout-relative outputs.
+- Harden iOS Simulator evidence against host marker-visibility races: the app
+  creates a persistent pending marker, URL/app/marker receipts share one
+  attempt token, nonzero `simctl openurl` remains diagnostic after delivery,
+  marker grace blocks destructive fallback, and every poll is preserved in the
+  hash-bound launch log.
+
 ## 0.5.5 - 2026-07-25
 
 - Make release performance certification deterministic: the tag-bound

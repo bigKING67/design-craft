@@ -16,7 +16,8 @@ if str(ROOT) not in sys.path:
 
 from tools.design_craft.evaluation.cross_agent.contract import (
     OBSERVED_REQUIRED_CRITERIA,
-    OBSERVED_SCHEMA_V4,
+    OBSERVED_SCHEMA_V5,
+    RUN_SCHEMA_V3,
     cross_agent_contract_sha256,
     read_text,
     scorecard_weights,
@@ -27,6 +28,14 @@ from design_craft_cross_agent_validate import (
     validate_observed_score,
 )
 from design_craft_evidence_common import redacted_path, sha256_file, skill_provenance, tree_sha256
+from tools.design_craft.evaluation.evidence_graph import (
+    binding_domain,
+    domain_dirty,
+    domain_fingerprint,
+    git_domain_fingerprint,
+    git_projected_skill_tree_sha256,
+    projected_skill_tree_sha256,
+)
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
@@ -118,8 +127,8 @@ def main() -> int:
         run_manifest = json.loads(run_manifest_path.read_text(encoding="utf-8"))
     except json.JSONDecodeError as exc:
         parser.error(f"invalid run manifest JSON: {exc}")
-    if run_manifest.get("schema") != "design-craft.cross-agent-run.v2":
-        parser.error("run manifest must use design-craft.cross-agent-run.v2")
+    if run_manifest.get("schema") != RUN_SCHEMA_V3:
+        parser.error(f"run manifest must use {RUN_SCHEMA_V3}")
     if run_manifest.get("host") != args.agent:
         parser.error("run manifest host must match --agent")
     asserted_values = {
@@ -141,10 +150,37 @@ def main() -> int:
         parser.error("run manifest output hash must match the observed output")
     if run_manifest.get("output_path") != output.name:
         parser.error("run manifest output_path must match the observed output")
-    if run_manifest.get("skill_tree_sha256") != observed_tree:
-        parser.error("run manifest skill tree must match the observed/provenance tree")
-    if run_manifest.get("skill_install_mode") != "isolated_project_copy":
-        parser.error("run manifest must use an isolated project skill copy")
+    if run_manifest.get("source_skill_tree_sha256") != observed_tree:
+        parser.error("run manifest source tree must match the provenance skill tree")
+    behavior_domain = binding_domain("cross_agent", task_dir.name, root=ROOT)
+    behavior_sha256 = domain_fingerprint(ROOT, behavior_domain)
+    projected_tree = projected_skill_tree_sha256(
+        ROOT, canonical_skill_root, behavior_domain
+    )
+    if domain_dirty(ROOT, behavior_domain):
+        parser.error(f"refusing to record dirty behavior domain {behavior_domain}")
+    if run_manifest.get("behavior_domain") != behavior_domain:
+        parser.error("run manifest behavior domain must match the task binding")
+    if run_manifest.get("behavior_sha256") != behavior_sha256:
+        parser.error("run manifest behavior hash must match the current domain projection")
+    if run_manifest.get("behavior_source_dirty") is not False:
+        parser.error("run manifest behavior source must be clean")
+    if run_manifest.get("projected_skill_tree_sha256") != projected_tree:
+        parser.error("run manifest projected tree must match the current domain projection")
+    source_commit = str(provenance.get("skill_source_commit", ""))
+    try:
+        committed_behavior = git_domain_fingerprint(
+            ROOT, behavior_domain, source_commit
+        )
+        committed_projection = git_projected_skill_tree_sha256(
+            ROOT, canonical_skill_root, behavior_domain, source_commit
+        )
+    except (OSError, ValueError) as exc:
+        parser.error(f"cannot bind behavior domain to source commit: {exc}")
+    if committed_behavior != behavior_sha256 or committed_projection != projected_tree:
+        parser.error("behavior domain does not match the recorded source commit")
+    if run_manifest.get("skill_install_mode") != "isolated_domain_projection":
+        parser.error("run manifest must use an isolated behavior-domain projection")
     if run_manifest.get("workspace_kind") != "repo_external_isolated_project":
         parser.error("run manifest workspace must be repo-external and isolated")
     if run_manifest.get("returncode") != 0 or run_manifest.get("worktree_unchanged") is not True:
@@ -201,7 +237,7 @@ def main() -> int:
         parser.error("run manifest must be stored inside the task directory")
 
     payload = {
-        "schema": OBSERVED_SCHEMA_V4,
+        "schema": OBSERVED_SCHEMA_V5,
         "task_id": task_dir.name,
         "agent": args.agent,
         "verified": True,
@@ -218,6 +254,10 @@ def main() -> int:
         "run_manifest_path": run_manifest_relative,
         "run_manifest_sha256": sha256_file(run_manifest_path),
         **provenance,
+        "behavior_domain": behavior_domain,
+        "behavior_sha256": behavior_sha256,
+        "behavior_source_dirty": False,
+        "projected_skill_tree_sha256": projected_tree,
         "skill_path": run_manifest["skill_path"],
         "provenance_skill_path": provenance_skill_path,
         "command_summary": run_manifest["command"],

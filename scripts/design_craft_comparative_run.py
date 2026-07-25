@@ -26,6 +26,8 @@ from design_craft_comparative_common import (
 )
 from design_craft_evidence_common import (
     command_version,
+    git_dirty,
+    git_head,
     publish_files,
     tree_sha256,
     worktree_fingerprint,
@@ -33,6 +35,17 @@ from design_craft_evidence_common import (
 
 
 ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
+from tools.design_craft.evaluation.evidence_graph import (
+    binding_domain,
+    domain_dirty,
+    domain_fingerprint,
+    project_skill_domain,
+    projected_skill_tree_sha256,
+)
+
 READ_ONLY_TOOLS = "read,grep,find,ls"
 
 
@@ -53,10 +66,18 @@ def load_variants(case_dir: Path) -> dict:
 
 
 def install_variant_skills(
-    variant: dict, workspace: Path
-) -> tuple[list[Path], dict[str, str], dict[str, str]]:
+    variant: dict, workspace: Path, *, behavior_domain: str
+) -> tuple[
+    list[Path],
+    dict[str, str],
+    dict[str, str],
+    dict[str, dict[str, object]],
+    dict[str, str],
+]:
     installed: list[Path] = []
-    trees: dict[str, str] = {}
+    installed_trees: dict[str, str] = {}
+    source_trees: dict[str, str] = {}
+    source_fingerprints: dict[str, dict[str, object]] = {}
     public_paths: dict[str, str] = {}
     for index, raw_relative in enumerate(variant.get("skill_paths", []), start=1):
         relative = str(raw_relative)
@@ -65,14 +86,37 @@ def install_variant_skills(
             raise FileNotFoundError(f"variant {variant.get('id')} skill is missing: {source}")
         destination = workspace / ".pi/skills" / f"{index:02d}-{source.name}"
         destination.parent.mkdir(parents=True, exist_ok=True)
-        shutil.copytree(source, destination, symlinks=False)
         source_tree = tree_sha256(source)
-        if tree_sha256(destination) != source_tree:
-            raise RuntimeError(f"isolated comparative skill copy does not match {relative}")
+        source_trees[relative] = source_tree
+        if relative == "skills/design-craft":
+            project_skill_domain(ROOT, source, behavior_domain, destination)
+            installed_tree = projected_skill_tree_sha256(
+                ROOT, source, behavior_domain
+            )
+            source_fingerprints[relative] = {
+                "kind": "evidence_domain",
+                "domain": behavior_domain,
+                "sha256": domain_fingerprint(ROOT, behavior_domain),
+                "source_dirty": domain_dirty(ROOT, behavior_domain),
+                "projected_tree_sha256": installed_tree,
+            }
+        else:
+            shutil.copytree(source, destination, symlinks=False)
+            installed_tree = source_tree
+            source_fingerprints[relative] = {
+                "kind": "tree",
+                "sha256": source_tree,
+                "source_dirty": git_dirty(ROOT, source),
+                "projected_tree_sha256": installed_tree,
+            }
+        if tree_sha256(destination) != installed_tree:
+            raise RuntimeError(
+                f"isolated comparative skill projection does not match {relative}"
+            )
         installed.append(destination)
-        trees[relative] = source_tree
+        installed_trees[relative] = installed_tree
         public_paths[relative] = f"$VARIANT_WORKSPACE/{destination.relative_to(workspace).as_posix()}"
-    return installed, trees, public_paths
+    return installed, installed_trees, source_trees, source_fingerprints, public_paths
 
 
 def public_command(command: list[str], workspace: Path, installed: list[Path]) -> str:
@@ -117,12 +161,19 @@ def command_for(
 def run_self_check() -> None:
     case_dir = ROOT / "evals/comparative/emil-motion-ablation"
     variants = load_variants(case_dir)
+    behavior_domain = binding_domain("comparative", case_dir.name, root=ROOT)
     with tempfile.TemporaryDirectory(prefix="design-craft-comparative-run-check-") as raw:
         root = Path(raw)
         for item in variants["variants"]:
             workspace = root / str(item["id"])
             workspace.mkdir()
-            installed, trees, public_paths = install_variant_skills(item, workspace)
+            installed, trees, source_trees, fingerprints, public_paths = (
+                install_variant_skills(
+                    item,
+                    workspace,
+                    behavior_domain=behavior_domain,
+                )
+            )
             command = command_for(model="fixture", thinking="low", installed_skills=installed)
             if "--tools" not in command or READ_ONLY_TOOLS not in command:
                 raise RuntimeError("comparative runner must expose only the read-only skill tools")
@@ -131,7 +182,12 @@ def run_self_check() -> None:
             redacted = public_command(command, workspace, installed)
             if str(root) in redacted or str(Path.home()) in redacted:
                 raise RuntimeError("comparative command leaked a local path")
-            if set(trees) != set(public_paths):
+            if not (
+                set(trees)
+                == set(source_trees)
+                == set(fingerprints)
+                == set(public_paths)
+            ):
                 raise RuntimeError("comparative isolated skill metadata is incomplete")
         output = root / "output.md"
         manifest = root / "run.json"
@@ -182,6 +238,8 @@ def main() -> int:
             parser.error("refusing to overwrite comparative evidence: " + ", ".join(existing))
 
     prompt = prompt_path.read_text(encoding="utf-8")
+    behavior_domain = binding_domain("comparative", case_dir.name, root=ROOT)
+    source_commit = git_head(ROOT)
     before = worktree_fingerprint(ROOT)
     generated: dict[Path, bytes] = {}
     results: list[dict] = []
@@ -194,8 +252,16 @@ def main() -> int:
             workspace = temp_root / variant_id / "workspace"
             workspace.mkdir(parents=True)
             try:
-                installed, skill_trees, installed_paths = install_variant_skills(
-                    variant, workspace
+                (
+                    installed,
+                    skill_trees,
+                    source_trees,
+                    source_fingerprints,
+                    installed_paths,
+                ) = install_variant_skills(
+                    variant,
+                    workspace,
+                    behavior_domain=behavior_domain,
                 )
             except (OSError, RuntimeError, FileNotFoundError) as exc:
                 parser.error(str(exc))
@@ -212,7 +278,10 @@ def main() -> int:
                         "variant": variant_id,
                         "command": redacted_command,
                         "cwd": "$VARIANT_WORKSPACE",
+                        "source_commit": source_commit,
                         "skill_trees": skill_trees,
+                        "source_trees": source_trees,
+                        "source_fingerprints": source_fingerprints,
                         "installed_skill_paths": installed_paths,
                     }
                 )
@@ -225,6 +294,16 @@ def main() -> int:
                 flush=True,
             )
             started_at = datetime.now(timezone.utc)
+            dirty_sources = [
+                relative
+                for relative, item in source_fingerprints.items()
+                if item.get("source_dirty") is not False
+            ]
+            if dirty_sources:
+                parser.error(
+                    "refusing to run current comparative evidence from dirty sources: "
+                    + ", ".join(dirty_sources)
+                )
             started = time.monotonic()
             try:
                 run = subprocess.run(
@@ -262,6 +341,7 @@ def main() -> int:
                 "thinking": args.thinking,
                 "thinking_observation": "requested_by_cli",
                 "runner_os": platform.platform(),
+                "source_commit": source_commit,
                 "started_at": started_at.strftime("%Y-%m-%dT%H:%M:%SZ"),
                 "duration_seconds": round(time.monotonic() - started, 3),
                 "timeout_seconds": args.timeout,
@@ -269,8 +349,10 @@ def main() -> int:
                 "output_path": output_path.name,
                 "output_sha256": sha256_bytes(output_bytes),
                 "skill_trees": skill_trees,
+                "source_trees": source_trees,
+                "source_fingerprints": source_fingerprints,
                 "installed_skill_paths": installed_paths,
-                "skill_install_mode": "isolated_project_copy",
+                "skill_install_mode": "isolated_case_projection",
                 "workspace_kind": "repo_external_isolated_project",
                 "cwd": "$VARIANT_WORKSPACE",
                 "command": redacted_command,

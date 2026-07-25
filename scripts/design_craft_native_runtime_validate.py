@@ -31,6 +31,11 @@ EVIDENCE_SCHEMA_V2 = "design-craft.native-runtime-evidence.v2"
 EVIDENCE_SCHEMA = "design-craft.native-runtime-evidence.v3"
 VALIDATION_SCHEMA = "design-craft.native-runtime-validation.v1"
 ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
+from tools.design_craft.release.native_ios_observation import validate_success_log
+
 DEFAULT_SKILL_ROOT = ROOT / "skills/design-craft"
 DEFAULT_FIXTURE_ROOT = ROOT / "evals/native-runtime/fixtures"
 PLATFORM_FILES = {
@@ -117,6 +122,7 @@ NATIVE_CONTRACT_FILES = {
         "scripts/design_craft_native_runtime_record.py",
         "scripts/design_craft_native_runtime_validate.py",
         "scripts/native_runtime_ci_ios.sh",
+        "tools/design_craft/release/native_ios_observation.py",
         ".github/workflows/native-runtime.yml",
     ),
     "android": (
@@ -355,6 +361,7 @@ def validate_evidence(
         if not all(value is True for value in assertions.values()):
             errors.append(f"{path}: every recorded runtime assertion must pass")
     artifacts = payload.get("artifacts")
+    artifact_paths: dict[str, Path] = {}
     if not isinstance(artifacts, list) or not artifacts:
         errors.append(f"{path}: at least one runtime artifact is required")
     else:
@@ -394,6 +401,7 @@ def validate_evidence(
             if not artifact_path.is_file():
                 errors.append(f"{path}: artifact {index} file is missing: {artifact_path}")
                 continue
+            artifact_paths[role] = artifact_path
             observed_bytes = artifact_path.stat().st_size
             if isinstance(expected_bytes, int) and observed_bytes != expected_bytes:
                 errors.append(
@@ -436,6 +444,15 @@ def validate_evidence(
             errors.append(
                 f"{path}: contract_sha256 must match the current {expected_platform} runtime contract"
             )
+        if expected_platform == "ios":
+            marker_path = artifact_paths.get("interaction_marker")
+            launch_path = artifact_paths.get("launch_log")
+            if marker_path is not None and launch_path is not None:
+                log_errors = validate_success_log(
+                    launch_path.read_text(encoding="utf-8", errors="replace"),
+                    marker_path.read_text(encoding="utf-8", errors="replace"),
+                )
+                errors.extend(f"{path}: {error}" for error in log_errors)
         if runtime_kind in {"ios_simulator", "android_emulator"}:
             if not isinstance(workflow, dict):
                 errors.append(
@@ -535,10 +552,43 @@ def run_self_check() -> list[str]:
         after_path = root / "after.png"
         marker_path = root / "runtime-interaction.txt"
         launch_path = root / "launch.txt"
+        attempt = "live-self-check-1"
         before_path.write_bytes(PNG_SIGNATURE + b"before")
         after_path.write_bytes(PNG_SIGNATURE + b"after")
-        marker_path.write_text("Runtime interaction confirmed\n", encoding="utf-8")
-        launch_path.write_text("fixture launched\n", encoding="utf-8")
+        marker_path.write_text(
+            f"Runtime interaction confirmed attempt={attempt}\n",
+            encoding="utf-8",
+        )
+        launch_path.write_text(
+            "\n".join(
+                (
+                    "[poll observations]",
+                    json.dumps(
+                        {
+                            "schema": "design-craft.native-ios-poll.v1",
+                            "phase": "live",
+                            "attempt": attempt,
+                            "poll": 1,
+                            "openurl_exit": 0,
+                            "url_receipt": True,
+                            "app_confirmation": True,
+                            "marker_exists": True,
+                            "marker_state": "confirmed",
+                            "marker_confirmed": True,
+                            "decision": "fully_confirmed",
+                            "fallback_allowed": False,
+                            "transport_warning": None,
+                        },
+                        sort_keys=True,
+                        separators=(",", ":"),
+                    ),
+                    "[system confirmation action] not-attempted",
+                    "[confirmed interaction path] live-deep-link",
+                    "",
+                )
+            ),
+            encoding="utf-8",
+        )
 
         def artifact(role: str, artifact_path: Path) -> dict[str, object]:
             return {

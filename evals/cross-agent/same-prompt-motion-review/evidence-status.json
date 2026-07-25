@@ -4,19 +4,19 @@
   "hosts": {
     "codex": {
       "status": "observed",
-      "reason": "Current-source v4 score and run manifest recorded from final clean v0.5.4 source commit 0239d83 and skill tree 0aacdc6."
+      "reason": "Current-source score-v5/run-v3 recorded from clean source commit 199277d for behavior domain skill-motion-review and projection ccb3d1f2059d."
     },
     "pi": {
       "status": "observed",
-      "reason": "Current-source v4 score and run manifest recorded from final clean v0.5.4 source commit 0239d83 and skill tree 0aacdc6."
+      "reason": "Current-source score-v5/run-v3 recorded from clean source commit 199277d for behavior domain skill-motion-review and projection ccb3d1f2059d."
     },
     "cursor": {
       "status": "pending",
-      "reason": "This active definition has not yet admitted a current-source v4 run."
+      "reason": "Current active definition has not admitted a current-source score-v5/run-v3 projection run."
     },
     "claude": {
       "status": "pending",
-      "reason": "This active definition has not yet admitted a current-source v4 run."
+      "reason": "Current active definition has not admitted a current-source score-v5/run-v3 projection run."
     }
   }
 }

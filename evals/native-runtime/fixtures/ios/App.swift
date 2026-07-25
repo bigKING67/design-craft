@@ -11,31 +11,57 @@ private enum RuntimeInteraction {
               url.host == "confirm" || pathTarget == "confirm" else {
             return false
         }
-        return confirm(statusLabel: statusLabel)
+        let attempt = URLComponents(url: url, resolvingAgainstBaseURL: false)?
+            .queryItems?
+            .first(where: { $0.name == "attempt" })?
+            .value ?? "missing-attempt"
+        return confirm(statusLabel: statusLabel, attempt: attempt)
     }
 
     static func recordLaunch() {
+        writePendingMarker()
         recordEvent("launched")
     }
 
-    static func confirm(statusLabel: UILabel? = nil) -> Bool {
-        statusLabel?.text = "Runtime interaction confirmed"
+    static func confirm(
+        statusLabel: UILabel? = nil,
+        attempt: String = "manual"
+    ) -> Bool {
         guard let documents = documentsDirectory() else {
             return false
         }
         do {
-            try "Runtime interaction confirmed\n".write(
+            try "Runtime interaction confirmed attempt=\(attempt)\n".write(
                 to: documents.appendingPathComponent("runtime-interaction.txt"),
                 atomically: true,
                 encoding: .utf8
             )
-            recordEvent("interaction-confirmed")
-            NSLog("DESIGN_CRAFT_RUNTIME_INTERACTION_CONFIRMED")
+            recordEvent("interaction-confirmed:\(attempt)")
+            statusLabel?.text = "Runtime interaction confirmed"
+            NSLog("DESIGN_CRAFT_RUNTIME_INTERACTION_CONFIRMED:%@", attempt)
             return true
         } catch {
             recordEvent("interaction-failed:\(error)")
             NSLog("DESIGN_CRAFT_RUNTIME_INTERACTION_FAILED:%@", String(describing: error))
             return false
+        }
+    }
+
+    private static func writePendingMarker() {
+        guard let documents = documentsDirectory() else {
+            return
+        }
+        do {
+            try "Runtime interaction pending\n".write(
+                to: documents.appendingPathComponent("runtime-interaction.txt"),
+                atomically: true,
+                encoding: .utf8
+            )
+        } catch {
+            NSLog(
+                "DESIGN_CRAFT_RUNTIME_PENDING_MARKER_FAILED:%@",
+                String(describing: error)
+            )
         }
     }
 

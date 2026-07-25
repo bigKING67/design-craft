@@ -14,6 +14,10 @@ before the scorecard JSON and score-v4 contracts were introduced. `v0.5.0/`
 preserves the score-v4/run-v2 Codex and Pi tranche admitted by the `v0.5.0`
 Operational 95 release. Validate all archived tranches separately with:
 
+`v0.5.4/` preserves the final score-v4/run-v2 Codex and Pi tranche collected
+against the `0.5.4` behavior source. It is archived before the Evidence Graph
+v2 projection transition and cannot be relabeled as score-v5 evidence.
+
 ```bash
 python3 scripts/design_craft_cross_agent_validate.py \
   --history-root evals/cross-agent/history

@@ -34,7 +34,9 @@ from tools.design_craft.evaluation.cross_agent.contract import (
     OBSERVED_SCHEMA_V2,
     OBSERVED_SCHEMA_V3,
     OBSERVED_SCHEMA_V4,
+    OBSERVED_SCHEMA_V5,
     RUN_SCHEMA_V2,
+    RUN_SCHEMA_V3,
     STATUS_SCHEMA,
     cross_agent_contract_sha256,
     load_evidence_status,
@@ -48,6 +50,14 @@ from tools.design_craft.evaluation.cross_agent.contract import (
 from tools.design_craft.evaluation.cross_agent.history import (
     historical_scorecard_weights as historical_markdown_scorecard_weights,
     validate_historical_task_definition as validate_historical_task_dir,
+)
+from tools.design_craft.evaluation.evidence_graph import (
+    binding_domain,
+    domain_dirty,
+    domain_fingerprint,
+    git_domain_fingerprint,
+    git_projected_skill_tree_sha256,
+    projected_skill_tree_sha256,
 )
 
 
@@ -71,13 +81,18 @@ def validate_observed_score(
         return [f"{path}: invalid JSON: {exc}"]
 
     schema = payload.get("schema")
-    if schema not in {OBSERVED_SCHEMA_V2, OBSERVED_SCHEMA_V3, OBSERVED_SCHEMA_V4}:
+    if schema not in {
+        OBSERVED_SCHEMA_V2,
+        OBSERVED_SCHEMA_V3,
+        OBSERVED_SCHEMA_V4,
+        OBSERVED_SCHEMA_V5,
+    }:
         errors.append(
-            f"{path}: schema must be historical v2/v3 or current {OBSERVED_SCHEMA_V4}"
+            f"{path}: schema must be historical v2/v3/v4 or current {OBSERVED_SCHEMA_V5}"
         )
-    if require_current_schema and schema != OBSERVED_SCHEMA_V4:
-        errors.append(f"{path}: current evidence must use {OBSERVED_SCHEMA_V4}")
-    if schema == OBSERVED_SCHEMA_V4 and set(payload) != CURRENT_SCORE_KEYS:
+    if require_current_schema and schema != OBSERVED_SCHEMA_V5:
+        errors.append(f"{path}: current evidence must use {OBSERVED_SCHEMA_V5}")
+    if schema == OBSERVED_SCHEMA_V5 and set(payload) != CURRENT_SCORE_KEYS:
         errors.append(
             f"{path}: current score fields mismatch "
             f"missing={sorted(CURRENT_SCORE_KEYS - set(payload))} "
@@ -101,11 +116,16 @@ def validate_observed_score(
     if not isinstance(score, int) or isinstance(score, bool) or not 0 <= score <= 100:
         errors.append(f"{path}: score must be an integer from 0 to 100")
 
-    if schema in {OBSERVED_SCHEMA_V2, OBSERVED_SCHEMA_V3, OBSERVED_SCHEMA_V4}:
+    if schema in {
+        OBSERVED_SCHEMA_V2,
+        OBSERVED_SCHEMA_V3,
+        OBSERVED_SCHEMA_V4,
+        OBSERVED_SCHEMA_V5,
+    }:
         for key in ("model", "reasoning_profile", "runner_os", "skill_version"):
             if not isinstance(payload.get(key), str) or not payload[key].strip():
                 errors.append(f"{path}: {key} must be a non-empty string")
-        if schema in {OBSERVED_SCHEMA_V3, OBSERVED_SCHEMA_V4}:
+        if schema in {OBSERVED_SCHEMA_V3, OBSERVED_SCHEMA_V4, OBSERVED_SCHEMA_V5}:
             for key in (
                 "model_observation",
                 "reasoning_observation",
@@ -123,9 +143,15 @@ def validate_observed_score(
         if "repo_dirty" in payload and not isinstance(payload.get("repo_dirty"), bool):
             errors.append(f"{path}: repo_dirty must be boolean when present")
         digest_keys = ["skill_tree_sha256", "output_sha256"]
-        digest_keys.append("scorecard_json_sha256" if schema == OBSERVED_SCHEMA_V4 else "scorecard_sha256")
-        if schema in {OBSERVED_SCHEMA_V3, OBSERVED_SCHEMA_V4}:
+        digest_keys.append(
+            "scorecard_json_sha256"
+            if schema in {OBSERVED_SCHEMA_V4, OBSERVED_SCHEMA_V5}
+            else "scorecard_sha256"
+        )
+        if schema in {OBSERVED_SCHEMA_V3, OBSERVED_SCHEMA_V4, OBSERVED_SCHEMA_V5}:
             digest_keys.extend(("contract_sha256", "run_manifest_sha256"))
+        if schema == OBSERVED_SCHEMA_V5:
+            digest_keys.extend(("behavior_sha256", "projected_skill_tree_sha256"))
         for key in digest_keys:
             if not re.fullmatch(r"[0-9a-f]{64}", str(payload.get(key, ""))):
                 errors.append(f"{path}: {key} must be 64 lowercase hex characters")
@@ -146,12 +172,20 @@ def validate_observed_score(
                 elif payload.get("output_sha256") != sha256_file(output_path):
                     errors.append(f"{path}: output_sha256 must match {output_path.name}")
 
-        scorecard_path = task_dir / ("scorecard.json" if schema == OBSERVED_SCHEMA_V4 else "scorecard.md")
-        scorecard_digest_key = "scorecard_json_sha256" if schema == OBSERVED_SCHEMA_V4 else "scorecard_sha256"
+        scorecard_path = task_dir / (
+            "scorecard.json"
+            if schema in {OBSERVED_SCHEMA_V4, OBSERVED_SCHEMA_V5}
+            else "scorecard.md"
+        )
+        scorecard_digest_key = (
+            "scorecard_json_sha256"
+            if schema in {OBSERVED_SCHEMA_V4, OBSERVED_SCHEMA_V5}
+            else "scorecard_sha256"
+        )
         if scorecard_path.is_file() and payload.get(scorecard_digest_key) != sha256_file(scorecard_path):
             errors.append(f"{path}: {scorecard_digest_key} must match {scorecard_path.name}")
 
-        if schema in {OBSERVED_SCHEMA_V3, OBSERVED_SCHEMA_V4}:
+        if schema in {OBSERVED_SCHEMA_V3, OBSERVED_SCHEMA_V4, OBSERVED_SCHEMA_V5}:
             run_manifest_value = payload.get("run_manifest_path")
             if not isinstance(run_manifest_value, str) or not run_manifest_value.strip():
                 errors.append(f"{path}: run_manifest_path must be a non-empty relative path")
@@ -170,15 +204,18 @@ def validate_observed_score(
                     except json.JSONDecodeError as exc:
                         errors.append(f"{run_path}: invalid run manifest: {exc}")
                     else:
-                        if schema == OBSERVED_SCHEMA_V4 and set(run_payload) != CURRENT_RUN_KEYS:
+                        if schema == OBSERVED_SCHEMA_V5 and set(run_payload) != CURRENT_RUN_KEYS:
                             errors.append(
                                 f"{run_path}: current run fields mismatch "
                                 f"missing={sorted(CURRENT_RUN_KEYS - set(run_payload))} "
                                 f"extra={sorted(set(run_payload) - CURRENT_RUN_KEYS)}"
                             )
-                        if run_payload.get("schema") != RUN_SCHEMA_V2:
+                        expected_run_schema = (
+                            RUN_SCHEMA_V3 if schema == OBSERVED_SCHEMA_V5 else RUN_SCHEMA_V2
+                        )
+                        if run_payload.get("schema") != expected_run_schema:
                             errors.append(
-                                f"{run_path}: run manifest schema must be {RUN_SCHEMA_V2}"
+                                f"{run_path}: run manifest schema must be {expected_run_schema}"
                             )
                         if run_payload.get("host") != host:
                             errors.append(f"{run_path}: host must be {host}")
@@ -188,7 +225,7 @@ def validate_observed_score(
                             errors.append(f"{run_path}: output_sha256 must match the score artifact")
                         if run_payload.get("worktree_unchanged") is not True:
                             errors.append(f"{run_path}: worktree_unchanged must be true")
-                        if schema in {OBSERVED_SCHEMA_V3, OBSERVED_SCHEMA_V4}:
+                        if schema in {OBSERVED_SCHEMA_V3, OBSERVED_SCHEMA_V4, OBSERVED_SCHEMA_V5}:
                             run_score_pairs = {
                                 "host_version": "agent_version",
                                 "model": "model",
@@ -197,17 +234,33 @@ def validate_observed_score(
                                 "reasoning_observation": "reasoning_observation",
                                 "runner_os": "runner_os",
                                 "skill_path": "skill_path",
-                                "skill_tree_sha256": "skill_tree_sha256",
                                 "command": "command_summary",
                             }
+                            if schema == OBSERVED_SCHEMA_V5:
+                                run_score_pairs.update(
+                                    {
+                                        "source_skill_tree_sha256": "skill_tree_sha256",
+                                        "behavior_domain": "behavior_domain",
+                                        "behavior_sha256": "behavior_sha256",
+                                        "behavior_source_dirty": "behavior_source_dirty",
+                                        "projected_skill_tree_sha256": "projected_skill_tree_sha256",
+                                    }
+                                )
+                            else:
+                                run_score_pairs["skill_tree_sha256"] = "skill_tree_sha256"
                             for run_key, score_key in run_score_pairs.items():
                                 if run_payload.get(run_key) != payload.get(score_key):
                                     errors.append(
                                         f"{run_path}: {run_key} must match score field {score_key}"
                                     )
-                            if run_payload.get("skill_install_mode") != "isolated_project_copy":
+                            expected_install_mode = (
+                                "isolated_domain_projection"
+                                if schema == OBSERVED_SCHEMA_V5
+                                else "isolated_project_copy"
+                            )
+                            if run_payload.get("skill_install_mode") != expected_install_mode:
                                 errors.append(
-                                    f"{run_path}: skill_install_mode must be isolated_project_copy"
+                                    f"{run_path}: skill_install_mode must be {expected_install_mode}"
                                 )
                             if run_payload.get("workspace_kind") != "repo_external_isolated_project":
                                 errors.append(
@@ -235,21 +288,59 @@ def validate_observed_score(
                                 ):
                                     errors.append(f"{run_path}: {key} must redact local user paths")
 
+        if schema == OBSERVED_SCHEMA_V5:
+            behavior_domain = payload.get("behavior_domain")
+            if not isinstance(behavior_domain, str) or not behavior_domain:
+                errors.append(f"{path}: behavior_domain must be a non-empty string")
+            if payload.get("behavior_source_dirty") is not False:
+                errors.append(f"{path}: behavior_source_dirty must be false")
+
         if require_current_source:
-            current_version = read_version(skill_root)
-            current_tree = tree_sha256(skill_root)
-            if payload.get("skill_version") != current_version:
-                errors.append(
-                    f"{path}: skill_version must match current skill version {current_version}"
-                )
-            if payload.get("skill_tree_sha256") != current_tree:
-                errors.append(f"{path}: skill_tree_sha256 must match the current skill tree")
-            if schema in {OBSERVED_SCHEMA_V3, OBSERVED_SCHEMA_V4} and payload.get("contract_sha256") != cross_agent_contract_sha256():
+            if schema in {OBSERVED_SCHEMA_V3, OBSERVED_SCHEMA_V4, OBSERVED_SCHEMA_V5} and payload.get("contract_sha256") != cross_agent_contract_sha256():
                 errors.append(
                     f"{path}: contract_sha256 must match the current cross-agent contract"
                 )
             if source_dirty is not False:
                 errors.append(f"{path}: certified evidence must record skill_source_dirty=false")
+            if schema == OBSERVED_SCHEMA_V5:
+                try:
+                    expected_domain = binding_domain(
+                        "cross_agent", task_dir.name, root=ROOT
+                    )
+                    expected_behavior = domain_fingerprint(ROOT, expected_domain)
+                    expected_projection = projected_skill_tree_sha256(
+                        ROOT, skill_root, expected_domain
+                    )
+                except (OSError, ValueError) as exc:
+                    errors.append(f"{path}: cannot resolve current behavior domain: {exc}")
+                else:
+                    if payload.get("behavior_domain") != expected_domain:
+                        errors.append(
+                            f"{path}: behavior_domain must match current task domain {expected_domain}"
+                        )
+                    if payload.get("behavior_sha256") != expected_behavior:
+                        errors.append(
+                            f"{path}: behavior_sha256 must match the current domain projection"
+                        )
+                    if payload.get("projected_skill_tree_sha256") != expected_projection:
+                        errors.append(
+                            f"{path}: projected_skill_tree_sha256 must match the current projection"
+                        )
+                    if domain_dirty(ROOT, expected_domain):
+                        errors.append(
+                            f"{path}: current behavior domain {expected_domain} is dirty"
+                        )
+            else:
+                current_version = read_version(skill_root)
+                current_tree = tree_sha256(skill_root)
+                if payload.get("skill_version") != current_version:
+                    errors.append(
+                        f"{path}: skill_version must match current skill version {current_version}"
+                    )
+                if payload.get("skill_tree_sha256") != current_tree:
+                    errors.append(
+                        f"{path}: skill_tree_sha256 must match the current skill tree"
+                    )
             if re.fullmatch(r"[0-9a-f]{40}", source_commit):
                 try:
                     repository = git_root(skill_root)
@@ -260,6 +351,35 @@ def validate_observed_score(
                         errors.append(
                             f"{path}: skill_source_commit must be an ancestor of current HEAD"
                         )
+                    elif schema == OBSERVED_SCHEMA_V5:
+                        try:
+                            committed_behavior = git_domain_fingerprint(
+                                repository,
+                                str(payload.get("behavior_domain", "")),
+                                source_commit,
+                            )
+                            committed_projection = git_projected_skill_tree_sha256(
+                                repository,
+                                skill_root,
+                                str(payload.get("behavior_domain", "")),
+                                source_commit,
+                            )
+                        except (OSError, ValueError) as exc:
+                            errors.append(
+                                f"{path}: cannot inspect behavior domain at skill_source_commit: {exc}"
+                            )
+                        else:
+                            if payload.get("behavior_sha256") != committed_behavior:
+                                errors.append(
+                                    f"{path}: skill_source_commit behavior must match behavior_sha256"
+                                )
+                            if (
+                                payload.get("projected_skill_tree_sha256")
+                                != committed_projection
+                            ):
+                                errors.append(
+                                    f"{path}: skill_source_commit projection must match projected_skill_tree_sha256"
+                                )
                     else:
                         try:
                             committed_tree = git_tree_sha256(
@@ -285,7 +405,7 @@ def validate_observed_score(
         errors.append(
             f"{path}: criteria must contain exactly {list(OBSERVED_REQUIRED_CRITERIA)}"
         )
-    if schema == OBSERVED_SCHEMA_V4:
+    if schema in {OBSERVED_SCHEMA_V4, OBSERVED_SCHEMA_V5}:
         weights = scorecard_weights(task_dir / "scorecard.json")
     elif schema in {OBSERVED_SCHEMA_V2, OBSERVED_SCHEMA_V3}:
         weights = historical_markdown_scorecard_weights(task_dir / "scorecard.md")
@@ -299,7 +419,12 @@ def validate_observed_score(
             continue
         expected_result_keys = (
             {"passed", "earned", "note"}
-            if schema in {OBSERVED_SCHEMA_V2, OBSERVED_SCHEMA_V3, OBSERVED_SCHEMA_V4}
+            if schema in {
+                OBSERVED_SCHEMA_V2,
+                OBSERVED_SCHEMA_V3,
+                OBSERVED_SCHEMA_V4,
+                OBSERVED_SCHEMA_V5,
+            }
             else {"passed", "note"}
         )
         if set(result) != expected_result_keys:
@@ -312,7 +437,12 @@ def validate_observed_score(
         note = result.get("note")
         if not isinstance(note, str) or len(note.strip()) < 8:
             errors.append(f"{path}: criteria.{criterion}.note must explain the result")
-        if schema in {OBSERVED_SCHEMA_V2, OBSERVED_SCHEMA_V3, OBSERVED_SCHEMA_V4}:
+        if schema in {
+            OBSERVED_SCHEMA_V2,
+            OBSERVED_SCHEMA_V3,
+            OBSERVED_SCHEMA_V4,
+            OBSERVED_SCHEMA_V5,
+        }:
             weight = weights.get(criterion)
             earned = result.get("earned")
             if weight is None:
@@ -331,7 +461,12 @@ def validate_observed_score(
                     errors.append(
                         f"{path}: criteria.{criterion} cannot fail with full earned points"
                     )
-    if schema in {OBSERVED_SCHEMA_V2, OBSERVED_SCHEMA_V3, OBSERVED_SCHEMA_V4} and isinstance(score, int) and score != earned_total:
+    if schema in {
+        OBSERVED_SCHEMA_V2,
+        OBSERVED_SCHEMA_V3,
+        OBSERVED_SCHEMA_V4,
+        OBSERVED_SCHEMA_V5,
+    } and isinstance(score, int) and score != earned_total:
         errors.append(
             f"{path}: score must equal the sum of criteria earned points "
             f"({earned_total}, observed {score})"
@@ -566,11 +701,16 @@ def run_self_check() -> list[str]:
             "Evidence, unverified boundaries, and design moves. " * 20,
             encoding="utf-8",
         )
+        behavior_domain = "skill-production-review"
+        behavior_hash = domain_fingerprint(ROOT, behavior_domain)
+        projected_tree = projected_skill_tree_sha256(
+            ROOT, ROOT / "skills/design-craft", behavior_domain
+        )
         run_manifest = task / "run.codex.json"
         run_manifest.write_text(
             json.dumps(
                 {
-                    "schema": RUN_SCHEMA_V2,
+                    "schema": RUN_SCHEMA_V3,
                     "host": "codex",
                     "host_version": "self-check",
                     "model": "fixture-model",
@@ -587,8 +727,14 @@ def run_self_check() -> list[str]:
                     "output_path": output.name,
                     "output_sha256": sha256_file(output),
                     "skill_path": "$BENCHMARK_WORKSPACE/.agents/skills/design-craft",
-                    "skill_tree_sha256": tree_sha256(ROOT / "skills/design-craft"),
-                    "skill_install_mode": "isolated_project_copy",
+                    "source_skill_tree_sha256": tree_sha256(
+                        ROOT / "skills/design-craft"
+                    ),
+                    "behavior_domain": behavior_domain,
+                    "behavior_sha256": behavior_hash,
+                    "behavior_source_dirty": False,
+                    "projected_skill_tree_sha256": projected_tree,
+                    "skill_install_mode": "isolated_domain_projection",
                     "workspace_kind": "repo_external_isolated_project",
                     "cwd": "$BENCHMARK_WORKSPACE",
                     "command": "codex exec --sandbox read-only $BENCHMARK_WORKSPACE",
@@ -607,7 +753,7 @@ def run_self_check() -> list[str]:
         provenance = skill_provenance(ROOT / "skills/design-craft")
         weights = scorecard_weights(task / "scorecard.json")
         score_payload = {
-            "schema": OBSERVED_SCHEMA_V4,
+            "schema": OBSERVED_SCHEMA_V5,
             "task_id": task.name,
             "agent": "codex",
             "verified": True,
@@ -631,6 +777,10 @@ def run_self_check() -> list[str]:
             "repo_dirty": provenance["repo_dirty"],
             "release_state": provenance["release_state"],
             "skill_tree_sha256": provenance["skill_tree_sha256"],
+            "behavior_domain": behavior_domain,
+            "behavior_sha256": behavior_hash,
+            "behavior_source_dirty": False,
+            "projected_skill_tree_sha256": projected_tree,
             "command_summary": "codex exec --sandbox read-only $BENCHMARK_WORKSPACE",
             "output_path": output.name,
             "output_sha256": sha256_file(output),

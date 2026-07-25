@@ -1,5 +1,5 @@
 {
-  "schema": "design-craft.cross-agent-score.v4",
+  "schema": "design-craft.cross-agent-score.v5",
   "task_id": "same-prompt-dashboard-review",
   "agent": "pi",
   "verified": true,
@@ -12,41 +12,45 @@
   "date": "2026-07-25",
   "prompt_sha256": "7fd3c7f14647c8b54cc44ef371f2d7ea56bb77efa89cb8081f09a7b41ae777d6",
   "scorecard_json_sha256": "9b73f89575f83eecd859595a81851a57681987dbb8aee6d3b8230d5827081920",
-  "contract_sha256": "907627714e2c4078558dba2e0449c2df2bf1d6d7db5e91e0f1e8b2017c22d0c9",
+  "contract_sha256": "b6875edb7d8c1e7a70f14d6bf6bc08bafa12c5ea910e9655fbbdbc5f62890b12",
   "run_manifest_path": "run.pi.json",
-  "run_manifest_sha256": "1a258eb3b76f1cc6d5c5265969ec5760821277f5829c74aa7bfa5987f5ee822d",
-  "skill_version": "0.5.4",
-  "skill_source_commit": "0239d83a826a51206953c411c564da72c51c4425",
+  "run_manifest_sha256": "9e8e8540d5c89a6d810982286ad4ddf0efbeee1cd445364a4a524fbd837d796b",
+  "skill_version": "0.5.6",
+  "skill_source_commit": "199277d062137971ffadc0e1c47ec013ba03b4bc",
   "skill_source_dirty": false,
   "repo_dirty": true,
   "release_state": "unknown",
-  "skill_tree_sha256": "0aacdc6e7ec587121f24fce3b055814b907aebda0663d54d42e84d36f2b5e5f5",
+  "skill_tree_sha256": "0bd975aa6f74b8af9c4ddd9c5182358a458c35212886e455e47b8e03434eb599",
   "skill_path": "$BENCHMARK_WORKSPACE/.pi/skills/design-craft",
+  "behavior_domain": "skill-production-review",
+  "behavior_sha256": "a6f238e8209d716687fe548904e325b18cbbe96beab59f2244fedb8a95fab074",
+  "behavior_source_dirty": false,
+  "projected_skill_tree_sha256": "0c2c8d47d752d7cb1d1b760d4ea070cddafd92f57b9996cd9ccbd7e90c92d63a",
   "provenance_skill_path": "$DESIGN_CRAFT_HOME/skills/design-craft",
   "command_summary": "pi --print --no-session --no-skills --skill '$BENCHMARK_SKILL' --no-context-files --tools read,grep,find,ls --model codex/gpt-5.5 --thinking high",
   "output_path": "pi-output.md",
-  "output_sha256": "e239845860270af1dcd0e15aa47de4801aed5972a0370deb2b0c1cb085242fbe",
+  "output_sha256": "ebaff9d3b2145b1d0697c32795105d0fccb8c3a521d7f91d1171e06f031e0f8c",
   "score": 100,
   "criteria": {
     "style_authority": {
       "passed": true,
       "earned": 15,
-      "note": "Preserves the restrained, dense-but-calm enterprise-console authority and centers the operator's next-hour triage job."
+      "note": "Preserves the restrained, dense-but-calm enterprise-console authority and centers the operator's next-hour revenue-operations triage job."
     },
     "reference_selection": {
       "passed": true,
       "earned": 15,
-      "note": "Uses relevant dashboard hierarchy, taste, design-move, table, state, accessibility, and validation guidance without unrelated domains."
+      "note": "Uses only the projected dashboard, visual-judgment, production, state, accessibility, and validation guidance needed by this task."
     },
     "anti_generic_redesign": {
       "passed": true,
       "earned": 15,
-      "note": "Rejects equal-card soup, decorative charting, and generic tips in favor of lead metrics, an exception queue, diagnostic evidence, and a task-first table."
+      "note": "Rejects equal-card soup, decorative charting, and generic tips in favor of a lead exception, supporting metrics, a task-first queue, and diagnostic evidence."
     },
     "evidence_level": {
       "passed": true,
       "earned": 15,
-      "note": "Labels the review L0 static and claims no screenshot, DOM, browser, responsive, focus, state, or runtime proof."
+      "note": "Labels the concept review L0 static and does not present a precise rendered-quality score without screenshot, DOM, browser, or responsive evidence."
     },
     "verified_boundary": {
       "passed": true,
@@ -56,12 +60,12 @@
     "design_moves": {
       "passed": true,
       "earned": 15,
-      "note": "Provides exactly eight concrete moves covering metric hierarchy, exception queue, diagnostic chart, task-first table, contextual actions, enterprise visuals, and resilient states."
+      "note": "Provides eight concrete moves covering the command context, lead/support hierarchy, exception queue, diagnostic chart, contextual actions, enterprise visuals, states, and adaptive access."
     },
     "scope_control": {
       "passed": true,
       "earned": 10,
-      "note": "Remains read-only, prioritized, and dashboard-specific at 110 logical lines, with exactly five blocking findings and eight concrete moves."
+      "note": "Remains read-only and dashboard-specific, prioritizes five blocking findings, and avoids unrelated backend or product-scope changes."
     }
   }
 }

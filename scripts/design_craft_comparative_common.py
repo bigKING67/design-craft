@@ -14,10 +14,12 @@ from design_craft_evidence_common import files_sha256
 ROOT = Path(__file__).resolve().parents[1]
 VARIANTS_SCHEMA = "design-craft.comparative-variants.v2"
 SCORECARD_SCHEMA = "design-craft.comparative-scorecard.v1"
-RUN_SCHEMA = "design-craft.comparative-run.v3"
+RUN_SCHEMA_V3 = "design-craft.comparative-run.v3"
+RUN_SCHEMA = "design-craft.comparative-run.v4"
 BLIND_MAP_SCHEMA = "design-craft.comparative-blind-map.v3"
 JUDGE_RUN_SCHEMA = "design-craft.comparative-judge-run.v1"
-RESULT_SCHEMA = "design-craft.comparative-result.v3"
+RESULT_SCHEMA_V3 = "design-craft.comparative-result.v3"
+RESULT_SCHEMA = "design-craft.comparative-result.v4"
 BLIND_LABELS = ("A", "B", "C")
 SOURCE_BRAND_PATTERN = re.compile(
     r"\bdesign-craft\b|\bemil(?:\s*kowalski)?\b|animations\.dev|"
@@ -32,6 +34,8 @@ CONTRACT_FILES = (
     "scripts/design_craft_comparative_record.py",
     "scripts/design_craft_comparative_validate.py",
     "scripts/design_craft_evidence_common.py",
+    "tools/design_craft/evaluation/evidence_graph.py",
+    "contracts/evaluation/evidence-graph.schema.json",
 )
 
 

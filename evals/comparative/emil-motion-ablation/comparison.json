@@ -1,6 +1,6 @@
 {
-  "blind_map_sha256": "48eeeba257b0ca91acb9e9e5725e551cc3ac37cf01516682e9b5fcb94ff31fc9",
-  "blind_packet_sha256": "5c1819c86e64853345ebb3ca7fb7819a8ac26c4255f747112345bb27885cb1b0",
+  "blind_map_sha256": "c81c4cd1568709522155c35ee338f33a6f97dcf368b1e83f5e2d6089e7f7b8a2",
+  "blind_packet_sha256": "32e697d37e5f7e5faffe4c2e278e57a3d8b2ea7a7cf050a89b1509d6278c2a0a",
   "case_id": "emil-motion-ablation",
   "focused_variant": "emil",
   "judge": {
@@ -8,38 +8,38 @@
     "model": "gpt-5.6-sol",
     "model_observation": "requested_by_cli",
     "raw_output_path": "judge-output.raw.txt",
-    "raw_output_sha256": "3abcc13489ae78affc088d018fa686780cfe64353e24f63c914d7c979b8621e6",
+    "raw_output_sha256": "3db78465ccde1be041747332f59c34af93e0671cf34db35d308c91994a1128b0",
     "reasoning": "max",
     "reasoning_observation": "requested_by_cli",
     "run_path": "run.judge.json",
-    "run_sha256": "ee90d11364821c974df16830af7f41a9ef13d7c388d42632c89f450fa325f2ed",
+    "run_sha256": "e6cd1a70e35a7e1d8164d5cded2ddc1fdc7a4d61b459c226f1e675feca8d1760",
     "runner_os": "macOS-15.7.7-arm64-arm-64bit-Mach-O",
     "version": "codex-cli 0.145.0"
   },
   "judgment_path": "blind-judgment.json",
   "judgment_schema_sha256": "6fc7376df30d7cff1ac8faf21ce6bcd63c76f72365458cfe0812ec88b16cd701",
-  "judgment_sha256": "0605fb6b2d818dec5d8ea8a0fd7fdff6ed2bc285f8704f9b260e5f4b35902b2d",
+  "judgment_sha256": "751458d62d5c6ffae1d9f3a937c46202fcf6b69346e5e13750649ddd9184523f",
   "prompt_sha256": "32a158dae9908cefce2747965d6451cf024eb3a877438295898a75412e11e0c8",
-  "rationale": "C 是唯一逐项无缺口覆盖机器评分卡的输出。相比 A，它明确规定速度的空间和时间单位，并直接处理 translate 与 press-scale 的 transform 所有权；相比 B，它不仅用速度偏置选点，还给出投影端点、范围钳制、有效 snap 选择和释放速度延续。C 还明确声明静态代码不能证明流畅度或布局成本，并在 150 行预算内提供了最小、可执行的运行时验证方案。",
-  "recorded_at": "2026-07-25T05:41:37Z",
+  "rationale": "B 最完整地满足机器评分项：它不仅指出所有关键静态问题，还要求从当前屏幕呈现值无跳变地中断，并明确规定 CSS px/s 速度单位、受边界约束的投影端点、三态吸附选择及速度交接。相比之下，C 仅缺少明确速度单位，A 则同时存在确定化运行时措辞和较不完整的速度投影规格。",
+  "recorded_at": "2026-07-25T09:14:26Z",
   "results": {
     "baseline": {
-      "blind_label": "B",
+      "blind_label": "A",
       "criteria": {
         "accessibility": 10,
-        "actionability": 7,
+        "actionability": 10,
         "direct_manipulation": 15,
-        "evidence_honesty": 13,
+        "evidence_honesty": 12,
         "interruption": 15,
         "motion_necessity": 10,
         "performance": 10,
-        "velocity_projection": 8
+        "velocity_projection": 10
       },
-      "score": 88,
-      "summary": "准确覆盖抓取偏移、拖拽状态、指针捕获、输入锁定、布局属性、宽泛 transition、按压缩放和 Reduced Motion。明显缺口是没有给出速度单位、投影端点或向 settle 动画传递释放速度；同时篇幅显著超过 150 行，削弱了范围控制。"
+      "score": 92,
+      "summary": "覆盖了绝大多数静态缺陷并给出具体修正与验证步骤，但开篇将卡顿、跳变等运行时体感写成确定结论；速度方案也未明确单位、采样方式或向收敛动画交接释放速度。"
     },
     "design-craft": {
-      "blind_label": "C",
+      "blind_label": "B",
       "criteria": {
         "accessibility": 10,
         "actionability": 10,
@@ -51,64 +51,109 @@
         "velocity_projection": 15
       },
       "score": 100,
-      "summary": "完整满足全部评分点：严格区分静态证据与运行时未知，要求从当前呈现值无跳变地中断，明确 CSS px/s、投影端点和速度传递，并用分层 transform 解决所有权冲突；Reduced Motion 与验证计划也具体且克制。"
+      "summary": "证据、推断和未验证边界划分最清楚，完整覆盖输入锁、指针捕获、抓取偏移、一比一跟踪、当前呈现值中断，以及以 CSS px/s 表示的释放速度、受限投影、吸附选择和速度交接。"
     },
     "emil": {
-      "blind_label": "A",
+      "blind_label": "C",
       "criteria": {
         "accessibility": 10,
         "actionability": 10,
         "direct_manipulation": 15,
-        "evidence_honesty": 13,
+        "evidence_honesty": 14,
         "interruption": 15,
         "motion_necessity": 10,
-        "performance": 9,
+        "performance": 10,
         "velocity_projection": 14
       },
-      "score": 96,
-      "summary": "静态证据边界、直接操控、动画打断、降动效路径和最小验证计划都很完整。主要扣分是开头仍作出少量未实测的体感预测，速度缺少明确单位，并且没有像 C 那样直接说明位移与按压缩放的 transform 所有权冲突。"
+      "score": 98,
+      "summary": "直接操控、中断、性能、必要动效和无障碍处理都很完整，也明确区分静态证据与运行时未知；仅释放速度的具体单位未明示，且开篇仍包含少量推测性体感判断。"
     }
   },
-  "schema": "design-craft.comparative-result.v3",
+  "schema": "design-craft.comparative-result.v4",
   "scorecard_json_sha256": "8138c39d53d54e9513c89c172ab2cc5b53135fb06c58c4f42f99179b3b2f1c7e",
   "scorecard_sha256": "89663cb8f65c3bd9387414a1f79fcf0789dad360d4287d15130189ed7c11ee72",
   "variant_runs": {
     "baseline": {
-      "contract_sha256": "485dfcb152f2726e548985a99126ab3c6e414ba3aa9ef4711d5d46ab5017a1e7",
+      "contract_sha256": "13e1d04a1ab3ee36baaa520cad18574c99d80a9fb5c17c1977ac68a3f8f641bc",
       "host": "pi",
       "host_version": "0.80.6",
       "model": "codex/gpt-5.5",
       "output_path": "output.baseline.md",
-      "output_sha256": "6c4dc8427ccc4a8307a76a56cffc6492eae481283ee9f055725663b49e3ef64a",
+      "output_sha256": "32e1e1f3f2e71647168dbcee203cc32b2a1b3b4834b17eb132a47fb1e3f59b2f",
       "run_path": "run.baseline.json",
-      "run_sha256": "5f9af4e1e6296dbbb327faa59ca886b5987cdf360b85625bef020cfb46191f8c",
+      "run_sha256": "2cb757a9edf9b8ff706e39eb3c38c8df0a577e49be771108dc5926f10187bb59",
+      "skill_install_mode": "isolated_case_projection",
       "skill_trees": {},
+      "source_commit": "199277d062137971ffadc0e1c47ec013ba03b4bc",
+      "source_fingerprints": {},
+      "source_trees": {},
       "thinking": "high"
     },
     "design-craft": {
-      "contract_sha256": "485dfcb152f2726e548985a99126ab3c6e414ba3aa9ef4711d5d46ab5017a1e7",
+      "contract_sha256": "13e1d04a1ab3ee36baaa520cad18574c99d80a9fb5c17c1977ac68a3f8f641bc",
       "host": "pi",
       "host_version": "0.80.6",
       "model": "codex/gpt-5.5",
       "output_path": "output.design-craft.md",
-      "output_sha256": "83ee807d5707c3ab2c81065e5deaa0080eef061cc8b8558812a3eb871dd18075",
+      "output_sha256": "bdabbf261ffe0766cfb9cbcdb34cc80017030bdf419630187f5c8800f8b5ee49",
       "run_path": "run.design-craft.json",
-      "run_sha256": "7074c6f291eafce0a581ed39898a0098b6c9c47e0da0b47ab160f18358b41e7e",
+      "run_sha256": "679ad0bc125b836307456be4597eec5c1cdcf8fd4b8889e75bde5c4488ec0309",
+      "skill_install_mode": "isolated_case_projection",
       "skill_trees": {
-        "skills/design-craft": "7a171bf963a74139d7088c288a527bf2304765a5359597016dcd07eaf404c92b"
+        "skills/design-craft": "ccb3d1f2059d77d9aa1079a2cd1b9018494149e1df9e8e38f5a4fe9fabc21c56"
+      },
+      "source_commit": "199277d062137971ffadc0e1c47ec013ba03b4bc",
+      "source_fingerprints": {
+        "skills/design-craft": {
+          "domain": "skill-motion-review",
+          "kind": "evidence_domain",
+          "projected_tree_sha256": "ccb3d1f2059d77d9aa1079a2cd1b9018494149e1df9e8e38f5a4fe9fabc21c56",
+          "sha256": "ec0ad5d95f6dddbde75fe299a3a4107b4faa8bbf23cb1d1695feb5514410a53e",
+          "source_dirty": false
+        }
+      },
+      "source_trees": {
+        "skills/design-craft": "0bd975aa6f74b8af9c4ddd9c5182358a458c35212886e455e47b8e03434eb599"
       },
       "thinking": "high"
     },
     "emil": {
-      "contract_sha256": "485dfcb152f2726e548985a99126ab3c6e414ba3aa9ef4711d5d46ab5017a1e7",
+      "contract_sha256": "13e1d04a1ab3ee36baaa520cad18574c99d80a9fb5c17c1977ac68a3f8f641bc",
       "host": "pi",
       "host_version": "0.80.6",
       "model": "codex/gpt-5.5",
       "output_path": "output.emil.md",
-      "output_sha256": "d95afd1f75249d6d356db83de12226acbe5f240df6a1d516125d4a7169116df0",
+      "output_sha256": "8a391790fa232029cc151efba9dac7e4dc2cdc0947132168495fe28417cf3711",
       "run_path": "run.emil.json",
-      "run_sha256": "7319c4e6f996f3cee563889b6f604b692f327ac7cec9101db7732f24cb972ab1",
+      "run_sha256": "7264b518a6b64a99c56ca7093d8bb7ab5ee44a6b0972d9d51574a1f80b572982",
+      "skill_install_mode": "isolated_case_projection",
       "skill_trees": {
+        "upstreams/emilkowalski-skills/skills/apple-design": "84ebad0905bc9274fc22eb0b100778adaee20e6d479a69168b5f3a2f018e19de",
+        "upstreams/emilkowalski-skills/skills/improve-animations": "b4813f60575f3e1e3d916bb76def2b5821e91194fc6896e6d47177cc22a9e488",
+        "upstreams/emilkowalski-skills/skills/review-animations": "b86f754de11344856c2e7ae5c809eb134c8b8c23920baa44adaa06e77cf4ad00"
+      },
+      "source_commit": "199277d062137971ffadc0e1c47ec013ba03b4bc",
+      "source_fingerprints": {
+        "upstreams/emilkowalski-skills/skills/apple-design": {
+          "kind": "tree",
+          "projected_tree_sha256": "84ebad0905bc9274fc22eb0b100778adaee20e6d479a69168b5f3a2f018e19de",
+          "sha256": "84ebad0905bc9274fc22eb0b100778adaee20e6d479a69168b5f3a2f018e19de",
+          "source_dirty": false
+        },
+        "upstreams/emilkowalski-skills/skills/improve-animations": {
+          "kind": "tree",
+          "projected_tree_sha256": "b4813f60575f3e1e3d916bb76def2b5821e91194fc6896e6d47177cc22a9e488",
+          "sha256": "b4813f60575f3e1e3d916bb76def2b5821e91194fc6896e6d47177cc22a9e488",
+          "source_dirty": false
+        },
+        "upstreams/emilkowalski-skills/skills/review-animations": {
+          "kind": "tree",
+          "projected_tree_sha256": "b86f754de11344856c2e7ae5c809eb134c8b8c23920baa44adaa06e77cf4ad00",
+          "sha256": "b86f754de11344856c2e7ae5c809eb134c8b8c23920baa44adaa06e77cf4ad00",
+          "source_dirty": false
+        }
+      },
+      "source_trees": {
         "upstreams/emilkowalski-skills/skills/apple-design": "84ebad0905bc9274fc22eb0b100778adaee20e6d479a69168b5f3a2f018e19de",
         "upstreams/emilkowalski-skills/skills/improve-animations": "b4813f60575f3e1e3d916bb76def2b5821e91194fc6896e6d47177cc22a9e488",
         "upstreams/emilkowalski-skills/skills/review-animations": "b86f754de11344856c2e7ae5c809eb134c8b8c23920baa44adaa06e77cf4ad00"

@@ -117,6 +117,42 @@ class EvaluationCliTests(unittest.TestCase):
         self.assertEqual(result.returncode, 2)
         self.assertIn("not allowed with argument", result.stderr)
 
+    def test_comparative_definitions_only_ignores_stale_observed_artifacts(self) -> None:
+        source = REPO_ROOT / "evals/comparative/emil-motion-ablation"
+        with tempfile.TemporaryDirectory() as temp_dir:
+            case_dir = Path(temp_dir) / source.name
+            shutil.copytree(source, case_dir)
+            run_path = case_dir / "run.baseline.json"
+            run = json.loads(run_path.read_text(encoding="utf-8"))
+            run["schema"] = "design-craft.comparative-run.stale"
+            run_path.write_text(json.dumps(run, indent=2) + "\n", encoding="utf-8")
+
+            definitions = run_script(
+                "scripts/design_craft_comparative_validate.py",
+                "--case-dir",
+                str(case_dir),
+                "--definitions-only",
+            )
+            observed = run_script(
+                "scripts/design_craft_comparative_validate.py",
+                "--case-dir",
+                str(case_dir),
+                "--require-observed",
+            )
+
+        self.assertEqual(definitions.returncode, 0, definitions.stderr)
+        self.assertEqual(observed.returncode, 1)
+        self.assertIn("current evidence must use", observed.stderr)
+
+    def test_comparative_definitions_only_rejects_observed_mode(self) -> None:
+        result = run_script(
+            "scripts/design_craft_comparative_validate.py",
+            "--definitions-only",
+            "--require-observed",
+        )
+        self.assertEqual(result.returncode, 2)
+        self.assertIn("--definitions-only is not valid", result.stderr)
+
     def test_comparative_blind_rejects_stale_scorecard_before_outputs(self) -> None:
         source = REPO_ROOT / "evals/comparative/emil-motion-ablation"
         with tempfile.TemporaryDirectory() as temp_dir:
