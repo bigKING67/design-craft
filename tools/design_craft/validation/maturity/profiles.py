@@ -69,7 +69,6 @@ def load_profile(name: str, phase: str) -> MaturityProfile:
     final_gates = (
         "release_metadata_final",
         "main_branch",
-        "main_ruleset",
     ) if phase == "final" else ()
     candidate_gates = LIVE_CANDIDATE_GATES if phase == "candidate" else ()
     return MaturityProfile(
@@ -109,6 +108,10 @@ def check_profile_invariants() -> list[str]:
     operational_final = load_profile("operational_95", "final")
     if "upstream_remote_review" in operational_final.required_gate_ids:
         errors.append("final certification must not depend on mutable upstream HEAD")
+    if "main_branch" not in operational_final.required_gate_ids:
+        errors.append("final certification must remain bound to main")
+    if "main_ruleset" in operational_final.required_gate_ids:
+        errors.append("final certification must not require admin-only GitHub governance access")
     if not set(operational.required_gate_ids) < set(certified.required_gate_ids):
         errors.append("certified_100 must strictly extend operational_95")
     for gate in (

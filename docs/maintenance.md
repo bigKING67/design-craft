@@ -238,9 +238,9 @@ make release-final-verify-certified BENCHMARK_BASELINE=<path>
 The manual Release certification workflow has read-only repository permissions
 and produces a relocatable, digest-bound artifact containing exactly four
 Operational assets or seven Certified assets plus their evidence and selected
-run observations. It requires `RELEASE_GOVERNANCE_TOKEN` with repository
-Administration read and fails closed during its early preflight if the secret is
-missing or under-scoped. The separate publication workflow accepts the exact
+run observations. It uses only the repository-scoped Actions token to read the
+exact workflow runs and artifacts; no long-lived personal access token is part
+of certification. The separate publication workflow accepts the exact
 certification run ID, artifact ID, and SHA-256 digest, revalidates the complete
 bundle in a read-only job, then gives a dependent publication job only the same
 immutable artifact ID and digest. The write-authority job rechecks the REST ZIP
@@ -249,6 +249,12 @@ only then produces provenance attestations and the GitHub Release. Neither
 workflow publishes to npm or replaces an existing version. A later Certified
 claim therefore requires a new version rather than mutating an Operational
 release in place.
+
+`make github-governance-check` remains available for an explicit maintainer
+audit of live branch/tag rulesets and the Actions allowlist. It uses the
+operator's existing authenticated `gh` session and is intentionally outside the
+release critical path because GitHub exposes those settings through
+administration-level endpoints.
 
 ## Upstream sync procedure
 
@@ -628,14 +634,15 @@ Before committing a release:
     release manifest must match every inner native evidence digest, artifact
     record, workflow binding, and selected run. Asset replacement is staged and
     rolls back on publish failure.
-20. Configure `RELEASE_GOVERNANCE_TOKEN` with repository Administration read,
-    then trigger `.github/workflows/release-certify.yml` with its explicit
+20. Trigger `.github/workflows/release-certify.yml` with its explicit
     confirmation. Record the completed run ID, uploaded artifact ID, and the
-    artifact's `sha256:<digest>` output. Certification has no publication or
-    attestation permission.
+    artifact's `sha256:<digest>` output. Certification uses only repository
+    read permissions and has no publication or attestation permission.
 21. Trigger `.github/workflows/release-publish.yml` with that exact run ID,
     artifact ID, digest, tag, level, and explicit publication confirmation. Do
     not publish to npm and do not replace an existing release.
 22. Run `release-final-verify-operational` or
     `release-final-verify-certified` to re-download the published asset set and
-    verify tag, workflow, manifest, SBOM, attestation inputs, and live rulesets.
+    verify tag, workflow, manifest, SBOM, and attestation inputs. Run
+    `make github-governance-check` separately when auditing live repository
+    administration policy.

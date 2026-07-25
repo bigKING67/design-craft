@@ -2,6 +2,14 @@
 
 All notable local changes to `design-craft` are recorded here.
 
+## Unreleased
+
+- Remove the admin-only `RELEASE_GOVERNANCE_TOKEN` from release certification.
+  Certification now relies on the repository-scoped Actions token for exact
+  tag, workflow-run, artifact, benchmark, and digest verification; live
+  ruleset and Actions-policy inspection remains an explicit maintenance audit
+  rather than a release-blocking dependency.
+
 ## 0.5.6 - 2026-07-25
 
 - Preserve `v0.5.5` as a failed release-candidate record: tag-bound Native run

@@ -63,14 +63,6 @@ jobs:
           ref: main
           fetch-depth: 0
           submodules: recursive
-      - name: Preflight release governance credential
-        env:
-          RELEASE_GOVERNANCE_TOKEN: ${{ secrets.RELEASE_GOVERNANCE_TOKEN }}
-        run: >-
-          python3 scripts/design_craft_github_governance.py
-          --preflight
-          --require-release-credential
-          --json
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: "24"
@@ -174,7 +166,6 @@ jobs:
       - name: Verify final release evidence
         env:
           GH_TOKEN: ${{ github.token }}
-          RELEASE_GOVERNANCE_TOKEN: ${{ secrets.RELEASE_GOVERNANCE_TOKEN }}
         shell: bash
         run: |
           set -euo pipefail

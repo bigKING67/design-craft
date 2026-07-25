@@ -301,13 +301,11 @@ def validate() -> dict:
                 "certified_100",
                 "confirm_certification:",
                 "benchmark_run_id:",
-                "Preflight release governance credential",
-                "RELEASE_GOVERNANCE_TOKEN",
-                "--preflight",
                 "release verify",
                 "--phase final",
                 "--require-tag-run",
                 "actions: read",
+                "GH_TOKEN: ${{ github.token }}",
                 "release run-observation",
                 "--kind native",
                 "--kind benchmark",
@@ -348,6 +346,17 @@ def validate() -> dict:
         errors.append(
             ".github/workflows/release-certify.yml must verify immutable benchmark evidence without rerunning timings"
         )
+    for forbidden in (
+        "Preflight release governance credential",
+        "RELEASE_GOVERNANCE_TOKEN",
+        "--preflight",
+        "--require-release-credential",
+    ):
+        if forbidden in release_certify_workflow:
+            errors.append(
+                ".github/workflows/release-certify.yml must not depend on "
+                f"admin-only governance credentials: {forbidden}"
+            )
     for forbidden in (
         "contents: write",
         "id-token: write",

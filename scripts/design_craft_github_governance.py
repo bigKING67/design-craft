@@ -5,7 +5,6 @@ from __future__ import annotations
 
 import argparse
 import json
-import os
 import shutil
 import subprocess
 import sys
@@ -13,8 +12,6 @@ from pathlib import Path
 
 
 SCHEMA = "design-craft.github-governance.v2"
-PREFLIGHT_SCHEMA = "design-craft.github-governance-preflight.v1"
-RELEASE_CREDENTIAL_ENV = "RELEASE_GOVERNANCE_TOKEN"
 MAIN_RULESET = "design-craft-main"
 TAG_RULESET = "design-craft-release-tags"
 ROOT = Path(__file__).resolve().parents[1]
@@ -48,22 +45,6 @@ class GovernanceApiError(RuntimeError):
         super().__init__(detail)
         self.code = code
         self.endpoint = endpoint
-
-
-def governance_environment(*, required: bool) -> dict[str, str] | None:
-    token = os.environ.get(RELEASE_CREDENTIAL_ENV, "")
-    if not token:
-        if required:
-            raise GovernanceApiError(
-                "credential_missing",
-                RELEASE_CREDENTIAL_ENV,
-                f"{RELEASE_CREDENTIAL_ENV} is required for release governance checks",
-            )
-        return None
-    environment = os.environ.copy()
-    environment["GH_TOKEN"] = token
-    environment.pop(RELEASE_CREDENTIAL_ENV, None)
-    return environment
 
 
 def required_checks() -> list[dict[str, str]]:
@@ -120,7 +101,6 @@ def run(
     command: list[str],
     *,
     input_value: str | None = None,
-    environment: dict[str, str] | None = None,
 ) -> subprocess.CompletedProcess[str]:
     return subprocess.run(
         command,
@@ -129,7 +109,6 @@ def run(
         stderr=subprocess.PIPE,
         text=True,
         check=False,
-        env=environment,
     )
 
 
@@ -155,10 +134,9 @@ def _api_failure(result: subprocess.CompletedProcess[str], endpoint: str) -> Gov
     return GovernanceApiError(code, endpoint, detail)
 
 
-def repository(*, environment: dict[str, str] | None = None) -> str:
+def repository() -> str:
     result = run(
         ["gh", "repo", "view", "--json", "nameWithOwner", "--jq", ".nameWithOwner"],
-        environment=environment,
     )
     if result.returncode != 0 or not result.stdout.strip():
         raise _api_failure(result, "repository")
@@ -168,11 +146,9 @@ def repository(*, environment: dict[str, str] | None = None) -> str:
 def ruleset_detail(
     repo: str,
     ruleset_id: int,
-    *,
-    environment: dict[str, str] | None = None,
 ) -> dict:
     endpoint = f"repos/{repo}/rulesets/{ruleset_id}"
-    result = run(["gh", "api", endpoint], environment=environment)
+    result = run(["gh", "api", endpoint])
     if result.returncode != 0:
         raise _api_failure(result, endpoint)
     return json.loads(result.stdout)
@@ -181,11 +157,9 @@ def ruleset_detail(
 def api_object(
     repo: str,
     suffix: str,
-    *,
-    environment: dict[str, str] | None = None,
 ) -> dict:
     endpoint = f"repos/{repo}/{suffix}"
-    result = run(["gh", "api", endpoint], environment=environment)
+    result = run(["gh", "api", endpoint])
     if result.returncode != 0:
         raise _api_failure(result, endpoint)
     payload = json.loads(result.stdout)
@@ -280,11 +254,9 @@ def validate_ruleset(observed: dict, expected: dict) -> list[str]:
 
 def fetch_rulesets(
     repo: str,
-    *,
-    environment: dict[str, str] | None = None,
 ) -> list[dict]:
     endpoint = f"repos/{repo}/rulesets"
-    result = run(["gh", "api", endpoint], environment=environment)
+    result = run(["gh", "api", endpoint])
     if result.returncode != 0:
         raise _api_failure(result, endpoint)
     payload = json.loads(result.stdout)
@@ -293,9 +265,9 @@ def fetch_rulesets(
     return payload
 
 
-def inspect(repo: str, *, environment: dict[str, str] | None = None) -> dict:
+def inspect(repo: str) -> dict:
     expected = desired_rulesets()
-    summaries = fetch_rulesets(repo, environment=environment)
+    summaries = fetch_rulesets(repo)
     by_name = {item.get("name"): item for item in summaries if isinstance(item, dict)}
     observed: dict[str, dict | None] = {}
     errors: list[str] = []
@@ -305,19 +277,17 @@ def inspect(repo: str, *, environment: dict[str, str] | None = None) -> dict:
             observed[name] = None
             errors.append(f"missing GitHub ruleset: {name}")
             continue
-        detail = ruleset_detail(repo, summary["id"], environment=environment)
+        detail = ruleset_detail(repo, summary["id"])
         observed[name] = detail
         errors.extend(validate_ruleset(detail, contract))
     actions_permissions = api_object(
         repo,
         "actions/permissions",
-        environment=environment,
     )
     selected_actions = (
         api_object(
             repo,
             "actions/permissions/selected-actions",
-            environment=environment,
         )
         if actions_permissions.get("allowed_actions") == "selected"
         else {}
@@ -334,9 +304,9 @@ def inspect(repo: str, *, environment: dict[str, str] | None = None) -> dict:
     }
 
 
-def apply(repo: str, *, environment: dict[str, str] | None = None) -> dict:
+def apply(repo: str) -> dict:
     expected = desired_rulesets()
-    summaries = fetch_rulesets(repo, environment=environment)
+    summaries = fetch_rulesets(repo)
     by_name = {item.get("name"): item for item in summaries if isinstance(item, dict)}
     for name, payload in expected.items():
         summary = by_name.get(name)
@@ -349,7 +319,6 @@ def apply(repo: str, *, environment: dict[str, str] | None = None) -> dict:
         result = run(
             ["gh", "api", "--method", method, endpoint, "--input", "-"],
             input_value=json.dumps(payload),
-            environment=environment,
         )
         if result.returncode != 0:
             raise _api_failure(result, endpoint)
@@ -360,32 +329,10 @@ def apply(repo: str, *, environment: dict[str, str] | None = None) -> dict:
         result = run(
             ["gh", "api", "--method", "PUT", f"repos/{repo}/{suffix}", "--input", "-"],
             input_value=json.dumps(payload),
-            environment=environment,
         )
         if result.returncode != 0:
             raise _api_failure(result, f"repos/{repo}/{suffix}")
-    return inspect(repo, environment=environment)
-
-
-def preflight(repo: str, *, environment: dict[str, str]) -> dict:
-    fetch_rulesets(repo, environment=environment)
-    permissions = api_object(repo, "actions/permissions", environment=environment)
-    if permissions.get("allowed_actions") == "selected":
-        api_object(
-            repo,
-            "actions/permissions/selected-actions",
-            environment=environment,
-        )
-    return {
-        "schema": PREFLIGHT_SCHEMA,
-        "repository": repo,
-        "credential_env": RELEASE_CREDENTIAL_ENV,
-        "required_permission": "repository administration: read",
-        "ok": True,
-        "error_code": None,
-        "endpoint": None,
-        "errors": [],
-    }
+    return inspect(repo)
 
 
 def run_self_check() -> None:
@@ -443,8 +390,6 @@ def main() -> int:
     parser.add_argument("--apply", action="store_true")
     parser.add_argument("--confirm-external-write", action="store_true")
     parser.add_argument("--check", action="store_true")
-    parser.add_argument("--preflight", action="store_true")
-    parser.add_argument("--require-release-credential", action="store_true")
     parser.add_argument("--json", action="store_true")
     args = parser.parse_args()
     if args.check:
@@ -456,25 +401,12 @@ def main() -> int:
         return 2
     if args.apply and not args.confirm_external_write:
         parser.error("--apply requires --confirm-external-write")
-    if args.preflight and (args.apply or args.check):
-        parser.error("--preflight cannot be combined with --apply or --check")
     try:
-        environment = governance_environment(
-            required=args.require_release_credential or args.preflight
-        )
-        repo = repository(environment=environment)
-        if args.preflight:
-            assert environment is not None
-            payload = preflight(repo, environment=environment)
-        else:
-            payload = (
-                apply(repo, environment=environment)
-                if args.apply
-                else inspect(repo, environment=environment)
-            )
+        repo = repository()
+        payload = apply(repo) if args.apply else inspect(repo)
     except (GovernanceApiError, RuntimeError, json.JSONDecodeError) as exc:
         payload = {
-            "schema": PREFLIGHT_SCHEMA if args.preflight else SCHEMA,
+            "schema": SCHEMA,
             "repository": None,
             "ok": False,
             "rulesets": {},

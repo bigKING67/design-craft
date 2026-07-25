@@ -1,40 +1,25 @@
 from __future__ import annotations
 
-import os
 import subprocess
 import sys
 import unittest
 from pathlib import Path
-from unittest.mock import patch
 
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "scripts"))
 
 from design_craft_github_governance import (  # noqa: E402
-    RELEASE_CREDENTIAL_ENV,
-    GovernanceApiError,
+    ACTIONS_PERMISSIONS,
+    SELECTED_ACTIONS,
     _api_failure,
-    governance_environment,
-    preflight,
+    desired_rulesets,
+    validate_actions_permissions,
+    validate_ruleset,
 )
 
 
-class GitHubGovernanceCredentialTests(unittest.TestCase):
-    def test_release_preflight_fails_closed_without_credential(self) -> None:
-        with patch.dict(os.environ, {}, clear=True):
-            with self.assertRaises(GovernanceApiError) as raised:
-                governance_environment(required=True)
-        self.assertEqual(raised.exception.code, "credential_missing")
-        self.assertEqual(raised.exception.endpoint, RELEASE_CREDENTIAL_ENV)
-
-    def test_release_credential_is_forwarded_only_as_gh_token(self) -> None:
-        with patch.dict(os.environ, {RELEASE_CREDENTIAL_ENV: "fixture-secret"}, clear=True):
-            environment = governance_environment(required=True)
-        assert environment is not None
-        self.assertEqual(environment["GH_TOKEN"], "fixture-secret")
-        self.assertNotIn(RELEASE_CREDENTIAL_ENV, environment)
-
+class GitHubGovernanceContractTests(unittest.TestCase):
     def test_administration_denial_has_machine_readable_classification(self) -> None:
         result = subprocess.CompletedProcess(
             ["gh", "api"],
@@ -46,21 +31,20 @@ class GitHubGovernanceCredentialTests(unittest.TestCase):
         self.assertEqual(error.code, "insufficient_permissions")
         self.assertIn("actions/permissions", error.endpoint)
 
-    def test_preflight_reads_all_administration_endpoints(self) -> None:
-        with patch(
-            "design_craft_github_governance.fetch_rulesets",
-            return_value=[],
-        ) as rulesets, patch(
-            "design_craft_github_governance.api_object",
-            side_effect=(
-                {"allowed_actions": "selected"},
-                {"patterns_allowed": []},
-            ),
-        ) as api:
-            payload = preflight("example/design-craft", environment={"GH_TOKEN": "x"})
-        self.assertTrue(payload["ok"])
-        rulesets.assert_called_once()
-        self.assertEqual(api.call_count, 2)
+    def test_desired_rulesets_validate_without_bypass(self) -> None:
+        for payload in desired_rulesets().values():
+            self.assertEqual(validate_ruleset(payload, payload), [])
+
+    def test_ruleset_bypass_is_rejected(self) -> None:
+        expected = desired_rulesets()["design-craft-main"]
+        observed = {**expected, "bypass_actors": [{"actor_type": "RepositoryRole"}]}
+        errors = validate_ruleset(observed, expected)
+        self.assertTrue(any("bypass_actors" in error for error in errors))
+
+    def test_actions_permission_drift_is_rejected(self) -> None:
+        observed = {**ACTIONS_PERMISSIONS, "sha_pinning_required": False}
+        errors = validate_actions_permissions(observed, SELECTED_ACTIONS)
+        self.assertTrue(any("sha_pinning_required" in error for error in errors))
 
 
 if __name__ == "__main__":

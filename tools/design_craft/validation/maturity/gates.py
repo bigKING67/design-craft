@@ -637,22 +637,6 @@ def main_branch(context: MaturityContext) -> MaturityGateResult:
     )
 
 
-def main_ruleset(context: MaturityContext) -> MaturityGateResult:
-    return _command_gate(
-        "main_ruleset",
-        [
-            sys.executable,
-            "scripts/design_craft_github_governance.py",
-            "--require-release-credential",
-        ],
-        timeout=240,
-        evidence={
-            "scope": "live_github_governance_read",
-            "credential_env": "RELEASE_GOVERNANCE_TOKEN",
-        },
-    )(context)
-
-
 STATIC_GATES: dict[str, GateRunner] = {
     "contract_completeness": contract_completeness,
     "release_metadata_candidate": release_metadata("candidate"),
@@ -690,7 +674,6 @@ STATIC_GATES: dict[str, GateRunner] = {
     "install_provenance": install_provenance,
     "upstream_remote_review": upstream_remote_review,
     "main_branch": main_branch,
-    "main_ruleset": main_ruleset,
 }
 
 

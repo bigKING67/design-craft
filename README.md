@@ -749,12 +749,14 @@ make release-assets-build-certified \
 
 Final certification and publication are separate trust boundaries.
 `.github/workflows/release-certify.yml` has read-only repository permissions,
-requires a `RELEASE_GOVERNANCE_TOKEN` with repository Administration read, and
-uploads a relocatable certification artifact containing final evidence, selected
-run observations, native evidence records, and the exact four- or seven-asset
-set. It cannot attest or publish a GitHub Release. The token is used only for
-the governance preflight and live governance gate; missing or insufficient
-permissions fail before the expensive certification work begins.
+uses only the repository-scoped Actions token, and uploads a relocatable
+certification artifact containing final evidence, selected run observations,
+native evidence records, and the exact four- or seven-asset set. It cannot
+attest or publish a GitHub Release. Certification verifies immutable tag,
+workflow-run, benchmark, artifact, and digest bindings without requiring a
+long-lived personal access token. Live ruleset and Actions-policy inspection is
+available separately through `make github-governance-check` for maintainers; it
+is not a release-blocking dependency.
 
 `.github/workflows/release-publish.yml` accepts an explicit successful
 certification run ID, artifact ID, and `sha256:<digest>`. It re-observes the run
@@ -775,7 +777,7 @@ validators, static scanners, project-neutral L4 fixtures, source completeness,
 and development maturity without local install-state assumptions. Local publish
 adds an atomic install and installed-skill provenance/parity. Release profiles
 add current observed evidence, benchmark regression, a clean worktree, live
-upstream review, and final remote/tag/ruleset checks without using history
+upstream review, and final remote/tag/workflow checks without using history
 artifacts as substitutes.
 
 Probe native SDK/runtime availability and validate real evidence separately:

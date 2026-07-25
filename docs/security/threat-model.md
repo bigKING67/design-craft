@@ -60,11 +60,13 @@ artifact. Publication requires an explicit successful certification run ID,
 artifact ID, and SHA-256 digest. A read-only job revalidates the complete bundle;
 only a dependent job receives write authority, and it executes no repository
 validation code before rechecking the same immutable REST ZIP digest. Release
-governance reads use a dedicated
-`RELEASE_GOVERNANCE_TOKEN` with Administration read and fail closed on missing
-or insufficient permissions. Workflow artifacts are downloaded only after exact Native and,
-for Certified, physical-device run observations validate workflow identity,
-repository, run ID/attempt, ref, source commit, status, conclusion, and URL.
+certification uses only the repository-scoped Actions token and receives no
+long-lived personal access token. Administration-level ruleset and
+Actions-policy reads are isolated in an explicit maintainer audit instead of
+the release critical path. Workflow artifacts are downloaded only after exact
+Native and, for Certified, physical-device run observations validate workflow
+identity, repository, run ID/attempt, ref, source commit, status, conclusion,
+and URL.
 Release assets are assembled and validated in same-filesystem staging before a
 locked transactional replacement; published-set validation runs before the
 backup is discarded, and failure restores the previous exact asset set.

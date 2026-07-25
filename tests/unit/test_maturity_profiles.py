@@ -115,12 +115,12 @@ class MaturityProfileTests(unittest.TestCase):
         self.assertIn("native_android_emulator_current_source", profile.required_gate_ids)
         self.assertIn("performance_regression", profile.required_gate_ids)
 
-    def test_final_phase_adds_live_main_governance(self) -> None:
+    def test_final_phase_binds_main_without_admin_only_governance(self) -> None:
         candidate = load_profile("operational_95", "candidate")
         final = load_profile("operational_95", "final")
         self.assertNotIn("main_ruleset", candidate.required_gate_ids)
         self.assertIn("main_branch", final.required_gate_ids)
-        self.assertIn("main_ruleset", final.required_gate_ids)
+        self.assertNotIn("main_ruleset", final.required_gate_ids)
 
     def test_final_phase_uses_committed_upstream_snapshot(self) -> None:
         candidate = load_profile("operational_95", "candidate")
