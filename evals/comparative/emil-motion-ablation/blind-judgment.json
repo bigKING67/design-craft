@@ -1,51 +1,51 @@
 {
-  "rationale": "A 的覆盖最完整且证据校准最好：它明确声明仅基于静态源码，不冒充浏览器、设备、帧率或体感验证，同时逐项给出了当前呈现值接管、取消并重定向、CSS px/s 速度、受限投影端点和 snap 语义选择。C 的技术深度接近 A，但存在确定性运行体感断言和无来源的 10,000 行场景；B 同样有该无来源条件，而且速度部分缺少单位、投影端点及速度连续传递，因此 A 胜出。",
+  "rationale": "B wins because it most precisely identifies the intentional input lockout, requires interruption from the current visible presentation value without snap-back, specifies monotonic sampling and CSS px/s velocity, carries that velocity into settling, bounds the projected endpoint before snap selection, and preserves product-defined target semantics. It also covers pointer capture, grab offset, one-to-one tracking, transform ownership, transition-all, Reduced Motion, and a compact validation plan. C is nearly as technically complete but exceeds the requested line budget; A is actionable but omits the decisive presentation-value interruption flow and a unitful projected-endpoint model.",
   "results": [
     {
       "criteria": {
         "accessibility": 10,
         "actionability": 10,
+        "direct_manipulation": 13,
+        "evidence_honesty": 12,
+        "interruption": 4,
+        "motion_necessity": 10,
+        "performance": 10,
+        "velocity_projection": 8
+      },
+      "label": "A",
+      "summary": "Strong static audit of drag anchoring, pointer lifecycle, motion properties, and Reduced Motion, but it largely misses normal mid-settle interruption from the current presentation value and lacks unitful velocity projection.",
+      "total": 77
+    },
+    {
+      "criteria": {
+        "accessibility": 10,
+        "actionability": 10,
         "direct_manipulation": 15,
-        "evidence_honesty": 15,
+        "evidence_honesty": 14,
         "interruption": 15,
         "motion_necessity": 10,
         "performance": 10,
         "velocity_projection": 15
       },
-      "label": "A",
-      "summary": "静态证据边界最严谨，完整覆盖输入锁定、指针捕获、抓取偏移、一对一跟随、从当前呈现值无跳变中断、以 px/s 表示的释放速度、受限投影落点、合成属性纪律和非前庭化 Reduced Motion 路径；实施步骤与最小运行验证计划也完整且保持在范围内。",
-      "total": 100
-    },
-    {
-      "criteria": {
-        "accessibility": 10,
-        "actionability": 10,
-        "direct_manipulation": 15,
-        "evidence_honesty": 13,
-        "interruption": 15,
-        "motion_necessity": 10,
-        "performance": 10,
-        "velocity_projection": 9
-      },
       "label": "B",
-      "summary": "直接操控、可中断性、性能、Reduced Motion 和验证计划均很扎实，但无依据地引入了“10,000-row”场景，并作出部分体感预测；速度方案只给出方向偏置和阈值思路，没有明确速度单位、投影终点计算，也没有充分说明如何把释放速度连续传入 settle。",
-      "total": 92
+      "summary": "The most complete and concise response: it covers all required gesture mechanics, presentation-value interruption, unitful velocity and bounded projection, transform ownership, Reduced Motion, and a minimal runtime plan.",
+      "total": 99
     },
     {
       "criteria": {
         "accessibility": 10,
-        "actionability": 10,
+        "actionability": 8,
         "direct_manipulation": 15,
-        "evidence_honesty": 11,
+        "evidence_honesty": 14,
         "interruption": 15,
         "motion_necessity": 10,
         "performance": 10,
         "velocity_projection": 15
       },
       "label": "C",
-      "summary": "除证据措辞外几乎完整命中全部技术要求，尤其明确了 px/s 速度、投影落点、snap 选择以及从实时呈现位置无跳变接管；扣分主要来自把静态分析写成“will feel”式确定体感结论，并同样虚构了未提供的“10,000-row”产品条件。",
-      "total": 96
+      "summary": "Technically comprehensive on interruption, velocity, transforms, motion necessity, and accessibility, but materially overlong for the 150-line constraint and less tightly scoped than B.",
+      "total": 97
     }
   ],
-  "winner": "A"
+  "winner": "B"
 }
