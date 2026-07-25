@@ -14,18 +14,18 @@
   "scorecard_json_sha256": "260126ae8e6eb6765184f92ad040b5e32995c941f559d654a303a0d5305e210f",
   "contract_sha256": "907627714e2c4078558dba2e0449c2df2bf1d6d7db5e91e0f1e8b2017c22d0c9",
   "run_manifest_path": "run.pi.json",
-  "run_manifest_sha256": "96dd513088a9faae8df3578e09b901b250f1b04c52cd23c993a67f6e8f820306",
+  "run_manifest_sha256": "2e7a4913f1d7c3a3c762738820e66e046f2039af9e8a16c4d2fe47bcdcda20bd",
   "skill_version": "0.5.4",
-  "skill_source_commit": "b995ca5efcf141e03842712ed23b659cb47abeae",
+  "skill_source_commit": "0239d83a826a51206953c411c564da72c51c4425",
   "skill_source_dirty": false,
   "repo_dirty": true,
   "release_state": "unknown",
-  "skill_tree_sha256": "f3672d8158d5b2acf09725eb6c6a1bc4928afaf81fcec3f7ee03897a03a8cbe0",
+  "skill_tree_sha256": "0aacdc6e7ec587121f24fce3b055814b907aebda0663d54d42e84d36f2b5e5f5",
   "skill_path": "$BENCHMARK_WORKSPACE/.pi/skills/design-craft",
   "provenance_skill_path": "$DESIGN_CRAFT_HOME/skills/design-craft",
   "command_summary": "pi --print --no-session --no-skills --skill '$BENCHMARK_SKILL' --no-context-files --tools read,grep,find,ls --model codex/gpt-5.5 --thinking high",
   "output_path": "pi-output.md",
-  "output_sha256": "b208a90ae8428676dd3c3a51dcdfe032f1be8981f27f92c84a829247efe8db4b",
+  "output_sha256": "ac24cca23fcc47608c6fd3c6018a2cb99ec76ce38d2367b5547340770e8a5fb6",
   "score": 100,
   "criteria": {
     "style_authority": {
@@ -51,7 +51,7 @@
     "verified_boundary": {
       "passed": true,
       "earned": 15,
-      "note": "Confines verified facts to the supplied description and lists unknown hit regions, accessibility, contrast, gestures, window behavior, recovery, performance, and hardware evidence."
+      "note": "Confines verified facts to the supplied description and lists unknown accessibility, contrast, gestures, window behavior, recovery, performance, and hardware evidence."
     },
     "design_moves": {
       "passed": true,
@@ -61,7 +61,7 @@
     "scope_control": {
       "passed": true,
       "earned": 10,
-      "note": "Uses 111 logical lines, exactly five blockers and eight moves, and stays within native UI conformance and decisive source, build, Simulator, Emulator, and real-device validation."
+      "note": "Uses 112 logical lines, exactly five blockers and eight moves, and stays within native UI conformance and decisive source, build, Simulator, Emulator, and real-device validation."
     }
   }
 }

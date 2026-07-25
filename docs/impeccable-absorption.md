@@ -142,5 +142,5 @@ duplicative live/provider/package runtime and prescriptive ecosystem choices
 remain intentionally outside the product.
 
 Current independent blind evidence is recorded in
-`evals/comparative/impeccable-production-ablation/`: `design-craft` 97,
-focused Impeccable upstream 93, no-skill baseline 96.
+`evals/comparative/impeccable-production-ablation/`: `design-craft` 100,
+focused Impeccable upstream 97, no-skill baseline 96.

@@ -150,7 +150,7 @@ conflicts, decorative recipes, and technically overbroad claims remain
 
 Current independent blind evidence is recorded in two cases:
 
-- `emil-motion-ablation`: `design-craft` 99, focused Emil upstream 98,
-  no-skill baseline 94.
-- `emil-motion-planning-ablation`: `design-craft` 94, focused Emil upstream 93,
-  no-skill baseline 86.
+- `emil-motion-ablation`: `design-craft` 98, focused Emil upstream 96,
+  no-skill baseline 91.
+- `emil-motion-planning-ablation`: `design-craft` 95, focused Emil upstream 76,
+  no-skill baseline 80.

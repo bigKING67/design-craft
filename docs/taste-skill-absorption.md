@@ -89,7 +89,7 @@ only README sponsor presentation. Its latest-range status is
 repository-presentation changes.
 
 Current independent blind evidence is recorded in
-`evals/comparative/taste-visual-critique-ablation/`: `design-craft` 99,
-focused taste upstream 94, no-skill baseline 97. The first controlled run
+`evals/comparative/taste-visual-critique-ablation/`: `design-craft` 98,
+focused taste upstream 96, no-skill baseline 95. The first controlled run
 exposed an incomplete move-budget rule; the Skill was repaired and the final
 evidence was rerun rather than editing the judge result.

@@ -14,18 +14,18 @@
   "scorecard_json_sha256": "260126ae8e6eb6765184f92ad040b5e32995c941f559d654a303a0d5305e210f",
   "contract_sha256": "907627714e2c4078558dba2e0449c2df2bf1d6d7db5e91e0f1e8b2017c22d0c9",
   "run_manifest_path": "run.codex.json",
-  "run_manifest_sha256": "576f550e2f5f04a4b9abea647974da7d9a257ea0d424dd949383a2cfc5a48960",
+  "run_manifest_sha256": "ced9320620b0ab9335f34c11713f83d7713eab5b5a45db2321d7b8d4bee5f695",
   "skill_version": "0.5.4",
-  "skill_source_commit": "b995ca5efcf141e03842712ed23b659cb47abeae",
+  "skill_source_commit": "0239d83a826a51206953c411c564da72c51c4425",
   "skill_source_dirty": false,
   "repo_dirty": true,
   "release_state": "unknown",
-  "skill_tree_sha256": "f3672d8158d5b2acf09725eb6c6a1bc4928afaf81fcec3f7ee03897a03a8cbe0",
+  "skill_tree_sha256": "0aacdc6e7ec587121f24fce3b055814b907aebda0663d54d42e84d36f2b5e5f5",
   "skill_path": "$BENCHMARK_WORKSPACE/.agents/skills/design-craft",
   "provenance_skill_path": "$DESIGN_CRAFT_HOME/skills/design-craft",
   "command_summary": "codex exec --ephemeral --sandbox read-only --skip-git-repo-check --ignore-rules -C '$BENCHMARK_WORKSPACE' --model gpt-5.6-sol -c 'model_reasoning_effort=\"max\"' --output-last-message '$BENCHMARK_WORKSPACE/.design-craft-host-output.md' -",
   "output_path": "codex-output.md",
-  "output_sha256": "6c53aa5abe059f7ffbb688d8006a844427717976734f6ed7818aebf928aa7308",
+  "output_sha256": "4785a2f44796132844bd9030060803211191f7896dd8c874b44c3a72c3378795",
   "score": 100,
   "criteria": {
     "style_authority": {
@@ -56,12 +56,12 @@
     "design_moves": {
       "passed": true,
       "earned": 15,
-      "note": "Provides eight concrete moves covering native navigation, adaptive windows, targets, scalable type, native controls, semantic themes, accessible motion, recovery, and parity."
+      "note": "Provides eight concrete moves covering native navigation, targets, scalable type, adaptive windows, width-aware navigation, platform controls, semantic themes, accessible motion, recovery, and parity."
     },
     "scope_control": {
       "passed": true,
       "earned": 10,
-      "note": "Uses 92 logical lines, exactly five blockers and eight moves, and remains focused on native conformance and decisive source, build, Simulator, Emulator, and device validation."
+      "note": "Uses 82 logical lines, exactly five blockers and eight moves, and remains focused on native conformance and decisive source, build, Simulator, Emulator, and device validation."
     }
   }
 }
