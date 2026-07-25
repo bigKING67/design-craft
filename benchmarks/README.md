@@ -23,6 +23,10 @@ The smoke suite records:
   install target was created;
 - two operational npm release-package builds whose size and SHA-256 must match.
 
+Smoke results are fast execution diagnostics, not stable regression or release
+evidence. Several smoke metrics intentionally use fewer than 20 samples, so
+their reported p95 may equal the single maximum observation.
+
 The full suite adds the 100k-file tree and records at least 20 samples for every
 metric so p95 is not a single maximum observation. Release maturity runs this
 suite without competing maturity gates. Native evidence collection and final
@@ -40,7 +44,8 @@ python3 -m tools.design_craft benchmark --scale full --json
 ```
 
 The suite does not create or update a formal baseline. A caller may explicitly
-write a disposable result and compare two controlled runs:
+write a disposable result and compare two controlled runs. Smoke comparisons
+emit a diagnostic-only warning and must not be promoted as formal baselines:
 
 ```bash
 tmp_dir="$(mktemp -d -t design-craft-benchmark.XXXXXX)"
@@ -82,7 +87,10 @@ python3 -m tools.design_craft benchmark \
 
 The comparison fails closed when schema, scale, stable runner identity, policy,
 metric set, sample count, numeric timing, or specialized safety metadata is
-missing or inconsistent.
+missing or inconsistent. It recomputes p50, p95, and max from the recorded
+samples so edited summary values cannot bypass the regression policy. The
+runner also aborts if HEAD changes during measurement and preserves a dirty
+source state observed at either the start or end of the run.
 
 `.github/workflows/benchmark.yml` runs the smoke suite for pushes and pull
 requests, and the full suite for the nightly schedule or an explicit manual

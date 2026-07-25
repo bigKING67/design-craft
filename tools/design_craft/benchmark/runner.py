@@ -2,13 +2,10 @@ from __future__ import annotations
 
 import os
 import platform
-import statistics
 import subprocess
 import sys
 import tempfile
-import time
 from pathlib import Path
-from typing import Callable
 
 from ..repo import REPO_ROOT
 from ..validation.registry import load_registry, select_gates
@@ -21,6 +18,7 @@ from .contract import (
     RELATIVE_REGRESSION_LIMIT,
     SCHEMA,
     compare_results,
+    result_errors,
 )
 from .fixtures import (
     _BoundedDigestCache,
@@ -34,33 +32,8 @@ from .fixtures import (
     _tree_digest,
     _validate_changed_files,
 )
-
-
-def _percentile(values: list[float], percentile: float) -> float:
-    ordered = sorted(values)
-    if not ordered:
-        return 0.0
-    index = max(0, min(len(ordered) - 1, round((len(ordered) - 1) * percentile)))
-    return ordered[index]
-
-
-def _measure(function: Callable[[], object], iterations: int) -> dict[str, object]:
-    if iterations <= 0:
-        raise ValueError("benchmark iterations must be positive")
-    samples: list[float] = []
-    for _ in range(iterations):
-        started = time.perf_counter()
-        function()
-        samples.append((time.perf_counter() - started) * 1_000)
-    return {
-        "unit": "ms",
-        "iterations": iterations,
-        "p50": round(statistics.median(samples), 3),
-        "p95": round(_percentile(samples, 0.95), 3),
-        "max": round(max(samples), 3),
-        "samples": [round(value, 3) for value in samples],
-    }
-
+from .measurement import measure as _measure
+from .measurement import percentile as _percentile
 
 
 def _measure_cache(
@@ -147,9 +120,31 @@ def _node_version() -> str:
     return value or "unavailable"
 
 
+def _source_state() -> tuple[str, bool]:
+    return (
+        _git_value("rev-parse", "HEAD"),
+        bool(_git_value("status", "--porcelain=v1", "--untracked-files=all")),
+    )
+
+
+def _source_binding(
+    started: tuple[str, bool], completed: tuple[str, bool]
+) -> dict[str, object]:
+    if started[0] != completed[0]:
+        raise RuntimeError(
+            "benchmark source commit changed during measurement: "
+            f"started={started[0]} completed={completed[0]}"
+        )
+    return {
+        "source_commit": completed[0],
+        "source_dirty": started[1] or completed[1],
+    }
+
+
 def run_suite(scale: str = "smoke") -> dict[str, object]:
     if scale not in {"smoke", "full"}:
         raise ValueError("benchmark scale must be smoke or full")
+    started_source = _source_state()
     metrics: dict[str, dict[str, object]] = {}
     with tempfile.TemporaryDirectory(prefix="design-craft-bench-") as raw:
         temporary = Path(raw)
@@ -382,7 +377,7 @@ def run_suite(scale: str = "smoke") -> dict[str, object]:
         )
         metrics["release_bundle_build"] = release_metric
 
-    return {
+    result = {
         "schema": SCHEMA,
         "scale": scale,
         "runner": {
@@ -397,8 +392,7 @@ def run_suite(scale: str = "smoke") -> dict[str, object]:
             "platform": platform.platform(),
             "kernel": platform.release(),
         },
-        "source_commit": _git_value("rev-parse", "HEAD"),
-        "source_dirty": bool(_git_value("status", "--porcelain=v1", "--untracked-files=all")),
+        **_source_binding(started_source, _source_state()),
         "policy": {
             "version": POLICY_VERSION,
             "relative_regression_limit": RELATIVE_REGRESSION_LIMIT,
@@ -406,3 +400,7 @@ def run_suite(scale: str = "smoke") -> dict[str, object]:
         },
         "metrics": metrics,
     }
+    errors = result_errors(result, label="current")
+    if errors:
+        raise RuntimeError("benchmark runner emitted an invalid result: " + "; ".join(errors))
+    return result

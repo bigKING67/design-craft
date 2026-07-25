@@ -3,6 +3,8 @@ from __future__ import annotations
 import math
 import re
 
+from .measurement import SUMMARY_TOLERANCE_MS, summarize_samples
+
 
 SCHEMA_V1 = "design-craft.benchmark-result.v1"
 SCHEMA = "design-craft.benchmark-result.v2"
@@ -89,12 +91,16 @@ def metric_errors(name: str, metric: object) -> list[str]:
         timing_values["p50"] <= timing_values["p95"] <= timing_values["max"]
     ):
         errors.append(f"metric {name} must satisfy p50 <= p95 <= max")
-    if (
-        numeric_samples
-        and "max" in timing_values
-        and abs(max(numeric_samples) - timing_values["max"]) > 0.001
-    ):
-        errors.append(f"metric {name} max must match its samples")
+    if numeric_samples and len(numeric_samples) == len(samples):
+        expected_summary = summarize_samples(numeric_samples)
+        for field, expected in expected_summary.items():
+            if field in timing_values and not math.isclose(
+                timing_values[field],
+                expected,
+                rel_tol=0.0,
+                abs_tol=SUMMARY_TOLERANCE_MS,
+            ):
+                errors.append(f"metric {name} {field} must match its samples")
     return errors
 
 
@@ -393,6 +399,11 @@ def compare_results(
         }
     if baseline.get("scale") != current.get("scale"):
         errors.append("baseline scale must match the current benchmark")
+    elif baseline.get("scale") == "smoke":
+        warnings.append(
+            "smoke benchmark comparison is diagnostic only; use full results for "
+            "regression and release evidence"
+        )
     if _policy(baseline) != _policy(current):
         errors.append("baseline policy must match the current benchmark")
     baseline_runner = runner_identity(baseline)

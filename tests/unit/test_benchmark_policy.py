@@ -13,6 +13,7 @@ from tools.design_craft.benchmark.contract import (
     SCHEMA_V1,
     SMOKE_METRIC_NAMES,
     compare_results,
+    metric_errors,
     migrate_v1_result,
     result_errors,
 )
@@ -20,7 +21,11 @@ from tools.design_craft.benchmark.fixtures import (
     _BoundedDigestCache,
     _validate_changed_files,
 )
-from tools.design_craft.benchmark.runner import _measure_cache, _percentile
+from tools.design_craft.benchmark.runner import (
+    _measure_cache,
+    _percentile,
+    _source_binding,
+)
 
 
 def metric(p95: float) -> dict[str, object]:
@@ -183,6 +188,57 @@ class BenchmarkPolicyTests(unittest.TestCase):
     def test_full_sample_p95_is_not_a_single_maximum(self) -> None:
         samples = [100.0] * (MIN_FULL_SAMPLES - 1) + [1000.0]
         self.assertEqual(_percentile(samples, 0.95), 100.0)
+
+    def test_metric_summaries_must_match_samples(self) -> None:
+        payload = result(100.0)
+        payload["metrics"]["route_selection"]["p50"] = 90.0
+        payload["metrics"]["route_selection"]["p95"] = 90.0
+
+        errors = result_errors(payload, label="current")
+
+        self.assertTrue(any("p50 must match its samples" in error for error in errors))
+        self.assertTrue(any("p95 must match its samples" in error for error in errors))
+
+    def test_summary_validation_allows_serialization_rounding(self) -> None:
+        serialized = {
+            "unit": "ms",
+            "iterations": 2,
+            "p50": 0.152,
+            "p95": 0.152,
+            "max": 0.152,
+            "samples": [0.151, 0.152],
+        }
+
+        self.assertEqual(metric_errors("rounded", serialized), [])
+
+    def test_falsified_p95_cannot_bypass_regression(self) -> None:
+        current = result(170.0)
+        current["metrics"]["route_selection"]["p50"] = 100.0
+        current["metrics"]["route_selection"]["p95"] = 100.0
+
+        comparison = compare_results(result(100.0), current)
+
+        self.assertFalse(comparison["ok"])
+        self.assertTrue(
+            any("route_selection p95 must match its samples" in error for error in comparison["errors"])
+        )
+
+    def test_smoke_comparison_is_diagnostic_only(self) -> None:
+        comparison = compare_results(result(100.0), result(100.0))
+
+        self.assertTrue(comparison["ok"], comparison["errors"])
+        self.assertTrue(any("diagnostic only" in warning for warning in comparison["warnings"]))
+
+    def test_source_binding_preserves_initial_dirty_state(self) -> None:
+        commit = "a" * 40
+        self.assertEqual(
+            _source_binding((commit, True), (commit, False)),
+            {"source_commit": commit, "source_dirty": True},
+        )
+
+    def test_source_binding_rejects_commit_changes(self) -> None:
+        with self.assertRaisesRegex(RuntimeError, "source commit changed"):
+            _source_binding(("a" * 40, False), ("b" * 40, False))
 
     def test_small_absolute_variance_does_not_fail(self) -> None:
         comparison = compare_results(result(10.0), result(20.0))

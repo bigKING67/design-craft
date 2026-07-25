@@ -7,7 +7,8 @@ import sys
 import time
 from pathlib import Path
 
-from ...benchmark.runner import compare_results, run_suite
+from ...benchmark.contract import compare_results
+from ...benchmark.runner import run_suite
 from ...release.github_runs import load_observation, workflow_binding
 from .execution import command_gate, gate_result
 from .model import GateRunner, MaturityContext, MaturityGateResult
