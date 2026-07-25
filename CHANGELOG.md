@@ -21,6 +21,10 @@ All notable local changes to `design-craft` are recorded here.
 - Keep mutable upstream review heads and provenance-only ranges in repository
   governance metadata rather than the installed Skill source map, so review-only
   drift no longer invalidates current-source behavioral evidence.
+- Make capped production audits use no more than eight compact ledger entries,
+  require exact replacement behavior for cited fixed responsive geometry, and
+  keep unmeasured static performance risks at P1 unless source or runtime proof
+  establishes release-blocking failure.
 
 ## 0.5.3 - 2026-07-25
 

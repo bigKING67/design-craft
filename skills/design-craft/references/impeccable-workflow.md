@@ -122,6 +122,11 @@ Severity:
 - P2: schedule soon; acceptable with explicit risk.
 - P3: polish backlog.
 
+Static performance shape can prove unbounded work without proving experienced
+latency. Unless the source itself guarantees task failure at the stated scale,
+keep an unmeasured render/filter/asset hot path at P1 and promote it to P0 only
+after target-runtime evidence shows a release-blocking regression.
+
 ## Polish pass
 
 Polish only after the UI works. Check:

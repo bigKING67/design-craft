@@ -134,7 +134,13 @@ system, data density, report grammar, or runtime truth.
    For prompts that separately request findings, area fixes, detector
    reconciliation, and validation, keep one finding ledger: record source fact,
    runtime hypothesis, implementation behavior, recovery action, and acceptance
-   once, then reference the finding ID or use a compact coverage matrix. A
+   once, then reference the finding ID or use a compact coverage matrix. Under
+   a hard cap of 200 lines or fewer, use at most eight ledger entries unless the
+   prompt requires an exact larger count, combine related failure states, and
+   reserve at least one quarter of the budget for detector reconciliation and
+   validation. Do not restate full evidence and fixes under later area headings.
+   If the final count still exceeds the cap, remove duplicated prose and P3
+   detail before omitting required states; never return an over-cap answer. A
    missing loading, empty, error, permission, conflict, offline, or partial
    state is not covered until the response names what renders, what the user can
    do, what context survives, and how the result is verified. Draft to roughly
@@ -281,6 +287,12 @@ unverified:
   overlapping requests or bulk operations share that state. Describe the
   concurrency failure conditionally unless the supplied call paths establish
   simultaneous lifecycles.
+- Responsive geometry: when static evidence names a fixed page minimum, column
+  grid, drawer width, or other viewport constraint, a responsive fix is
+  incomplete unless it names the replacement behavior for every cited blocker.
+  Isolate unavoidable overflow to the data region, keep critical actions
+  reachable, and bound fixed panels to the viewport or switch to an approved
+  compact/full-screen pattern.
 - Direct manipulation: for drag, swipe, sheet, drawer, reorder, momentum, or
   scrubbing work, reject input lockout and require pointer/native capture, grab
   offset, 1:1 tracking, explicit coordinate space and velocity units,
@@ -303,7 +315,10 @@ unverified:
 - Engineering: clear component boundaries, no needless abstraction, observable
   errors, dependency checks before imports.
 - Performance: measured or reasoned hot paths, no layout thrashing, no unbounded
-  render/data work, sane bundle and asset choices.
+  render/data work, sane bundle and asset choices. Do not assign P0 solely from
+  an unmeasured static hot-path shape; use P1 risk unless source proves certain
+  task/data failure at the stated scale or runtime measurement proves a release
+  blocker.
 - Architecture: interfaces and data flow are explicit; migration and
   compatibility risks are named.
 - Structure: new files follow existing project conventions; shared abstractions
