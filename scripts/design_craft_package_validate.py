@@ -9,7 +9,7 @@ import re
 import shutil
 import subprocess
 import sys
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 from typing import Any
 
 
@@ -41,6 +41,10 @@ REQUIRED_PACKED_PATHS = {
     "skills/design-craft/SKILL.md",
     "skills/design-craft/VERSION",
     "skills/design-craft/COMPATIBILITY.json",
+    "skills/design-craft/lib/design_craft/__init__.py",
+    "skills/design-craft/lib/design_craft/route_contract.py",
+    "skills/design-craft/scripts/design_craft_route.sh",
+    "skills/design-craft/scripts/design_craft_route_runtime.py",
     "skills/design-craft/templates/developer-product/design.md",
     "skills/design-craft/templates/developer-product/design.dark.md",
 }
@@ -62,6 +66,8 @@ FORBIDDEN_PREFIXES = (
     "skills/frontend-craft/",
     "upstreams/",
 )
+FORBIDDEN_PACKED_PARTS = {"__pycache__"}
+FORBIDDEN_PACKED_SUFFIXES = {".pyc", ".pyo"}
 PUBLIC_HOME_PATTERN = re.compile(
     r"(?:/Users/[^/\s]+|/home/[^/\s]+|[A-Za-z]:\\Users\\[^\\\s]+)"
 )
@@ -192,7 +198,13 @@ def pack_errors(pack: dict[str, Any]) -> list[str]:
         errors.append("package is missing required paths: " + ", ".join(missing))
 
     for path in sorted(paths):
-        if path.startswith(FORBIDDEN_PREFIXES):
+        packed_path = PurePosixPath(path)
+        if (
+            FORBIDDEN_PACKED_PARTS.intersection(packed_path.parts)
+            or packed_path.suffix.lower() in FORBIDDEN_PACKED_SUFFIXES
+        ):
+            errors.append(f"package contains generated Python cache: {path}")
+        elif path.startswith(FORBIDDEN_PREFIXES):
             errors.append(f"package contains forbidden path: {path}")
         elif path not in ALLOWED_PATHS and not path.startswith(ALLOWED_PREFIXES):
             errors.append(f"package contains undeclared path: {path}")
@@ -355,6 +367,22 @@ def self_check() -> list[str]:
     )
     if not any("forbidden path" in item for item in pack_errors(forbidden)):
         errors.append("package validator did not reject an upstream payload")
+
+    bytecode = dict(
+        valid_pack,
+        entryCount=len(REQUIRED_PACKED_PATHS) + 1,
+        files=[
+            *valid_pack["files"],
+            {
+                "path": (
+                    "skills/design-craft/scripts/__pycache__/"
+                    "design_craft_route_runtime.cpython-313.pyc"
+                )
+            },
+        ],
+    )
+    if not any("generated Python cache" in item for item in pack_errors(bytecode)):
+        errors.append("package validator did not reject generated Python bytecode")
     return errors
 
 

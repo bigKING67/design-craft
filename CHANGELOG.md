@@ -4,6 +4,16 @@ All notable local changes to `design-craft` are recorded here.
 
 ## Unreleased
 
+- Recompute benchmark p50, p95, and max from recorded samples, reject source
+  commit changes during measurement, and mark low-sample smoke comparisons as
+  diagnostic-only evidence.
+- Move portable route resolution from an embedded-Python shell controller to a
+  directly tested single-process Python runtime behind the unchanged
+  `design_craft_route.sh` entrypoint. This preserves route JSON and exit codes
+  while removing repeated interpreter startup from the measured user path.
+- Exclude Python bytecode caches from npm packaging and make package validation
+  reject any `__pycache__`, `.pyc`, or `.pyo` path that reaches the pack
+  manifest.
 - Remove the admin-only `RELEASE_GOVERNANCE_TOKEN` from release certification.
   Certification now relies on the repository-scoped Actions token for exact
   tag, workflow-run, artifact, benchmark, and digest verification; live

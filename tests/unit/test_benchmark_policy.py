@@ -48,6 +48,7 @@ def metrics(p95: float) -> dict[str, dict[str, object]]:
                 "changed_files": count,
                 "validation_scope": "explicit_changed_files",
                 "fixture_root": "temporary_directory",
+                "fixture_scope": "benchmark_only_synthetic_changed_files",
             }
         )
     values["validation_cache_cold"].update(
@@ -59,6 +60,7 @@ def metrics(p95: float) -> dict[str, dict[str, object]]:
             "cache_evictions": 0,
             "max_entries_observed": CACHE_CAPACITY,
             "warm": False,
+            "fixture_scope": "benchmark_only_synthetic_digest_cache",
         }
     )
     values["validation_cache_warm"].update(
@@ -70,6 +72,7 @@ def metrics(p95: float) -> dict[str, dict[str, object]]:
             "cache_evictions": 0,
             "max_entries_observed": CACHE_CAPACITY,
             "warm": True,
+            "fixture_scope": "benchmark_only_synthetic_digest_cache",
         }
     )
     values["validation_cache_overflow"].update(
@@ -81,6 +84,7 @@ def metrics(p95: float) -> dict[str, dict[str, object]]:
             "cache_evictions": CACHE_CAPACITY,
             "max_entries_observed": CACHE_CAPACITY,
             "warm": False,
+            "fixture_scope": "benchmark_only_synthetic_digest_cache",
         }
     )
     values["install_rollback"].update(
@@ -336,6 +340,16 @@ class BenchmarkPolicyTests(unittest.TestCase):
         comparison = compare_results(baseline, result(100.0))
         self.assertFalse(comparison["ok"])
         self.assertTrue(any("cache capacity" in error for error in comparison["errors"]))
+
+    def test_synthetic_cache_scope_cannot_claim_runtime_coverage(self) -> None:
+        payload = result(100.0)
+        payload["metrics"]["validation_cache_warm"]["fixture_scope"] = (
+            "production_runtime_cache"
+        )
+
+        errors = result_errors(payload, label="current")
+
+        self.assertTrue(any("synthetic cache scope" in error for error in errors))
 
     def test_release_bundle_contract_fails_closed(self) -> None:
         baseline = result(100.0)

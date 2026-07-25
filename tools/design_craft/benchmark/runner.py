@@ -75,6 +75,7 @@ def _measure_cache(
             "cache_evictions": observed["evictions"],
             "max_entries_observed": observed["max_entries"],
             "warm": warm,
+            "fixture_scope": "benchmark_only_synthetic_digest_cache",
         }
     )
     return metric
@@ -243,6 +244,7 @@ def run_suite(scale: str = "smoke") -> dict[str, object]:
                     "changed_files": count,
                     "validation_scope": "explicit_changed_files",
                     "fixture_root": "temporary_directory",
+                    "fixture_scope": "benchmark_only_synthetic_changed_files",
                 }
             )
             metrics[f"incremental_validation_{count}"] = metric

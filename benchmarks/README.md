@@ -10,13 +10,16 @@ write the active `~/.agents` installation.
 
 The smoke suite records:
 
-- portable route selection and the isolated Codex route-pack self-check;
+- portable route selection through the stable shell entrypoint and its
+  single-process Python runtime, plus the isolated Codex route-pack self-check;
 - 1k and 10k file-tree hashing;
 - validation registry load, full lint, evidence validation, and package
   validation;
-- explicit incremental validation for exactly 1, 10, and 100 changed files;
-- bounded digest-cache cold, warm, and overflow behavior, including hit, miss,
-  eviction, and maximum-entry counters;
+- synthetic changed-file validation for exactly 1, 10, and 100 fixture files;
+  this measures the benchmark algorithm, not a production incremental engine;
+- synthetic bounded digest-cache cold, warm, and overflow behavior, including
+  hit, miss, eviction, and maximum-entry counters; design-craft does not
+  currently expose this fixture cache as a runtime validation feature;
 - atomic installation into an isolated root;
 - after-switch rollback timing with byte-for-byte restoration verification;
 - live-lock contention with a zero-second timeout, including proof that no

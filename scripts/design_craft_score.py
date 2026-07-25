@@ -167,7 +167,9 @@ def build_score(root: Path, run_smoke: bool) -> list[Dimension]:
     motion_planning = read_text(root / "skills/design-craft/references/motion-audit-planning.md")
     motion_vocabulary = read_text(root / "skills/design-craft/references/motion-vocabulary.md")
     browser_evidence_helper = runtime_text(root, "design_craft_browser_evidence.py")
-    route_helper = runtime_text(root, "design_craft_route.sh")
+    route_helper = runtime_text(root, "design_craft_route.sh") + runtime_text(
+        root, "design_craft_route_runtime.py"
+    ) + read_text(root / "skills/design-craft/lib/design_craft/route_contract.py")
     audit_helper = runtime_text(root, "design_craft_audit.sh")
     report = read_text(root / "skills/design-craft/references/report-quality.md")
     surface = read_text(root / "skills/design-craft/references/surface-playbooks.md")

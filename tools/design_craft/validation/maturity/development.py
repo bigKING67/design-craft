@@ -29,6 +29,7 @@ RUNTIME_SCRIPTS = {
     "design_craft_l4_eval_case.sh",
     "design_craft_l4_case_validate.py",
     "design_craft_platform_scan.py",
+    "design_craft_route_runtime.py",
 }
 
 

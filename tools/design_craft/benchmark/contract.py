@@ -119,7 +119,13 @@ def specialized_metric_errors(name: str, metric: object) -> list[str]:
             errors.append(f"metric {name} must declare explicit_changed_files scope")
         if metric.get("fixture_root") != "temporary_directory":
             errors.append(f"metric {name} must use a temporary fixture root")
+        fixture_scope = metric.get("fixture_scope")
+        if fixture_scope is not None and fixture_scope != "benchmark_only_synthetic_changed_files":
+            errors.append(f"metric {name} has an invalid synthetic fixture scope")
     if name.startswith("validation_cache_"):
+        fixture_scope = metric.get("fixture_scope")
+        if fixture_scope is not None and fixture_scope != "benchmark_only_synthetic_digest_cache":
+            errors.append(f"metric {name} has an invalid synthetic cache scope")
         integer_fields = (
             "cache_capacity",
             "working_set",
