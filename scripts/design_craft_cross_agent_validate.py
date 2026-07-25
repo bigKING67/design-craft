@@ -358,6 +358,7 @@ def validate_output(task_dir: Path, host: str) -> list[str]:
             "设计移动",
             "设计修正",
             "设计改进",
+            "设计改动",
         ),
     }
     for label, variants in required_concepts.items():
@@ -551,7 +552,20 @@ def run_self_check() -> list[str]:
         (task / "cursor-output.md").unlink()
 
         output = task / "codex-output.md"
-        output.write_text("Evidence, unverified boundaries, and design moves. " * 20, encoding="utf-8")
+        output.write_text(
+            "证据、未验证边界和具体设计改动。" * 40,
+            encoding="utf-8",
+        )
+        localized_errors = validate_output(task, "codex")
+        if localized_errors:
+            errors.append(
+                "self-check failed to accept localized design-change wording: "
+                + "; ".join(localized_errors)
+            )
+        output.write_text(
+            "Evidence, unverified boundaries, and design moves. " * 20,
+            encoding="utf-8",
+        )
         run_manifest = task / "run.codex.json"
         run_manifest.write_text(
             json.dumps(
