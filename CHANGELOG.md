@@ -29,6 +29,10 @@ All notable local changes to `design-craft` are recorded here.
 - Split the 692-line maturity gate catalog into development, evidence,
   repository, execution, and registry modules while preserving all gate IDs,
   public imports, profiles, and process behavior.
+- Split the 582-line route semantic audit into declarative path/fragment
+  contracts, static checks, runtime probes, and a thin orchestrator. Static
+  reads now execute while the already-submitted runtime probe batch is active,
+  without changing the report schema or issue ordering.
 
 ## 0.5.6 - 2026-07-25
 

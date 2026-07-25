@@ -53,6 +53,9 @@ This document is the local release and maintenance checklist for
 - Keep maturity gates grouped by evidence lifetime: deterministic development
   gates, current-source evidence gates, and repository/release-state gates.
   `maturity/gates.py` owns only registration and compatibility exports.
+- Keep route-pack semantic validation split into declarative contracts, static
+  source checks, and runtime probes. Submit runtime work first, overlap static
+  reads, and assemble the stable report only in `routing/semantic_audit.py`.
 - Keep `operational_95` distinct from `certified_100`. These are evidence-level
   names, not composite product-quality scores. Certified requires current-source
   score v4 for all four hosts plus Simulator, Emulator, and physical-device
