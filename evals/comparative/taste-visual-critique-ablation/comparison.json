@@ -1,6 +1,6 @@
 {
-  "blind_map_sha256": "dbc034b71e8350813cf1ce341e9a2713ca54c4fce57c0ded1bad2f4a408fa9b3",
-  "blind_packet_sha256": "62d8a02712fbee7ef2783f15fa7e3b38afcbb2795934459186c2b0092d819304",
+  "blind_map_sha256": "4dd931816e3defec77f5ae803e6570ad52779e3776d0d3a89c964d4930aaea2e",
+  "blind_packet_sha256": "68a6cbf83774df3e1ca6c6574e1b06033ecf26eab8b3799d4c41b143e0ef2a87",
   "case_id": "taste-visual-critique-ablation",
   "focused_variant": "taste",
   "judge": {
@@ -8,34 +8,34 @@
     "model": "gpt-5.6-sol",
     "model_observation": "requested_by_cli",
     "raw_output_path": "judge-output.raw.txt",
-    "raw_output_sha256": "2b3418050bda5fae2cc0b3f34d56abbf607ae7dd3a18bac61a6dc18f54b1f0ef",
+    "raw_output_sha256": "d58fd48816ad4b9ea24e958bb440be73a95b3376d1c30712a77fb64f96d77097",
     "reasoning": "max",
     "reasoning_observation": "requested_by_cli",
     "run_path": "run.judge.json",
-    "run_sha256": "34da453d9257d54487048e581a9f040cd3dda1237fbd8650d457c998350c3201",
+    "run_sha256": "77568a05115af5d6e4e8cb0719bbc22eb08d0b7b71e177b1b1e22defd5e4b836",
     "runner_os": "macOS-15.7.7-arm64-arm-64bit-Mach-O",
     "version": "codex-cli 0.145.0"
   },
   "judgment_path": "blind-judgment.json",
   "judgment_schema_sha256": "f80a55f5da5692ecd98e1a34f3ab5e0884af7840e14870655dfb99dc5306cf58",
-  "judgment_sha256": "dbf88651a58a31ed22f7f155b23ba84088ee01269b05764652d11c8293237d52",
+  "judgment_sha256": "c07a47c5a51ae0981230adb33eca9542cf58aa321222d3f4cf00fed99299d9e1",
   "prompt_sha256": "24483d75b8bec334c978ae4f120d5523ec4ee54a1b8c3bbeef97aafbd6090ed9",
-  "rationale": "B wins by a narrow margin over A because it connects every major region to the next-hour decision flow while offering the strongest concrete surface-craft rules: lead-versus-support metric hierarchy, operational KPI context, a named diagnostic purpose for the chart, semantic rather than decorative trend color, right-aligned financial values, a defined spacing scale, and disciplined elevation. A is nearly equivalent and is stronger on explicit loading, empty, error, and focus-state redesign criteria, but it leaves the chart's resulting role less fully resolved. C remains strong and compliant, yet several acceptance criteria are less measurable and its invented example figures are less disciplined relative to the instruction to preserve real product data.",
-  "recorded_at": "2026-07-25T02:11:44Z",
+  "rationale": "B 在三份都很强的输出中覆盖最均衡：不仅正确把异常表提升为首屏主工作面并压低历史分析，还将视觉判断落实到金额对齐、相对截止时间、名称展开、文字加语义色、重复间距节奏、卡片降噪以及各类操作状态。相比之下，A 的视觉系统验收较泛，C 则遗漏了题面明确的全局间距问题和更完整的字体/对比度修正规则，因此 B 最符合全部七项评分标准。",
+  "recorded_at": "2026-07-25T03:10:53Z",
   "results": {
     "baseline": {
-      "blind_label": "C",
+      "blind_label": "A",
       "criteria": {
         "anti_generic": 15,
         "concrete_moves": 18,
-        "evidence_honesty": 9,
-        "product_fit": 14,
-        "product_hierarchy": 14,
+        "evidence_honesty": 10,
+        "product_fit": 15,
+        "product_hierarchy": 15,
         "scope_discipline": 10,
-        "visual_craft": 13
+        "visual_craft": 12
       },
-      "score": 93,
-      "summary": "C correctly identifies the buried workflow, equal KPI emphasis, generic insight copy, and excessive containment, then supplies a strong first-viewport and table-triage redesign. It is less exact about type sizing, contrast, numeric alignment, spacing tokens, and production-state acceptance behavior; its illustrative summaries also introduce exact fictional values rather than explicitly requiring aggregates derived from the preserved data, and the analyst timing exercise exceeds the smallest requested browser, responsive, and state check."
+      "score": 95,
+      "summary": "准确把异常队列重新确立为首屏主任务，并完整识别等权 KPI、卡片套卡、空泛洞察、状态圆点和无标签操作等问题。八项改造都有验收条件，且保持既有数据、流程与色彩权威；主要扣分在于字体、对比度和间距修正仍缺少更明确的目标值或统一规则，部分验证阈值也较宽泛。"
     },
     "design-craft": {
       "blind_label": "B",
@@ -46,13 +46,13 @@
         "product_fit": 15,
         "product_hierarchy": 15,
         "scope_discipline": 10,
-        "visual_craft": 15
+        "visual_craft": 14
       },
-      "score": 99,
-      "summary": "B provides the most complete hierarchy from lead risk through supporting context to diagnostic evidence and the action table. Its semantic sparkline rule, explicit spacing scale, elevation policy, numeric alignment, action grammar, and operational chart question make the visual critique especially implementation-ready; the only small gap is that missing states are validated but not fully specified as a redesign move."
+      "score": 98,
+      "summary": "最全面地把下一小时异常处理转化为可扫描的首屏决策流，同时对表格列层级、金额右对齐、相对期限、两行产品名、显式状态、操作标签、字体角色、间距节奏和容器层级给出具体改法。状态验收还覆盖无布局跳动、保留筛选、陈旧数据和窄屏关键操作，静态证据边界及后续验证范围均表述清楚；仅因部分可读性和桌面视口标准没有量化到固定阈值而未获满分。"
     },
     "taste": {
-      "blind_label": "A",
+      "blind_label": "C",
       "criteria": {
         "anti_generic": 15,
         "concrete_moves": 19,
@@ -60,10 +60,10 @@
         "product_fit": 15,
         "product_hierarchy": 15,
         "scope_discipline": 10,
-        "visual_craft": 14
+        "visual_craft": 12
       },
-      "score": 98,
-      "summary": "A tightly reorients the surface around first-viewport exceptions, preserves the existing operational authority, and uniquely turns missing production states into concrete acceptance criteria. It loses only minor craft and coverage points because the chart and generic insight region are criticized but not given as explicit a diagnostic role as in B, and some typography and spacing criteria remain non-numeric."
+      "score": 96,
+      "summary": "首屏尺寸、可见行数、三秒扫描目标、单层卡片嵌套和十秒任务验证等标准非常具体，异常摘要、状态标签和主要操作也紧扣运营决策流。其不足是没有直接处理题面明确指出的全局 8–48px 间距失序，对新正文尺寸、对比度和统一密度规则的验收也不如 B 完整；示例洞察中的虚构数值虽明显属于示例，但不如使用真实数据占位规则稳妥。"
     }
   },
   "schema": "design-craft.comparative-result.v3",
@@ -76,9 +76,9 @@
       "host_version": "0.80.6",
       "model": "codex/gpt-5.5",
       "output_path": "output.baseline.md",
-      "output_sha256": "b8a867ae61cd488307681fa77d837f85abd20325e55824698216c6ace332ecdc",
+      "output_sha256": "6b68cdac060a44850419630273e2ae17d79b1e40ead4de14acac5ec41e8607a8",
       "run_path": "run.baseline.json",
-      "run_sha256": "64bb02d3b18c7ff09082c90c09a6cf79b59bba43ca311b2ec9581c5f1e848e6f",
+      "run_sha256": "68559df8f3c83643a21627b90ec90972a9ed7cc26c256c7f81c9b9ac3a920044",
       "skill_trees": {},
       "thinking": "high"
     },
@@ -88,11 +88,11 @@
       "host_version": "0.80.6",
       "model": "codex/gpt-5.5",
       "output_path": "output.design-craft.md",
-      "output_sha256": "eb7e35aa9dc47a3dccadfa018e4b03a51ba73fc4b81d9cc22696eb3d6e564f41",
+      "output_sha256": "617d5e4ad50f2c58d516cef1e2a672711f3f83aa39f88bdc1852c62a544dc237",
       "run_path": "run.design-craft.json",
-      "run_sha256": "18774469d989d915fd6bd5bcc126b810b4b68c84bd51ebb5291673a0ef986dd3",
+      "run_sha256": "8404a8ca8955a1ae0b77e967bc701bc87403ea72597b091e51841e9315191fdc",
       "skill_trees": {
-        "skills/design-craft": "f3672d8158d5b2acf09725eb6c6a1bc4928afaf81fcec3f7ee03897a03a8cbe0"
+        "skills/design-craft": "0aacdc6e7ec587121f24fce3b055814b907aebda0663d54d42e84d36f2b5e5f5"
       },
       "thinking": "high"
     },
@@ -102,9 +102,9 @@
       "host_version": "0.80.6",
       "model": "codex/gpt-5.5",
       "output_path": "output.taste.md",
-      "output_sha256": "efd0d97793ce7cbe1d4f2738420eb77c26a2551f923289ebfb23f385564d443f",
+      "output_sha256": "3fd1f7b4351588ab80bf2dda663007b6ecb3daab2bc13b5fc5b718e9154daeaf",
       "run_path": "run.taste.json",
-      "run_sha256": "c3406ac643287f776349280a1c6df1200d3693d5208fc019a6d9303f0b51eaa2",
+      "run_sha256": "52d015989dcf63fb847bb65e2a2ac0ac887ae177e321186ff9d6a09b59248af1",
       "skill_trees": {
         "upstreams/taste-skill/skills/redesign-skill": "1fd74922e6bb2011c7c0d82aefd70d0cc1dbd31bd904054bec3f6cae4d731b90",
         "upstreams/taste-skill/skills/taste-skill": "40ef50925b446e08a4ad5cead8edeb98f48982eb498b0073fe6a0b27ea736769"

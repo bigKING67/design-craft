@@ -1,51 +1,51 @@
 {
-  "rationale": "B wins because it most precisely identifies the intentional input lockout, requires interruption from the current visible presentation value without snap-back, specifies monotonic sampling and CSS px/s velocity, carries that velocity into settling, bounds the projected endpoint before snap selection, and preserves product-defined target semantics. It also covers pointer capture, grab offset, one-to-one tracking, transform ownership, transition-all, Reduced Motion, and a compact validation plan. C is nearly as technically complete but exceeds the requested line budget; A is actionable but omits the decisive presentation-value interruption flow and a unitful projected-endpoint model.",
+  "rationale": "A 在机器评分要求中取得最佳平衡：它是唯一既完整覆盖直接操控、当前呈现值中断、速度单位与投影选档，又保持明显低于 150 行并给出真正紧凑验证计划的输出。B 对释放速度进入 settle 的描述更明确，但缺少单位且严重超出篇幅预算；C 的核心诊断可靠，但速度连续性与投影链路不完整，同样违反输出预算。因此按各项重算后，A 以 98 分胜出。",
   "results": [
     {
       "criteria": {
         "accessibility": 10,
         "actionability": 10,
-        "direct_manipulation": 13,
-        "evidence_honesty": 12,
-        "interruption": 4,
+        "direct_manipulation": 15,
+        "evidence_honesty": 14,
+        "interruption": 15,
         "motion_necessity": 10,
         "performance": 10,
-        "velocity_projection": 8
+        "velocity_projection": 14
       },
       "label": "A",
-      "summary": "Strong static audit of drag anchoring, pointer lifecycle, motion properties, and Reduced Motion, but it largely misses normal mid-settle interruption from the current presentation value and lacks unitful velocity projection.",
-      "total": 77
+      "summary": "覆盖最完整且最紧凑：明确区分静态证据与未验证运行态，完整处理输入锁定、指针捕获、抓取偏移、单点跟踪、当前呈现值中断、投影选档、性能属性和 Reduced Motion。小缺口是没有明确要求把释放速度作为 settle 的初始速度，并在验证计划中引入了题面未提供的 10,000 行表场景。",
+      "total": 98
     },
     {
       "criteria": {
         "accessibility": 10,
-        "actionability": 10,
+        "actionability": 7,
         "direct_manipulation": 15,
-        "evidence_honesty": 14,
+        "evidence_honesty": 15,
         "interruption": 15,
         "motion_necessity": 10,
         "performance": 10,
-        "velocity_projection": 15
+        "velocity_projection": 14
       },
       "label": "B",
-      "summary": "The most complete and concise response: it covers all required gesture mechanics, presentation-value interruption, unitful velocity and bounded projection, transform ownership, Reduced Motion, and a minimal runtime plan.",
-      "total": 99
+      "summary": "技术判断几乎同样完整，尤其明确要求从当前视觉位置中断并把释放速度传入 settle，也清楚拒绝布局属性、transition-all 和整面板缩放。主要缺口是没有规定速度单位，而且大量分隔、展开说明和六项验证使输出明显超过 150 行预算，未满足“ concise”和最小运行时计划约束。",
+      "total": 96
     },
     {
       "criteria": {
         "accessibility": 10,
-        "actionability": 8,
+        "actionability": 7,
         "direct_manipulation": 15,
         "evidence_honesty": 14,
         "interruption": 15,
         "motion_necessity": 10,
         "performance": 10,
-        "velocity_projection": 15
+        "velocity_projection": 10
       },
       "label": "C",
-      "summary": "Technically comprehensive on interruption, velocity, transforms, motion necessity, and accessibility, but materially overlong for the 150-line constraint and less tightly scoped than B.",
-      "total": 97
+      "summary": "正确识别了拖拽门禁、捕获、起始偏移、布局动画、冲突所有权、中断和无障碍问题，直接操控公式也可消除抓取跳变。相比前两项，其速度方案只列方向、速度和迟滞，缺少明确单位、投影终点以及将速度连续传入 settle；同时篇幅超过 150 行，并把题面未提供的“真实 10,000 行表”写入未验证边界。",
+      "total": 91
     }
   ],
-  "winner": "B"
+  "winner": "A"
 }

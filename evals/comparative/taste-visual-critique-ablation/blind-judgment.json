@@ -1,6 +1,20 @@
 {
-  "rationale": "B wins by a narrow margin over A because it connects every major region to the next-hour decision flow while offering the strongest concrete surface-craft rules: lead-versus-support metric hierarchy, operational KPI context, a named diagnostic purpose for the chart, semantic rather than decorative trend color, right-aligned financial values, a defined spacing scale, and disciplined elevation. A is nearly equivalent and is stronger on explicit loading, empty, error, and focus-state redesign criteria, but it leaves the chart's resulting role less fully resolved. C remains strong and compliant, yet several acceptance criteria are less measurable and its invented example figures are less disciplined relative to the instruction to preserve real product data.",
+  "rationale": "B 在三份都很强的输出中覆盖最均衡：不仅正确把异常表提升为首屏主工作面并压低历史分析，还将视觉判断落实到金额对齐、相对截止时间、名称展开、文字加语义色、重复间距节奏、卡片降噪以及各类操作状态。相比之下，A 的视觉系统验收较泛，C 则遗漏了题面明确的全局间距问题和更完整的字体/对比度修正规则，因此 B 最符合全部七项评分标准。",
   "results": [
+    {
+      "criteria": {
+        "anti_generic": 15,
+        "concrete_moves": 18,
+        "evidence_honesty": 10,
+        "product_fit": 15,
+        "product_hierarchy": 15,
+        "scope_discipline": 10,
+        "visual_craft": 12
+      },
+      "label": "A",
+      "summary": "准确把异常队列重新确立为首屏主任务，并完整识别等权 KPI、卡片套卡、空泛洞察、状态圆点和无标签操作等问题。八项改造都有验收条件，且保持既有数据、流程与色彩权威；主要扣分在于字体、对比度和间距修正仍缺少更明确的目标值或统一规则，部分验证阈值也较宽泛。",
+      "total": 95
+    },
     {
       "criteria": {
         "anti_generic": 15,
@@ -11,8 +25,8 @@
         "scope_discipline": 10,
         "visual_craft": 14
       },
-      "label": "A",
-      "summary": "A tightly reorients the surface around first-viewport exceptions, preserves the existing operational authority, and uniquely turns missing production states into concrete acceptance criteria. It loses only minor craft and coverage points because the chart and generic insight region are criticized but not given as explicit a diagnostic role as in B, and some typography and spacing criteria remain non-numeric.",
+      "label": "B",
+      "summary": "最全面地把下一小时异常处理转化为可扫描的首屏决策流，同时对表格列层级、金额右对齐、相对期限、两行产品名、显式状态、操作标签、字体角色、间距节奏和容器层级给出具体改法。状态验收还覆盖无布局跳动、保留筛选、陈旧数据和窄屏关键操作，静态证据边界及后续验证范围均表述清楚；仅因部分可读性和桌面视口标准没有量化到固定阈值而未获满分。",
       "total": 98
     },
     {
@@ -23,25 +37,11 @@
         "product_fit": 15,
         "product_hierarchy": 15,
         "scope_discipline": 10,
-        "visual_craft": 15
-      },
-      "label": "B",
-      "summary": "B provides the most complete hierarchy from lead risk through supporting context to diagnostic evidence and the action table. Its semantic sparkline rule, explicit spacing scale, elevation policy, numeric alignment, action grammar, and operational chart question make the visual critique especially implementation-ready; the only small gap is that missing states are validated but not fully specified as a redesign move.",
-      "total": 99
-    },
-    {
-      "criteria": {
-        "anti_generic": 15,
-        "concrete_moves": 18,
-        "evidence_honesty": 9,
-        "product_fit": 14,
-        "product_hierarchy": 14,
-        "scope_discipline": 10,
-        "visual_craft": 13
+        "visual_craft": 12
       },
       "label": "C",
-      "summary": "C correctly identifies the buried workflow, equal KPI emphasis, generic insight copy, and excessive containment, then supplies a strong first-viewport and table-triage redesign. It is less exact about type sizing, contrast, numeric alignment, spacing tokens, and production-state acceptance behavior; its illustrative summaries also introduce exact fictional values rather than explicitly requiring aggregates derived from the preserved data, and the analyst timing exercise exceeds the smallest requested browser, responsive, and state check.",
-      "total": 93
+      "summary": "首屏尺寸、可见行数、三秒扫描目标、单层卡片嵌套和十秒任务验证等标准非常具体，异常摘要、状态标签和主要操作也紧扣运营决策流。其不足是没有直接处理题面明确指出的全局 8–48px 间距失序，对新正文尺寸、对比度和统一密度规则的验收也不如 B 完整；示例洞察中的虚构数值虽明显属于示例，但不如使用真实数据占位规则稳妥。",
+      "total": 96
     }
   ],
   "winner": "B"
