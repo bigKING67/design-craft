@@ -9,6 +9,9 @@ All notable local changes to `design-craft` are recorded here.
   tag, workflow-run, artifact, benchmark, and digest verification; live
   ruleset and Actions-policy inspection remains an explicit maintenance audit
   rather than a release-blocking dependency.
+- Allow maintainers to fast-forward locally verified commits directly to
+  `main`; Validate remains post-push evidence while deletion and force-push
+  protection stays active for `main` and release tags.
 
 ## 0.5.6 - 2026-07-25
 

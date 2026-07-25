@@ -37,3 +37,18 @@ Keep changes responsibility-scoped. Report the affected contracts, exact
 validation commands, generated artifacts, remaining unverified hosts/devices,
 and performance comparison when a hot path changes. A source completeness
 score is not a product-quality or release-certification claim.
+
+Pull requests are recommended for external contributions and risky changes,
+but they are not required for maintainer-owned, locally verified work. A
+maintainer may use the direct path:
+
+```bash
+git add -- <scoped-paths>
+git commit -m "<type>(<scope>): <summary>"
+git push origin main
+```
+
+Run targeted local validation before pushing. GitHub CI remains post-push
+evidence and should be investigated when it fails, but normal fast-forward
+pushes do not wait for remote status checks. Main and release tags still reject
+deletion and non-fast-forward updates.

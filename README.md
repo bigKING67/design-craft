@@ -758,6 +758,12 @@ long-lived personal access token. Live ruleset and Actions-policy inspection is
 available separately through `make github-governance-check` for maintainers; it
 is not a release-blocking dependency.
 
+Maintainers can push locally verified, scoped commits directly to `main`.
+Validate runs after the push as asynchronous evidence instead of blocking the
+fast-forward update. The repository still rejects deletion and force-pushes on
+`main` and immutable `v*` tags. Pull requests remain useful for external or
+high-risk changes, but are not mandatory for routine maintainer work.
+
 `.github/workflows/release-publish.yml` accepts an explicit successful
 certification run ID, artifact ID, and `sha256:<digest>`. It re-observes the run
 and artifact in a read-only verification job, downloads the exact artifact ID,

@@ -47,24 +47,6 @@ class GovernanceApiError(RuntimeError):
         self.endpoint = endpoint
 
 
-def required_checks() -> list[dict[str, str]]:
-    checks = [
-        {"context": f"{os_name} / Node {node} / Python {python}"}
-        for os_name in ("ubuntu-latest", "macos-latest")
-        for node in ("22", "24")
-        for python in ("3.11", "3.12", "3.13")
-    ]
-    checks.extend(
-        (
-            {"context": "android-fixture-build"},
-            {"context": "windows-portable"},
-            {"context": "lint"},
-            {"context": "contract-tests"},
-        )
-    )
-    return checks
-
-
 def desired_rulesets() -> dict[str, dict]:
     return {
         MAIN_RULESET: {
@@ -75,14 +57,6 @@ def desired_rulesets() -> dict[str, dict]:
             "rules": [
                 {"type": "deletion"},
                 {"type": "non_fast_forward"},
-                {
-                    "type": "required_status_checks",
-                    "parameters": {
-                        "strict_required_status_checks_policy": True,
-                        "do_not_enforce_on_create": True,
-                        "required_status_checks": required_checks(),
-                    },
-                },
             ],
             "bypass_actors": [],
         },
@@ -224,31 +198,6 @@ def validate_ruleset(observed: dict, expected: dict) -> list[str]:
     observed_types = normalize_rule_types(observed)
     if not expected_types.issubset(observed_types):
         errors.append(f"{name}: missing rule types {sorted(expected_types - observed_types)}")
-    if name == MAIN_RULESET:
-        expected_contexts = {item["context"] for item in required_checks()}
-        observed_contexts: set[str] = set()
-        strict = False
-        do_not_enforce_on_create = False
-        for rule in observed.get("rules", []):
-            if isinstance(rule, dict) and rule.get("type") == "required_status_checks":
-                parameters = rule.get("parameters", {})
-                strict = parameters.get("strict_required_status_checks_policy") is True
-                do_not_enforce_on_create = (
-                    parameters.get("do_not_enforce_on_create") is True
-                )
-                observed_contexts = {
-                    item.get("context")
-                    for item in parameters.get("required_status_checks", [])
-                    if isinstance(item, dict)
-                }
-        if not strict:
-            errors.append(f"{name}: required status checks must require an up-to-date branch")
-        if not do_not_enforce_on_create:
-            errors.append(
-                f"{name}: required status checks must set do_not_enforce_on_create=true"
-            )
-        if observed_contexts != expected_contexts:
-            errors.append(f"{name}: required status check contexts do not match Validate")
     return errors
 
 
@@ -338,31 +287,20 @@ def apply(repo: str) -> dict:
 def run_self_check() -> None:
     rulesets = desired_rulesets()
     expected = rulesets[MAIN_RULESET]
-    if len(required_checks()) != 16:
-        raise RuntimeError(
-            "governance contract must cover 12 matrix jobs plus Android, Windows, lint, and contract tests"
-        )
     if validate_ruleset(expected, expected):
         raise RuntimeError("governance self-check rejected the desired ruleset")
     invalid = json.loads(json.dumps(expected))
     invalid["rules"] = [{"type": "deletion"}]
     if not validate_ruleset(invalid, expected):
-        raise RuntimeError("governance self-check accepted missing status checks")
+        raise RuntimeError("governance self-check accepted force-pushable main")
+    if "required_status_checks" in normalize_rule_types(expected):
+        raise RuntimeError("main governance must not block normal direct pushes on CI status")
     invalid_bypass = json.loads(json.dumps(expected))
     invalid_bypass["bypass_actors"] = [
         {"actor_id": 1, "actor_type": "RepositoryRole", "bypass_mode": "always"}
     ]
     if not any("bypass_actors" in error for error in validate_ruleset(invalid_bypass, expected)):
         raise RuntimeError("governance self-check accepted a main-branch bypass actor")
-    invalid_create = json.loads(json.dumps(expected))
-    for rule in invalid_create["rules"]:
-        if rule.get("type") == "required_status_checks":
-            rule["parameters"]["do_not_enforce_on_create"] = False
-    if not any(
-        "do_not_enforce_on_create" in error
-        for error in validate_ruleset(invalid_create, expected)
-    ):
-        raise RuntimeError("governance self-check accepted status checks on branch creation")
     tag_expected = rulesets[TAG_RULESET]
     invalid_tag = json.loads(json.dumps(tag_expected))
     invalid_tag["bypass_actors"] = [

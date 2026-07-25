@@ -256,6 +256,13 @@ operator's existing authenticated `gh` session and is intentionally outside the
 release critical path because GitHub exposes those settings through
 administration-level endpoints.
 
+The main ruleset permits normal fast-forward pushes after local validation.
+Validate still runs on `main` pushes and release tags, but its status is
+post-push evidence rather than a remote precondition. Deletion and
+non-fast-forward protection remain active for `main` and `v*` tags. Use a pull
+request when review or isolation is valuable; do not require one for routine
+maintainer-owned improvements.
+
 ## Upstream sync procedure
 
 1. Inspect current state:

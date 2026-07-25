@@ -35,6 +35,11 @@ class GitHubGovernanceContractTests(unittest.TestCase):
         for payload in desired_rulesets().values():
             self.assertEqual(validate_ruleset(payload, payload), [])
 
+    def test_main_ruleset_allows_normal_direct_pushes(self) -> None:
+        main = desired_rulesets()["design-craft-main"]
+        rule_types = {rule["type"] for rule in main["rules"]}
+        self.assertEqual(rule_types, {"deletion", "non_fast_forward"})
+
     def test_ruleset_bypass_is_rejected(self) -> None:
         expected = desired_rulesets()["design-craft-main"]
         observed = {**expected, "bypass_actors": [{"actor_type": "RepositoryRole"}]}
