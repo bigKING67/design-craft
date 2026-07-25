@@ -7,7 +7,7 @@
   "required": ["schema", "kind", "source_commit", "run"],
   "properties": {
     "schema": {"const": "design-craft.github-run-observation.v1"},
-    "kind": {"enum": ["native", "physical", "certification"]},
+    "kind": {"enum": ["native", "physical", "benchmark", "certification"]},
     "source_commit": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
     "run": {
       "type": "object",
@@ -28,8 +28,8 @@
       "properties": {
         "id": {"type": "integer", "minimum": 1},
         "attempt": {"type": "integer", "minimum": 1},
-        "workflow": {"enum": [".github/workflows/native-runtime.yml", ".github/workflows/physical-device.yml", ".github/workflows/release-certify.yml"]},
-        "workflow_name": {"enum": ["Native runtime evidence", "Physical device evidence", "Release certification"]},
+        "workflow": {"enum": [".github/workflows/native-runtime.yml", ".github/workflows/physical-device.yml", ".github/workflows/benchmark.yml", ".github/workflows/release-certify.yml"]},
+        "workflow_name": {"enum": ["Native runtime evidence", "Physical device evidence", "Performance benchmark", "Release certification"]},
         "event": {"enum": ["push", "workflow_dispatch"]},
         "head_branch": {"type": "string", "minLength": 1},
         "head_sha": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
@@ -50,6 +50,21 @@
               "workflow": {"const": ".github/workflows/native-runtime.yml"},
               "workflow_name": {"const": "Native runtime evidence"},
               "event": {"const": "push"},
+              "head_branch": {"type": "string", "pattern": "^v[0-9]+\\.[0-9]+\\.[0-9]+$"}
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {"properties": {"kind": {"const": "benchmark"}}},
+      "then": {
+        "properties": {
+          "run": {
+            "properties": {
+              "workflow": {"const": ".github/workflows/benchmark.yml"},
+              "workflow_name": {"const": "Performance benchmark"},
+              "event": {"const": "workflow_dispatch"},
               "head_branch": {"type": "string", "pattern": "^v[0-9]+\\.[0-9]+\\.[0-9]+$"}
             }
           }

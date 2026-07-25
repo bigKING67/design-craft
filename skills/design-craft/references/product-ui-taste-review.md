@@ -285,6 +285,17 @@ Fold secondary CTA or shell refinements into the nearest structural move unless
 they directly block the primary job. Before delivery, map each blocking finding
 to a move or an explicit deferral.
 
+Make visual-craft acceptance criteria observable. For each cited type,
+contrast, spacing, border, radius, or elevation defect, name the affected role,
+the project token or provisional measurable floor, and the expected hierarchy
+change. When no stronger project authority exists, use 14px/1.4 as a provisional
+floor for decision-bearing dense table text, keep 12-13px for secondary metadata
+only, and require WCAG normal-text contrast. Do not accept "make typography more
+readable", "improve contrast", or "tighten spacing" without these specifics.
+Remove generic insight copy, or replace it with a named entity/segment, observed
+count or threshold, business impact or urgency, owner or next action, and a
+direct filter/action into the affected data.
+
 When the user explicitly asks for an exhaustive review or full scorecard, use
 this expanded structure:
 

@@ -10,6 +10,7 @@ import platform
 import shlex
 import shutil
 import subprocess
+import sys
 import tempfile
 import time
 from datetime import datetime, timezone
@@ -187,7 +188,8 @@ def main() -> int:
     version = "dry-run" if args.dry_run else command_version("pi")
     with tempfile.TemporaryDirectory(prefix="design-craft-comparative-run-") as raw:
         temp_root = Path(raw)
-        for variant in variants["variants"]:
+        variant_items = variants["variants"]
+        for variant_index, variant in enumerate(variant_items, start=1):
             variant_id = str(variant["id"])
             workspace = temp_root / variant_id / "workspace"
             workspace.mkdir(parents=True)
@@ -216,6 +218,12 @@ def main() -> int:
                 )
                 continue
 
+            print(
+                f"[comparative] {case_dir.name} "
+                f"variant {variant_index}/{len(variant_items)} {variant_id}: started",
+                file=sys.stderr,
+                flush=True,
+            )
             started_at = datetime.now(timezone.utc)
             started = time.monotonic()
             try:
@@ -280,12 +288,24 @@ def main() -> int:
             generated[output_path] = output_bytes
             generated[manifest_path] = manifest_bytes
             results.append(payload)
+            print(
+                f"[comparative] {case_dir.name} "
+                f"variant {variant_index}/{len(variant_items)} {variant_id}: "
+                f"passed in {payload['duration_seconds']:.3f}s",
+                file=sys.stderr,
+                flush=True,
+            )
         if args.dry_run:
             print(json.dumps(results, ensure_ascii=False, indent=2, sort_keys=True))
             return 0
         if worktree_fingerprint(ROOT) != before:
             parser.error("source worktree changed before comparative evidence publication")
         publish_files(generated)
+    print(
+        f"[comparative] {case_dir.name}: evidence transaction published",
+        file=sys.stderr,
+        flush=True,
+    )
     print(json.dumps(results, ensure_ascii=False, indent=2, sort_keys=True))
     return 0
 

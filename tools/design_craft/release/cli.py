@@ -110,6 +110,10 @@ def run_release(args: Namespace) -> int:
                 Path(args.native_observation).expanduser().absolute(),
                 expected_kind="native",
             )
+            benchmark_run = load_observation(
+                Path(args.benchmark_observation).expanduser().absolute(),
+                expected_kind="benchmark",
+            )
             physical_run = (
                 load_observation(
                     Path(args.physical_observation).expanduser().absolute(),
@@ -130,6 +134,8 @@ def run_release(args: Namespace) -> int:
                 evidence,
                 level=level,
                 native_run=native_run,
+                benchmark_run=benchmark_run,
+                benchmark_result_path=Path(args.benchmark_result).expanduser().resolve(),
                 physical_run=physical_run,
                 evidence_root=Path(args.evidence_root).expanduser().resolve(),
             )
@@ -166,6 +172,10 @@ def run_release(args: Namespace) -> int:
                     evidence_path=Path(args.evidence).expanduser().resolve(),
                     evidence_root=Path(args.evidence_root).expanduser().resolve(),
                     native_observation=Path(args.native_observation).expanduser().resolve(),
+                    benchmark_observation=Path(
+                        args.benchmark_observation
+                    ).expanduser().resolve(),
+                    benchmark_result=Path(args.benchmark_result).expanduser().resolve(),
                     physical_observation=(
                         Path(args.physical_observation).expanduser().resolve()
                         if args.physical_observation
@@ -305,6 +315,16 @@ def run_release(args: Namespace) -> int:
     payload = evaluate_release(
         levels[args.level],
         baseline_path=Path(args.baseline).expanduser().resolve() if args.baseline else None,
+        benchmark_result_path=(
+            Path(args.benchmark_result).expanduser().resolve()
+            if args.benchmark_result
+            else None
+        ),
+        benchmark_observation_path=(
+            Path(args.benchmark_observation).expanduser().resolve()
+            if args.benchmark_observation
+            else None
+        ),
         phase=args.phase,
     )
     if args.output:

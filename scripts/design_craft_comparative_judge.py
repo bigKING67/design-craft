@@ -10,6 +10,7 @@ import platform
 import shlex
 import shutil
 import subprocess
+import sys
 import tempfile
 import time
 from datetime import datetime, timezone
@@ -248,6 +249,11 @@ def main() -> int:
             return 0
 
         before = worktree_fingerprint(ROOT)
+        print(
+            f"[comparative-judge] {case_dir.name} {args.host}: started",
+            file=sys.stderr,
+            flush=True,
+        )
         started_at = datetime.now(timezone.utc)
         started = time.monotonic()
         run_command = command if prompt_via_stdin else [*command, packet]
@@ -325,6 +331,12 @@ def main() -> int:
                 destinations["manifest"]: manifest_bytes,
             }
         )
+    print(
+        f"[comparative-judge] {case_dir.name} {args.host}: "
+        f"passed in {manifest['duration_seconds']:.3f}s",
+        file=sys.stderr,
+        flush=True,
+    )
     print(destinations["manifest"])
     return 0
 

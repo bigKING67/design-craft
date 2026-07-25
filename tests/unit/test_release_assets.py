@@ -78,6 +78,64 @@ def native_run_observation(run_id: int = 123) -> dict[str, object]:
     }
 
 
+def benchmark_run_observation(run_id: int = 456) -> dict[str, object]:
+    return {
+        "id": run_id,
+        "attempt": 1,
+        "workflow": ".github/workflows/benchmark.yml",
+        "workflow_name": "Performance benchmark",
+        "event": "workflow_dispatch",
+        "head_branch": f"v{VERSION}",
+        "head_sha": HEAD,
+        "status": "completed",
+        "conclusion": "success",
+        "url": f"https://github.com/bigKING67/design-craft/actions/runs/{run_id}",
+        "repository": "bigKING67/design-craft",
+    }
+
+
+def write_benchmark_result(path: Path) -> None:
+    baseline_path = (
+        REPO_ROOT / "benchmarks/baselines/v0.5.1-linux-x86_64-python3.13.json"
+    )
+    payload = json.loads(baseline_path.read_text(encoding="utf-8"))
+    payload["source_commit"] = HEAD
+    payload["source_dirty"] = False
+    path.write_text(
+        json.dumps(payload, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+
+
+def attach_benchmark_binding(
+    payload: dict[str, object],
+    benchmark_result: Path,
+    *,
+    run_id: int = 456,
+) -> None:
+    checks = payload["checks"]
+    for check in checks:
+        if check["id"] == "performance_regression":
+            check["evidence"] = {
+                "source_commit": HEAD,
+                "benchmark_result_sha256": sha256(benchmark_result),
+                "workflow": {
+                    "repository": "bigKING67/design-craft",
+                    "run_id": run_id,
+                    "run_attempt": 1,
+                    "url": (
+                        "https://github.com/bigKING67/design-craft/actions/runs/"
+                        f"{run_id}"
+                    ),
+                    "event": "workflow_dispatch",
+                    "head_sha": HEAD,
+                    "ref": f"refs/tags/v{VERSION}",
+                },
+            }
+            return
+    raise AssertionError("release evidence is missing performance_regression")
+
+
 def native_binding(native: str) -> dict[str, object]:
     return {
         "native": native,
@@ -480,6 +538,9 @@ class ReleaseAssetTests(unittest.TestCase):
             evidence_root = root / "evidence"
             evidence_root.mkdir()
             payload = release_evidence(level)
+            benchmark_result = root / "benchmark-result-full.json"
+            write_benchmark_result(benchmark_result)
+            attach_benchmark_binding(payload, benchmark_result)
             attach_native_bindings(
                 payload,
                 level,
@@ -492,6 +553,8 @@ class ReleaseAssetTests(unittest.TestCase):
                     evidence_path,
                     level=level,
                     native_run=native_run_observation(),
+                    benchmark_run=benchmark_run_observation(),
+                    benchmark_result_path=benchmark_result,
                     evidence_root=evidence_root,
                 )
                 self.assertTrue(result["ok"], result["errors"])
@@ -500,10 +563,60 @@ class ReleaseAssetTests(unittest.TestCase):
                     evidence_path,
                     level=level,
                     native_run=tampered_run,
+                    benchmark_run=benchmark_run_observation(),
+                    benchmark_result_path=benchmark_result,
                     evidence_root=evidence_root,
                 )
             self.assertFalse(result["ok"])
             self.assertTrue(any("run_id" in error for error in result["errors"]))
+
+    def test_operational_evidence_rejects_benchmark_run_or_digest_tamper(self) -> None:
+        level = self.policy["operational_95"]
+        with tempfile.TemporaryDirectory() as raw:
+            root = Path(raw)
+            evidence_root = root / "evidence"
+            evidence_root.mkdir()
+            benchmark_result = root / "benchmark-result-full.json"
+            write_benchmark_result(benchmark_result)
+            payload = release_evidence(level)
+            attach_benchmark_binding(payload, benchmark_result)
+            attach_native_bindings(
+                payload,
+                level,
+                write_external_native_evidence(evidence_root, level),
+            )
+            evidence_path = root / "release-evidence.json"
+            evidence_path.write_text(json.dumps(payload), encoding="utf-8")
+
+            with patch("tools.design_craft.release.assets._head", return_value=HEAD):
+                wrong_run = validate_release_run_bindings(
+                    evidence_path,
+                    level=level,
+                    native_run=native_run_observation(),
+                    benchmark_run=benchmark_run_observation(999),
+                    benchmark_result_path=benchmark_result,
+                    evidence_root=evidence_root,
+                )
+                self.assertFalse(wrong_run["ok"])
+                self.assertTrue(
+                    any("run_id" in error for error in wrong_run["errors"]),
+                    wrong_run["errors"],
+                )
+
+                benchmark_result.write_bytes(benchmark_result.read_bytes() + b"\n")
+                wrong_digest = validate_release_run_bindings(
+                    evidence_path,
+                    level=level,
+                    native_run=native_run_observation(),
+                    benchmark_run=benchmark_run_observation(),
+                    benchmark_result_path=benchmark_result,
+                    evidence_root=evidence_root,
+                )
+            self.assertFalse(wrong_digest["ok"])
+            self.assertTrue(
+                any("benchmark_result_sha256" in error for error in wrong_digest["errors"]),
+                wrong_digest["errors"],
+            )
 
     def test_artifact_relative_evidence_survives_root_relocation(self) -> None:
         level = self.policy["operational_95"]
@@ -512,6 +625,9 @@ class ReleaseAssetTests(unittest.TestCase):
             original_root = root / "download-a"
             original_root.mkdir()
             payload = release_evidence(level)
+            benchmark_result = root / "benchmark-result-full.json"
+            write_benchmark_result(benchmark_result)
+            attach_benchmark_binding(payload, benchmark_result)
             bindings = write_external_native_evidence(original_root, level)
             attach_native_bindings(payload, level, bindings)
             self.assertTrue(
@@ -527,6 +643,8 @@ class ReleaseAssetTests(unittest.TestCase):
                     evidence_path,
                     level=level,
                     native_run=native_run_observation(),
+                    benchmark_run=benchmark_run_observation(),
+                    benchmark_result_path=benchmark_result,
                     evidence_root=relocated_root,
                 )
             self.assertTrue(result["ok"], result["errors"])
@@ -538,6 +656,9 @@ class ReleaseAssetTests(unittest.TestCase):
             evidence_root = root / "legacy"
             evidence_root.mkdir()
             payload = release_evidence(level)
+            benchmark_result = root / "benchmark-result-full.json"
+            write_benchmark_result(benchmark_result)
+            attach_benchmark_binding(payload, benchmark_result)
             bindings = write_external_native_evidence(evidence_root, level)
             for binding in bindings.values():
                 binding["evidence_source_path"] = str(
@@ -552,6 +673,8 @@ class ReleaseAssetTests(unittest.TestCase):
                     evidence_path,
                     level=level,
                     native_run=native_run_observation(),
+                    benchmark_run=benchmark_run_observation(),
+                    benchmark_result_path=benchmark_result,
                 )
             self.assertTrue(result["ok"], result["errors"])
 
@@ -562,6 +685,9 @@ class ReleaseAssetTests(unittest.TestCase):
             evidence_root = root / "evidence"
             evidence_root.mkdir()
             payload = release_evidence(level)
+            benchmark_result = root / "benchmark-result-full.json"
+            write_benchmark_result(benchmark_result)
+            attach_benchmark_binding(payload, benchmark_result)
             bindings = write_external_native_evidence(evidence_root, level)
             bindings["ios_simulator"]["evidence_path"] = "../outside.json"
             attach_native_bindings(payload, level, bindings)
@@ -574,6 +700,8 @@ class ReleaseAssetTests(unittest.TestCase):
                         evidence_path,
                         level=level,
                         native_run=native_run_observation(),
+                        benchmark_run=benchmark_run_observation(),
+                        benchmark_result_path=benchmark_result,
                         evidence_root=evidence_root,
                     )
 

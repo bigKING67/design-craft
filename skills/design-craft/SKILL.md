@@ -146,6 +146,19 @@ system, data density, report grammar, or runtime truth.
    do, what context survives, and how the result is verified. Draft to roughly
    75 percent of an explicit line cap before the final count so formatting and
    required headings cannot push the result over budget.
+   When a visual critique also asks for concrete redesign moves, read both
+   `references/product-ui-taste-review.md` and
+   `references/design-move-library.md`. Convert every cited craft defect into an
+   observable rule rather than saying only "improve readability" or "tighten
+   spacing": name the affected text role and a project-owned or provisional
+   size/line-height floor, the contrast/token requirement, the spacing rhythm,
+   and the border/elevation change that would resolve it. Without stronger
+   project authority, treat 14px/1.4 as a provisional floor for decision-bearing
+   dense table text, reserve 12-13px for secondary metadata, and require WCAG
+   normal-text contrast. Generic insight copy is not fixed by restyling it:
+   remove it or replace it with a named entity/segment, observed count or
+   threshold, impact or urgency, owner/next action, and a direct route into the
+   affected data.
 
 ## Reference routing
 
@@ -233,6 +246,7 @@ Read only the references needed for the current task:
 For broad "make this frontend excellent" tasks, start with only
 `visual-judgment.md`, `product-ui-taste-review.md`, and
 `validation-contract.md`. Add `design-move-library.md` for implementation,
+concrete redesign recommendations, or acceptance criteria; add
 `motion-quality.md` for motion, `performance-quality.md` for measured hot
 paths, `project-structure.md` for structural changes, `report-quality.md` for
 reports/dashboards, and `intent-map.md` for subjective briefs. Do not load the
@@ -275,7 +289,10 @@ unverified:
 - Static evidence: source can prove present or missing branches, property
   ownership, and explicit values; it cannot prove perceived lag, smoothness,
   frame rate, compositing, browser-specific behavior, layout shift, or device
-  feel. Label those as risks or runtime hypotheses until observed.
+  feel. Label those as risks or runtime hypotheses until observed. Never invent
+  workload size, row count, concurrency, device class, or usage frequency that
+  the supplied product/source evidence does not establish; say "under
+  representative load" and name the measurement needed instead.
 - Evidence scope: an explicit statement that a state or behavior is absent can
   be decisive within the supplied scope. A local snippet proves only the code
   shown. Contextual static signals such as easing, control dimensions, removed
@@ -303,6 +320,13 @@ unverified:
   velocity using the animation API's required units. Velocity handoff preserves
   continuity; projected-endpoint target selection is a separate product
   decision.
+  When the supplied code snaps only from the release position and omits
+  velocity, do not stop at "keep nearest snap." State the auditable projection
+  candidate: recent velocity units, bounded horizon/decay, viewport or
+  snap-range clamp, and nearest valid target from the projected endpoint when
+  momentum targeting is authorized. If product semantics are unknown, preserve
+  the existing target in the implementation recommendation but still name this
+  projection chain as the explicit runtime hypothesis to compare.
   Do not change project-owned target-selection semantics unless product
   authority, existing behavior, or runtime evidence establishes momentum-based
   targeting.

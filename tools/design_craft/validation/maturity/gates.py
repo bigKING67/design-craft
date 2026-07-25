@@ -10,6 +10,7 @@ import time
 from pathlib import Path
 
 from ...benchmark.runner import compare_results, run_suite
+from ...release.github_runs import load_observation, workflow_binding
 from ...release.metadata import validate_release_metadata
 from .model import GateRunner, MaturityContext, MaturityGateResult
 from .process_runner import bounded, json_payload, run_command
@@ -382,17 +383,53 @@ def performance_regression(context: MaturityContext) -> MaturityGateResult:
                 {"baseline": str(path), "scale": baseline.get("scale")},
                 "release benchmark baseline must use the full suite",
             )
-        current = run_suite(str(baseline.get("scale", "smoke")))
+        benchmark_path = context.benchmark_result_path
+        benchmark_run: dict[str, object] | None = None
+        if benchmark_path is None:
+            if context.phase == "final":
+                return _result(
+                    "performance_regression",
+                    False,
+                    (time.perf_counter() - started) * 1_000,
+                    {"baseline": str(path)},
+                    "final release verification requires a precomputed benchmark result",
+                )
+            current = run_suite(str(baseline.get("scale", "smoke")))
+            benchmark_digest = None
+        else:
+            if benchmark_path.is_symlink() or not benchmark_path.is_file():
+                raise ValueError("precomputed benchmark result is missing or unsafe")
+            current = json.loads(benchmark_path.read_text(encoding="utf-8"))
+            benchmark_digest = hashlib.sha256(benchmark_path.read_bytes()).hexdigest()
+            head = run_command(["git", "rev-parse", "HEAD"], root=context.root)
+            if head.returncode != 0 or current.get("source_commit") != head.stdout.strip():
+                raise ValueError("precomputed benchmark result must match current HEAD")
+            if current.get("source_dirty") is not False:
+                raise ValueError("precomputed benchmark result must come from a clean source")
+        if context.phase == "final":
+            observation_path = context.benchmark_observation_path
+            if observation_path is None:
+                raise ValueError(
+                    "final release verification requires a benchmark run observation"
+                )
+            benchmark_run = load_observation(
+                observation_path,
+                expected_kind="benchmark",
+            )
         comparison = compare_results(baseline, current)
-    except (OSError, ValueError, json.JSONDecodeError) as exc:
+    except (OSError, ValueError, RuntimeError, json.JSONDecodeError) as exc:
         return _result("performance_regression", False, 0, {"baseline": str(path)}, str(exc))
     evidence = {
         "baseline": str(path),
         "runner": current.get("runner"),
         "scale": current.get("scale"),
+        "source_commit": current.get("source_commit"),
+        "benchmark_result_sha256": benchmark_digest,
         "warnings": comparison.get("warnings", []),
         "comparisons": comparison.get("comparisons", []),
     }
+    if benchmark_run is not None:
+        evidence["workflow"] = workflow_binding(benchmark_run, kind="benchmark")
     return _result(
         "performance_regression",
         comparison.get("ok") is True,

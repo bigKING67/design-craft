@@ -6,6 +6,8 @@ import unittest
 from unittest.mock import patch
 
 from tools.design_craft.release.github_runs import (
+    BENCHMARK_WORKFLOW_NAME,
+    BENCHMARK_WORKFLOW_PATH,
     CERTIFICATION_WORKFLOW_NAME,
     CERTIFICATION_WORKFLOW_PATH,
     NATIVE_WORKFLOW_NAME,
@@ -76,6 +78,23 @@ def physical_run(run_id: int = 456) -> dict[str, object]:
     }
 
 
+def benchmark_run(run_id: int = 456) -> dict[str, object]:
+    repository = "example/design-craft"
+    return {
+        "id": run_id,
+        "attempt": 1,
+        "workflow": BENCHMARK_WORKFLOW_PATH,
+        "workflow_name": BENCHMARK_WORKFLOW_NAME,
+        "event": "workflow_dispatch",
+        "head_branch": f"v{VERSION}",
+        "head_sha": HEAD,
+        "status": "completed",
+        "conclusion": "success",
+        "url": f"https://github.com/{repository}/actions/runs/{run_id}",
+        "repository": repository,
+    }
+
+
 def certification_run(run_id: int = 789) -> dict[str, object]:
     repository = "example/design-craft"
     return {
@@ -99,6 +118,27 @@ class NativeGitHubRunTests(unittest.TestCase):
 
     def test_valid_physical_run_matches_main_dispatch_contract(self) -> None:
         self.assertEqual(validate_run(physical_run(), kind="physical"), [])
+
+    def test_valid_benchmark_run_matches_current_tag_contract(self) -> None:
+        self.assertEqual(validate_run(benchmark_run(), kind="benchmark"), [])
+
+    def test_benchmark_run_rejects_wrong_tag_or_source(self) -> None:
+        wrong_branch = benchmark_run()
+        wrong_branch["head_branch"] = "main"
+        self.assertTrue(
+            any(
+                "head_branch" in error
+                for error in validate_run(wrong_branch, kind="benchmark")
+            )
+        )
+        wrong_source = benchmark_run()
+        wrong_source["head_sha"] = "0" * 40
+        self.assertTrue(
+            any(
+                "head_sha" in error
+                for error in validate_run(wrong_source, kind="benchmark")
+            )
+        )
 
     def test_valid_certification_run_matches_main_dispatch_contract(self) -> None:
         self.assertEqual(validate_run(certification_run(), kind="certification"), [])

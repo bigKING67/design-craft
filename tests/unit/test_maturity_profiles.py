@@ -8,6 +8,7 @@ from pathlib import Path
 from unittest import mock
 
 from tools.design_craft.repo import REPO_ROOT
+from tools.design_craft.release.integrity import repository_head
 from tools.design_craft.validation.maturity.gates import performance_regression, route_pack
 from tools.design_craft.validation.maturity.model import MaturityContext
 from tools.design_craft.validation.maturity.profiles import (
@@ -50,6 +51,58 @@ class MaturityProfileTests(unittest.TestCase):
             )
         self.assertFalse(result.passed)
         self.assertIn("full suite", result.error)
+
+    def test_final_performance_requires_precomputed_result(self) -> None:
+        baseline = (
+            REPO_ROOT / "benchmarks/baselines/v0.5.1-linux-x86_64-python3.13.json"
+        )
+        result = performance_regression(
+            MaturityContext(
+                root=REPO_ROOT,
+                profile="operational_95",
+                phase="final",
+                baseline_path=baseline,
+            )
+        )
+        self.assertFalse(result.passed)
+        self.assertIn("precomputed benchmark result", result.error)
+
+    def test_precomputed_performance_rejects_wrong_source_or_dirty_result(self) -> None:
+        baseline = (
+            REPO_ROOT / "benchmarks/baselines/v0.5.1-linux-x86_64-python3.13.json"
+        )
+        with tempfile.TemporaryDirectory(prefix="design-craft-benchmark-result-") as raw:
+            result_path = Path(raw) / "result.json"
+            payload = json.loads(baseline.read_text(encoding="utf-8"))
+            payload["source_commit"] = "0" * 40
+            payload["source_dirty"] = False
+            result_path.write_text(json.dumps(payload), encoding="utf-8")
+            wrong_source = performance_regression(
+                MaturityContext(
+                    root=REPO_ROOT,
+                    profile="operational_95",
+                    phase="candidate",
+                    baseline_path=baseline,
+                    benchmark_result_path=result_path,
+                )
+            )
+            self.assertFalse(wrong_source.passed)
+            self.assertIn("match current HEAD", wrong_source.error)
+
+            payload["source_commit"] = repository_head()
+            payload["source_dirty"] = True
+            result_path.write_text(json.dumps(payload), encoding="utf-8")
+            dirty = performance_regression(
+                MaturityContext(
+                    root=REPO_ROOT,
+                    profile="operational_95",
+                    phase="candidate",
+                    baseline_path=baseline,
+                    benchmark_result_path=result_path,
+                )
+            )
+            self.assertFalse(dirty.passed)
+            self.assertIn("clean source", dirty.error)
 
     def test_profile_invariants(self) -> None:
         self.assertEqual(check_profile_invariants(), [])

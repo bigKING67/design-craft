@@ -11,15 +11,55 @@ from unittest.mock import patch
 
 from tools.design_craft.cli import main
 from tools.design_craft.release.github_runs import (
+    BENCHMARK_WORKFLOW_NAME,
+    BENCHMARK_WORKFLOW_PATH,
     PHYSICAL_WORKFLOW_NAME,
     PHYSICAL_WORKFLOW_PATH,
 )
+from tools.design_craft.release.integrity import repository_version
 
 
 HEAD = subprocess.check_output(["git", "rev-parse", "HEAD"], text=True).strip()
+VERSION = repository_version()
 
 
 class NativeBundleCliTests(unittest.TestCase):
+    def test_benchmark_run_observation_uses_tag_bound_contract(self) -> None:
+        run = {
+            "id": 789,
+            "attempt": 1,
+            "workflow": BENCHMARK_WORKFLOW_PATH,
+            "workflow_name": BENCHMARK_WORKFLOW_NAME,
+            "event": "workflow_dispatch",
+            "head_branch": f"v{VERSION}",
+            "head_sha": HEAD,
+            "status": "completed",
+            "conclusion": "success",
+            "url": "https://github.com/example/design-craft/actions/runs/789",
+            "repository": "example/design-craft",
+        }
+        with tempfile.TemporaryDirectory() as raw:
+            output = Path(raw) / "benchmark.json"
+            with patch(
+                "tools.design_craft.release.cli.observe_run", return_value=run
+            ), redirect_stdout(io.StringIO()), redirect_stderr(io.StringIO()):
+                exit_code = main(
+                    [
+                        "release",
+                        "run-observation",
+                        "--kind",
+                        "benchmark",
+                        "--run-id",
+                        "789",
+                        "--output",
+                        str(output),
+                    ]
+                )
+            payload = json.loads(output.read_text(encoding="utf-8"))
+            self.assertEqual(exit_code, 0)
+            self.assertEqual(payload["kind"], "benchmark")
+            self.assertEqual(payload["run"], run)
+
     def test_run_observation_writes_an_exact_non_overwriting_document(self) -> None:
         run = {
             "id": 456,

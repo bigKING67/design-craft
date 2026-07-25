@@ -54,12 +54,13 @@ class RunContract:
     workflow_name: str
     event: str
     workflow_file: str
+    tag_bound: bool = False
 
     def head_branch(self, version: str) -> str:
-        return f"v{version}" if self.kind == "native" else "main"
+        return f"v{version}" if self.tag_bound else "main"
 
     def ref(self, version: str) -> str:
-        prefix = "tags" if self.kind == "native" else "heads"
+        prefix = "tags" if self.tag_bound else "heads"
         return f"refs/{prefix}/{self.head_branch(version)}"
 
 
@@ -70,6 +71,15 @@ RUN_CONTRACTS = {
         workflow_name="Native runtime evidence",
         event="push",
         workflow_file="native-runtime.yml",
+        tag_bound=True,
+    ),
+    "benchmark": RunContract(
+        kind="benchmark",
+        workflow_path=".github/workflows/benchmark.yml",
+        workflow_name="Performance benchmark",
+        event="workflow_dispatch",
+        workflow_file="benchmark.yml",
+        tag_bound=True,
     ),
     "physical": RunContract(
         kind="physical",
@@ -92,6 +102,8 @@ PHYSICAL_WORKFLOW_PATH = RUN_CONTRACTS["physical"].workflow_path
 PHYSICAL_WORKFLOW_NAME = RUN_CONTRACTS["physical"].workflow_name
 CERTIFICATION_WORKFLOW_PATH = RUN_CONTRACTS["certification"].workflow_path
 CERTIFICATION_WORKFLOW_NAME = RUN_CONTRACTS["certification"].workflow_name
+BENCHMARK_WORKFLOW_PATH = RUN_CONTRACTS["benchmark"].workflow_path
+BENCHMARK_WORKFLOW_NAME = RUN_CONTRACTS["benchmark"].workflow_name
 
 
 def _run(command: list[str]) -> subprocess.CompletedProcess[str]:
@@ -587,6 +599,8 @@ __all__ = [
     "PHYSICAL_WORKFLOW_PATH",
     "CERTIFICATION_WORKFLOW_NAME",
     "CERTIFICATION_WORKFLOW_PATH",
+    "BENCHMARK_WORKFLOW_NAME",
+    "BENCHMARK_WORKFLOW_PATH",
     "ARTIFACT_OBSERVATION_SCHEMA",
     "RUN_CONTRACTS",
     "RUN_KEYS",

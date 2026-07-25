@@ -2,8 +2,39 @@
 
 All notable local changes to `design-craft` are recorded here.
 
+## 0.5.5 - 2026-07-25
+
+- Make release performance certification deterministic: the tag-bound
+  Operational candidate runs the full benchmark exactly once and uploads the
+  raw `benchmark-result-full.json` beside its candidate evidence.
+- Make final certification observe the exact successful tag-bound benchmark
+  workflow, download that run's immutable candidate artifact, and verify the
+  selected result's source commit, clean-worktree flag, full-suite scale,
+  baseline comparison, workflow binding, and SHA-256 without rerunning timing
+  measurements on a second shared runner.
+- Include the benchmark run observation and raw result in the relocatable
+  certification bundle, so publication verification retains the complete
+  performance provenance rather than only the derived maturity check.
+- Upload a bounded release-verification diagnostic artifact even when final
+  gates fail, while keeping the GitHub Release publication contract restricted
+  to its exact four public assets.
+- Make visual critiques translate typography, contrast, spacing, surface, and
+  generic-insight findings into measurable, product-preserving acceptance
+  rules instead of vague polish language.
+- Require gesture critiques to state the complete bounded velocity-projection
+  candidate even when product-owned snap semantics remain conditional, and ban
+  unsupported workload-size claims in static performance evidence.
+- Emit case, variant, judge, duration, and atomic-publication progress for long
+  comparative runs so release orchestration can monitor real work without
+  repeated process polling.
+
 ## 0.5.4 - 2026-07-25
 
+- Preserve `v0.5.4` as a failed certification record: tag-bound Validate and
+  Native succeeded, but final certification run `30143168299` reran the full
+  benchmark and failed `performance_regression` after the earlier Operational
+  candidate had passed. No GitHub Release was published and the tag is not
+  moved or reused.
 - Keep live upstream freshness in release-candidate readiness while making
   final tag certification depend only on the committed review snapshot and
   lock parity, so external commits after tagging cannot change an immutable
@@ -28,6 +59,9 @@ All notable local changes to `design-craft` are recorded here.
 
 ## 0.5.3 - 2026-07-25
 
+- Preserve `v0.5.3` as a failed certification record: final certification run
+  `30138205680` failed `upstream_remote_review`; no GitHub Release was
+  published and the tag is not moved or reused.
 - Refresh Codex, Pi, and comparative current-source evidence after the
   certification receipt fix changed the release-candidate skill tree.
 - Make capped critique outputs reconcile identified blockers and high-impact
