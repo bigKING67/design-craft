@@ -1,6 +1,6 @@
 {
-  "blind_map_sha256": "6c7d966a742522f89b8ac0762d63981e588266adab79b045a2d6b4e11578cbd5",
-  "blind_packet_sha256": "40193dbf83ff1a5685b038cd3a4e8d302d7cf62657923818e22a27b1b5523fd5",
+  "blind_map_sha256": "db5856038990aa01d3a2062099097e710dac152fdfe0654177aaf894380f92d1",
+  "blind_packet_sha256": "4a064f9aa8f0a0d8b63a1d092ff5e61c09ac3633c2b7b153b0502abf00112d59",
   "case_id": "emil-motion-planning-ablation",
   "focused_variant": "emil",
   "judge": {
@@ -8,65 +8,65 @@
     "model": "gpt-5.6-sol",
     "model_observation": "requested_by_cli",
     "raw_output_path": "judge-output.raw.txt",
-    "raw_output_sha256": "74b42da0249b83f02b8c5d201e967145589b5f1533705437e62fa294249cbd8e",
+    "raw_output_sha256": "96ddc630ca40aab6e7998d5fdaa57c21203028388c45b04f4dc1c086b3e4d9a2",
     "reasoning": "max",
     "reasoning_observation": "requested_by_cli",
     "run_path": "run.judge.json",
-    "run_sha256": "62c1c4cdb309b04d6e61a448f375446a3df0b73ea3f895c4f1ec3827682e9e37",
+    "run_sha256": "0b5127f790f2d1f8062cf62b038086510d3cec8972744e3e8b09bb9febb02824",
     "runner_os": "macOS-15.7.7-arm64-arm-64bit-Mach-O",
     "version": "codex-cli 0.145.0"
   },
   "judgment_path": "blind-judgment.json",
   "judgment_schema_sha256": "b90b0fc1ec877d783cbffba9848944df30f73b9a7270c094a1cab2d7c37d9e71",
-  "judgment_sha256": "137834f7d08588b4cdc5081595a25bbf31d46cce62ed6a9c5539456c33723a8f",
+  "judgment_sha256": "6c6a2d04736767b7b448e52d0b1771544120865e53d9725e96d3e1073c9e78a3",
   "prompt_sha256": "81453e8d19e3de0d27bf7603b60f045cedaafa90b1a6fd7ee6dcc7249ca639ba",
-  "rationale": "A 在全部关键维度上最接近满分：它严格限定静态证据边界，完整复用现有语义 token 和按钮先例，并对锚点 origin、布局属性成本、拖拽抓取偏移、指针捕获、当前呈现值中断、速度单位与传递、动画原语能力以及最近槽位语义给出了条件化且可停止的实施路线。B 的 CSS 与覆盖层方案可靠，但拖拽部分更多是 rAF、局部 delta 和固定时长规范化，缺少完整的直接操纵及中断模型。C 虽然格式完整，却包含最危险的推测性实现：直接设置绝对坐标 transform、覆盖变换所有权、假设未证实的动画参数，并推荐 bounce。三份输出都明显超过 180 行限制，因此计划与优先级相关得分未按完全合规计满。",
-  "recorded_at": "2026-07-24T07:30:19Z",
+  "rationale": "C 最符合全部高权重要求：它不仅诚实限定静态证据，还对拖拽热路径给出了坐标、捕获、速度、当前呈现值和可中断 settle 的完整推理，同时用停止条件约束未知 animateTo 能力。A 是稳健的次优方案，token、Reduced Motion 和计划结构都很好，但对队列中断性及动画原语的分析明显较浅。B 虽然格式完整，却引入未经证实且可能单位不兼容的 spring/bounce 配置，并包含对 keyframes 的过度概括，因此技术准确性、项目一致性和产品克制性均落后。三者都未遵守 180 行上限，但这一共同缺陷不足以改变排序。",
+  "recorded_at": "2026-07-25T00:43:49Z",
   "results": {
     "baseline": {
-      "blind_label": "B",
+      "blind_label": "A",
+      "criteria": {
+        "accessibility_performance": 9,
+        "evidence_recon": 15,
+        "plan_self_containment": 18,
+        "prioritization": 7,
+        "project_conventions": 10,
+        "purpose_frequency": 10,
+        "technical_accuracy": 12,
+        "verification_quality": 9
+      },
+      "score": 90,
+      "summary": "静态证据边界、motion 分布、频率和既有 token/Reduced Motion precedent 识别准确，三份计划也基本具备路径、原摘录、步骤、边界、检查和漂移停止条件。主要扣分在于优先级表没有显式评估 confidence 与 implementation cost，CommandPalette 新 CSS 的确切落点仍含糊，队列方案虽然正确识别 clientY 坐标与逐帧写入问题，却没有充分处理当前呈现值、中途重抓、活动 settle 的取消/重定向以及动画原语取舍；同时篇幅明显超过 180 行。"
+    },
+    "design-craft": {
+      "blind_label": "C",
       "criteria": {
         "accessibility_performance": 9,
         "evidence_recon": 15,
         "plan_self_containment": 18,
         "prioritization": 8,
         "project_conventions": 10,
-        "purpose_frequency": 9,
-        "technical_accuracy": 10,
-        "verification_quality": 9
-      },
-      "score": 88,
-      "summary": "结构、证据声明和约定复用都很扎实，三套计划也覆盖了所需字段；但拖拽方案未充分处理指针捕获、抓取偏移、当前呈现值、速度传递和真正的中断语义，并把固定时长替换当作主要解决手段。"
-    },
-    "design-craft": {
-      "blind_label": "A",
-      "criteria": {
-        "accessibility_performance": 9,
-        "evidence_recon": 15,
-        "plan_self_containment": 19,
-        "prioritization": 9,
-        "project_conventions": 10,
         "purpose_frequency": 10,
         "technical_accuracy": 15,
         "verification_quality": 10
       },
-      "score": 97,
-      "summary": "静态证据边界、语义 token 复用及三套计划最完整；拖拽方案尤其严谨，能区分指针捕获、抓取偏移、呈现值中断、速度传递与目标语义。主要不足是明显超过 180 行，且 Popover 的 Reduced Motion 方案主要依赖缩短时长。"
+      "score": 95,
+      "summary": "对静态证据与未验证边界的表达最严谨，并完整覆盖属性成本、锚点 origin、坐标空间、pointer capture、grab offset、当前呈现值、速度单位、动画中断/重定向以及 target-selection 语义边界。三个计划持续复用现有 token 和按钮 precedent，没有把候选 API 当成已确认事实，机械检查与后续 feel 场景也最有针对性。扣分点是优先级表仍未显式列出 confidence/cost，CommandPalette CSS 的最终文件归属略含糊，缺少明确的性能面板或 trace 测量步骤，且输出超过 180 行。"
     },
     "emil": {
-      "blind_label": "C",
+      "blind_label": "B",
       "criteria": {
         "accessibility_performance": 8,
         "evidence_recon": 14,
-        "plan_self_containment": 16,
-        "prioritization": 7,
+        "plan_self_containment": 17,
+        "prioritization": 8,
         "project_conventions": 7,
-        "purpose_frequency": 8,
-        "technical_accuracy": 6,
+        "purpose_frequency": 7,
+        "technical_accuracy": 8,
         "verification_quality": 8
       },
-      "score": 74,
-      "summary": "能正确识别 `transition: all`、布局属性动画、硬编码时长和 Reduced Motion 缺口，计划结构也基本齐全；但拖拽示例可能用绝对 `clientY` 覆写既有 `transform`，还猜测 `animateTo` 的 spring API 并引入与产品气质冲突的 bounce，实施风险明显。"
+      "score": 77,
+      "summary": "Recon、优先级结构和各计划必备栏目较完整，也正确指出 transition: all、top 动画、硬编码时长及 Reduced Motion 缺口。但技术方案存在明显冒进：把 keyframes 概括为更不适合动态 stack 缺乏充分依据，引入 @starting-style 却未先建立项目浏览器支持边界，队列方案又臆造 animateTo 的 spring API、秒/毫秒单位、bounce 参数和直接覆盖 transform 的实现；这既偏离已有 token 体系，也与安静、克制的产品性格冲突。篇幅同样超过 180 行。"
     }
   },
   "schema": "design-craft.comparative-result.v3",
@@ -79,9 +79,9 @@
       "host_version": "0.80.6",
       "model": "codex/gpt-5.5",
       "output_path": "output.baseline.md",
-      "output_sha256": "eaf8402076bce5cb254ffa018729233cb1a4ff20f07f9c7d479fe9a49a50c523",
+      "output_sha256": "80c65cfb46094027c96fb737b10b0726254c1c471efcc30fcd13cb2830eca3ca",
       "run_path": "run.baseline.json",
-      "run_sha256": "8b99e4646053a3a34f83364f8f97dfbe072e71c30e8d4049f3588f1a8d172ddb",
+      "run_sha256": "2bccad0a6616fec7cf478a2030c026e4ab6976fdaa9cc7547099815823f73039",
       "skill_trees": {},
       "thinking": "high"
     },
@@ -91,11 +91,11 @@
       "host_version": "0.80.6",
       "model": "codex/gpt-5.5",
       "output_path": "output.design-craft.md",
-      "output_sha256": "2837d165fadffaa9ee7dd24883ede76e4fa483f5c47884b88172887df38f3dde",
+      "output_sha256": "5018f74e469c1b0daf783b680c21204808dc45a8593473720f3c1519818d1708",
       "run_path": "run.design-craft.json",
-      "run_sha256": "8836fceba943f42fdb985c1670f6090c78444307bbc0790360517f2238d4b182",
+      "run_sha256": "aadaba15a61921aca71665f3d2602e340a3a23e3dd6dc7eb3e48fb8c602028ba",
       "skill_trees": {
-        "skills/design-craft": "0dbade6db9de0647c10d9ee7f2ab79c36ca588a4035c9e2d91daf7fa883436d8"
+        "skills/design-craft": "64a3997fa784e6614350506cc4a608d72451cdcc6a6b7df3c6d65234c2662230"
       },
       "thinking": "high"
     },
@@ -105,9 +105,9 @@
       "host_version": "0.80.6",
       "model": "codex/gpt-5.5",
       "output_path": "output.emil.md",
-      "output_sha256": "23646793475a19dd9612cbe4744527bbec1f3234db55074f3054b2aca7b42727",
+      "output_sha256": "01e27aa24c7998d7002eeaac86fe1c52585d250b323d22d57d2edeebd0d603fb",
       "run_path": "run.emil.json",
-      "run_sha256": "8a08d4574a4bd968258461d4a73f3ddbeb7979f5cf1e68bc44dd3ba20ffcdcae",
+      "run_sha256": "a1ae1e057ba5622dbb98d6f4ceeabd2d46fc42620ae0f01f47c122a34a33e046",
       "skill_trees": {
         "upstreams/emilkowalski-skills/skills/apple-design": "84ebad0905bc9274fc22eb0b100778adaee20e6d479a69168b5f3a2f018e19de",
         "upstreams/emilkowalski-skills/skills/improve-animations": "b4813f60575f3e1e3d916bb76def2b5821e91194fc6896e6d47177cc22a9e488",

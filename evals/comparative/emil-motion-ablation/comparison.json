@@ -1,6 +1,6 @@
 {
-  "blind_map_sha256": "37c38414727f2772a0c7c5265d9961630ca2867fc768aa11ac05d350a7af9a5c",
-  "blind_packet_sha256": "5fd6fb0e6806dcd6b6c0e08d149284493f99cbf0c4c5ddb122f47b72cb97e50b",
+  "blind_map_sha256": "c6d7a034e83990f3efb220f1e7ae05bc530a4e84e78157f6e583031fe7163617",
+  "blind_packet_sha256": "c43fe8d4b9a17b58712dfbedf5d73a13be9aee146f94eb57dffda7bbea463524",
   "case_id": "emil-motion-ablation",
   "focused_variant": "emil",
   "judge": {
@@ -8,35 +8,35 @@
     "model": "gpt-5.6-sol",
     "model_observation": "requested_by_cli",
     "raw_output_path": "judge-output.raw.txt",
-    "raw_output_sha256": "768dc9ab319808625f50086590f5a19a111fbd3ab996036a0607c60bb5d51774",
+    "raw_output_sha256": "cde05ef48884bb9242acca9e83dd4317382fd8785e3d570360cfd854baa8bce3",
     "reasoning": "max",
     "reasoning_observation": "requested_by_cli",
     "run_path": "run.judge.json",
-    "run_sha256": "dc13e70b82a5116d7c9f3967c0effa751751ea9d38df94a6ad6549627ed5d5ec",
+    "run_sha256": "023b95d76efb08f0c61559cac72ec9bb9c47c054d64d49aa472ed81a35db4b8b",
     "runner_os": "macOS-15.7.7-arm64-arm-64bit-Mach-O",
     "version": "codex-cli 0.145.0"
   },
   "judgment_path": "blind-judgment.json",
   "judgment_schema_sha256": "6fc7376df30d7cff1ac8faf21ce6bcd63c76f72365458cfe0812ec88b16cd701",
-  "judgment_sha256": "9d46cb08c4174519d0e11db0ea464f9961183a87e13cee487af178e9e3c09ecc",
+  "judgment_sha256": "6221a49f883af00d0a7ad18ede7b31bfb162eef0a5e63f38f1c390beab60f6af",
   "prompt_sha256": "32a158dae9908cefce2747965d6451cf024eb3a877438295898a75412e11e0c8",
-  "rationale": "A 是唯一同时完整命中所有关键检查点的输出：它明确指出动画期间的输入锁定，要求捕获活动指针并保留抓取偏移，维持一对一跟随，从当前 presentation value 可中断地重抓，使用 CSS px/s 速度、投影端点与滞回选择吸附状态，并把释放速度带入 settle。它还同时拒绝 top、transition: all 和冲突的 transform 所有权，给出非前庭性的 Reduced Motion 反馈路径，严格区分静态已验证与运行时未验证内容，并用足够小的验证计划在篇幅限制内收口。C 技术覆盖接近，但证据措辞、速度单位和篇幅合规性较弱；B 则缺失最关键的中途重抓连续性与完整速度投影链路。",
-  "recorded_at": "2026-07-24T07:15:35Z",
+  "rationale": "A 的覆盖最完整且证据校准最好：它明确声明仅基于静态源码，不冒充浏览器、设备、帧率或体感验证，同时逐项给出了当前呈现值接管、取消并重定向、CSS px/s 速度、受限投影端点和 snap 语义选择。C 的技术深度接近 A，但存在确定性运行体感断言和无来源的 10,000 行场景；B 同样有该无来源条件，而且速度部分缺少单位、投影端点及速度连续传递，因此 A 胜出。",
+  "recorded_at": "2026-07-25T00:43:40Z",
   "results": {
     "baseline": {
       "blind_label": "B",
       "criteria": {
         "accessibility": 10,
-        "actionability": 8,
-        "direct_manipulation": 11,
-        "evidence_honesty": 12,
-        "interruption": 5,
-        "motion_necessity": 9,
+        "actionability": 10,
+        "direct_manipulation": 15,
+        "evidence_honesty": 13,
+        "interruption": 15,
+        "motion_necessity": 10,
         "performance": 10,
-        "velocity_projection": 8
+        "velocity_projection": 9
       },
-      "score": 73,
-      "summary": "性能、指针捕获、抓取偏移、Reduced Motion 和实施步骤较完整，但遗漏了 animating 导致的重新抓取锁定，也没有要求从当前屏幕呈现值无跳变地中断；速度方案缺少明确单位、端点投影和初始速度继承，且篇幅略超预算。"
+      "score": 92,
+      "summary": "直接操控、可中断性、性能、Reduced Motion 和验证计划均很扎实，但无依据地引入了“10,000-row”场景，并作出部分体感预测；速度方案只给出方向偏置和阈值思路，没有明确速度单位、投影终点计算，也没有充分说明如何把释放速度连续传入 settle。"
     },
     "design-craft": {
       "blind_label": "A",
@@ -51,22 +51,22 @@
         "velocity_projection": 15
       },
       "score": 100,
-      "summary": "完整覆盖静态证据边界、输入锁定、指针捕获、抓取偏移、一对一跟随、呈现值中断、CSS px/s 速度、投影吸附、性能约束、Reduced Motion 与最小验证计划，并保持在篇幅预算内。"
+      "summary": "静态证据边界最严谨，完整覆盖输入锁定、指针捕获、抓取偏移、一对一跟随、从当前呈现值无跳变中断、以 px/s 表示的释放速度、受限投影落点、合成属性纪律和非前庭化 Reduced Motion 路径；实施步骤与最小运行验证计划也完整且保持在范围内。"
     },
     "emil": {
       "blind_label": "C",
       "criteria": {
         "accessibility": 10,
-        "actionability": 7,
+        "actionability": 10,
         "direct_manipulation": 15,
         "evidence_honesty": 11,
         "interruption": 15,
         "motion_necessity": 10,
         "performance": 10,
-        "velocity_projection": 13
+        "velocity_projection": 15
       },
-      "score": 91,
-      "summary": "直接操控和中断设计非常完整，也明确使用速度投影选择吸附点；但未明确速度单位及释放速度如何注入最终 settle，并以未提供的 10,000 行场景和较确定的运行时影响表述削弱证据诚实度，整体明显超过 150 行预算。"
+      "score": 96,
+      "summary": "除证据措辞外几乎完整命中全部技术要求，尤其明确了 px/s 速度、投影落点、snap 选择以及从实时呈现位置无跳变接管；扣分主要来自把静态分析写成“will feel”式确定体感结论，并同样虚构了未提供的“10,000-row”产品条件。"
     }
   },
   "schema": "design-craft.comparative-result.v3",
@@ -79,9 +79,9 @@
       "host_version": "0.80.6",
       "model": "codex/gpt-5.5",
       "output_path": "output.baseline.md",
-      "output_sha256": "12fddc46cf5242ca5cce8508ac8709e570b40b3673b92abef94f26406ce90b80",
+      "output_sha256": "bc23fd4d66402d08fb4d9ba79f001b5cd1de6c6ef740a5e1a901243cbf241dfc",
       "run_path": "run.baseline.json",
-      "run_sha256": "65cc40de00cd6b6ed39aa8d7786116a84d03b79873b63f3fbdeb8762cf770e7f",
+      "run_sha256": "4ec8c2f27fe53d668113c929920a24fc89c3359fbe5d04a611ec019b58c2e018",
       "skill_trees": {},
       "thinking": "high"
     },
@@ -91,11 +91,11 @@
       "host_version": "0.80.6",
       "model": "codex/gpt-5.5",
       "output_path": "output.design-craft.md",
-      "output_sha256": "da213a80c4b34dfcedd57a11e584e5819bb1dede53e3fe9d0564697027337266",
+      "output_sha256": "8e1cbb664e11b843c9ebb00ca4e0ecf267e4cf0456cbda6703f05f340a8b8d3c",
       "run_path": "run.design-craft.json",
-      "run_sha256": "0fb812edf4b6f8bc137838f8308184671b30fd8788c3b68cadc3c8f0c5426fc1",
+      "run_sha256": "e357a2989c1e6c8b5d4d5c2ecc5278e5c8514f4c1639564da5459cdaa394948e",
       "skill_trees": {
-        "skills/design-craft": "0dbade6db9de0647c10d9ee7f2ab79c36ca588a4035c9e2d91daf7fa883436d8"
+        "skills/design-craft": "64a3997fa784e6614350506cc4a608d72451cdcc6a6b7df3c6d65234c2662230"
       },
       "thinking": "high"
     },
@@ -105,9 +105,9 @@
       "host_version": "0.80.6",
       "model": "codex/gpt-5.5",
       "output_path": "output.emil.md",
-      "output_sha256": "24c80c9312e8cd598f8792fc92535184dc094f511c6e02fd09189432420334b2",
+      "output_sha256": "9e6ce68cef2a03c9f223018cc8b6032cb433a31e9576abfb0e5155cf171bafad",
       "run_path": "run.emil.json",
-      "run_sha256": "c303d4aeadc44112281122128261fb9115d0ec5de44f58b9a1634d12238cc558",
+      "run_sha256": "1fb8c82d8e95c15a1ce50eb8e566aead9cc246eb1edff6befb43d6a972d6f8fa",
       "skill_trees": {
         "upstreams/emilkowalski-skills/skills/apple-design": "84ebad0905bc9274fc22eb0b100778adaee20e6d479a69168b5f3a2f018e19de",
         "upstreams/emilkowalski-skills/skills/improve-animations": "b4813f60575f3e1e3d916bb76def2b5821e91194fc6896e6d47177cc22a9e488",

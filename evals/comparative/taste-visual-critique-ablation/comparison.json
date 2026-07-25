@@ -1,6 +1,6 @@
 {
-  "blind_map_sha256": "dcd9c9aecb0a00128404438d71624f87c6358a95f29414cc5d31ab6fb44a4cf6",
-  "blind_packet_sha256": "05c1fce35d66d00a0ec8212f264d4791a7374792b8d373e297cfa8eb1927bcf1",
+  "blind_map_sha256": "a9488a4ec45a0312d37b3585ad86ce1cf057686a016c70f3d0328d290cc0178c",
+  "blind_packet_sha256": "94d33856b32f3cf8b6104f257459610b20a38701c2fbb7590ba93956e50e08ce",
   "case_id": "taste-visual-critique-ablation",
   "focused_variant": "taste",
   "judge": {
@@ -8,34 +8,34 @@
     "model": "gpt-5.6-sol",
     "model_observation": "requested_by_cli",
     "raw_output_path": "judge-output.raw.txt",
-    "raw_output_sha256": "81448a20b2f47178cd895a00786e5a23ee5812c9b033a906ebc1ef6ef47803b2",
+    "raw_output_sha256": "eb2c56d77de5065467689509d50190193ca5f2c4887f358dc21cdbe305ed6103",
     "reasoning": "max",
     "reasoning_observation": "requested_by_cli",
     "run_path": "run.judge.json",
-    "run_sha256": "080cb1191a6c8f3dad905a5a9d7ae30031cbc9ebe41ff9197079e1c948395c3b",
+    "run_sha256": "b7155c4fc899000999b4ed917a607ec8ba246ee99bc982274dd431209ed09fb9",
     "runner_os": "macOS-15.7.7-arm64-arm-64bit-Mach-O",
     "version": "codex-cli 0.145.0"
   },
   "judgment_path": "blind-judgment.json",
   "judgment_schema_sha256": "f80a55f5da5692ecd98e1a34f3ab5e0884af7840e14870655dfb99dc5306cf58",
-  "judgment_sha256": "e5c3cde239ee7ccbedfcab30ab3b1a0be5b8717efef0ff054891064dfdb10066",
+  "judgment_sha256": "e0003fc058241c26e9c01f0265f8d38722699eca232ec48c33180a564f835cc1",
   "prompt_sha256": "24483d75b8bec334c978ae4f120d5523ec4ee54a1b8c3bbeef97aafbd6090ed9",
-  "rationale": "A 胜出，因为它不仅明确将异常队列前置，还将 KPI 分级、伪洞察清理、表格阅读顺序、状态与动作语义、表面层级以及异常状态逐项落实为可观察验收条件。相较之下，B 没有把已发现的状态缺口纳入改造动作，C 的覆盖同样全面，但若干验收条件不如 A 的具体视口和信息要求便于复核。三者均诚实限定为静态证据，并遵守了发现数、改造数和输出范围约束。",
-  "recorded_at": "2026-07-24T07:38:03Z",
+  "rationale": "A 在三者中覆盖最均衡：不仅把下一小时异常队列提升为首要决策面，还明确降级被动指标、约束图表用途、替换泛化洞察，并落实语义色、间距、边框、阴影和文字可读性。C 的状态验收更细，但视觉工艺有明显的正文排版缺口；B 的量化标准较强，却遗漏部分图表与洞察整改，验证方案也稍显重复。",
+  "recorded_at": "2026-07-24T10:38:33Z",
   "results": {
     "baseline": {
-      "blind_label": "B",
+      "blind_label": "C",
       "criteria": {
         "anti_generic": 15,
-        "concrete_moves": 17,
+        "concrete_moves": 19,
         "evidence_honesty": 10,
-        "product_fit": 15,
+        "product_fit": 14,
         "product_hierarchy": 15,
         "scope_discipline": 10,
-        "visual_craft": 13
+        "visual_craft": 12
       },
       "score": 95,
-      "summary": "层级判断准确、表达紧凑，首屏行数和视口条件尤其具体；但视觉参数仍较笼统，且已识别的空态、错误态等缺口没有被纳入八项改造动作。"
+      "summary": "生产状态、长文本、表格层级和动作 affordance 的验收最细，范围控制良好；但遗漏了正文低对比和字号的直接修正，并提出了静态证据未确认存在的 SKU、渠道或店铺上下文。"
     },
     "design-craft": {
       "blind_label": "A",
@@ -49,21 +49,21 @@
         "visual_craft": 14
       },
       "score": 98,
-      "summary": "最完整地围绕下一小时异常处置重构信息层级，并把指标、洞察、表格、状态、动作、表面系统和缺失状态转化为具体且大多可复核的验收条件。"
+      "summary": "最完整地把首屏、风险指标、图表、泛化洞察、异常表格和表面系统重新排序，并同时给出可观察的验收标准；主要不足是状态设计更多留在验证计划中，正文字号标准也仍略显模糊。"
     },
     "taste": {
-      "blind_label": "C",
+      "blind_label": "B",
       "criteria": {
         "anti_generic": 15,
         "concrete_moves": 18,
         "evidence_honesty": 10,
         "product_fit": 15,
         "product_hierarchy": 15,
-        "scope_discipline": 10,
-        "visual_craft": 13
+        "scope_discipline": 9,
+        "visual_craft": 12
       },
-      "score": 96,
-      "summary": "产品方向、静态证据边界和状态覆盖都很完整，也避免了通用仪表盘式改造；但部分验收条件依赖模糊的典型视口或主观速度判断，可复现性略逊于 A。"
+      "score": 94,
+      "summary": "首屏行数、五秒扫描和文本膨胀等标准清晰可测，状态覆盖也较完整；但没有直接解决图表及泛化洞察的内容价值，字体、间距修正不够具体，且验证计划存在窄屏检查重复。"
     }
   },
   "schema": "design-craft.comparative-result.v3",
@@ -76,9 +76,9 @@
       "host_version": "0.80.6",
       "model": "codex/gpt-5.5",
       "output_path": "output.baseline.md",
-      "output_sha256": "9743a5bc2704a5e0450ae8ac8e9e1cd2298c233a9242c5d5ddda1e4c387d150a",
+      "output_sha256": "7b7614089318f81427194ebe6fe55cbba420a376c87faa78d9cc4368bd77df71",
       "run_path": "run.baseline.json",
-      "run_sha256": "522a3a03392e7bdc2b20464a8c0bb4f0f09d905a7085f42589646d0262f9a09a",
+      "run_sha256": "e2b6fff07a1cf64c0185e417fb29ec64c8ec3b9154bb11d597004d8a40c811d3",
       "skill_trees": {},
       "thinking": "high"
     },
@@ -88,11 +88,11 @@
       "host_version": "0.80.6",
       "model": "codex/gpt-5.5",
       "output_path": "output.design-craft.md",
-      "output_sha256": "d5a019f6582b982e39135ffb8c3439f7d8ec564e66c35cff3e3f9c49a7411d62",
+      "output_sha256": "184a096b6f9d5bb2bf0462e8172a3d4f9b536e10189ab8151c24fe5576166b93",
       "run_path": "run.design-craft.json",
-      "run_sha256": "e1dc5bb62f7292739a4d7120e0733742d428e7d3431e9e38a3b787fd151da7c2",
+      "run_sha256": "ea52a603a542bd56086d7642216797e1e6f513888604553dbde057cf8784f350",
       "skill_trees": {
-        "skills/design-craft": "0dbade6db9de0647c10d9ee7f2ab79c36ca588a4035c9e2d91daf7fa883436d8"
+        "skills/design-craft": "64a3997fa784e6614350506cc4a608d72451cdcc6a6b7df3c6d65234c2662230"
       },
       "thinking": "high"
     },
@@ -102,9 +102,9 @@
       "host_version": "0.80.6",
       "model": "codex/gpt-5.5",
       "output_path": "output.taste.md",
-      "output_sha256": "6e556a98167a4245e5297ae570380ffe132e2540122a268ddeb2adff443d410b",
+      "output_sha256": "8b13f390f0a2bb780f4e07344401ef89d24b1bf46dad4fec709b227f9b72fee9",
       "run_path": "run.taste.json",
-      "run_sha256": "e123d7e1dd4970f19b1480ae9e7246d5a20ec2e19eddc8c75674319a874347f9",
+      "run_sha256": "56de994848c433cf71782936e4185544240f7dc058dbb40026e4bb140f9e90f5",
       "skill_trees": {
         "upstreams/taste-skill/skills/redesign-skill": "1fd74922e6bb2011c7c0d82aefd70d0cc1dbd31bd904054bec3f6cae4d731b90",
         "upstreams/taste-skill/skills/taste-skill": "40ef50925b446e08a4ad5cead8edeb98f48982eb498b0073fe6a0b27ea736769"

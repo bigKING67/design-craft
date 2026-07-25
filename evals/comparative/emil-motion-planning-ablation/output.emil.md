@@ -1,35 +1,133 @@
-## 1) Recon summary
+## 1. Recon summary
 
-- **Stack signals:** React/TSX components plus CSS; motion is expressed through CSS tokens, component CSS, utility-style animation classes, and imperative JS gesture code. No motion library is evidenced.
-- **Where motion lives:**  
-  - Global tokens: `src/styles/motion.css`  
-  - Component CSS: `src/components/toast.css`, `src/components/Button.css`  
-  - Inline utility animation: `src/components/CommandPalette.tsx`  
-  - Gesture handler / imperative animation: `src/components/SortableQueue.tsx`
-- **Existing conventions:** Semantic tokens already exist: `--duration-fast`, `--duration-panel`, `--ease-responsive`. `Button.css` is the strongest local precedent: transform-only feedback, tokenized duration/easing, and `prefers-reduced-motion` shortening to `80ms`.
-- **Product personality:** Calm, crisp, task-throughput-oriented desktop operations UI. Motion should clarify causality and feedback, not add delay or ornament.
-- **Frequency map:**  
-  - Very high: command palette, buttons, keyboard-triggered actions.  
-  - High/bursty: sortable queue dragging.  
-  - Medium: popovers.  
+- **Stack signals**: React/TSX components, plain CSS, semantic CSS custom-property tokens, utility-style arbitrary animation classes, imperative pointer/animation code.
+- **Where motion lives**:
+  - Global tokens and shared selectors: `src/styles/motion.css`
+  - Component-local CSS: `src/components/toast.css`, `src/components/Button.css`
+  - Inline utility animation: `src/components/CommandPalette.tsx`
+  - Gesture/reorder logic: `src/components/SortableQueue.tsx`
+- **Existing conventions**:
+  - Durations: `--duration-fast: 160ms`, `--duration-panel: 240ms`
+  - Easing: `--ease-responsive: cubic-bezier(0.23, 1, 0.32, 1)`
+  - Correct precedent: button press uses `transform`, semantic tokens, and `prefers-reduced-motion` with `80ms`.
+- **Product personality**: crisp, calm, low-latency operations UI. Motion should clarify state and causality, not decorate or delay repeated workflows.
+- **Frequency map from product context + snippets**:
+  - Very high: command palette, keyboard-triggered actions.
+  - High: queue sorting/dragging during operational triage.
+  - Medium: popovers.
   - Occasional: toasts.
-- **Evidence level:** Static snippets only. No runtime lifecycle, computed styles, screen recording, trace, accessibility tree, device, or browser validation was performed.
+- **Evidence level**: static code excerpt only. No runtime, computed style, trace, screen recording, accessibility tree, or user testing was performed.
 
-## 2) Vetted priority table
+---
+
+## 2. Vetted priority table
 
 | # | Severity | Category | Location | Finding | Fix summary |
 |---|---:|---|---|---|---|
-| 1 | HIGH | Purpose / frequency / easing | `src/components/CommandPalette.tsx` | Command palette declares `animate-[palette_420ms_ease-in_both]`. For a keyboard-heavy, high-frequency surface, this is both slow and delayed by `ease-in`; it also bypasses existing motion tokens. | Remove command-palette entrance motion or reduce to effectively immediate non-spatial feedback; do not animate keyboard throughput paths. |
-| 2 | HIGH | Performance / easing / cohesion | `src/styles/motion.css` | `.popover` uses `transition: all 360ms ease-in;`. `all` can animate unintended properties, `360ms` exceeds the stated crisp UI budget, and `ease-in` delays response. | Restrict to `transform, opacity`; use existing semantic duration/easing tokens; add reduced-motion handling. |
-| 3 | HIGH | Performance / accessibility | `src/components/toast.css` | Toast entrance animates `top` for `500ms ease-in`. `top` is layout-affecting, `500ms` is slow for operational feedback, and no reduced-motion path is shown. | Animate `transform` + `opacity` instead; shorten to tokenized panel duration; reduce motion to opacity-only `80ms`. |
-| 4 | HIGH | Gesture / interruptibility / performance | `src/components/SortableQueue.tsx` | Drag updates write `--drag-y` on `queueRef`; release uses fixed `duration: 400`. Static evidence does not show direct element transforms, velocity preservation, or reduced-motion branching. | During drag, update the dragged element’s transform directly; on release, use a shorter token-aligned settle or existing spring-capable helper; branch for reduced motion. |
-| 5 | MEDIUM | Cohesion / tokens | Multiple snippets | Hardcoded `360ms`, `420ms`, `500ms`, `400`, `ease-in`, and utility animation syntax diverge from the existing semantic token precedent. | Consolidate motion values around existing `--duration-fast`, `--duration-panel`, and `--ease-responsive`; avoid parallel one-off timings. |
+| 1 | HIGH | Purpose / frequency / latency | `src/components/CommandPalette.tsx` | A likely high-frequency keyboard surface animates with `420ms ease-in`. This delays the exact response operators need to feel immediate. | Remove the command palette entrance animation; keep open/closed state instantaneous. |
+| 2 | HIGH | Performance / easing / cohesion | `src/styles/motion.css` | `.popover` uses `transition: all 360ms ease-in`; this can animate unintended properties, exceeds the existing fast/panel token rhythm, and starts slowly. | Restrict to `transform, opacity`; use existing duration/easing tokens; add reduced-motion duration. |
+| 3 | MEDIUM | Physicality / origin | `src/styles/motion.css` | `.popover { transform-origin: center; }` is suspicious for trigger-anchored UI. Static evidence does not prove all `.popover` usage is trigger-anchored, so this is conditional. | Use a trigger-origin custom property only if the component already exposes one; otherwise stop and escalate. |
+| 4 | HIGH | Performance / accessibility / interruptibility | `src/components/toast.css` | Toast entry animates `top` for `500ms ease-in` via keyframes and has no shown reduced-motion path. `top` is layout-affecting; keyframes are poorer for rapidly changing stacks. | Animate `transform`/`opacity`, cap to existing panel timing, add reduced-motion opacity-only feedback. |
+| 5 | HIGH | Gesture / performance / accessibility | `src/components/SortableQueue.tsx` | Pointer move writes a CSS custom property on the queue container; release uses a fixed `400ms` animation. Static evidence does not show velocity, interruptibility, or reduced-motion handling. | Move active item with direct transform, shorten/retarget release motion, add reduced-motion branch. |
 
-## 3) Implementation-ready plans
+No additive “missed opportunity” is supportable from the static snippets alone.
 
-### Plan 1 — Tokenize and de-layout popover/toast motion
+---
 
-**Files / current excerpts**
+# Plan 1 — Make command palette opening immediate
+
+- **Severity**: HIGH  
+- **Category**: Purpose / frequency / latency  
+- **Estimated scope**: 1 file, small TSX edit
+
+## Current evidence
+
+```tsx
+// src/components/CommandPalette.tsx
+export function CommandPalette({ open }: { open: boolean }) {
+  return (
+    <div
+      data-open={open}
+      className="animate-[palette_420ms_ease-in_both]"
+    >
+      <SearchResults />
+    </div>
+  );
+}
+```
+
+## Target behavior
+
+The command palette should appear/disappear immediately when `open` changes. It is a high-frequency keyboard surface; motion here should not delay task throughput.
+
+Target excerpt:
+
+```tsx
+// src/components/CommandPalette.tsx — target
+export function CommandPalette({ open }: { open: boolean }) {
+  return (
+    <div data-open={open}>
+      <SearchResults />
+    </div>
+  );
+}
+```
+
+If the real file contains additional non-motion classes, preserve them and remove only the `animate-[palette_420ms_ease-in_both]` class.
+
+## Project conventions to follow
+
+- Use semantic shared tokens for motion only where motion is justified.
+- Existing correct precedent: `src/components/Button.css` uses `transform`, `--duration-fast`, `--ease-responsive`, and a reduced-motion duration.
+- Do not introduce a new palette animation token for this surface.
+
+## Ordered steps
+
+1. Open `src/components/CommandPalette.tsx`.
+2. Remove `animate-[palette_420ms_ease-in_both]` from the `className`.
+3. If `className` becomes empty, remove the `className` prop entirely.
+4. Do not change `data-open`, `SearchResults`, focus management, keyboard handling, or markup hierarchy.
+5. Search for the `palette` keyframe or utility definition. If it is used nowhere else, leave deletion as a separate cleanup only if project conventions allow dead CSS removal.
+
+## Hard boundaries
+
+- Do **not** add a replacement fade, scale, slide, blur, or stagger.
+- Do **not** alter search result rendering or keyboard behavior.
+- Do **not** change open-state semantics beyond removing the animation class.
+
+## Mechanical checks
+
+- Confirm `src/components/CommandPalette.tsx` no longer contains `420ms`, `ease-in`, or `animate-[palette`.
+- Run the project’s existing lint/type-check command if available.
+- If no scripts are known, at minimum ensure the TSX still parses and the component signature is unchanged.
+
+## Runtime / feel checks for executor
+
+- Open/close the command palette repeatedly using the keyboard shortcut.
+- Confirm it responds immediately, with no visible entrance delay.
+- Confirm focus still lands where it did before.
+- In reduced-motion mode, confirm behavior is identical and still immediate.
+
+## Reduced Motion behavior
+
+No separate reduced-motion branch is needed because the motion is removed for all users.
+
+## Source-drift stop condition
+
+Stop and report instead of editing if:
+- The animation class is also responsible for visibility/layout, not just motion.
+- The component has been rewritten to use a different animation system.
+- Removing the class would remove required styling unrelated to motion.
+
+---
+
+# Plan 2 — Normalize popover and toast entrance motion
+
+- **Severity**: HIGH  
+- **Category**: Performance / easing / accessibility / cohesion  
+- **Estimated scope**: 2 CSS files
+
+## Current evidence
 
 ```css
 /* src/styles/motion.css */
@@ -57,47 +155,30 @@
 }
 ```
 
-**Target behavior**
+## Target behavior
 
-- Popovers and toasts should feel immediate, crisp, and operational.
-- No `transition: all`.
-- No animated `top`.
-- Use existing semantic tokens:
-  - `--duration-fast: 160ms`
-  - `--duration-panel: 240ms`
-  - `--ease-responsive: cubic-bezier(0.23, 1, 0.32, 1)`
-- Reduced Motion keeps feedback but removes spatial travel where possible.
+- Popovers transition only compositor-safe properties.
+- Toasts enter using `transform` and `opacity`, not `top`.
+- Both use existing semantic tokens.
+- Reduced Motion preserves opacity feedback while removing movement.
 
-**Project conventions**
-
-Use `src/components/Button.css` as the local precedent:
+Target excerpt:
 
 ```css
-.button {
-  transition: transform var(--duration-fast) var(--ease-responsive);
+/* src/styles/motion.css — target */
+:root {
+  --duration-fast: 160ms;
+  --duration-panel: 240ms;
+  --ease-responsive: cubic-bezier(0.23, 1, 0.32, 1);
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .button { transition-duration: 80ms; }
-}
-```
-
-**Ordered steps**
-
-1. In `src/styles/motion.css`, replace the popover transition with explicit properties:
-
-```css
 .popover {
-  transform-origin: center;
+  transform-origin: var(--popover-transform-origin, center);
   transition:
-    transform var(--duration-panel) var(--ease-responsive),
-    opacity var(--duration-panel) var(--ease-responsive);
+    transform var(--duration-fast) var(--ease-responsive),
+    opacity var(--duration-fast) var(--ease-responsive);
 }
-```
 
-2. In the same file, add Reduced Motion handling:
-
-```css
 @media (prefers-reduced-motion: reduce) {
   .popover {
     transition-duration: 80ms;
@@ -105,153 +186,99 @@ Use `src/components/Button.css` as the local precedent:
 }
 ```
 
-3. In `src/components/toast.css`, replace the layout-moving keyframes:
-
 ```css
-@keyframes toast-enter {
-  from { transform: translateY(-24px); opacity: 0; }
-  to { transform: translateY(0); opacity: 1; }
-}
-
+/* src/components/toast.css — target */
 .toast {
-  animation: toast-enter var(--duration-panel) var(--ease-responsive) forwards;
+  top: 0;
+  opacity: 1;
+  transform: translate3d(0, 0, 0);
+  transition:
+    transform var(--duration-panel) var(--ease-responsive),
+    opacity var(--duration-panel) var(--ease-responsive);
 }
-```
 
-4. Add an opacity-only reduced-motion keyframe:
-
-```css
-@keyframes toast-enter-reduced {
-  from { opacity: 0; }
-  to { opacity: 1; }
+@starting-style {
+  .toast {
+    opacity: 0;
+    transform: translate3d(0, -8px, 0);
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .toast {
-    animation-name: toast-enter-reduced;
-    animation-duration: 80ms;
-    animation-timing-function: var(--ease-responsive);
+    transition-duration: 80ms;
+    transform: none;
+  }
+
+  @starting-style {
+    .toast {
+      opacity: 0;
+      transform: none;
+    }
   }
 }
 ```
 
-**Hard boundaries**
+## Project conventions to follow
 
-- Do not change toast markup, queue behavior, command palette behavior, or button styles.
-- Do not add new dependencies.
-- Do not introduce new duration/easing tokens unless the existing files already require token expansion.
-- Do not change `transform-origin: center` unless the actual popover implementation exposes trigger-origin data; if so, use the existing local origin variable only.
+- Reuse existing `--duration-fast`, `--duration-panel`, and `--ease-responsive`.
+- Match the local button precedent: animate `transform`; use `80ms` in reduced-motion mode.
+- Do not create parallel hard-coded duration/easing values.
 
-**Mechanical checks**
+## Ordered steps
 
-- Search for remaining bad patterns in these files:
-  - `transition: all`
-  - `500ms ease-in`
-  - `360ms ease-in`
-  - `from { top:`
-- Run the existing project lint/typecheck/build commands if present; do not add scripts.
+1. In `src/styles/motion.css`, replace `.popover { transition: all 360ms ease-in; }` with explicit `transform` and `opacity` transitions using `--duration-fast` and `--ease-responsive`.
+2. Replace `transform-origin: center` with `transform-origin: var(--popover-transform-origin, center)`.
+3. If actual popover code already exposes a trigger-origin variable, set `--popover-transform-origin` there. If no such source exists, leave the fallback and report that trigger-origin wiring needs component context.
+4. Add the reduced-motion media query for `.popover` with `transition-duration: 80ms`.
+5. In `src/components/toast.css`, remove `@keyframes toast-enter`.
+6. Replace `.toast { animation: toast-enter 500ms ease-in forwards; }` with the target transition-based block.
+7. Add the `@starting-style` block and reduced-motion override.
+8. Preserve existing toast placement rules not shown in the snippet.
 
-**Runtime / feel checks for executor**
+## Hard boundaries
 
-- Trigger a toast and confirm it enters via vertical transform + opacity, not by reflowing from `top`.
-- Trigger a popover and confirm it feels responsive, not delayed at the start.
-- At slow animation playback, confirm no unrelated properties animate on `.popover`.
-- Toggle Reduced Motion and confirm toast movement is removed while opacity feedback remains.
+- Do **not** animate `top`, `left`, `width`, `height`, `margin`, or `padding`.
+- Do **not** introduce new dependencies.
+- Do **not** change toast lifetime, stacking logic, dismissal behavior, or ARIA/live-region behavior.
+- Do **not** assume every `.popover` is trigger-anchored unless the component evidence confirms it.
 
-**Reduced Motion behavior**
+## Mechanical checks
 
-- Popover transition duration becomes `80ms`.
-- Toast uses opacity-only `80ms`; no `translateY`.
+- `src/styles/motion.css` should no longer contain `transition: all` or `360ms ease-in`.
+- `src/components/toast.css` should no longer contain `@keyframes toast-enter`, `top: -24px`, `500ms`, or `ease-in`.
+- Confirm both files include a `prefers-reduced-motion: reduce` path.
+- Run the project’s existing lint/build checks if available.
 
-**Source-drift stop condition**
+## Runtime / feel checks for executor
 
-Stop if either current excerpt is no longer present or if toast/popover state styles depend on `top` as a positioning contract rather than only as an entrance animation.
+- Open a popover slowly and confirm no unintended color/layout properties animate.
+- If trigger-origin wiring exists, confirm scale/opacity appears connected to the trigger rather than the viewport center.
+- Trigger a toast and confirm it moves only slightly, settles within the panel-duration rhythm, and does not feel delayed.
+- In reduced-motion mode, confirm toast movement is removed but opacity feedback remains.
 
----
+## Reduced Motion behavior
 
-### Plan 2 — Remove high-frequency command palette entrance animation
+- Popover: keep a short `80ms` transition.
+- Toast: remove translate movement; keep opacity feedback at `80ms`.
 
-**File / current excerpt**
+## Source-drift stop condition
 
-```tsx
-// src/components/CommandPalette.tsx
-export function CommandPalette({ open }: { open: boolean }) {
-  return (
-    <div
-      data-open={open}
-      className="animate-[palette_420ms_ease-in_both]"
-    >
-      <SearchResults />
-    </div>
-  );
-}
-```
-
-**Target behavior**
-
-- Opening/closing the command palette should not impose a `420ms` animated delay on a keyboard-heavy workflow.
-- Preserve state continuity through immediate visibility, focus, selection highlight, and content stability rather than spatial entrance motion.
-- No `ease-in` animation on this high-frequency path.
-
-**Project conventions**
-
-- For frequent feedback, prefer the local button precedent: short, transform-only, tokenized motion.
-- For command palette specifically, target no entrance motion rather than merely a nicer curve.
-
-**Ordered steps**
-
-1. In `src/components/CommandPalette.tsx`, remove the arbitrary animation class:
-
-```tsx
-export function CommandPalette({ open }: { open: boolean }) {
-  return (
-    <div data-open={open}>
-      <SearchResults />
-    </div>
-  );
-}
-```
-
-2. Search for the `palette` keyframes or utility reference:
-   - `animate-[palette_420ms_ease-in_both]`
-   - `@keyframes palette`
-   - `palette_420ms`
-3. If the palette keyframe is used only by `CommandPalette`, remove the unused keyframe definition.
-4. If the keyframe is shared elsewhere, do not remove it; only remove this command-palette usage.
-
-**Hard boundaries**
-
-- Do not change `SearchResults`.
-- Do not change keyboard handling, focus management, search behavior, or open-state semantics.
-- Do not replace the removed animation with another entrance animation.
-- Do not add a motion library or new CSS token.
-
-**Mechanical checks**
-
-- Confirm no remaining `animate-[palette_420ms_ease-in_both]`.
-- Confirm `CommandPalette` still renders `data-open={open}`.
-- Run existing typecheck/lint commands if available.
-
-**Runtime / feel checks for executor**
-
-- Open the command palette repeatedly from the keyboard.
-- Confirm it appears immediately and does not feel like it waits before becoming usable.
-- Confirm focus indication and result selection remain visible.
-- Toggle Reduced Motion and confirm behavior is equivalent, not broken or hidden.
-
-**Reduced Motion behavior**
-
-- Same as default: no entrance motion. Feedback should come from visible focus/selection/state, not movement.
-
-**Source-drift stop condition**
-
-Stop if `CommandPalette` no longer contains the exact arbitrary animation class or if the component’s visibility depends on that class for correctness rather than decoration.
+Stop and report instead of editing if:
+- Toast mounting is not compatible with `@starting-style` and requires a JS-mounted state.
+- `.toast` relies on the keyframe’s final `top: 0` for layout in a way not represented elsewhere.
+- `.popover` has been replaced by a component-scoped animation system.
+- The project already has a different reduced-motion utility that should be reused.
 
 ---
 
-### Plan 3 — Make sortable drag direct and shorten release settling
+# Plan 3 — Make sortable queue drag motion direct, shorter, and reduced-motion aware
 
-**File / current excerpt**
+- **Severity**: HIGH  
+- **Category**: Gesture / performance / accessibility  
+- **Estimated scope**: 1 TSX file, possible local CSS adjustment if `--drag-y` is consumed nearby
+
+## Current evidence
 
 ```tsx
 // src/components/SortableQueue.tsx
@@ -265,104 +292,110 @@ function onPointerUp() {
 }
 ```
 
-**Target behavior**
+## Target behavior
 
-- Dragging should track the pointer directly with no parent-wide style-variable churn.
-- Release should settle crisply and remain interruptible-feeling.
-- Avoid a fixed `400ms` settle for an operational queue.
-- Reduced Motion should shorten or eliminate the animated settle while preserving the final position update.
+- Pointer movement should update only the actively dragged item’s transform, not a queue-level custom property that may invalidate a larger subtree.
+- Release motion should be shorter and interruptible where the existing animation adapter supports it.
+- Reduced Motion should preserve slot feedback but shorten/remove travel.
 
-**Project conventions**
-
-- Match the existing token values:
-  - Fast feedback: `160ms`
-  - Panel-scale movement: `240ms`
-  - Responsive curve: `cubic-bezier(0.23, 1, 0.32, 1)`
-- Do not add dependencies.
-
-**Ordered steps**
-
-1. Inspect this component for the dragged item element/ref and for where `--drag-y` is consumed.
-2. If a dragged item element/ref exists, update that element directly during pointer move:
+Target release shape:
 
 ```tsx
-function onPointerMove(event: PointerEvent) {
-  draggedItemRef.current?.style.setProperty(
-    "transform",
-    `translate3d(0, ${event.clientY}px, 0)`
+// src/components/SortableQueue.tsx — target shape
+function onPointerUp() {
+  setDragging(false);
+
+  const prefersReducedMotion = window.matchMedia(
+    "(prefers-reduced-motion: reduce)"
+  ).matches;
+
+  animateTo(
+    nearestSlot(currentY),
+    prefersReducedMotion
+      ? { duration: 80 }
+      : { type: "spring", duration: 0.5, bounce: 0.2 }
   );
 }
 ```
 
-3. If the component currently needs a delta rather than absolute viewport `clientY`, use the existing drag-start/current-position variables to write the same final transform as `translate3d(0, ${deltaY}px, 0)`.
-4. Replace the fixed release duration with a token-aligned duration:
+Target pointer-move principle:
 
 ```tsx
-function onPointerUp() {
-  setDragging(false);
-  animateTo(nearestSlot(currentY), {
-    duration: prefersReducedMotion ? 80 : 240,
-    easing: "cubic-bezier(0.23, 1, 0.32, 1)",
-  });
-}
+// target principle: apply transform to the active dragged item, not queue container
+draggedItemRef.current?.style.setProperty(
+  "transform",
+  `translate3d(0, ${currentDragY}px, 0)`
+);
 ```
 
-5. If the existing `animateTo` helper already supports spring-style settling and velocity input, prefer that existing API instead of the duration/easing object:
+`currentDragY` must be the existing drag delta or rendered drag offset, not blindly `event.clientY` if that value is viewport-relative.
 
-```tsx
-animateTo(nearestSlot(currentY), {
-  type: "spring",
-  duration: 0.5,
-  bounce: 0.2,
-  velocity: currentVelocity,
-});
-```
+## Project conventions to follow
 
-6. If `prefersReducedMotion` is not already available in this component, derive it without a new dependency using `window.matchMedia("(prefers-reduced-motion: reduce)")`, guarded for environments where `window` is unavailable.
+- Existing CSS precedent favors `transform` over layout properties.
+- Existing reduced-motion precedent uses `80ms`.
+- Use existing animation infrastructure; do not add a new animation dependency for this change.
 
-**Hard boundaries**
+## Ordered steps
 
-- Do not rewrite the sorting algorithm.
-- Do not change `nearestSlot(currentY)` behavior.
-- Do not add a drag-and-drop library.
-- Do not drive transforms through a parent CSS variable if a direct dragged element ref exists.
-- If no dragged item ref exists and adding one would require restructuring the component tree, stop and report instead of improvising.
+1. Open `src/components/SortableQueue.tsx`.
+2. Locate where `--drag-y` is consumed. If it controls many children from the queue root, replace that pattern with a ref/style update on the actively dragged row/item.
+3. Add or reuse an existing `draggedItemRef` for the active item only.
+4. During `onPointerMove`, compute or reuse the current drag delta and set `transform: translate3d(0, <delta>, 0)` on the dragged item.
+5. Remove the queue-root write: `queueRef.current?.style.setProperty("--drag-y", ...)`.
+6. In `onPointerUp`, replace `{ duration: 400 }` with:
+   - `{ duration: 80 }` when `prefers-reduced-motion: reduce` matches.
+   - `{ type: "spring", duration: 0.5, bounce: 0.2 }` if the existing `animateTo` adapter supports spring configs.
+7. If `animateTo` does not support spring configs, use the existing closest interruptible/retargetable option. If none exists, reduce normal duration to `240` and report the lack of an interruptible adapter as follow-up.
+8. Ensure cleanup clears the dragged item’s inline `transform` after it reaches the slot.
 
-**Mechanical checks**
+## Hard boundaries
 
-- Confirm no remaining parent write of `queueRef.current?.style.setProperty("--drag-y", ...)` for active drag motion.
-- Confirm no remaining `{ duration: 400 }` release settle in `SortableQueue`.
-- Confirm TypeScript accepts the `animateTo` options actually supported by the local helper.
-- Run existing typecheck/lint commands if available.
+- Do **not** add dependencies.
+- Do **not** rewrite queue ordering, selection, keyboard controls, or data persistence.
+- Do **not** use `top`, `left`, margin, or padding for drag movement.
+- Do **not** apply transform to the whole queue unless the whole queue is intentionally moving.
 
-**Runtime / feel checks for executor**
+## Mechanical checks
 
-- Drag an item slowly and quickly; confirm the item remains visually attached to the pointer.
-- Release near a slot and confirm the settle is crisp, not leisurely.
-- Interrupt by starting another drag soon after release; confirm the UI does not visibly restart from an unrelated position.
-- Toggle Reduced Motion and confirm the item still reaches the correct slot with minimal movement.
+- `src/components/SortableQueue.tsx` should no longer contain `style.setProperty("--drag-y"` inside `onPointerMove`.
+- `duration: 400` should be removed from the release path.
+- A reduced-motion branch using `80` should exist.
+- Drag movement should be expressed as `transform` / `translate3d`.
 
-**Reduced Motion behavior**
+## Runtime / feel checks for executor
 
-- During direct dragging, pointer tracking remains direct because it is user-controlled.
-- On release, settle duration becomes `80ms` or immediate if the local animation helper cannot produce a short non-spatial settle safely.
+- Drag one item through a dense queue and confirm only the active item follows the pointer.
+- Release near a slot and confirm the item settles without a long glide.
+- Interrupt by dragging again quickly and confirm motion retargets rather than fighting the pointer.
+- In reduced-motion mode, confirm the item still communicates final placement but with minimal travel and `80ms` timing.
 
-**Source-drift stop condition**
+## Reduced Motion behavior
 
-Stop if `animateTo` does not accept duration/easing or spring options, if `--drag-y` is part of layout calculations rather than only visual translation, or if the dragged element cannot be identified without restructuring.
+- During active drag, direct manipulation should still track the pointer.
+- On release, settle with `80ms` timing and avoid decorative bounce.
 
-## 4) Recommended execution order
+## Source-drift stop condition
 
-1. **Plan 1:** Fixes shared CSS motion problems and creates the clearest local pattern for crisp, tokenized, reduced-motion-safe behavior.
-2. **Plan 2:** Removes the highest-frequency delay from the keyboard-heavy command path.
-3. **Plan 3:** Improves the most interaction-sensitive gesture path; execute after inspecting the actual `animateTo` API and drag DOM structure.
+Stop and report instead of editing if:
+- `animateTo` does not accept either duration or spring-like options as shown.
+- `--drag-y` is already scoped to only the active item despite being set on `queueRef`.
+- The queue has keyboard reorder behavior coupled to the same motion path and the effect is unclear from code.
+
+---
+
+## Recommended execution order
+
+1. **Plan 1 — Command palette**: highest frequency, smallest safe change.
+2. **Plan 2 — Popover/toast CSS**: removes broad unsafe motion patterns and aligns with existing tokens.
+3. **Plan 3 — Sortable queue**: highest interaction complexity; should be handled after the simpler token/cohesion fixes.
 
 ## Explicitly unverified states
 
-- Actual component mount/unmount lifecycle.
-- Whether `.popover` is always trigger-anchored or sometimes modal-like.
-- Whether `palette` keyframes exist elsewhere.
-- How `--drag-y` is consumed.
-- `animateTo` API shape and whether it supports easing, spring, or velocity.
-- Computed styles, frame rate, layout cost, focus behavior, accessibility tree, and Reduced Motion behavior at runtime.
-- Any browser, device, trace, screen-recording, or user-test result.
+- Actual route/component hierarchy.
+- Whether `.popover` is always trigger-anchored.
+- Whether `palette` keyframes are used elsewhere.
+- Package scripts for lint/type-check/build.
+- Runtime feel, frame pacing, computed styles, browser support, and reduced-motion behavior.
+- Accessibility tree, focus management, live-region behavior, and keyboard reorder behavior.
+- Whether `animateTo` supports spring or velocity-aware options.
