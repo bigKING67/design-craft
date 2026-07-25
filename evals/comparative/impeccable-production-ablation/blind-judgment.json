@@ -1,48 +1,48 @@
 {
-  "rationale": "C以98分胜出：它最准确地落实了“审计与基线→硬化→测量→优化→抛光”的生产顺序，同时对静态证据与运行时假设保持了最佳校准。A和B都非常全面且修复质量高，但A的范围控制和测量前置表达较弱，B则把优化排在无障碍处理之前，并对少数需要产品语境的静态信号作了偏强判断。所有总分均由各 criterion 分数重新相加得到。",
+  "rationale": "A 在七项标准上最完整且内部一致：它不仅覆盖所有指定失败和敌意数据，还把测量基线明确放在优化决策之前，并为保存恢复、键盘与抽屉行为、平板适配、虚拟化兼容性和发布回滚分别给出验收门禁。C 的具体程度几乎相同，但对若干静态检测信号的“决定性”定性稍强于现有证据；B 同样优秀，不过无障碍排序和触控目标修复存在更明确的缺口。因此 A 以最高重算总分胜出。",
   "results": [
     {
       "criteria": {
         "detector_reconciliation": 10,
-        "evidence_scope": 8,
+        "evidence_scope": 9,
         "hostile_data": 20,
-        "measured_performance": 14,
-        "mode_sequence": 9,
+        "measured_performance": 15,
+        "mode_sequence": 10,
         "production_fixes": 20,
         "responsive_accessibility": 15
       },
       "label": "A",
-      "summary": "覆盖面最完整，失败恢复、权限、冲突、批量部分失败、抽屉无障碍、平板适配及回滚条件均达到生产可执行水平；但主序列没有明确把基线测量放在优化之前，性能阈值也未量化，且篇幅明显超出要求的紧凑范围。",
+      "summary": "排序最严谨：先审计和建立测量基线，再做正确性、恢复与无障碍加固，随后只优化已验证热路径，最后进行视觉和动效抛光。对全部敌意数据、失败状态、抽屉交互、平板布局、万吨级行渲染及回滚门禁均给出了可执行方案；静态证据与运行时假设的划分也最准确。唯一小幅扣分是整体篇幅较长，未充分遵守紧凑范围要求。",
+      "total": 99
+    },
+    {
+      "criteria": {
+        "detector_reconciliation": 10,
+        "evidence_scope": 9,
+        "hostile_data": 20,
+        "measured_performance": 15,
+        "mode_sequence": 9,
+        "production_fixes": 19,
+        "responsive_accessibility": 14
+      },
+      "label": "B",
+      "summary": "故障恢复、冲突处理、权限、离线、批量部分失败、上传和性能测量覆盖完整，且能正确区分静态信号与需要项目上下文的决策。主要不足是总体顺序把无障碍归入性能优化之后的抛光阶段，与其自身给出的 P1 严重度略有冲突；同时识别了 28px 图标按钮，却没有明确提出扩大触控命中区域的修复和验收条件。关于未来代码变化可能导致 saving 状态异常的表述也不属于当前源码的直接证据。",
       "total": 96
     },
     {
       "criteria": {
         "detector_reconciliation": 9,
-        "evidence_scope": 10,
+        "evidence_scope": 9,
         "hostile_data": 20,
-        "measured_performance": 14,
-        "mode_sequence": 8,
+        "measured_performance": 15,
+        "mode_sequence": 10,
         "production_fixes": 20,
         "responsive_accessibility": 15
       },
-      "label": "B",
-      "summary": "生产修复建议具体且覆盖全部关键失败类型，并明确了触控目标、键盘路径、批量恢复和性能回滚；不足是声明的主序列将优化置于无障碍修复之前且未显式先测量，部分静态信号也被判得过于决定性，尤其未充分保留抽屉可能为非模态交互的项目语境。",
-      "total": 96
-    },
-    {
-      "criteria": {
-        "detector_reconciliation": 10,
-        "evidence_scope": 10,
-        "hostile_data": 20,
-        "measured_performance": 14,
-        "mode_sequence": 10,
-        "production_fixes": 20,
-        "responsive_accessibility": 14
-      },
       "label": "C",
-      "summary": "序列最严谨，明确采用静态审计与基线、先硬化、再测量、后优化和最终抛光；对源码事实、供应范围内缺口和必须由运行态确认的结论区分得最准确，修复与验收也可直接落地。小幅扣分来自未明确要求放大28px触控目标，以及性能接受条件没有给出或要求锁定具体数值阈值。",
+      "summary": "覆盖面和实现可操作性接近满分，特别是 44px 触控目标、逐操作保存状态、请求竞态保护、表格语义选择、冲突恢复、虚拟化回滚及 hostile-data fixture 都很具体。静态证据和假设使用了清晰标记，但其“决定性信号”部分对 28px、outline:none 以及无焦点陷阱的定性略显绝对，随后又承认共享组件样式和抽屉模态意图需要项目上下文，存在轻微内部张力；篇幅也偏长。",
       "total": 98
     }
   ],
-  "winner": "C"
+  "winner": "A"
 }

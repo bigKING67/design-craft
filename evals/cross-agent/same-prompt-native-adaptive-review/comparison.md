@@ -4,7 +4,7 @@ Generated from `evidence-status.json`; do not edit by hand.
 
 | Host | Status | Reason |
 |---|---|---|
-| codex | observed | Current-source v4 score and run manifest recorded from clean v0.5.4 source commit 0239d83 and skill tree 0aacdc6. |
-| pi | observed | Current-source v4 score and run manifest recorded from clean v0.5.4 source commit 0239d83 and skill tree 0aacdc6. |
-| cursor | pending | This active definition has not yet admitted a current-source v4 run. |
-| claude | pending | This active definition has not yet admitted a current-source v4 run. |
+| codex | observed | Current-source score-v5/run-v3 recorded from clean source commit 199277d for behavior domain skill-native-adaptive-review and projection 1cee7ae9bab2. |
+| pi | observed | Current-source score-v5/run-v3 recorded from clean source commit 199277d for behavior domain skill-native-adaptive-review and projection 1cee7ae9bab2. |
+| cursor | pending | Current active definition has not admitted a current-source score-v5/run-v3 projection run. |
+| claude | pending | Current active definition has not admitted a current-source score-v5/run-v3 projection run. |

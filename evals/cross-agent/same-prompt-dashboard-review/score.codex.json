@@ -1,5 +1,5 @@
 {
-  "schema": "design-craft.cross-agent-score.v4",
+  "schema": "design-craft.cross-agent-score.v5",
   "task_id": "same-prompt-dashboard-review",
   "agent": "codex",
   "verified": true,
@@ -12,56 +12,60 @@
   "date": "2026-07-25",
   "prompt_sha256": "7fd3c7f14647c8b54cc44ef371f2d7ea56bb77efa89cb8081f09a7b41ae777d6",
   "scorecard_json_sha256": "9b73f89575f83eecd859595a81851a57681987dbb8aee6d3b8230d5827081920",
-  "contract_sha256": "907627714e2c4078558dba2e0449c2df2bf1d6d7db5e91e0f1e8b2017c22d0c9",
+  "contract_sha256": "b6875edb7d8c1e7a70f14d6bf6bc08bafa12c5ea910e9655fbbdbc5f62890b12",
   "run_manifest_path": "run.codex.json",
-  "run_manifest_sha256": "6fbd8c0f3355d61bb13e2ea2773fa718116deb52cf1939edba3fb4eafed0cf00",
-  "skill_version": "0.5.4",
-  "skill_source_commit": "0239d83a826a51206953c411c564da72c51c4425",
+  "run_manifest_sha256": "1142da432be3021f10c56409bae07c3752f50c817dcc8016d27bf9d2940a6f14",
+  "skill_version": "0.5.6",
+  "skill_source_commit": "199277d062137971ffadc0e1c47ec013ba03b4bc",
   "skill_source_dirty": false,
   "repo_dirty": true,
   "release_state": "unknown",
-  "skill_tree_sha256": "0aacdc6e7ec587121f24fce3b055814b907aebda0663d54d42e84d36f2b5e5f5",
+  "skill_tree_sha256": "0bd975aa6f74b8af9c4ddd9c5182358a458c35212886e455e47b8e03434eb599",
   "skill_path": "$BENCHMARK_WORKSPACE/.agents/skills/design-craft",
+  "behavior_domain": "skill-production-review",
+  "behavior_sha256": "a6f238e8209d716687fe548904e325b18cbbe96beab59f2244fedb8a95fab074",
+  "behavior_source_dirty": false,
+  "projected_skill_tree_sha256": "0c2c8d47d752d7cb1d1b760d4ea070cddafd92f57b9996cd9ccbd7e90c92d63a",
   "provenance_skill_path": "$DESIGN_CRAFT_HOME/skills/design-craft",
   "command_summary": "codex exec --ephemeral --sandbox read-only --skip-git-repo-check --ignore-rules -C '$BENCHMARK_WORKSPACE' --model gpt-5.6-sol -c 'model_reasoning_effort=\"max\"' --output-last-message '$BENCHMARK_WORKSPACE/.design-craft-host-output.md' -",
   "output_path": "codex-output.md",
-  "output_sha256": "b06e8663e3a909ff848479aa50695db580f42e777a2042cf64fa69e6d2a26d61",
-  "score": 99,
+  "output_sha256": "0bdf4d32eeb34cbdefb78dd5151cb3cb0dcbb63355aa74089823b3d5a6d2390d",
+  "score": 100,
   "criteria": {
     "style_authority": {
       "passed": true,
       "earned": 15,
-      "note": "Preserves the restrained, dense-but-calm enterprise-console authority and centers the operator's next-hour triage job."
+      "note": "Preserves the restrained, dense-but-calm enterprise-console authority and centers the operator's next-hour revenue-operations triage job."
     },
     "reference_selection": {
       "passed": true,
       "earned": 15,
-      "note": "Uses relevant dashboard hierarchy, taste, design-move, state, accessibility, and validation guidance without unrelated domains."
+      "note": "Uses only the projected dashboard, visual-judgment, production, state, accessibility, and validation guidance needed by this task."
     },
     "anti_generic_redesign": {
       "passed": true,
       "earned": 15,
-      "note": "Rejects equal-card soup, decorative charting, and generic tips in favor of lead metrics, an exception queue, diagnostic evidence, and a task-first table."
+      "note": "Rejects equal-card soup, decorative charting, and generic tips in favor of a lead exception, supporting metrics, a task-first queue, and diagnostic evidence."
     },
     "evidence_level": {
       "passed": true,
       "earned": 15,
-      "note": "Labels the review L0 static, gives a bounded concept score band, and claims no browser, screenshot, DOM, responsive, state, or runtime proof."
+      "note": "Labels the concept review L0 static and does not present a precise rendered-quality score without screenshot, DOM, browser, or responsive evidence."
     },
     "verified_boundary": {
       "passed": true,
       "earned": 15,
-      "note": "Separates prompt facts and design judgments from unverified rendering, tokens, data semantics, interactions, accessibility, responsiveness, and performance."
+      "note": "Separates prompt facts from unverified rendering, token use, metric contracts, table behavior, interactions, accessibility, responsiveness, and performance."
     },
     "design_moves": {
       "passed": true,
       "earned": 15,
-      "note": "Provides exactly eight concrete moves covering context, metric hierarchy, exception queue, diagnostic chart, task-first table, contextual actions, resilient states, and narrow-window access."
+      "note": "Provides eight concrete moves covering the command context, lead/support hierarchy, exception queue, diagnostic chart, contextual actions, enterprise visuals, states, and adaptive access."
     },
     "scope_control": {
-      "passed": false,
-      "earned": 9,
-      "note": "Remains read-only, dashboard-specific, and within the finding and move counts, but contains 151 logical lines, exceeding the 150-line cap by one line."
+      "passed": true,
+      "earned": 10,
+      "note": "Remains read-only and dashboard-specific, prioritizes five blocking findings, and avoids unrelated backend or product-scope changes."
     }
   }
 }

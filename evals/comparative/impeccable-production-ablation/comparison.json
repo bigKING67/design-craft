@@ -1,6 +1,6 @@
 {
-  "blind_map_sha256": "91752a42d21b5370df8bc2b878f5a338d4ce2be8f5468de49777a33e56fe8d27",
-  "blind_packet_sha256": "1c69f5090c1a962913a5bbba757e575fe9027d49af736ea84781021c8ceb34b4",
+  "blind_map_sha256": "edcbd02c738c5e9563614c706c2e7af2bbd5be39044d6a92cab24ab61bb5f7d6",
+  "blind_packet_sha256": "297861abf9fd648b327a8ad8043dff31e64846d066d215871a9af8aa743b92bb",
   "case_id": "impeccable-production-ablation",
   "focused_variant": "impeccable",
   "judge": {
@@ -8,104 +8,135 @@
     "model": "gpt-5.6-sol",
     "model_observation": "requested_by_cli",
     "raw_output_path": "judge-output.raw.txt",
-    "raw_output_sha256": "b8ac41570535a459daf28bc3c941ecec0cb123514ef2c2d4799e13aa0174fca3",
+    "raw_output_sha256": "a25312ed3f1628834822518c11092a81d15f14eabb0c1a6587ca079229e652fe",
     "reasoning": "max",
     "reasoning_observation": "requested_by_cli",
     "run_path": "run.judge.json",
-    "run_sha256": "282649f3a4008c41706c4f695af9027234c38fe720da664c20d9ffb7755374c9",
+    "run_sha256": "4a2fb6b3b4c177603cebfa027074d6a0ee444ca3b34a24bc36bedb6b3df78670",
     "runner_os": "macOS-15.7.7-arm64-arm-64bit-Mach-O",
     "version": "codex-cli 0.145.0"
   },
   "judgment_path": "blind-judgment.json",
   "judgment_schema_sha256": "8ab06e3fbd808dfb94de68b17ca25a94d56d3e15c485f64756f3528fdfdae4ce",
-  "judgment_sha256": "7cf4e4f880dc48fefd5611ae2ee6a46d5165d64cc428b4d4d51c603813ebdf6f",
+  "judgment_sha256": "ffc109280e665ad0abf7399cc58c24d81e32d9083890c579c0bf19a70c4667dd",
   "prompt_sha256": "8efbd7f3fc974e0abcb8ef0d736102db96436e596a93cb040717a757ff451fde",
-  "rationale": "C以98分胜出：它最准确地落实了“审计与基线→硬化→测量→优化→抛光”的生产顺序，同时对静态证据与运行时假设保持了最佳校准。A和B都非常全面且修复质量高，但A的范围控制和测量前置表达较弱，B则把优化排在无障碍处理之前，并对少数需要产品语境的静态信号作了偏强判断。所有总分均由各 criterion 分数重新相加得到。",
-  "recorded_at": "2026-07-25T05:58:26Z",
+  "rationale": "A 在七项标准上最完整且内部一致：它不仅覆盖所有指定失败和敌意数据，还把测量基线明确放在优化决策之前，并为保存恢复、键盘与抽屉行为、平板适配、虚拟化兼容性和发布回滚分别给出验收门禁。C 的具体程度几乎相同，但对若干静态检测信号的“决定性”定性稍强于现有证据；B 同样优秀，不过无障碍排序和触控目标修复存在更明确的缺口。因此 A 以最高重算总分胜出。",
+  "recorded_at": "2026-07-25T10:03:45Z",
   "results": {
     "baseline": {
+      "blind_label": "B",
+      "criteria": {
+        "detector_reconciliation": 10,
+        "evidence_scope": 9,
+        "hostile_data": 20,
+        "measured_performance": 15,
+        "mode_sequence": 9,
+        "production_fixes": 19,
+        "responsive_accessibility": 14
+      },
+      "score": 96,
+      "summary": "故障恢复、冲突处理、权限、离线、批量部分失败、上传和性能测量覆盖完整，且能正确区分静态信号与需要项目上下文的决策。主要不足是总体顺序把无障碍归入性能优化之后的抛光阶段，与其自身给出的 P1 严重度略有冲突；同时识别了 28px 图标按钮，却没有明确提出扩大触控命中区域的修复和验收条件。关于未来代码变化可能导致 saving 状态异常的表述也不属于当前源码的直接证据。"
+    },
+    "design-craft": {
       "blind_label": "A",
       "criteria": {
         "detector_reconciliation": 10,
-        "evidence_scope": 8,
+        "evidence_scope": 9,
         "hostile_data": 20,
-        "measured_performance": 14,
-        "mode_sequence": 9,
-        "production_fixes": 20,
-        "responsive_accessibility": 15
-      },
-      "score": 96,
-      "summary": "覆盖面最完整，失败恢复、权限、冲突、批量部分失败、抽屉无障碍、平板适配及回滚条件均达到生产可执行水平；但主序列没有明确把基线测量放在优化之前，性能阈值也未量化，且篇幅明显超出要求的紧凑范围。"
-    },
-    "design-craft": {
-      "blind_label": "C",
-      "criteria": {
-        "detector_reconciliation": 10,
-        "evidence_scope": 10,
-        "hostile_data": 20,
-        "measured_performance": 14,
+        "measured_performance": 15,
         "mode_sequence": 10,
         "production_fixes": 20,
-        "responsive_accessibility": 14
+        "responsive_accessibility": 15
       },
-      "score": 98,
-      "summary": "序列最严谨，明确采用静态审计与基线、先硬化、再测量、后优化和最终抛光；对源码事实、供应范围内缺口和必须由运行态确认的结论区分得最准确，修复与验收也可直接落地。小幅扣分来自未明确要求放大28px触控目标，以及性能接受条件没有给出或要求锁定具体数值阈值。"
+      "score": 99,
+      "summary": "排序最严谨：先审计和建立测量基线，再做正确性、恢复与无障碍加固，随后只优化已验证热路径，最后进行视觉和动效抛光。对全部敌意数据、失败状态、抽屉交互、平板布局、万吨级行渲染及回滚门禁均给出了可执行方案；静态证据与运行时假设的划分也最准确。唯一小幅扣分是整体篇幅较长，未充分遵守紧凑范围要求。"
     },
     "impeccable": {
-      "blind_label": "B",
+      "blind_label": "C",
       "criteria": {
         "detector_reconciliation": 9,
-        "evidence_scope": 10,
+        "evidence_scope": 9,
         "hostile_data": 20,
-        "measured_performance": 14,
-        "mode_sequence": 8,
+        "measured_performance": 15,
+        "mode_sequence": 10,
         "production_fixes": 20,
         "responsive_accessibility": 15
       },
-      "score": 96,
-      "summary": "生产修复建议具体且覆盖全部关键失败类型，并明确了触控目标、键盘路径、批量恢复和性能回滚；不足是声明的主序列将优化置于无障碍修复之前且未显式先测量，部分静态信号也被判得过于决定性，尤其未充分保留抽屉可能为非模态交互的项目语境。"
+      "score": 98,
+      "summary": "覆盖面和实现可操作性接近满分，特别是 44px 触控目标、逐操作保存状态、请求竞态保护、表格语义选择、冲突恢复、虚拟化回滚及 hostile-data fixture 都很具体。静态证据和假设使用了清晰标记，但其“决定性信号”部分对 28px、outline:none 以及无焦点陷阱的定性略显绝对，随后又承认共享组件样式和抽屉模态意图需要项目上下文，存在轻微内部张力；篇幅也偏长。"
     }
   },
-  "schema": "design-craft.comparative-result.v3",
+  "schema": "design-craft.comparative-result.v4",
   "scorecard_json_sha256": "1941a30865724592c32ea8a4440e36e85cedc2d19bad7d65c9e4300de81ccd7b",
   "scorecard_sha256": "b82445ccf5f79e3dcebbf76c7b4133151b0f54a6c8ddc3e348d7d0d5348230a2",
   "variant_runs": {
     "baseline": {
-      "contract_sha256": "485dfcb152f2726e548985a99126ab3c6e414ba3aa9ef4711d5d46ab5017a1e7",
+      "contract_sha256": "13e1d04a1ab3ee36baaa520cad18574c99d80a9fb5c17c1977ac68a3f8f641bc",
       "host": "pi",
       "host_version": "0.80.6",
       "model": "codex/gpt-5.5",
       "output_path": "output.baseline.md",
-      "output_sha256": "c127ec97c223f009e4d8e6f80300171a44181a7537517bb377c18360a76bda7f",
+      "output_sha256": "04514161bb8a23c44b5ad3a5e0005f9dec016e069a26ae5d14c331ceb6d3777b",
       "run_path": "run.baseline.json",
-      "run_sha256": "834b432e1a33f9f3e19c4de8603c20d43575645bae83cb9bd9138c95d38833e6",
+      "run_sha256": "713ead66dd68ab708796ecbfcbd7a5875490cc4ec39da2dc2caaa9131db9936d",
+      "skill_install_mode": "isolated_case_projection",
       "skill_trees": {},
+      "source_commit": "199277d062137971ffadc0e1c47ec013ba03b4bc",
+      "source_fingerprints": {},
+      "source_trees": {},
       "thinking": "high"
     },
     "design-craft": {
-      "contract_sha256": "485dfcb152f2726e548985a99126ab3c6e414ba3aa9ef4711d5d46ab5017a1e7",
+      "contract_sha256": "13e1d04a1ab3ee36baaa520cad18574c99d80a9fb5c17c1977ac68a3f8f641bc",
       "host": "pi",
       "host_version": "0.80.6",
       "model": "codex/gpt-5.5",
       "output_path": "output.design-craft.md",
-      "output_sha256": "041e78f53b21006aadc399ea9d765be5b074314d822ae68b701aa9d86c9c9ae4",
+      "output_sha256": "3b33cfdb29a8b43e8e77ba83ffafab4c90235363bd8ec136dd115eeddc3c5e69",
       "run_path": "run.design-craft.json",
-      "run_sha256": "6ce3f85cf42a4575a7984e1bd699d733a61b415c3823779f8edc1a1b07e0e9e5",
+      "run_sha256": "b0627e462752a79f5aae5b72d28447dc86f5d904f14b6bd8d0108e1dff47df23",
+      "skill_install_mode": "isolated_case_projection",
       "skill_trees": {
-        "skills/design-craft": "7a171bf963a74139d7088c288a527bf2304765a5359597016dcd07eaf404c92b"
+        "skills/design-craft": "0c2c8d47d752d7cb1d1b760d4ea070cddafd92f57b9996cd9ccbd7e90c92d63a"
+      },
+      "source_commit": "199277d062137971ffadc0e1c47ec013ba03b4bc",
+      "source_fingerprints": {
+        "skills/design-craft": {
+          "domain": "skill-production-review",
+          "kind": "evidence_domain",
+          "projected_tree_sha256": "0c2c8d47d752d7cb1d1b760d4ea070cddafd92f57b9996cd9ccbd7e90c92d63a",
+          "sha256": "a6f238e8209d716687fe548904e325b18cbbe96beab59f2244fedb8a95fab074",
+          "source_dirty": false
+        }
+      },
+      "source_trees": {
+        "skills/design-craft": "0bd975aa6f74b8af9c4ddd9c5182358a458c35212886e455e47b8e03434eb599"
       },
       "thinking": "high"
     },
     "impeccable": {
-      "contract_sha256": "485dfcb152f2726e548985a99126ab3c6e414ba3aa9ef4711d5d46ab5017a1e7",
+      "contract_sha256": "13e1d04a1ab3ee36baaa520cad18574c99d80a9fb5c17c1977ac68a3f8f641bc",
       "host": "pi",
       "host_version": "0.80.6",
       "model": "codex/gpt-5.5",
       "output_path": "output.impeccable.md",
-      "output_sha256": "8efaf40f878fbfe3c3975f257dd15ae6ecff62c43ff53d824d57e0072f95a678",
+      "output_sha256": "be4687aa44959cf0d45d0bec48eec0d414fb94d104930af854f91b0caee3ffaf",
       "run_path": "run.impeccable.json",
-      "run_sha256": "8b8f875bc7c4e66ff553d638ad285e91ead09a9793530abfc3ed772cc2494405",
+      "run_sha256": "180820f8ae06711dcd902935107b50c4c3c04c0d6f91c6302be6d2e3d6bb6b2a",
+      "skill_install_mode": "isolated_case_projection",
       "skill_trees": {
+        "upstreams/impeccable/.agents/skills/impeccable": "1fe1c4b76825c9538d5379a0a5d3d00378cf9420ce498f5b9309b79c888cc410"
+      },
+      "source_commit": "199277d062137971ffadc0e1c47ec013ba03b4bc",
+      "source_fingerprints": {
+        "upstreams/impeccable/.agents/skills/impeccable": {
+          "kind": "tree",
+          "projected_tree_sha256": "1fe1c4b76825c9538d5379a0a5d3d00378cf9420ce498f5b9309b79c888cc410",
+          "sha256": "1fe1c4b76825c9538d5379a0a5d3d00378cf9420ce498f5b9309b79c888cc410",
+          "source_dirty": false
+        }
+      },
+      "source_trees": {
         "upstreams/impeccable/.agents/skills/impeccable": "1fe1c4b76825c9538d5379a0a5d3d00378cf9420ce498f5b9309b79c888cc410"
       },
       "thinking": "high"
