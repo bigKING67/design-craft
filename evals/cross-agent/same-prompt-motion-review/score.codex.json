@@ -14,54 +14,54 @@
   "scorecard_json_sha256": "5b0b6a0d6df83ce49b9e2c598a9cdd79149efca50a9e12069667bc008462d183",
   "contract_sha256": "907627714e2c4078558dba2e0449c2df2bf1d6d7db5e91e0f1e8b2017c22d0c9",
   "run_manifest_path": "run.codex.json",
-  "run_manifest_sha256": "9f3d2772b93a2aed0d691f02eecb9799d46c49566e8d816fe7a527774dbf0dc4",
-  "skill_version": "0.5.3",
-  "skill_source_commit": "47bbb40664ac35523d8dfb11ba310567e2802ccc",
+  "run_manifest_sha256": "ed881c17f9bbb0b5bb7b45f8a31461f34441f130ea04aba7a96d78aea93ebd83",
+  "skill_version": "0.5.4",
+  "skill_source_commit": "358a4e2e11843618574037c49965f35910c1c170",
   "skill_source_dirty": false,
   "repo_dirty": true,
   "release_state": "unknown",
-  "skill_tree_sha256": "64a3997fa784e6614350506cc4a608d72451cdcc6a6b7df3c6d65234c2662230",
+  "skill_tree_sha256": "2fa7933e9c4eb429de29e5efb1047dfc69e952284de99ace2f6b39c7901d6766",
   "skill_path": "$BENCHMARK_WORKSPACE/.agents/skills/design-craft",
   "provenance_skill_path": "$DESIGN_CRAFT_HOME/skills/design-craft",
   "command_summary": "codex exec --ephemeral --sandbox read-only --skip-git-repo-check --ignore-rules -C '$BENCHMARK_WORKSPACE' --model gpt-5.6-sol -c 'model_reasoning_effort=\"max\"' --output-last-message '$BENCHMARK_WORKSPACE/.design-craft-host-output.md' -",
   "output_path": "codex-output.md",
-  "output_sha256": "46ac6c5f0cf09f910330f76230ffbc98657995598f03b2d6ccac76634e42b920",
-  "score": 100,
+  "output_sha256": "e42b21e0afaff3199f352c234e2cb799b195a917da3ed9b5b3ba056c68b26ca6",
+  "score": 99,
   "criteria": {
     "style_authority": {
       "passed": true,
       "earned": 15,
-      "note": "Uses the calm high-frequency operations context to preserve direct manipulation and reject spectacle or input lockout."
+      "note": "Reads the component as a calm, high-frequency web operations sheet and makes task-context continuity and direct manipulation the governing motion policy."
     },
     "reference_selection": {
       "passed": true,
       "earned": 15,
-      "note": "Applies motion quality, interaction physics, accessibility, property-cost, and runtime-validation guidance at the needed depth."
+      "note": "Applies motion-quality, interaction-physics, gesture-state, transform-ownership, Reduced Motion, accessibility, performance, responsive, and device-validation guidance."
     },
     "anti_generic_redesign": {
       "passed": true,
       "earned": 15,
-      "note": "Keeps causal tracking and settling while rejecting decorative scale, transition-all, layout-property motion, and delayed response."
+      "note": "Keeps only causal drag, settle, and state feedback while rejecting transition-all, layout animation, whole-sheet scale, fixed ease-in travel, remounting, and decorative bounce."
     },
     "evidence_level": {
       "passed": true,
       "earned": 15,
-      "note": "Labels the evidence static-source only and avoids smoothness, frame-rate, browser, touch-feel, and device claims."
+      "note": "Labels the critique as local static-source evidence and does not claim observed latency, frame rate, browser composition, touch feel, responsive behavior, or device performance."
     },
     "verified_boundary": {
       "passed": true,
       "earned": 15,
-      "note": "Separates explicit code defects from unverified computed geometry, event arbitration, Reduced Motion runtime, and performance."
+      "note": "Separates facts visible in the supplied snippet from unverified geometry, animation priority, runtime performance, gesture arbitration, browser differences, accessibility integration, and real-device behavior."
     },
     "design_moves": {
       "passed": true,
-      "earned": 15,
-      "note": "Covers pointer capture, grab offset, transform tracking, presentation-value interruption, velocity handoff, projection, boundaries, hysteresis, and reduced motion."
+      "earned": 14,
+      "note": "Provides eight concrete moves covering gesture ownership, 1:1 transform tracking, presentation-value interruption, measured release velocity as settle initial velocity, bounded projection, resistance, cleanup, and Reduced Motion; snap-target hysteresis from the expected findings is omitted."
     },
     "scope_control": {
       "passed": true,
       "earned": 10,
-      "note": "Stays read-only, decisive, motion-specific, and within the explicit 150-line response budget."
+      "note": "Stays read-only and motion-specific, with exactly five blocking findings, eight design moves, decisive validation, and 124 logical lines within the 150-line cap."
     }
   }
 }
