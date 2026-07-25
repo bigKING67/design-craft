@@ -20,6 +20,9 @@ All notable local changes to `design-craft` are recorded here.
 - Make comparative validation self-checks usable during intentional Skill
   edits: dirty current-source evidence must still be rejected, while the
   isolated observed-evidence fixture can validate before the final commit.
+- Split the 977-line comparative validator into responsibility-scoped
+  definition, run-evidence, judge-evidence, result, case, fixture, and CLI
+  modules while preserving its compatibility entrypoint and evidence contract.
 
 ## 0.5.6 - 2026-07-25
 

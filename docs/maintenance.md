@@ -44,6 +44,9 @@ This document is the local release and maintenance checklist for
   normal validation and review gates.
 - Keep package, public-repository, and workflow/native contract checks in their
   dedicated validators rather than expanding the monolithic validation shell.
+- Keep comparative evidence admission under
+  `tools/design_craft/evaluation/comparative/`; the script in `scripts/` is a
+  stable compatibility CLI, not a second implementation.
 - Keep `operational_95` distinct from `certified_100`. These are evidence-level
   names, not composite product-quality scores. Certified requires current-source
   score v4 for all four hosts plus Simulator, Emulator, and physical-device

@@ -8,7 +8,10 @@ import json
 import re
 from pathlib import Path
 
-from design_craft_evidence_common import files_sha256
+try:
+    from scripts.design_craft_evidence_common import files_sha256
+except ModuleNotFoundError:  # Direct execution adds scripts/, not the repo root.
+    from design_craft_evidence_common import files_sha256
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -34,6 +37,13 @@ CONTRACT_FILES = (
     "scripts/design_craft_comparative_record.py",
     "scripts/design_craft_comparative_validate.py",
     "scripts/design_craft_evidence_common.py",
+    "tools/design_craft/evaluation/comparative/case.py",
+    "tools/design_craft/evaluation/comparative/cli.py",
+    "tools/design_craft/evaluation/comparative/contract.py",
+    "tools/design_craft/evaluation/comparative/definition.py",
+    "tools/design_craft/evaluation/comparative/judge_evidence.py",
+    "tools/design_craft/evaluation/comparative/result.py",
+    "tools/design_craft/evaluation/comparative/run_evidence.py",
     "tools/design_craft/evaluation/evidence_graph.py",
     "contracts/evaluation/evidence-graph.schema.json",
 )
