@@ -320,7 +320,11 @@ def cross_agent_contracts(context: MaturityContext) -> MaturityGateResult:
 def comparative_contracts(context: MaturityContext) -> MaturityGateResult:
     started = time.perf_counter()
     result = run_command(
-        [sys.executable, "scripts/design_craft_comparative_validate.py"],
+        [
+            sys.executable,
+            "scripts/design_craft_comparative_validate.py",
+            "--definitions-only",
+        ],
         root=context.root,
         timeout=120,
     )
@@ -464,7 +468,12 @@ def host_current_source(host: str) -> GateRunner:
             gate_id,
             not failures,
             (time.perf_counter() - started) * 1_000,
-            {"host": host, "tasks": list(TASKS), "schema": "score-v4"},
+            {
+                "host": host,
+                "tasks": list(TASKS),
+                "schema": "score-v5",
+                "identity": "evidence-graph-v2",
+            },
             "; ".join(failures),
         )
 

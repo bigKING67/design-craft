@@ -61,9 +61,12 @@ python3 scripts/design_craft_cross_agent_validate.py \
   --require-host claude
 ```
 
-Current evidence requires score schema v4, run-manifest schema v2, the machine
-JSON scorecard, a clean current Skill tree, and a current runner/adapter
-contract hash. `make cross-agent-four-host-check` additionally requires all
+Current evidence requires score schema v5, run-manifest schema v3, the machine
+JSON scorecard, a clean task behavior domain, and a current runner/adapter
+contract hash. The runner materializes only the task's Evidence Graph v2
+projection in the isolated host workspace; version and release metadata remain
+forensic provenance rather than behavior-current-source inputs. `make
+cross-agent-four-host-check` additionally requires all
 four hosts for the Certified release level and stops on the first failure:
 
 ```bash
@@ -86,22 +89,25 @@ python3 scripts/design_craft_cross_agent_run.py \
   --skill-root skills/design-craft
 ```
 
-The runner copies that exact tree into a repo-external isolated project skill
-path for the selected host, records the copied tree hash and redacted path, runs
-the host read-only, verifies a content-level source-worktree fingerprint, and
-only then transactionally publishes `<host>-output.md` plus `run.<host>.json`.
-Do not point a certified run at a stale user-level install.
+The runner resolves the task binding in
+`contracts/evaluation/evidence-graph.json`, copies that exact projection into a
+repo-external isolated project skill path, records the canonical source tree,
+behavior fingerprint, projected tree hash, and redacted path, runs the host
+read-only, verifies a content-level source-worktree fingerprint, and only then
+transactionally publishes `<host>-output.md` plus `run.<host>.json`. Do not
+point a certified run at a stale user-level install.
 
-Then create v4 score JSON with `scripts/design_craft_cross_agent_record.py` and
+Then create v5 score JSON with `scripts/design_craft_cross_agent_record.py` and
 the generated `run.<host>.json`. Copy `_template/criteria.json`, assign each
 criterion an earned value within its
 scorecard weight, and preserve the exact `<host>-output.md`. The recorder
 computes the score and records hashes for the prompt, JSON scorecard, output, run
-manifest, skill tree, and runner/adapter contract plus the source commit,
-version, model, reasoning profile, host version, and runner OS. Canonical repo
+manifest, behavior projection, full source tree, and runner/adapter contract
+plus the source commit, version, model, reasoning profile, host version, and
+runner OS. Canonical repo
 paths use `$DESIGN_CRAFT_HOME`; installed host paths use a home-relative form.
 Set that host to `observed` in `evidence-status.json` only after the complete
-pair is admitted. Do not backfill v4 fields onto an older run.
+pair is admitted. Do not backfill v5 fields onto an older full-tree run.
 
 Validate immutable history independently:
 

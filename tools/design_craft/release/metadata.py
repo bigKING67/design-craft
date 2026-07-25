@@ -60,7 +60,7 @@ def validate_release_metadata(
     evidence_contracts = compatibility.get("evidence_contracts", {})
     maintenance_contracts = compatibility.get("maintenance_contracts", {})
     expected_evidence = {
-        "cross_agent": "design-craft.cross-agent-score.v4",
+        "cross_agent": "design-craft.cross-agent-score.v5",
         "native_runtime": "design-craft.native-runtime-evidence.v3",
         "release_verification": "design-craft.release-evidence.v1",
         "github_checks": "design-craft.github-checks.v2",
@@ -73,6 +73,7 @@ def validate_release_metadata(
         "benchmark_result": "design-craft.benchmark-result.v2",
         "maturity": "design-craft.maturity.v2",
         "release_policy": "design-craft.release-policy.v1",
+        "evidence_graph": "design-craft.evidence-graph.v2",
     }
     for key, expected in expected_evidence.items():
         if evidence_contracts.get(key) != expected:

@@ -18,3 +18,8 @@ tree. Current certification requires new runs in the active case directories.
 `v0.5.0/` preserves the four ablations admitted by the `v0.5.0` Operational 95
 release. Active directories retain definitions only until a complete new
 `v0.5.1` run is collected.
+
+`v0.5.5/` preserves the final run/result-v3 full-tree ablations used by the
+failed `v0.5.5` Operational candidate. They remain valid for that exact
+full-tree execution, but cannot be transcribed into run/result-v4 causal
+projection evidence.

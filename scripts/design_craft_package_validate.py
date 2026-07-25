@@ -136,7 +136,7 @@ def package_errors(
         ):
             errors.append("COMPATIBILITY.json must pin the route-pack v2 contracts")
         expected_evidence = {
-            "cross_agent": "design-craft.cross-agent-score.v4",
+            "cross_agent": "design-craft.cross-agent-score.v5",
             "native_runtime": "design-craft.native-runtime-evidence.v3",
             "release_verification": "design-craft.release-evidence.v1",
             "github_checks": "design-craft.github-checks.v2",
@@ -154,12 +154,13 @@ def package_errors(
             "taste_absorption": "design-craft.taste-absorption.v1",
             "impeccable_absorption": "design-craft.impeccable-absorption.v1",
             "emil_absorption": "design-craft.emil-absorption.v1",
-            "cross_agent_run": "design-craft.cross-agent-run.v2",
+            "evidence_graph": "design-craft.evidence-graph.v2",
+            "cross_agent_run": "design-craft.cross-agent-run.v3",
             "comparative_variants": "design-craft.comparative-variants.v2",
-            "comparative_run": "design-craft.comparative-run.v3",
+            "comparative_run": "design-craft.comparative-run.v4",
             "comparative_blind_map": "design-craft.comparative-blind-map.v3",
             "comparative_judge_run": "design-craft.comparative-judge-run.v1",
-            "comparative_result": "design-craft.comparative-result.v3",
+            "comparative_result": "design-craft.comparative-result.v4",
         }
         if any(maintenance.get(key) != value for key, value in expected_maintenance.items()):
             errors.append("COMPATIBILITY.json must pin the maintenance contracts")
@@ -306,7 +307,7 @@ def self_check() -> list[str]:
             "routing_version": 2,
         },
         "evidence_contracts": {
-            "cross_agent": "design-craft.cross-agent-score.v4",
+            "cross_agent": "design-craft.cross-agent-score.v5",
             "native_runtime": "design-craft.native-runtime-evidence.v3",
             "release_verification": "design-craft.release-evidence.v1",
             "github_checks": "design-craft.github-checks.v2",
@@ -322,12 +323,13 @@ def self_check() -> list[str]:
             "taste_absorption": "design-craft.taste-absorption.v1",
             "impeccable_absorption": "design-craft.impeccable-absorption.v1",
             "emil_absorption": "design-craft.emil-absorption.v1",
-            "cross_agent_run": "design-craft.cross-agent-run.v2",
+            "evidence_graph": "design-craft.evidence-graph.v2",
+            "cross_agent_run": "design-craft.cross-agent-run.v3",
             "comparative_variants": "design-craft.comparative-variants.v2",
-            "comparative_run": "design-craft.comparative-run.v3",
+            "comparative_run": "design-craft.comparative-run.v4",
             "comparative_blind_map": "design-craft.comparative-blind-map.v3",
             "comparative_judge_run": "design-craft.comparative-judge-run.v1",
-            "comparative_result": "design-craft.comparative-result.v3",
+            "comparative_result": "design-craft.comparative-result.v4",
         },
     }
     if package_errors(valid_package, valid_lock, valid_compatibility, "0.5.0"):

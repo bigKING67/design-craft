@@ -78,24 +78,47 @@ xcrun simctl io "${udid}" screenshot "${EVIDENCE_DIR}/ios-before-interaction.png
 data_container="$(xcrun simctl get_app_container "${udid}" dev.designcraft.runtime-evidence data)"
 interaction_marker="${data_container}/Documents/runtime-interaction.txt"
 runtime_events="${data_container}/Documents/runtime-events.txt"
-rm -f "${interaction_marker}"
+poll_observations="${EVIDENCE_DIR}/runtime-poll-observations.jsonl"
+: > "${poll_observations}"
+poll_sequence=0
+refresh_runtime_paths() {
+  data_container="$(xcrun simctl get_app_container "${udid}" dev.designcraft.runtime-evidence data)"
+  interaction_marker="${data_container}/Documents/runtime-interaction.txt"
+  runtime_events="${data_container}/Documents/runtime-events.txt"
+}
 copy_runtime_events() {
   if [[ -f "${runtime_events}" ]]; then
     cp "${runtime_events}" "${EVIDENCE_DIR}/runtime-events.txt"
   fi
 }
 wait_for_interaction() {
-  local max_attempts="${1:-15}"
-  local attempt
-  for ((attempt = 1; attempt <= max_attempts; attempt++)); do
-    if [[ -f "${interaction_marker}" ]] \
-      && grep -q "Runtime interaction confirmed" "${interaction_marker}" \
-      && [[ -f "${runtime_events}" ]] \
-      && grep -q "url-received:designcraft-evidence:" "${runtime_events}"; then
+  local phase="$1"
+  local attempt_token="$2"
+  local openurl_exit="$3"
+  local max_attempts="${4:-15}"
+  local poll
+  local decision="waiting_for_url"
+  for ((poll = 1; poll <= max_attempts; poll++)); do
+    poll_sequence=$((poll_sequence + 1))
+    decision="$(python3 -m tools.design_craft.release.native_ios_observation \
+      --events "${runtime_events}" \
+      --marker "${interaction_marker}" \
+      --attempt "${attempt_token}" \
+      --phase "${phase}" \
+      --poll "${poll_sequence}" \
+      --openurl-exit "${openurl_exit}" \
+      --append "${poll_observations}")"
+    if [[ "${decision}" == "fully_confirmed" ]]; then
       return 0
+    fi
+    if [[ "${decision}" == "marker_visibility_grace" ]]; then
+      refresh_runtime_paths
     fi
     sleep 2
   done
+  if [[ "${decision}" != "waiting_for_url" ]]; then
+    return 2
+  fi
   return 1
 }
 ensure_axe() {
@@ -141,22 +164,37 @@ tap_y = point_height * 0.5 + 37.0
 print(f"{tap_x:.1f}\t{tap_y:.1f}\t{scale:g}")
 PY
 }
-system_confirmation=""
+system_confirmation_action="not-attempted"
 attempt_deep_link() {
   local phase="$1"
   local url="$2"
   local output="$3"
+  local attempt_token="$4"
   local confirmation_screenshot="${EVIDENCE_DIR}/ios-${phase}-open-confirmation.png"
+  local openurl_exit=0
+  local wait_status=1
   local tap_point=""
   local tap_x=""
   local tap_y=""
   local tap_scale=""
-  system_confirmation=""
-  if ! xcrun simctl openurl "${udid}" "${url}" > "${output}" 2>&1; then
-    return 1
-  fi
-  if wait_for_interaction 3; then
+  system_confirmation_action="not-attempted"
+  set +e
+  xcrun simctl openurl "${udid}" "${url}" > "${output}" 2>&1
+  openurl_exit=$?
+  set -e
+  printf '%s\n' "${openurl_exit}" > "${EVIDENCE_DIR}/openurl-${phase}-exit.txt"
+  if wait_for_interaction "${phase}" "${attempt_token}" "${openurl_exit}" 3; then
     return 0
+  else
+    wait_status=$?
+  fi
+  if ((wait_status == 2)); then
+    if wait_for_interaction "${phase}" "${attempt_token}" "${openurl_exit}" 12; then
+      return 0
+    else
+      wait_status=$?
+    fi
+    return "${wait_status}"
   fi
 
   xcrun simctl io "${udid}" screenshot \
@@ -165,10 +203,18 @@ attempt_deep_link() {
   if ensure_axe; then
     if "${AXE_BIN}" tap --label "Open" --element-type Button \
       --wait-timeout 5 --udid "${udid}" \
-      > "${EVIDENCE_DIR}/axe-${phase}-tap.log" 2>&1 \
-      && wait_for_interaction 12; then
-      system_confirmation="${phase}:AXe-v${AXE_VERSION}-label"
-      return 0
+      > "${EVIDENCE_DIR}/axe-${phase}-tap.log" 2>&1; then
+      system_confirmation_action="${phase}:AXe-v${AXE_VERSION}-label-succeeded"
+      if wait_for_interaction "${phase}" "${attempt_token}" "${openurl_exit}" 12; then
+        return 0
+      else
+        wait_status=$?
+      fi
+      if ((wait_status == 2)); then
+        return 2
+      fi
+    else
+      system_confirmation_action="${phase}:AXe-v${AXE_VERSION}-label-failed"
     fi
 
     if tap_point="$(confirmation_tap_point "${confirmation_screenshot}")"; then
@@ -179,10 +225,18 @@ attempt_deep_link() {
       if "${AXE_BIN}" tap -x "${tap_x}" -y "${tap_y}" \
         --tap-style simulator --pre-delay 0.5 --post-delay 0.5 \
         --udid "${udid}" \
-        > "${EVIDENCE_DIR}/axe-${phase}-coordinate-tap.log" 2>&1 \
-        && wait_for_interaction 12; then
-        system_confirmation="${phase}:AXe-v${AXE_VERSION}-coordinate"
-        return 0
+        > "${EVIDENCE_DIR}/axe-${phase}-coordinate-tap.log" 2>&1; then
+        system_confirmation_action="${phase}:AXe-v${AXE_VERSION}-coordinate-succeeded"
+        if wait_for_interaction "${phase}" "${attempt_token}" "${openurl_exit}" 12; then
+          return 0
+        else
+          wait_status=$?
+        fi
+        if ((wait_status == 2)); then
+          return 2
+        fi
+      else
+        system_confirmation_action="${phase}:AXe-v${AXE_VERSION}-coordinate-failed"
       fi
     fi
   fi
@@ -194,22 +248,28 @@ attempt_deep_link() {
 }
 
 interaction_path=""
+live_attempt="live-${GITHUB_RUN_ID:-local}-${GITHUB_RUN_ATTEMPT:-1}"
+cold_attempt="cold-${GITHUB_RUN_ID:-local}-${GITHUB_RUN_ATTEMPT:-1}"
 if attempt_deep_link \
   live \
-  "designcraft-evidence://confirm" \
-  "${EVIDENCE_DIR}/openurl-live.txt"; then
+  "designcraft-evidence://confirm?attempt=${live_attempt}" \
+  "${EVIDENCE_DIR}/openurl-live.txt" \
+  "${live_attempt}"; then
   interaction_path="live-deep-link"
 else
-  xcrun simctl terminate "${udid}" dev.designcraft.runtime-evidence || true
-  rm -f "${interaction_marker}"
-  if attempt_deep_link \
-    cold \
-    "designcraft-evidence:///confirm" \
-    "${EVIDENCE_DIR}/openurl-cold.txt"; then
-    interaction_path="cold-deep-link"
+  live_status=$?
+  if ((live_status == 1)); then
+    xcrun simctl terminate "${udid}" dev.designcraft.runtime-evidence || true
+    if attempt_deep_link \
+      cold \
+      "designcraft-evidence:///confirm?attempt=${cold_attempt}" \
+      "${EVIDENCE_DIR}/openurl-cold.txt" \
+      "${cold_attempt}"; then
+      interaction_path="cold-deep-link"
+    fi
   fi
 fi
-if [[ -n "${interaction_path}" && -n "${system_confirmation}" ]]; then
+if [[ -n "${interaction_path}" && "${system_confirmation_action}" == *-succeeded ]]; then
   interaction_path="${interaction_path}-system-confirmed"
 fi
 
@@ -225,7 +285,9 @@ copy_runtime_events
   fi
   printf '%s\n' '[application events]'
   cat "${EVIDENCE_DIR}/runtime-events.txt" 2>/dev/null || true
-  printf '%s\n' "[system confirmation] ${system_confirmation:-not-required}"
+  printf '%s\n' '[poll observations]'
+  cat "${poll_observations}" 2>/dev/null || true
+  printf '%s\n' "[system confirmation action] ${system_confirmation_action}"
   printf '%s\n' "[confirmed interaction path] ${interaction_path:-none}"
 } > "${EVIDENCE_DIR}/runtime-launch.log"
 
@@ -233,7 +295,7 @@ if [[ -z "${interaction_path}" ]]; then
   xcrun simctl spawn "${udid}" log show --last 3m --info --debug \
     --predicate 'process == "DesignCraftEvidence" OR eventMessage CONTAINS[c] "designcraft" OR eventMessage CONTAINS[c] "openurl"' \
     > "${EVIDENCE_DIR}/interaction-diagnostics.log" 2>&1 || true
-  echo "iOS runtime deep link did not produce URL receipt plus the interaction marker" >&2
+  echo "iOS runtime deep link did not produce one correlated URL, app confirmation, and marker receipt" >&2
   exit 1
 fi
 cp "${interaction_marker}" "${EVIDENCE_DIR}/runtime-interaction.txt"

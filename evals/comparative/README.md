@@ -55,12 +55,30 @@ python3 scripts/design_craft_comparative_record.py \
 make comparative-observed-check
 ```
 
-The Pi runner copies every selected skill into a repo-external isolated
-workspace, fingerprints the source worktree before and after each run, and
-publishes no repository evidence unless all three variants succeed. Outputs may
-not reveal a skill/source brand. The independent judge receives only the blind
-packet in an empty repo-external workspace; its raw output, canonical judgment,
-host metadata, and worktree fingerprints are bound by `run.judge.json`.
+The Pi runner copies focused upstreams as exact full trees and materializes the
+case-specific `design-craft` Evidence Graph v2 projection in a repo-external
+isolated workspace. It records full source trees for provenance, projected
+execution trees for causal identity, and fingerprints the source worktree
+before and after each run. It publishes no repository evidence unless all three
+variants succeed. Outputs may not reveal a skill/source brand. The independent
+judge receives only the blind packet in an empty repo-external workspace; its
+raw output, canonical judgment, host metadata, and worktree fingerprints are
+bound by `run.judge.json`.
+
+Active evidence uses comparative run/result schema v4. Run/result v3 remains
+read-only history because a previous full-tree run cannot be transcribed into a
+causal projection without a new model execution.
+
+Source validation checks active case definitions without treating stale or
+missing recorded outputs as a source failure:
+
+```bash
+python3 scripts/design_craft_comparative_validate.py --definitions-only
+```
+
+`make comparative-observed-check` remains the evidence gate and requires the
+current run/result schema plus current-source fingerprints. This separation
+allows a clean source commit to exist before projection evidence is recorded.
 
 Each `variants.json` declares its focused upstream with
 `focused_variant`. Certified comparison requires `design-craft` to score above

@@ -422,7 +422,17 @@ def build_score(root: Path, run_smoke: bool) -> list[Dimension]:
                     "Require exact per-level Release assets and empty branch/tag bypass lists.",
                 ),
                 ("HOSTS = (\"codex\", \"pi\", \"cursor\", \"claude\")" in read_text(root / "scripts/design_craft_cross_agent_validate.py"), "four-host observed evidence contract exists", "Validate Cursor and Claude independently from Codex and Pi."),
-                ("design-craft.cross-agent-score.v4" in read_text(root / "scripts/design_craft_cross_agent_validate.py") and has(root, "scripts/design_craft_cross_agent_record.py"), "current-source cross-agent evidence binding exists", "Bind cross-agent scores to skill, prompt, scorecard, output, and runner-contract hashes."),
+                (
+                    "design-craft.cross-agent-score.v5"
+                    in read_text(
+                        root
+                        / "tools/design_craft/evaluation/cross_agent/contract.py"
+                    )
+                    and has(root, "scripts/design_craft_cross_agent_record.py")
+                    and has(root, "contracts/evaluation/evidence-graph.json"),
+                    "domain-projected current-source cross-agent evidence binding exists",
+                    "Bind cross-agent scores to an exact behavior projection, prompt, scorecard, output, and runner-contract hashes.",
+                ),
                 (
                     has(root, "evals/comparative/emil-motion-ablation/variants.json")
                     and has(root, "evals/comparative/emil-motion-planning-ablation/variants.json")

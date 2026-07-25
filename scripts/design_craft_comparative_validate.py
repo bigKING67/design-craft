@@ -17,7 +17,9 @@ from design_craft_comparative_common import (
     BLIND_MAP_SCHEMA,
     JUDGE_RUN_SCHEMA,
     RESULT_SCHEMA,
+    RESULT_SCHEMA_V3,
     RUN_SCHEMA,
+    RUN_SCHEMA_V3,
     SOURCE_BRAND_PATTERN,
     VARIANTS_SCHEMA,
     contract_sha256,
@@ -28,10 +30,27 @@ from design_craft_comparative_common import (
     validate_judgment_schema,
     variant_ids,
 )
-from design_craft_evidence_common import tree_sha256
+from design_craft_evidence_common import (
+    git_dirty,
+    git_head,
+    git_is_ancestor,
+    tree_sha256,
+)
 
 
 ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
+from tools.design_craft.evaluation.evidence_graph import (
+    binding_domain,
+    domain_dirty,
+    domain_fingerprint,
+    git_domain_fingerprint,
+    git_projected_skill_tree_sha256,
+    projected_skill_tree_sha256,
+)
+
 REQUIRED_DEFINITION_FILES = (
     "prompt.md",
     "variants.json",
@@ -148,8 +167,11 @@ def validate_run(
         payload = json.loads(manifest.read_text(encoding="utf-8"))
     except json.JSONDecodeError as exc:
         return {}, [*errors, f"{manifest}: {exc}"]
-    if payload.get("schema") != RUN_SCHEMA:
-        errors.append(f"{manifest}: schema must be {RUN_SCHEMA}")
+    schema = payload.get("schema")
+    if schema not in {RUN_SCHEMA_V3, RUN_SCHEMA}:
+        errors.append(f"{manifest}: schema must be {RUN_SCHEMA_V3} or {RUN_SCHEMA}")
+    if require_current_source and schema != RUN_SCHEMA:
+        errors.append(f"{manifest}: current evidence must use {RUN_SCHEMA}")
     if payload.get("variant") != variant_id or payload.get("host") != "pi":
         errors.append(f"{manifest}: variant/host mismatch")
     if payload.get("prompt_sha256") != prompt_hash:
@@ -177,8 +199,15 @@ def validate_run(
         errors.append(f"{manifest}: contract_sha256 must be 64 lowercase hex characters")
     elif require_current_source and observed_contract != contract_sha256():
         errors.append(f"{manifest}: comparative contract hash is stale")
-    if payload.get("skill_install_mode") != "isolated_project_copy":
-        errors.append(f"{manifest}: skill_install_mode must be isolated_project_copy")
+    expected_install_mode = (
+        "isolated_case_projection"
+        if schema == RUN_SCHEMA
+        else "isolated_project_copy"
+    )
+    if payload.get("skill_install_mode") != expected_install_mode:
+        errors.append(
+            f"{manifest}: skill_install_mode must be {expected_install_mode}"
+        )
     if payload.get("workspace_kind") != "repo_external_isolated_project":
         errors.append(f"{manifest}: workspace_kind must be repo_external_isolated_project")
     if payload.get("returncode") != 0 or payload.get("worktree_unchanged") is not True:
@@ -199,13 +228,134 @@ def validate_run(
     for relative, digest in observed_trees.items():
         if not re.fullmatch(r"[0-9a-f]{64}", str(digest)):
             errors.append(f"{manifest}: skill_trees.{relative} must be 64 lowercase hex characters")
-    if require_current_source:
-        expected_trees = {
-            str(relative): tree_sha256(ROOT / str(relative))
-            for relative in variant.get("skill_paths", [])
-        }
-        if observed_trees != expected_trees:
-            errors.append(f"{manifest}: skill_trees must match current variant sources")
+    if schema == RUN_SCHEMA:
+        source_commit = str(payload.get("source_commit", ""))
+        if not re.fullmatch(r"[0-9a-f]{40}", source_commit):
+            errors.append(f"{manifest}: source_commit must be a full lowercase Git SHA")
+        source_trees = payload.get("source_trees")
+        source_fingerprints = payload.get("source_fingerprints")
+        if not isinstance(source_trees, dict) or set(source_trees) != expected_tree_paths:
+            errors.append(f"{manifest}: source_trees must cover every variant skill")
+            source_trees = {}
+        if (
+            not isinstance(source_fingerprints, dict)
+            or set(source_fingerprints) != expected_tree_paths
+        ):
+            errors.append(
+                f"{manifest}: source_fingerprints must cover every variant skill"
+            )
+            source_fingerprints = {}
+        for relative, digest in source_trees.items():
+            if not re.fullmatch(r"[0-9a-f]{64}", str(digest)):
+                errors.append(
+                    f"{manifest}: source_trees.{relative} must be 64 lowercase hex characters"
+                )
+        for relative, item in source_fingerprints.items():
+            if not isinstance(item, dict):
+                errors.append(f"{manifest}: source_fingerprints.{relative} must be an object")
+                continue
+            kind = item.get("kind")
+            expected_keys = (
+                {
+                    "kind",
+                    "domain",
+                    "sha256",
+                    "source_dirty",
+                    "projected_tree_sha256",
+                }
+                if kind == "evidence_domain"
+                else {"kind", "sha256", "source_dirty", "projected_tree_sha256"}
+            )
+            if set(item) != expected_keys:
+                errors.append(
+                    f"{manifest}: source_fingerprints.{relative} fields mismatch"
+                )
+            if kind not in {"evidence_domain", "tree"}:
+                errors.append(
+                    f"{manifest}: source_fingerprints.{relative}.kind is invalid"
+                )
+            for key in ("sha256", "projected_tree_sha256"):
+                if not re.fullmatch(r"[0-9a-f]{64}", str(item.get(key, ""))):
+                    errors.append(
+                        f"{manifest}: source_fingerprints.{relative}.{key} is invalid"
+                    )
+            if not isinstance(item.get("source_dirty"), bool):
+                errors.append(
+                    f"{manifest}: source_fingerprints.{relative}.source_dirty must be boolean"
+                )
+
+    if require_current_source and schema == RUN_SCHEMA:
+        behavior_domain = binding_domain("comparative", case_dir.name, root=ROOT)
+        expected_installed: dict[str, str] = {}
+        expected_source_trees: dict[str, str] = {}
+        expected_fingerprints: dict[str, dict[str, object]] = {}
+        for relative in variant.get("skill_paths", []):
+            relative = str(relative)
+            source = ROOT / relative
+            source_tree = tree_sha256(source)
+            expected_source_trees[relative] = source_tree
+            if relative == "skills/design-craft":
+                projected_tree = projected_skill_tree_sha256(
+                    ROOT, source, behavior_domain
+                )
+                expected_installed[relative] = projected_tree
+                expected_fingerprints[relative] = {
+                    "kind": "evidence_domain",
+                    "domain": behavior_domain,
+                    "sha256": domain_fingerprint(ROOT, behavior_domain),
+                    "source_dirty": domain_dirty(ROOT, behavior_domain),
+                    "projected_tree_sha256": projected_tree,
+                }
+            else:
+                expected_installed[relative] = source_tree
+                expected_fingerprints[relative] = {
+                    "kind": "tree",
+                    "sha256": source_tree,
+                    "source_dirty": git_dirty(ROOT, source),
+                    "projected_tree_sha256": source_tree,
+                }
+        if observed_trees != expected_installed:
+            errors.append(
+                f"{manifest}: skill_trees must match current case projections"
+            )
+        if payload.get("source_fingerprints") != expected_fingerprints:
+            errors.append(
+                f"{manifest}: source_fingerprints must match current variant sources"
+            )
+        if any(item["source_dirty"] for item in expected_fingerprints.values()):
+            errors.append(f"{manifest}: current comparative source projection is dirty")
+        source_commit = str(payload.get("source_commit", ""))
+        if re.fullmatch(r"[0-9a-f]{40}", source_commit):
+            if not git_is_ancestor(ROOT, source_commit):
+                errors.append(f"{manifest}: source_commit must be an ancestor of current HEAD")
+            elif "skills/design-craft" in expected_fingerprints:
+                expected_behavior = expected_fingerprints["skills/design-craft"]
+                try:
+                    committed_behavior = git_domain_fingerprint(
+                        ROOT, behavior_domain, source_commit
+                    )
+                    committed_projection = git_projected_skill_tree_sha256(
+                        ROOT,
+                        ROOT / "skills/design-craft",
+                        behavior_domain,
+                        source_commit,
+                    )
+                except (OSError, ValueError) as exc:
+                    errors.append(
+                        f"{manifest}: cannot inspect behavior domain at source_commit: {exc}"
+                    )
+                else:
+                    if expected_behavior["sha256"] != committed_behavior:
+                        errors.append(
+                            f"{manifest}: source_commit behavior must match the current behavior fingerprint"
+                        )
+                    if (
+                        expected_behavior["projected_tree_sha256"]
+                        != committed_projection
+                    ):
+                        errors.append(
+                            f"{manifest}: source_commit projection must match the current projected tree"
+                        )
     installed_paths = payload.get("installed_skill_paths")
     if not isinstance(installed_paths, dict) or set(installed_paths) != expected_tree_paths:
         errors.append(f"{manifest}: installed_skill_paths must cover every variant skill")
@@ -314,6 +464,7 @@ def validate_result(
     judgment: dict,
     runs: dict[str, dict],
     required_variants: tuple[str, str, str],
+    require_current_source: bool,
 ) -> list[str]:
     path = case_dir / "comparison.json"
     try:
@@ -321,8 +472,11 @@ def validate_result(
     except (OSError, json.JSONDecodeError) as exc:
         return [f"{path}: {exc}"]
     errors: list[str] = []
-    if payload.get("schema") != RESULT_SCHEMA or payload.get("case_id") != case_dir.name:
+    result_schema = payload.get("schema")
+    if result_schema not in {RESULT_SCHEMA_V3, RESULT_SCHEMA} or payload.get("case_id") != case_dir.name:
         errors.append(f"{path}: schema/case_id mismatch")
+    if require_current_source and result_schema != RESULT_SCHEMA:
+        errors.append(f"{path}: current result must use {RESULT_SCHEMA}")
     if payload.get("focused_variant") != required_variants[1]:
         errors.append(f"{path}: focused_variant mismatch")
     hashes = {
@@ -394,6 +548,19 @@ def validate_result(
                 "skill_trees": run_payload.get("skill_trees"),
                 "contract_sha256": run_payload.get("contract_sha256"),
             }
+            if result_schema == RESULT_SCHEMA:
+                expected.update(
+                    {
+                        "source_trees": run_payload.get("source_trees"),
+                        "source_commit": run_payload.get("source_commit"),
+                        "source_fingerprints": run_payload.get(
+                            "source_fingerprints"
+                        ),
+                        "skill_install_mode": run_payload.get(
+                            "skill_install_mode"
+                        ),
+                    }
+                )
             if variant_runs.get(variant) != expected:
                 errors.append(f"{path}: variant_runs.{variant} is not bound to current evidence")
     label_map = {
@@ -464,6 +631,7 @@ def validate_case(
                 judgment=judgment,
                 runs=runs,
                 required_variants=required_variants,
+                require_current_source=require_current_source,
             )
         )
     return errors
@@ -527,6 +695,8 @@ def run_self_check() -> list[str]:
             errors.append("comparative e2e self-check could not load its fixture")
             return errors
         prompt_hash = sha256_file(case / "prompt.md")
+        behavior_domain = binding_domain("comparative", case.name, root=ROOT)
+        source_commit = git_head(ROOT)
         for item in variants["variants"]:
             variant = item["id"]
             output = case / f"output.{variant}.md"
@@ -536,10 +706,34 @@ def run_self_check() -> list[str]:
                 "Reduced Motion checks, and bounded verification steps. " * 3,
                 encoding="utf-8",
             )
-            skill_trees = {
-                str(relative): tree_sha256(ROOT / str(relative))
-                for relative in item.get("skill_paths", [])
-            }
+            skill_trees: dict[str, str] = {}
+            source_trees: dict[str, str] = {}
+            source_fingerprints: dict[str, dict[str, object]] = {}
+            for relative_value in item.get("skill_paths", []):
+                relative = str(relative_value)
+                source_path = ROOT / relative
+                source_tree = tree_sha256(source_path)
+                source_trees[relative] = source_tree
+                if relative == "skills/design-craft":
+                    projected_tree = projected_skill_tree_sha256(
+                        ROOT, source_path, behavior_domain
+                    )
+                    skill_trees[relative] = projected_tree
+                    source_fingerprints[relative] = {
+                        "kind": "evidence_domain",
+                        "domain": behavior_domain,
+                        "sha256": domain_fingerprint(ROOT, behavior_domain),
+                        "source_dirty": False,
+                        "projected_tree_sha256": projected_tree,
+                    }
+                else:
+                    skill_trees[relative] = source_tree
+                    source_fingerprints[relative] = {
+                        "kind": "tree",
+                        "sha256": source_tree,
+                        "source_dirty": False,
+                        "projected_tree_sha256": source_tree,
+                    }
             installed_paths = {
                 relative: f"$VARIANT_WORKSPACE/.pi/skills/{index:02d}-skill"
                 for index, relative in enumerate(skill_trees, start=1)
@@ -556,12 +750,15 @@ def run_self_check() -> list[str]:
                         "thinking": "high",
                         "thinking_observation": "requested_by_cli",
                         "runner_os": "fixture",
+                        "source_commit": source_commit,
                         "prompt_sha256": prompt_hash,
                         "output_path": output.name,
                         "output_sha256": sha256_file(output),
                         "skill_trees": skill_trees,
+                        "source_trees": source_trees,
+                        "source_fingerprints": source_fingerprints,
                         "installed_skill_paths": installed_paths,
-                        "skill_install_mode": "isolated_project_copy",
+                        "skill_install_mode": "isolated_case_projection",
                         "workspace_kind": "repo_external_isolated_project",
                         "cwd": "$VARIANT_WORKSPACE",
                         "command": "pi --print --no-skills",
@@ -712,9 +909,18 @@ def main() -> int:
     )
     modes.add_argument("--check", action="store_true")
     parser.add_argument("--require-observed", action="store_true")
+    parser.add_argument(
+        "--definitions-only",
+        action="store_true",
+        help="Validate active case definitions without admitting or rejecting recorded evidence.",
+    )
     args = parser.parse_args()
     if args.check and args.require_observed:
         parser.error("--require-observed is not valid with --check")
+    if args.definitions_only and (args.check or args.history_root or args.require_observed):
+        parser.error(
+            "--definitions-only is not valid with --check, --history-root, or --require-observed"
+        )
     if args.check:
         errors = run_self_check()
         if errors:
@@ -734,13 +940,17 @@ def main() -> int:
     if not cases:
         errors.append("at least one comparative case is required")
     for case in cases:
-        errors.extend(
-            validate_case(
-                case,
-                require_observed=True if history_mode else args.require_observed,
-                require_current_source=not history_mode,
+        if args.definitions_only:
+            _, _, definition_errors = validate_definition(case)
+            errors.extend(definition_errors)
+        else:
+            errors.extend(
+                validate_case(
+                    case,
+                    require_observed=True if history_mode else args.require_observed,
+                    require_current_source=not history_mode,
+                )
             )
-        )
     if errors:
         print("\n".join(errors), file=sys.stderr)
         return 1

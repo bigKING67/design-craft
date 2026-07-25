@@ -174,7 +174,11 @@ def main() -> int:
             "host_version": run_payload.get("host_version"),
             "model": run_payload.get("model"),
             "thinking": run_payload.get("thinking"),
+            "source_commit": run_payload.get("source_commit"),
             "skill_trees": run_payload.get("skill_trees"),
+            "source_trees": run_payload.get("source_trees"),
+            "source_fingerprints": run_payload.get("source_fingerprints"),
+            "skill_install_mode": run_payload.get("skill_install_mode"),
             "contract_sha256": run_payload.get("contract_sha256"),
         }
 

@@ -10,6 +10,7 @@ import platform
 import shlex
 import shutil
 import subprocess
+import sys
 import tempfile
 import time
 from datetime import datetime, timezone
@@ -17,6 +18,7 @@ from pathlib import Path
 
 from design_craft_evidence_common import (
     command_version,
+    git_head,
     publish_files,
     sha256_bytes,
     tree_sha256,
@@ -24,8 +26,22 @@ from design_craft_evidence_common import (
 )
 
 
-SCHEMA = "design-craft.cross-agent-run.v2"
 ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
+from tools.design_craft.evaluation.evidence_graph import (
+    binding_domain,
+    domain_dirty,
+    domain_fingerprint,
+    git_domain_fingerprint,
+    git_projected_skill_tree_sha256,
+    project_skill_domain,
+    projected_skill_tree_sha256,
+)
+
+
+SCHEMA = "design-craft.cross-agent-run.v3"
 HOSTS = ("codex", "pi", "cursor", "claude")
 EXECUTABLES = {
     "codex": "codex",
@@ -41,12 +57,17 @@ PROJECT_SKILL_PATHS = {
 }
 
 
-def install_project_skill(host: str, source: Path, workspace: Path) -> Path:
+def install_project_skill(
+    host: str, source: Path, workspace: Path, *, behavior_domain: str
+) -> Path:
     destination = workspace / PROJECT_SKILL_PATHS[host]
     destination.parent.mkdir(parents=True, exist_ok=True)
-    shutil.copytree(source, destination, symlinks=False)
-    if tree_sha256(destination) != tree_sha256(source):
-        raise RuntimeError(f"isolated {host} skill copy does not match --skill-root")
+    project_skill_domain(ROOT, source, behavior_domain, destination)
+    expected = projected_skill_tree_sha256(ROOT, source, behavior_domain)
+    if tree_sha256(destination) != expected:
+        raise RuntimeError(
+            f"isolated {host} skill projection does not match {behavior_domain}"
+        )
     return destination
 
 
@@ -166,13 +187,24 @@ def run_self_check() -> None:
 
         workspace = root / "workspace"
         workspace.mkdir()
-        installed = install_project_skill("codex", ROOT / "skills/design-craft", workspace)
+        behavior_domain = "skill-motion-review"
+        installed = install_project_skill(
+            "codex",
+            ROOT / "skills/design-craft",
+            workspace,
+            behavior_domain=behavior_domain,
+        )
         output = workspace / ".design-craft-output.md"
         for host in HOSTS:
             host_skill = (
                 installed
                 if host == "codex"
-                else install_project_skill(host, ROOT / "skills/design-craft", workspace / host)
+                else install_project_skill(
+                    host,
+                    ROOT / "skills/design-craft",
+                    workspace / host,
+                    behavior_domain=behavior_domain,
+                )
             )
             host_workspace = workspace if host == "codex" else workspace / host
             command, stdin_prompt = command_for(
@@ -249,11 +281,39 @@ def main() -> int:
 
     prompt = prompt_path.read_text(encoding="utf-8")
     source_skill_tree = tree_sha256(skill_root)
+    behavior_domain = binding_domain("cross_agent", task_dir.name, root=ROOT)
+    behavior_sha256 = domain_fingerprint(ROOT, behavior_domain)
+    behavior_source_dirty = domain_dirty(ROOT, behavior_domain)
+    projected_tree = projected_skill_tree_sha256(
+        ROOT, skill_root, behavior_domain
+    )
+    if not args.dry_run and behavior_source_dirty:
+        parser.error(
+            f"refusing to run current evidence from dirty behavior domain {behavior_domain}"
+        )
+    if not args.dry_run:
+        source_commit = git_head(ROOT)
+        if (
+            git_domain_fingerprint(ROOT, behavior_domain, source_commit)
+            != behavior_sha256
+            or git_projected_skill_tree_sha256(
+                ROOT, skill_root, behavior_domain, source_commit
+            )
+            != projected_tree
+        ):
+            parser.error(
+                f"behavior domain {behavior_domain} is not committed at current HEAD"
+            )
     with tempfile.TemporaryDirectory(prefix=f"design-craft-{args.host}-run-") as raw:
         temp_root = Path(raw)
         workspace = temp_root / "workspace"
         workspace.mkdir()
-        installed_skill = install_project_skill(args.host, skill_root, workspace)
+        installed_skill = install_project_skill(
+            args.host,
+            skill_root,
+            workspace,
+            behavior_domain=behavior_domain,
+        )
         temporary_output = workspace / ".design-craft-host-output.md"
         command, prompt_via_stdin = command_for(
             args.host,
@@ -274,7 +334,11 @@ def main() -> int:
                         "prompt_sha256": sha256_bytes(prompt.encode("utf-8")),
                         "prompt_transport": "stdin" if prompt_via_stdin else "argument",
                         "skill_path": f"$BENCHMARK_WORKSPACE/{PROJECT_SKILL_PATHS[args.host].as_posix()}",
-                        "skill_tree_sha256": source_skill_tree,
+                        "source_skill_tree_sha256": source_skill_tree,
+                        "behavior_domain": behavior_domain,
+                        "behavior_sha256": behavior_sha256,
+                        "behavior_source_dirty": behavior_source_dirty,
+                        "projected_skill_tree_sha256": projected_tree,
                         "output": f"$TASK_DIR/{output_path.name}",
                         "manifest": f"$TASK_DIR/{manifest_path.name}",
                     },
@@ -317,8 +381,8 @@ def main() -> int:
         after = worktree_fingerprint(ROOT)
         if after != before:
             parser.error(f"{args.host} changed the source worktree despite isolated read-only mode")
-        if tree_sha256(installed_skill) != source_skill_tree:
-            parser.error(f"{args.host} isolated skill changed during inference")
+        if tree_sha256(installed_skill) != projected_tree:
+            parser.error(f"{args.host} isolated skill projection changed during inference")
 
         output_bytes = temporary_output.read_bytes()
         version = command_version(EXECUTABLES[args.host])
@@ -340,8 +404,12 @@ def main() -> int:
             "output_path": output_path.name,
             "output_sha256": sha256_bytes(output_bytes),
             "skill_path": f"$BENCHMARK_WORKSPACE/{PROJECT_SKILL_PATHS[args.host].as_posix()}",
-            "skill_tree_sha256": source_skill_tree,
-            "skill_install_mode": "isolated_project_copy",
+            "source_skill_tree_sha256": source_skill_tree,
+            "behavior_domain": behavior_domain,
+            "behavior_sha256": behavior_sha256,
+            "behavior_source_dirty": behavior_source_dirty,
+            "projected_skill_tree_sha256": projected_tree,
+            "skill_install_mode": "isolated_domain_projection",
             "workspace_kind": "repo_external_isolated_project",
             "cwd": "$BENCHMARK_WORKSPACE",
             "command": public,

@@ -40,13 +40,16 @@ mistaking mobile Web for native; they do not add a device requirement to daily
 Web work.
 The canonical package is still portable: agent-specific integration belongs in
 `adapters/`, while `skills/design-craft/` remains the single source skill.
-The `0.5.5` development contract defines an `operational_95` release level for
+The `0.5.6` development contract defines an `operational_95` release level for
 Codex/Pi and Simulator/Emulator current-source evidence, benchmark regression,
 clean-checkout provenance, and repository governance. It reserves
 `certified_100` for the additional Cursor, Claude, and physical-device proof.
 These names are release evidence tiers, not composite product-quality scores.
-Evidence hashes bind the skill tree, fixtures, prompt, scorecard, and agent
-output instead of treating file presence as proof.
+Evidence Graph v2 binds behavioral evaluations to exact task-specific Skill
+projections while keeping performance, native runtime, and release metadata in
+separate domains. Runtime and release evidence still retain exact commit,
+workflow, fixture, and artifact bindings; a domain fingerprint never replaces
+those stronger identities.
 
 ## Layout
 
