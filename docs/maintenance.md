@@ -47,6 +47,9 @@ This document is the local release and maintenance checklist for
 - Keep comparative evidence admission under
   `tools/design_craft/evaluation/comparative/`; the script in `scripts/` is a
   stable compatibility CLI, not a second implementation.
+- Keep cross-agent definition, score, run, current-source, and history
+  validation under `tools/design_craft/evaluation/cross_agent/`; its script is
+  likewise only the stable compatibility CLI.
 - Keep `operational_95` distinct from `certified_100`. These are evidence-level
   names, not composite product-quality scores. Certified requires current-source
   score v4 for all four hosts plus Simulator, Emulator, and physical-device

@@ -23,6 +23,9 @@ All notable local changes to `design-craft` are recorded here.
 - Split the 977-line comparative validator into responsibility-scoped
   definition, run-evidence, judge-evidence, result, case, fixture, and CLI
   modules while preserving its compatibility entrypoint and evidence contract.
+- Split the 883-line cross-agent validator into score, run-evidence,
+  current-source, output, task, fixture, and CLI modules while preserving its
+  compatibility entrypoint and current/history evidence boundaries.
 
 ## 0.5.6 - 2026-07-25
 
