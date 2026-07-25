@@ -697,6 +697,12 @@ def run_self_check() -> list[str]:
         prompt_hash = sha256_file(case / "prompt.md")
         behavior_domain = binding_domain("comparative", case.name, root=ROOT)
         source_commit = git_head(ROOT)
+        current_source_clean = not domain_dirty(ROOT, behavior_domain) and all(
+            not git_dirty(ROOT, ROOT / str(relative))
+            for item in variants["variants"]
+            for relative in item.get("skill_paths", [])
+            if str(relative) != "skills/design-craft"
+        )
         for item in variants["variants"]:
             variant = item["id"]
             output = case / f"output.{variant}.md"
@@ -883,13 +889,23 @@ def run_self_check() -> list[str]:
         observed_errors = validate_case(
             case,
             require_observed=True,
-            require_current_source=True,
+            require_current_source=current_source_clean,
         )
         if observed_errors:
             errors.append(
                 "comparative e2e self-check rejected valid observed evidence: "
                 + "; ".join(observed_errors)
             )
+        if not current_source_clean:
+            current_source_errors = validate_case(
+                case,
+                require_observed=True,
+                require_current_source=True,
+            )
+            if not any("dirty" in error for error in current_source_errors):
+                errors.append(
+                    "comparative e2e self-check accepted dirty current-source evidence"
+                )
         comparison = json.loads((case / "comparison.json").read_text(encoding="utf-8"))
         comparison["results"]["design-craft"]["score"] = 0
         (case / "comparison.json").write_text(json.dumps(comparison), encoding="utf-8")

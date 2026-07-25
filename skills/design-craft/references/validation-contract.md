@@ -10,6 +10,8 @@ Use this before calling frontend work complete.
 - [Screenshot evidence](#screenshot-evidence)
 - [Native runtime validation](#native-runtime-validation)
 - [Design-system validation](#design-system-validation)
+- [Evidence boundaries](#evidence-boundaries)
+- [Output and finding budgets](#output-and-finding-budgets)
 - [Route summary fields](#route-summary-fields)
 - [Quality score](#quality-score)
 - [Cross-agent validation](#cross-agent-validation)
@@ -136,6 +138,12 @@ screenshots for every frontend change. Follow the route screenshot policy:
   typical for section/page layout, redesign, new page, reference fidelity,
   responsive, state-heavy, mobile, or high-motion work.
 
+When screenshots or rendered inspection are required, prefer at most two
+batched verification passes: capture the necessary desktop, mobile, and state
+set together; apply material fixes as one batch; then run one confirmation
+pass. Do not start a per-tweak screenshot loop unless the user explicitly
+requests live visual iteration.
+
 Preferred flow with TMWD:
 
 1. Use `browser_tab_lifecycle` with `action:"select_or_create"` and a stable
@@ -205,6 +213,9 @@ Check and report:
   font sizes, or timing values, and why they are justified.
 - Light/dark token parity for the touched tokens and states.
 - Visible `:focus-visible` for touched interactive elements.
+- When a Web tablet target has no project standard, use 44 CSS pixels as a
+  provisional comfort floor for effective interactive target size and label it
+  for project ratification; project and native platform authority still wins.
 - Disabled, loading, error, empty, and success states where the changed surface
   owns those states.
 - UI copy quality for actions, errors, toasts, empty states, and loading labels;
@@ -213,6 +224,47 @@ Check and report:
 - Static scanner findings, when used, with clear severity and target path. Do
   not present scanner findings as proof of visual quality without browser or
   runtime evidence.
+
+## Evidence boundaries
+
+- Live browser/native behavior outranks static inference. A screenshot proves
+  rendered appearance, not hidden interaction states; source proves only the
+  supplied code and explicit branches.
+- Contextual static signals such as fixed geometry, removed outlines, global
+  booleans, easing, and shared transforms are review risks until complete
+  ownership or runtime evidence rules out compensating behavior. Describe the
+  failure condition as a hypothesis when the call path is incomplete.
+- Do not infer perceived lag, smoothness, frame rate, compositing, layout shift,
+  device feel, workload size, row count, concurrency, or usage frequency
+  without measurement or explicit product/source evidence.
+- A responsive repair must replace every cited fixed-width, minimum-width,
+  column, drawer, or overflow blocker. Keep critical actions reachable and
+  isolate unavoidable overflow to the data region.
+- A loading, empty, error, permission, conflict, offline, partial, or recovery
+  state is covered only when the result names what renders, what the user can
+  do, what context survives, and how the behavior is verified.
+- Direct-manipulation claims additionally follow
+  `interaction-physics.md`; static source cannot prove gesture feel or velocity
+  continuity.
+
+## Output and finding budgets
+
+Treat every explicit line, word, section, or item limit as a hard contract.
+Draft to roughly 75 percent of the cap, count newline-delimited lines when a
+line limit exists, and remove repeated prose or low-severity detail before
+omitting required states or exceeding the limit.
+
+Use one finding ledger for multi-section reviews. Record the source fact,
+runtime hypothesis, implementation behavior, recovery action, and acceptance
+once; later sections should reference the finding instead of restating it.
+When the cap is 200 lines or fewer, use at most eight ledger entries unless an
+exact larger count is required, and reserve at least one quarter of the budget
+for detector reconciliation and validation.
+
+For an uncapped critique or audit, default to one-sentence diagnosis, at most
+five blocking and five secondary findings, at most eight concrete moves, and
+the smallest validation plan that can change the decision. Target 150 lines or
+fewer unless the user explicitly requests an exhaustive report.
 
 ## Route summary fields
 

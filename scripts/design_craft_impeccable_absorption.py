@@ -64,6 +64,7 @@ COVERAGE = {
         "paths": [
             "skills/design-craft/SKILL.md",
             "skills/design-craft/references/performance-quality.md",
+            "skills/design-craft/references/validation-contract.md",
         ],
         "terms": [
             "baseline before selecting or claiming performance fixes",

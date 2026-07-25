@@ -22,6 +22,10 @@ until target-device measurement establishes severe task failure, unless the
 source already proves guaranteed exhaustion, data loss, or inability to
 complete the stated job.
 
+Do not assign P0 solely from an unmeasured static hot-path shape. Use P1 risk
+unless source proves certain task failure at the stated scale or runtime
+measurement proves a release blocker.
+
 When acceptance conditions are requested but the project has no performance
 budget, propose provisional numeric thresholds and label them for ratification
 instead of saying only "responsive" or "fast". Match them to the actual device,

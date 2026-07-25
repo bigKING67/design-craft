@@ -7,6 +7,7 @@ from pathlib import Path
 
 from tools.design_craft.evaluation.evidence_graph import (
     binding_domain,
+    domain_dirty,
     domain_fingerprint,
     git_domain_fingerprint,
     git_projected_skill_tree_sha256,
@@ -86,6 +87,8 @@ class EvidenceGraphTests(unittest.TestCase):
 
     def test_git_fingerprint_matches_clean_checkout(self) -> None:
         domain = binding_domain("cross_agent", "same-prompt-motion-review")
+        if domain_dirty(REPO_ROOT, domain):
+            self.skipTest("current behavior domain is intentionally dirty")
         commit = git_head(REPO_ROOT)
         self.assertEqual(
             git_domain_fingerprint(REPO_ROOT, domain, commit),

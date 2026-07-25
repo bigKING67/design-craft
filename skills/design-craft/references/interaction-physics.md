@@ -106,6 +106,11 @@ Velocity handoff and target selection are separate decisions. A settle can
 start from the current presentation value and inherit bounded velocity while
 still using the project's existing target-selection rule.
 
+Naming a projected endpoint alone never satisfies velocity handoff. Measure the
+release velocity with explicit units, choose the target under product-owned
+semantics, then feed the measured velocity into the settle using the animation
+API's required units.
+
 ## Soft boundaries and hysteresis
 
 - Require roughly `8-12px`/pt/dp of movement before committing a drag

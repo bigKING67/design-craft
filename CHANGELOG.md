@@ -12,6 +12,14 @@ All notable local changes to `design-craft` are recorded here.
 - Allow maintainers to fast-forward locally verified commits directly to
   `main`; Validate remains post-push evidence while deletion and force-push
   protection stays active for `main` and release tags.
+- Compress the always-loaded canonical `SKILL.md` from 387 lines/22.5 KB to
+  234 lines/11.1 KB while retaining every routed reference, authority rule,
+  mode, quality gate, and delivery field. Specialized evidence, output-budget,
+  interaction-physics, and performance-severity rules now live in their
+  task-scoped references.
+- Make comparative validation self-checks usable during intentional Skill
+  edits: dirty current-source evidence must still be rejected, while the
+  isolated observed-evidence fixture can validate before the final commit.
 
 ## 0.5.6 - 2026-07-25
 

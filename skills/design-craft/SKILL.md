@@ -5,257 +5,177 @@ description: "Use primarily for web and desktop product UI/UX design engineering
 
 # Design Craft
 
-Production-grade, web-first design engineering for this machine: product UI,
-UX, visual taste, motion, design systems, frontend implementation, performance,
-architecture, project quality, and directory governance in one workflow. iOS,
-Android, and adaptive references are optional extensions loaded only when the
-resolved target is genuinely native or cross-platform.
+Production-grade, web-first design engineering for product UI, UX, visual
+quality, motion, design systems, frontend implementation, performance,
+architecture, project quality, and directory governance. Native references are
+optional and load only when source or product evidence establishes an iOS,
+Android, or adaptive target.
 
-Default to `platform=web` for ordinary desktop/browser work. A mobile viewport,
-responsive page, PWA, Capacitor/Cordova shell, or WebView does not by itself
-make the target native. Native quality gates must not block the desktop Web
-profile when no native product is in scope.
+Default to `platform=web`. A mobile viewport, PWA, WebView, or responsive page
+does not by itself make a target native.
 
-## When not to use
+## Scope
 
-Do not use `design-craft` for:
+Use this skill for user-visible product surfaces, frontend architecture,
+design-system work, visual review, interaction quality, UI performance, and
+frontend structure. Do not use it for backend-only, database-only,
+algorithm-only, CLI-only, or copy-only tasks with no interface or layout
+contract.
 
-- Backend-only API changes with no user-visible product surface.
-- Database-only migrations or data-model work with no UI contract.
-- Pure algorithm, parsing, or CLI-only tasks.
-- Generic refactors that do not affect product UI quality, frontend structure,
-  browser behavior, responsive behavior, accessibility, or visual output.
-- Copy-only writing where layout, hierarchy, or interface behavior is out of
-  scope.
+## Authority order and evidence
 
-## Non-negotiable authority order
+Use this authority order when guidance conflicts:
 
-Use this order when evidence conflicts:
+1. Live runtime behavior and browser/native evidence.
+2. Scoped `AGENTS.md`, repo conventions, and current source.
+3. Project `PRODUCT.md` and product/platform context.
+4. Project `DESIGN.md` or equivalent style authority.
+5. Local frontend route output.
+6. Bundled developer-product seed templates for new or weak systems.
+7. Task-relevant `design-craft` references.
+8. Generic upstream guidance.
 
-1. Live runtime behavior and browser evidence.
-2. Scoped `AGENTS.md`, README, framework conventions, and current repo state.
-3. Project `PRODUCT.md` for product/platform/user/accessibility context.
-4. Project `DESIGN.md` or equivalent visual style authority.
-5. Local frontend route planner output.
-6. Bundled original developer-product seed templates for new or weak web
-   systems.
-7. `design-craft` references.
-8. Upstream generic visual or Impeccable guidance.
+Project authority wins over generic taste rules. Source can prove code shape and
+explicit branches; it cannot prove visual feel, smoothness, device behavior, or
+whole-product state coverage. Use `references/validation-contract.md` for the
+full evidence and completion boundary.
 
-Do not let generic visual rules override a project's product context, design
-system, data density, report grammar, or runtime truth.
+## Core workflow
 
-## First-pass workflow
-
-1. Inspect the real repo before planning: `git status --short`, relevant
-   `AGENTS.md`, optional `PRODUCT.md`, `DESIGN.md`, route files, package/build
-   scripts, existing components, platform targets, style tokens, and similar
-   implementations.
-   Resolve the platform from source and product evidence; use Web by default
-   unless real iOS, Android, or cross-platform targets establish otherwise.
-2. For L1+ frontend implementation tasks, run the local route planner when
-   available:
+1. Inspect `git status --short`, relevant `AGENTS.md`, `PRODUCT.md`,
+   `DESIGN.md`, package/build scripts, platform targets, tokens, components,
+   routes, and nearby implementations. Resolve platform from evidence.
+2. For L1+ frontend work, run the route planner when available:
    `bash ~/.codex/tools/frontend_route_plan.sh --surface <surface> --intent <intent> --scope <scope> [--platform <auto|web|ios|android|adaptive>] [--product-context-path <abs PRODUCT.md>] [--style-authority-path <abs DESIGN.md>] --output compact-json`.
-   Use full `--output json` only when auditing the complete static delivery
-   contract, or `--output human` for concise interactive inspection.
-   Use only route-planner enum values. Do not put free-form task prose into
-   `--surface`, `--intent`, or `--scope`; keep notes outside the command.
-3. Treat route `candidate_skills` as candidates, not proof of actual use.
-   Report `selected_skills` only for skills actually read and applied.
-4. Pick the smallest mode that covers the task:
-   - `shape`: UX/design brief before implementation.
-   - `craft`: new feature or substantial UI build.
-   - `critique`: read-only design-rightness, product fit, hierarchy, and
-     anti-slop review.
-   - `audit`: read-only quality review.
-   - `polish`: finished UI refinement.
-   - `harden`: production edge cases, error states, i18n, overflow.
-   - `optimize`: measured UI performance work.
-   - `structure`: file/directory governance.
-   - `architecture`: frontend architecture and data-flow review.
-   When a production review legitimately combines modes, use one causal order:
-   audit the evidence and establish the performance baseline; harden
-   correctness, recovery, accessibility, and hostile-data blockers; remeasure
-   and optimize only supported hot paths; then polish and run release
-   validation. A validation section written after proposed optimizations is not
-   measurement-first: capture or define the baseline before selecting or
-   claiming performance fixes.
-5. Use helper scripts when available. Resolve them from the source repo or from
-   `$DESIGN_CRAFT_HOME/scripts` first:
-   `scripts/design_craft_route.sh` for route summaries,
-   `scripts/design_craft_audit.sh` for read-only critique/audit/polish/harden/
-   optimize/structure/architecture passes,
-   `scripts/design_craft_pass.sh` as the preferred neutral wrapper,
-   `scripts/design_craft_seed_design.sh` for seeding `DESIGN.md` and
-   `DESIGN.dark.md` from the bundled original developer-product templates,
-   `scripts/design_craft_motion_plan.py` for source-stamped motion implementation
-   plan scaffolds,
-   `scripts/design_craft_detect.sh` for detector and local design-craft signals,
-   `scripts/design_craft_taste_review.sh` for stable product UI taste-review
-   packets,
-   `scripts/design_craft_l4_eval_case.sh` for L4 before/after eval scaffolds,
-   `scripts/design_craft_l4_capture.py` for TMWD-first L4 screenshot capture
-   plans and Chrome-headless fallback manifests,
-   `scripts/design_craft_browser_evidence.py` for redacted DOM/computed-style
-   evidence snippets and product UI score anti-inflation validation,
-   `scripts/design_craft_css_smell_scan.py`,
-   `scripts/design_craft_focus_audit.py`, and
-   `scripts/design_craft_token_audit.py` for static review signals, and
-   `scripts/design_craft_platform_scan.py` for platform inference and
-   conservative iOS/Android/adaptive source checks,
-   `scripts/design_craft_codex_route_pack.py` for auditing or exporting the
-   local Codex frontend route-pack manifest, and
-   `scripts/design_craft_score.py` for self-audits. When maintaining this skill
-   repo, use `scripts/upstream_absorption_report.py` before absorbing new
-   upstream commits.
-   If the scripts are unavailable in the current agent, do not fail the design
-   task only because automation is missing: read the relevant references,
-   produce the design read, choose the smallest safe mode, and report the
-   skipped automation explicitly.
-6. Implement minimally, verify with the most relevant commands, and use a real
-   browser for visible UI, interaction, responsive, report, dashboard, download,
-   upload, or login-state changes. When the route requires screenshot evidence,
-   report only actual screenshot artifacts, not planned screenshots. For visible
-   UI work, use at most two batched verification passes when screenshots or
-   rendered inspection are required: capture the required desktop, mobile, and
-   state set together, apply the material fixes as one batch, then run one
-   confirmation pass. Do not start a per-tweak screenshot loop; use live mode
-   only when the user explicitly needs interactive iteration.
-7. Before returning, enforce every explicit response-size constraint. For a
-   limit of N lines, count newline-delimited lines and rewrite until the result
-   is at most N. In a multi-section audit, group related P0-P3 findings, give
-   each evidence/fix once, and make later detector and validation sections
-   reference those findings instead of repeating them. Complete coverage does
-   not permit exceeding the user's cap. When concrete recommendations are also
-   capped, reconcile every blocking finding and the highest-impact secondary
-   layers against the final move list. Merge adjacent repairs such as shell,
-   table, state, and visual-system fixes rather than spending multiple moves on
-   one layer while another identified problem has no implementing move.
-   For prompts that separately request findings, area fixes, detector
-   reconciliation, and validation, keep one finding ledger: record source fact,
-   runtime hypothesis, implementation behavior, recovery action, and acceptance
-   once, then reference the finding ID or use a compact coverage matrix. Under
-   a hard cap of 200 lines or fewer, use at most eight ledger entries unless the
-   prompt requires an exact larger count, combine related failure states, and
-   reserve at least one quarter of the budget for detector reconciliation and
-   validation. Do not restate full evidence and fixes under later area headings.
-   If the final count still exceeds the cap, remove duplicated prose and P3
-   detail before omitting required states; never return an over-cap answer. A
-   missing loading, empty, error, permission, conflict, offline, or partial
-   state is not covered until the response names what renders, what the user can
-   do, what context survives, and how the result is verified. Draft to roughly
-   75 percent of an explicit line cap before the final count so formatting and
-   required headings cannot push the result over budget.
-   When a visual critique also asks for concrete redesign moves, read both
-   `references/product-ui-taste-review.md` and
-   `references/design-move-library.md`. Convert every cited craft defect into an
-   observable rule rather than saying only "improve readability" or "tighten
-   spacing": name the affected text role and a project-owned or provisional
-   size/line-height floor, the contrast/token requirement, the spacing rhythm,
-   and the border/elevation change that would resolve it. Without stronger
-   project authority, treat 14px/1.4 as a provisional floor for decision-bearing
-   dense table text, reserve 12-13px for secondary metadata, and require WCAG
-   normal-text contrast. Generic insight copy is not fixed by restyling it:
-   remove it or replace it with a named entity/segment, observed count or
-   threshold, impact or urgency, owner/next action, and a direct route into the
-   affected data.
+   Use enum values, not free-form task prose. Use full JSON only for contract
+   audits and human output only for concise interactive inspection.
+3. Treat route `candidate_skills` as candidates. Report `selected_skills` only
+   for skills actually read and applied.
+4. Choose the smallest mode that covers the work, then load only its routed
+   references.
+5. Establish product and style authority before changing visual language or
+   architecture. Measure before selecting or claiming performance fixes.
+6. Implement the smallest complete change. Verify visible behavior in a real
+   browser or native runtime when the task requires it; report only artifacts
+   actually produced.
+7. Deliver files changed, structure impact, validation, observed runtime
+   evidence, performance impact, and remaining risks. Never upgrade planned or
+   static evidence into a runtime claim.
+
+## Modes
+
+- `shape`: product/UX brief before implementation.
+- `craft`: new feature or substantial UI build.
+- `critique`: read-only design-rightness and product-fit review.
+- `audit`: read-only engineering and quality review.
+- `polish`: refinement of an already-correct interface.
+- `harden`: hostile data, recovery, accessibility, and edge states.
+- `optimize`: measured UI performance work.
+- `structure`: file and directory governance.
+- `architecture`: frontend interfaces, state, and data-flow review.
+
+For combined production work, use one causal order: baseline and audit,
+correctness/hardening, measured optimization, visual polish, then validation.
+
+## Helpers
+
+Use the smallest relevant bundled helper when available:
+
+- Route and pass: `scripts/design_craft_route.sh`,
+  `scripts/design_craft_pass.sh`, `scripts/design_craft_audit.sh`.
+- Design authority and motion plans: `scripts/design_craft_seed_design.sh`,
+  `scripts/design_craft_motion_plan.py`.
+- Review signals: `scripts/design_craft_detect.sh`,
+  `scripts/design_craft_taste_review.sh`,
+  `scripts/design_craft_static_review.py`,
+  `scripts/design_craft_css_smell_scan.py`,
+  `scripts/design_craft_focus_audit.py`, and
+  `scripts/design_craft_token_audit.py`.
+- Evidence: `scripts/design_craft_l4_eval_case.sh`,
+  `scripts/design_craft_l4_capture.py`, and
+  `scripts/design_craft_browser_evidence.py`.
+- Platform and host checks: `scripts/design_craft_platform_scan.py`,
+  `scripts/design_craft_codex_route_pack.py`, and
+  `scripts/design_craft_score.py`.
+- Source-repo upstream review: `scripts/upstream_absorption_report.py`.
+
+If automation is unavailable, continue with the relevant references and report
+the skipped automation, risk, and next command instead of failing the design
+task solely because a helper is missing.
 
 ## Reference routing
 
-Read only the references needed for the current task:
+Read only references required by the current task.
 
-- Visual redesign, landing pages, brand pages, portfolios:
-  `references/visual-judgment.md`.
-- Foundational hierarchy, CRAP/Gestalt-style reasoning, or "why does this feel
-  off?" visual diagnosis:
+### Product and visual direction
+
+- Visual direction and anti-slop judgment: `references/visual-judgment.md`.
+- Hierarchy, proximity, alignment, repetition, contrast, and Gestalt reasoning:
   `references/foundational-visual-principles.md`.
-- Design-system contracts, `DESIGN.md` shape, token naming, light/dark parity,
-  component state coverage, focus rules, motion policy, and UI copy rules:
-  `references/design-system-contract.md`.
-- Product context, `PRODUCT.md`, platform discovery, users, purpose,
-  positioning, and accessibility requirements:
+- Product users, purpose, positioning, platform, and accessibility context:
   `references/product-context.md`.
-- Product correctness, agency, responsibility, familiarity, flexibility,
-  simplicity, craft, delight, wayfinding, and feedback:
+- Product correctness, agency, familiarity, wayfinding, and feedback:
   `references/product-design-principles.md`.
-- New or weakly specified developer-product, SaaS, dashboard, admin, infra,
-  docs, or tooling surfaces without a stronger style authority:
-  `templates/developer-product/design.md` and
-  `templates/developer-product/design.dark.md` as the default initial seed.
-- Product UI taste scoring, "why not 100", screenshot/product-page review,
-  concrete top issues, and acceptance criteria:
-  `references/product-ui-taste-review.md`; add
-  `references/taste-score-calibration.md` when the exact score or score band is
-  the main deliverable.
-- Redesign recommendations, concrete implementation moves, dashboard/card-soup
-  repair, form/table/modal/navigation polish, and translating critique into
-  changes:
-  `references/design-move-library.md`.
-- Impeccable-style command selection, critique/audit/polish/harden/optimize/live:
-  `references/impeccable-workflow.md`.
-- Subjective user complaint mapping, such as "太 AI", "颜色平", "排版不对",
-  "文案弱", "移动端差", "卡顿", "动效怪", or "目录乱":
-  `references/intent-map.md`.
-- Motion, animation polish, high-motion surfaces, hover/press feedback, toasts,
-  popovers, drawers, gestures, perceived animation performance, or reduced
-  motion:
-  `references/motion-quality.md`.
-- Concrete web motion implementation recipes for press feedback, anchored
-  overlays, tooltip groups, `@starting-style`, percentage transforms,
-  clip-path, crossfade repair, or transient UI lifecycle:
-  `references/motion-patterns.md` together with
-  `references/motion-quality.md`.
-- Whole-codebase animation improvement, motion inventory, prioritized audit,
-  implementation-ready motion plans, or plan reconciliation: read
-  `references/motion-audit-planning.md` together with
-  `references/motion-quality.md`; if recon finds drag, swipe, sheet, drawer,
-  momentum, reordering, or another direct-manipulation surface, also read
-  `references/interaction-physics.md`. Scaffold individual plans from
-  `templates/motion-plan/plan.md`.
-- Gesture-driven motion, direct manipulation, interruption, springs, velocity
-  handoff, projection, hysteresis, and rubber-banding:
-  `references/interaction-physics.md`.
-- Animation naming or reverse lookup, such as "这个弹出来的动画叫什么" or a
-  vague motion description the user wants to prompt with:
-  `references/motion-vocabulary.md`.
-- Code elegance, component boundaries, state, types, errors:
-  `references/engineering-quality.md`.
-- Reusable component-library APIs, defaults, invisible interaction edge cases,
-  and interactive documentation: `references/engineering-quality.md`; add
-  `references/motion-patterns.md` when transient or animated UI is involved.
-- UI performance, Web Vitals, render hot paths, charts/tables:
-  `references/performance-quality.md`.
-- Architecture, interfaces, migrations, data flow:
-  `references/architecture-quality.md`.
-- New files/directories or structure cleanup:
-  `references/project-structure.md`.
-- Surface-specific rules for landing, dashboard, data-viz, reports, and mobile:
+- Subjective briefs such as "too AI", flat color, weak copy, poor mobile,
+  jank, or messy structure: `references/intent-map.md`.
+- Surface-specific landing, dashboard, data-viz, report, and mobile rules:
   `references/surface-playbooks.md`.
-- Native iOS/iPadOS quality: `references/ios-quality.md`.
-- Native Android quality: `references/android-quality.md`.
-- Cross-platform native adaptation and parity:
-  `references/adaptive-quality.md`.
-- Dashboard exports, static reports, special reports, formal business-review
-  pages, and evidence-heavy report surfaces:
+
+### Design systems and concrete redesign
+
+- Tokens, `DESIGN.md`, themes, states, focus, motion, and UI copy:
+  `references/design-system-contract.md`.
+- Product UI taste review and acceptance criteria:
+  `references/product-ui-taste-review.md`; add
+  `references/taste-score-calibration.md` when scoring is central.
+- Concrete redesign moves and blocker-to-move coverage:
+  `references/design-move-library.md`.
+- Impeccable-style critique/audit/polish/harden/optimize flow:
+  `references/impeccable-workflow.md`.
+- New or weak developer-product systems:
+  `templates/developer-product/design.md` and
+  `templates/developer-product/design.dark.md`.
+
+### Motion and direct manipulation
+
+- Motion principles, accessibility, and anti-patterns:
+  `references/motion-quality.md`.
+- Web implementation recipes and transient UI lifecycle:
+  `references/motion-patterns.md`.
+- Whole-codebase motion recon and executable planning:
+  `references/motion-audit-planning.md`.
+- Drag, swipe, sheets, interruption, velocity, projection, and springs:
+  `references/interaction-physics.md`.
+- Motion naming and reverse lookup: `references/motion-vocabulary.md`.
+
+### Engineering, performance, and structure
+
+- Components, state, types, APIs, and observable errors:
+  `references/engineering-quality.md`.
+- Measured Web Vitals, render hot paths, charts, tables, and assets:
+  `references/performance-quality.md`.
+- Interfaces, data flow, migrations, and compatibility:
+  `references/architecture-quality.md`.
+- File placement and shared-abstraction rules:
+  `references/project-structure.md`.
+- Evidence-heavy reports, exports, and business-review surfaces:
   `references/report-quality.md`.
-- Validation and delivery fields:
-  `references/validation-contract.md`.
-- Upstream provenance and pinned source commits:
-  `references/source-map.md`.
 
-For broad "make this frontend excellent" tasks, start with only
-`visual-judgment.md`, `product-ui-taste-review.md`, and
-`validation-contract.md`. Add `design-move-library.md` for implementation,
-concrete redesign recommendations, or acceptance criteria; add
-`motion-quality.md` for motion, `performance-quality.md` for measured hot
-paths, `project-structure.md` for structural changes, `report-quality.md` for
-reports/dashboards, and `intent-map.md` for subjective briefs. Do not load the
-entire reference library merely because the request is broad.
+### Platform, validation, and provenance
 
-Only for native or cross-platform tasks, also read `product-context.md`,
-`product-design-principles.md`, the matching platform reference(s),
-`interaction-physics.md` when gestures are involved, and
-`validation-contract.md`.
+- iOS/iPadOS: `references/ios-quality.md`.
+- Android: `references/android-quality.md`.
+- Cross-platform adaptation: `references/adaptive-quality.md`.
+- Validation commands, browser/native evidence, screenshots, route fields,
+  output limits, and unverified work: `references/validation-contract.md`.
+- Upstream provenance and pinned source commits: `references/source-map.md`.
+
+For broad "make this frontend excellent" work, start with
+`references/visual-judgment.md`,
+`references/product-ui-taste-review.md`, and
+`references/validation-contract.md`. Add other references only when the task
+actually needs their domain. Native tasks additionally load product context,
+the matching platform reference, and interaction physics when gestures exist.
 
 ## Design read
 
@@ -263,125 +183,52 @@ Before major visual work, state one concise design read:
 
 `Reading this as: <surface> for <audience>, with <vibe>, optimized for <primary job>.`
 
-If the read changes implementation choices materially and cannot be inferred
-from repo evidence or the user's brief, ask one focused question. Otherwise
-proceed with the read and record it in the handoff/delivery.
+Ask one focused question only when the missing answer materially changes the
+implementation and cannot be inferred from repository or product evidence.
 
 ## Quality gates
 
-Block "done" until the relevant gates are satisfied or explicitly reported as
-unverified:
+Do not call the work done until relevant gates pass or are explicitly reported
+as unverified:
 
-- Visual: not templated, clear hierarchy, good density, responsive, accessible
-  contrast, no generic AI tells.
-- Design system: token roles are respected; hard-coded visual values are
-  justified; theme parity, focus-visible states, component states, and UI copy
-  quality are covered when relevant.
-- Product: solves the user's job, preserves information architecture, handles
-  empty/loading/error/long-data states when relevant.
-- Accessibility: keyboard, focus, labels, semantics, contrast, and effective
-  target size match the input mode. When a web tablet target has no project
-  standard, use 44 CSS pixels as a provisional comfort floor and label it for
-  project ratification; project and native platform authority still wins.
-- Platform: native navigation, controls, insets, gestures, accessibility, and
-  adaptive structure match the resolved platform; mobile web is not mislabeled
-  as native.
-- Static evidence: source can prove present or missing branches, property
-  ownership, and explicit values; it cannot prove perceived lag, smoothness,
-  frame rate, compositing, browser-specific behavior, layout shift, or device
-  feel. Label those as risks or runtime hypotheses until observed. Never invent
-  workload size, row count, concurrency, device class, or usage frequency that
-  the supplied product/source evidence does not establish; say "under
-  representative load" and name the measurement needed instead.
-- Evidence scope: an explicit statement that a state or behavior is absent can
-  be decisive within the supplied scope. A local snippet proves only the code
-  shown. Contextual static signals such as easing, control dimensions, removed
-  outlines, fixed widths, or global state are review risks until the complete
-  component, inherited styles, API semantics, or runtime evidence rules out a
-  compensating path. State what evidence would resolve the risk instead of
-  upgrading a detector-like signal into whole-product proof.
-  A single global boolean proves coarse state ownership; it does not prove that
-  overlapping requests or bulk operations share that state. Describe the
-  concurrency failure conditionally unless the supplied call paths establish
-  simultaneous lifecycles.
-- Responsive geometry: when static evidence names a fixed page minimum, column
-  grid, drawer width, or other viewport constraint, a responsive fix is
-  incomplete unless it names the replacement behavior for every cited blocker.
-  Isolate unavoidable overflow to the data region, keep critical actions
-  reachable, and bound fixed panels to the viewport or switch to an approved
-  compact/full-screen pattern.
-- Direct manipulation: for drag, swipe, sheet, drawer, reorder, momentum, or
-  scrubbing work, reject input lockout and require pointer/native capture, grab
-  offset, 1:1 tracking, explicit coordinate space and velocity units,
-  interruption from the current presentation value without a jump,
-  non-conflicting transform ownership, and a non-vestibular Reduced Motion
-  path. Make the velocity units and bounded projected-endpoint method explicit,
-  and pass the measured release velocity into the settle as its initial
-  velocity using the animation API's required units. Velocity handoff preserves
-  continuity; projected-endpoint target selection is a separate product
-  decision.
-  When the supplied code snaps only from the release position and omits
-  velocity, do not stop at "keep nearest snap." State the auditable projection
-  candidate: recent velocity units, bounded horizon/decay, viewport or
-  snap-range clamp, and nearest valid target from the projected endpoint when
-  momentum targeting is authorized. If product semantics are unknown, preserve
-  the existing target in the implementation recommendation but still name this
-  projection chain as the explicit runtime hypothesis to compare.
-  Do not change project-owned target-selection semantics unless product
-  authority, existing behavior, or runtime evidence establishes momentum-based
-  targeting.
-- Velocity continuity: when a gesture releases into a settle, the audit or plan
-  must state three separate steps: measure release velocity with units; choose
-  the target under project-owned semantics; feed the measured release velocity
-  into the settle as its initial velocity, converting units for the selected
-  API when necessary. Naming a projected endpoint alone never satisfies the
-  velocity-handoff requirement.
-- Engineering: clear component boundaries, no needless abstraction, observable
-  errors, dependency checks before imports.
-- Performance: measured or reasoned hot paths, no layout thrashing, no unbounded
-  render/data work, sane bundle and asset choices. Do not assign P0 solely from
-  an unmeasured static hot-path shape; use P1 risk unless source proves certain
-  task/data failure at the stated scale or runtime measurement proves a release
-  blocker.
-- Architecture: interfaces and data flow are explicit; migration and
+- Visual: clear hierarchy and density, responsive composition, accessible
+  contrast, and no generic AI tells.
+- Product: preserves the user's job and information architecture, with owned
+  loading, empty, error, long-data, permission, and recovery states.
+- Design system: respects token roles, style authority, theme parity, focus,
+  component states, and specific UI copy.
+- Accessibility: keyboard, focus, labels, semantics, contrast, target size, and
+  Reduced Motion match the platform and input mode.
+- Engineering: clear boundaries, justified abstractions, dependency checks,
+  explicit state ownership, and observable failures.
+- Performance: measurement-first reasoning, bounded render/data work, no layout
+  thrashing, and appropriate bundle, chart, table, image, and motion choices.
+- Architecture: interfaces and data flow are explicit; migrations and
   compatibility risks are named.
-- Structure: new files follow existing project conventions; shared abstractions
-  have real repeated callers.
-- Validation: targeted type/lint/test/build plus browser or native runtime
-  validation where UI is user-visible; screenshot artifacts are required when
-  route output asks for `browser_screenshot_required`.
+- Structure: files follow project conventions; shared modules have real repeated
+  callers; avoid generic `utils`, `helpers`, `common`, or `misc` dumping grounds.
+- Validation: targeted type/lint/test/build plus browser or native evidence when
+  visible behavior requires it. Screenshot success requires an actual artifact
+  when route output sets `browser_screenshot_required`.
+
+For direct manipulation, responsive geometry, static-evidence boundaries,
+scoring, state coverage, and output budgets, follow the routed reference rather
+than duplicating its full contract here.
 
 ## Delivery contract
 
-For frontend implementation work, summarize:
+For frontend implementation, report only fields that apply:
 
-- `frontend_tier`/`design_tier` and route command used, when applicable.
-- `platform`, source, confidence, `product_context_path`, and whether product
-  context was explicit or inferred.
-- `candidate_skills` versus `selected_skills`.
-- `style_authority_path` and whether it was enforced or intentionally evolved.
-- `design_system_contract`: enforced existing tokens, evolved tokens, inferred
-  temporary system, or not applicable.
-- Files changed and structure impact.
-- Validation commands and observed results.
-- Browser/native runtime validation kind, target, and result, or why it was
-  skipped.
-- Screenshot validation tool, target, artifact path/hash/dimensions, or why it
-  was skipped.
-- Performance impact and remaining risks.
+- route command, `frontend_tier`/`design_tier`, platform source/confidence, and
+  product context;
+- `candidate_skills` versus actual `selected_skills`;
+- style authority and design-system contract;
+- files changed and directory/architecture impact;
+- targeted validation and actual browser/native/screenshot artifacts;
+- performance impact, unresolved risks, and unverified hosts/devices.
 
-Default critique and audit budget:
-
-- one-sentence diagnosis;
-- at most five blocking findings and five secondary findings;
-- at most eight concrete design moves;
-- the smallest validation plan that can change the decision;
-- target 150 lines or fewer unless the user explicitly requests an exhaustive
-  review, full scorecard, or report artifact.
-
-Treat the user's explicit line, word, section, or item limit as a hard delivery
-contract. Budget the structure before drafting, check the final size, and merge
-repeated evidence, fixes, detector reconciliation, and acceptance criteria
-rather than restating the same finding in every section.
-
-Keep output concise, evidence-backed, and honest about anything not verified.
+Respect explicit response-size limits. Use
+`references/validation-contract.md` and task-specific review references for
+finding budgets, evidence boundaries, and compact output structure. Keep the
+final response concise, decision-oriented, and honest about anything not
+verified.
