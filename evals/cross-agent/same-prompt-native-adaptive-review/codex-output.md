@@ -1,85 +1,92 @@
-# Native adaptive 静态评审
+## 1. 证据等级、平台与设计判断
 
-## 1. 证据等级、平台与设计解读
+- **审查模式**：`design-craft / critique`，只读；未修改任何文件。
+- **证据等级**：**L0 static / prose-only**。有明确产品上下文和静态实现描述，但没有源码实读、截图、构建或运行证据；因此不能升级为 L1/L2/L3。
+- **Resolved platform**：`adaptive`。
+- **平台来源**：题设中的 `PRODUCT.md platform: adaptive`，且产品明确通过 iOS、Android 商店交付 React Native 应用。
+- **平台置信度**：对题设为 `1.0`；对真实仓库和产物仍未验证。
+- **设计 authority**：题设描述的 `DESIGN.md`——共享语义色彩角色和内容层级，但明确允许、也要求平台原生导航、控件、图标、材质和动效差异。
 
-- **证据等级：`L0 static`**。只有产品上下文和静态实现描述；没有源码、截图、可访问性树或任何 native runtime 证据，因此不能升级为 L1-L4。
-- **Resolved platform：`adaptive`**。依据题面中的 `PRODUCT.md platform: adaptive`、React Native，以及同时通过 iOS/Android 商店交付；对题面置信度为 `1.0`，但未对真实仓库核验。
-- **产品 authority：**题面转述的 `PRODUCT.md` 管用户、任务、平台和无障碍要求；题面转述的 `DESIGN.md` 管共享语义角色，并明确允许平台原生分化。实际文件未读取。
-- **实际使用：**`design-craft` 的 `critique` 模式，以及 iOS、Android、adaptive、motion、design-system、validation 规则。
-- **Route 状态：**`frontend_route_plan.sh` 因只读环境无法创建临时文件，未产出 route JSON；未运行子代理、浏览器、Simulator、Emulator 或设备验证。
-- **Design read：**Reading this as: 面向单手现场操作员和分屏平板管理者的任务完成/复核界面，气质可信、克制、平台原生，优化目标是快速完成、明确验证，并在中断后无损恢复。
+> Reading this as: 面向单手执行任务的现场操作员、同时服务平板审阅经理的自适应原生任务界面；气质可信、平静、克制，优先保障快速完成、明确反馈与中断恢复。
 
-**总体诊断：当前实现不是“共享产品语义、按平台适配”，而是把固定尺寸的 iPhone 风格画布移植到两个平台；按已给静态证据，iOS 和 Android 均应阻断设计发布门禁。**
+**一句话诊断**：当前实现是“同一个 390 宽手机画布加跨平台外观复用”，不是有意设计的 adaptive 产品；按题设静态证据，iOS 与 Android 均应阻断发布合规结论。
 
-## 2. 分平台 conformance verdict
+## 2. 分平台合规判定
 
-| 平台 | Verdict | 关键依据 |
+| 平台 | 判定 | 决定性原因 |
 |---|---|---|
-| **iOS / iPadOS** | **BLOCK** | 自定义 JS 返回替代 navigation stack，无法保证左缘返回手势和系统转场；`40x40` 低于 `44x44pt`；禁用 Dynamic Type；iPad 仍为居中的 390 宽手机画布；无 Reduce Motion 路径。 |
-| **Android** | **BLOCK，偏差更严重** | 空 `BackHandler` 明确吞掉系统及 predictive Back；`40x40` 低于 `48x48dp`；Cupertino 控件和 web 图标未适配 Material；expanded width 仍用 phone bottom bar；禁用字体缩放且无 Remove animations 路径。 |
+| **iOS / iPadOS** | **Block：静态不合规** | 非原生导航栈及返回路径破坏层级与边缘返回；禁用 Dynamic Type；声明的 `40x40` 控件小于 `44x44pt` 基线；固定手机宽度没有 iPad/Split View 结构适配；缺少 Reduce Motion 分支。 |
+| **Android** | **Block：静态不合规** | 空 `BackHandler` 吞掉系统及 predictive Back；禁用字体缩放；声明的 `40x40` 控件小于 `48x48dp` 基线；Cupertino 控件和 Web 图标未适配 Material；平板仍使用手机底栏；缺少 Remove animations 分支。 |
 
-这是 **design-conformance/release gate** 结论，不是“必然被 App Store 或 Play Store 拒审”的断言。
+这里的 **Block** 是对题设实现选择的静态合规判断，不代表已经观察到真机故障、手势体验、屏幕阅读器行为或性能问题。
 
-## 3. 最多五项阻断发现
+## 3. 五项阻断发现
 
-| ID | 优先级 | 发现、影响与证据边界 |
-|---|---|---|
-| **B1 无障碍基本尺寸与文字** | **P0** | 固定 `fontSize: 14` 且关闭 font scaling，直接违反 Dynamic Type/font scaling 要求；`40x40` 的 stated pressable box 同时低于 iOS `44pt` 和 Android `48dp`。若另有不重叠的 `hitSlop` 或更大语义父节点，可能改变有效触控面积，但题面没有该证据。VoiceOver、TalkBack、焦点顺序和键盘遍历也完全未验证。 |
-| **B2 系统导航与 Back 合同** | **P0** | 自定义顶栏/JS Back 取代 iOS navigation stack；Android 空 handler 明确消费 Back。结果是平台熟悉性、iOS interactive pop、Android predictive Back、系统转场和退出恢复路径均不可信；无改动草稿是否被错误退出或困住也未知。 |
-| **B3 自适应结构缺失** | **P0** | `width: 390` 居中不是 tablet adaptation。它浪费 iPad/Android tablet 空间，也无法服务管理者在 Split View/multi-window 中并排复核的核心任务；始终不变的 bottom tabs 没有体现 compact/medium/expanded 或实际可用宽度。 |
-| **B4 控件、图标与主题是假统一** | **P1 Block** | Android 上的 Cupertino switch 是明确的平台偏差；一套 web 图标不能自动满足 SF Symbols/Material Symbols 的光学、语义、RTL 和状态合同。`#777777`、`#FFFFFF` 绕开 `DESIGN.md` 的语义角色，使 light/dark 对应关系不可审计；题面不足以断言具体色对的实际对比度。 |
-| **B5 Motion 与中断恢复** | **P0** | 高频任务完成使用 `500ms` overshooting spring，与“calm/operational”不匹配，并且明确没有 Reduce Motion/Remove animations 分支，已违反发布要求。完成状态是否在动画前持久化、进程终止后能否恢复没有证据；不能假设动画导致丢失，也不能假设已经安全。 |
+1. **B1 — 可访问性与控件尺寸**：`fontSize: 14` 且禁用字体缩放，直接违反 Dynamic Type/font scaling 发布要求；`40x40` 声明尺寸低于 iOS `44x44pt` 和 Android `48x48dp`。若存在 `hitSlop`，有效触控面积仍需源码及运行态确认，但字体缩放禁用本身已足以阻断。
+2. **B2 — 导航与系统返回**：自定义顶部栏和 JavaScript 返回替代原生栈，使 iOS 的交互式边缘返回、状态恢复以及 Android predictive Back 无法由系统导航契约保障；空 `BackHandler` 主动吞掉 Android Back 是明确错误，而不是单纯风格差异。
+3. **B3 — 自适应结构**：平板仍固定为居中的 `390` 宽单列，无法针对经理的 Split View/multi-window 审阅任务形成列表—详情、侧栏或双栏结构；不变的底部标签栏进一步表明布局由设备外观而非可用窗口宽度驱动。
+4. **B4 — 控件、图标与主题体系**：跨平台复用 Cupertino 形状开关和 Web 图标，把像素一致误当成产品一致；原始 `#777777`、`#FFFFFF` 绕过 `DESIGN.md` 语义角色，不能证明深色、高对比度、禁用、按下及错误状态的主题一致性。其实际对比度是否失败还取决于颜色用途和组合，现有证据不足以断言。
+5. **B5 — 动效与无障碍偏好**：任务完成是高频、结果导向状态，`500ms` 带 overshoot 的弹簧与“可信、平静、快速”定位不符；更关键的是没有 iOS Reduce Motion 或 Android Remove animations 分支，直接违反发布要求。静态证据不能证明卡顿，但可以证明替代路径缺失。
 
 ## 4. 八个具体设计动作
 
-1. **M1 — 恢复平台导航所有权。**使用平台集成的 native stack；iOS 保留 interactive pop，Android 接入 system/predictive Back。删除空消费 handler，只在确实处理未保存状态时拦截，并提供明确的保存/放弃选择。
-2. **M2 — 把恢复能力做成领域合同。**编辑过程增量持久化草稿；完成操作可重试且幂等；明确 `saving / saved / sync-pending / failed / completed` 状态。状态提交不得依赖动画结束回调。
-3. **M3 — 修复操作目标与语义。**所有主操作的有效目标达到 iOS `44x44pt`、Android `48x48dp`，相邻目标不重叠；同时定义 accessible name、role、value/state、disabled/loading 状态和可见键盘/D-pad 焦点。
-4. **M4 — 使用可缩放排版角色。**启用 RN font scaling；共享的是 `title/body/label/metadata` 语义，iOS 映射 Dynamic Type，Android 映射 Material type roles/`sp`。在 iOS accessibility sizes 和 Android 200% 测试点下允许换行、重排，不隐藏主操作。
-5. **M5 — 以窗口能力重构布局。**移除固定 390 宽；compact 使用单栏完成流，expanded 使用适合管理复核的双栏/主从结构，例如任务内容与验证记录并置；Split View/multi-window 变窄时自动回到单栏。
-6. **M6 — 建立平台 UI adapter。**共享业务组件接口和状态，分别渲染 iOS 原生 switch、菜单、sheet、符号及 Android Material 3 switch、dialog/bottom sheet、Material Symbols；导航 bar/tab/rail/sidebar 也按窗口与平台选择。
-7. **M7 — 恢复语义主题。**以 `surface/text-primary/text-secondary/divider/action/success/warning` 等共享角色替代 raw hex；iOS 映射 system colors/materials/tint，Android 映射 Material color roles、tonal elevation，以及经批准的 Dynamic Color/fallback。
-8. **M8 — 重写完成反馈的 motion policy。**普通路径采用短促、无夸张回弹的原生反馈，通常控制在约 `300ms` 内；iOS Reduce Motion 与 Android Remove animations 下使用即时状态变化或短 cross-fade，仍立即宣布“任务已完成”，不等待动画。
+1. **恢复原生导航所有权**：使用 React Native 的 native-stack/等价原生导航；iOS 保留交互式边缘返回，Android 将返回交给系统与 predictive Back；删除吞事件的空 `BackHandler`，未保存内容通过受支持的导航 guard 处理。
+2. **按窗口而非设备型号适配**：移除固定 `width: 390`；compact 使用单列任务流，medium/expanded 转为列表—详情或侧栏结构，并覆盖 iPad Split View、Android multi-window、横屏和折叠姿态。
+3. **修正触控与排版基线**：iOS 有效目标至少 `44x44pt`，Android 至少 `48x48dp` 并保持合理间距；使用平台文本角色、允许字体缩放，确保最大支持字号下内容重排且主操作仍可达。
+4. **拆分平台控件和系统图标**：共享 `Switch`、返回、更多操作等语义 API，但 iOS 渲染系统开关/SF Symbols，Android 渲染 Material 3 Switch/Material Symbols；品牌或领域专属图标可以共享。
+5. **建立语义主题映射**：把 `surface`、`onSurface`、`secondaryText`、`accent`、`danger`、`disabled` 等共享角色分别映射到 iOS semantic colors/materials 与 Android Material color roles；覆盖 light/dark/high-contrast 和所有控件状态。
+6. **重做完成反馈**：数据完成状态立即提交，不等待动画回调；默认使用短促、无 overshoot 的确认反馈，Reduce Motion/Remove animations 下改为短交叉淡化或即时状态变化，并同步屏幕阅读器公告。
+7. **补齐语义和键盘路径**：为任务、状态、开关和操作提供 label、role、value/state、可预测遍历顺序和完成公告；验证 VoiceOver、TalkBack、外接键盘、D-pad/Switch Control，不依赖颜色或动效传达结果。
+8. **把中断恢复做成核心状态机**：关键输入增量持久化，后台、进程终止、导航离开、离线重连后恢复同一任务；完成操作具备幂等性，并清楚显示草稿、同步中、冲突和已完成状态。
 
-## 5. Intentional parity matrix
+### Intentional parity matrix
 
-| 层 | 保持共享 | iOS / iPadOS 必须适配 | Android 必须适配 |
+| 层面 | 保持共享 | iOS / iPadOS 必须适配 | Android 必须适配 |
 |---|---|---|---|
-| 任务状态 | 字段、校验、完成规则、草稿/同步/重试语义、analytics event | scene/background 恢复及系统状态表达 | saved-state/process recreation、多窗口状态表达 |
-| 内容层级 | 当前任务、必要步骤、验证结果和完成反馈的优先级 | iPhone 单栏；iPad 按 size class 使用 sidebar/split structure | 按 window size class 使用单栏、双栏、rail 或 drawer |
-| 导航 | destination 含义与 route graph | navigation stack、tab/sidebar、interactive pop | system/predictive Back、navigation bar/rail/drawer |
-| 控件与图标 | action、label、enabled/value 状态 | 原生 control 与 SF Symbols 语法 | Material 3 control 与 Material Symbols 语法 |
-| 排版与无障碍 | 阅读顺序、操作名称、成功/错误结果 | Dynamic Type、VoiceOver、Switch Control/keyboard focus | `sp`/font scale、TalkBack、D-pad/keyboard focus |
-| 颜色与材质 | semantic role 名称和状态含义 | system colors、materials、tint、iOS appearance | Material color roles、tonal elevation、可选 Dynamic Color |
-| Motion | 因果关系、完成时机、Reduced Motion 结果 | native push/sheet/feedback；Reduce Motion 替代 | Material transition/predictive Back；Remove animations 替代 |
-| 产品 parity | 两端都能完成、恢复和复核同一任务 | 不要求与 Android 像素一致 | 不要求复制 Cupertino 外观 |
+| 任务模型 | 任务字段、验证规则、完成状态机、持久化语义 | iOS lifecycle/state restoration 接入 | Android activity/process recreation 接入 |
+| 内容层级 | 标题、步骤、证据、状态、主次操作 | NavigationStack；regular width 使用 sidebar/split structure | NavHost；compact bar、medium rail、expanded drawer/list-detail |
+| 返回行为 | “返回/取消/保存草稿”的产品规则 | 系统导航栈与边缘返回 | 系统 Back、predictive Back 与手势进度 |
+| 主题 | 语义角色、品牌 tint、状态含义 | semantic colors、system materials、SF typography | Material 3 roles、tonal elevation、Material typography |
+| 控件与图标 | 意图、文案、analytics、业务状态 | 原生 controls、SF Symbols、平台菜单/弹层 | Material controls、Material Symbols、snackbar/sheet/dialog |
+| 无障碍 | 相同任务结果、标签含义、无功能损失 | VoiceOver、Dynamic Type、Switch Control | TalkBack、`sp`/font scale、D-pad |
+| 动效 | 完成因果关系和状态顺序 | iOS transition/haptics；Reduce Motion | Material transition/feedback；Remove animations |
+| 自适应 | compact/expanded 的信息优先级 | iPad size class、Split View、键盘导航 | window size class、multi-window、fold posture |
 
-## 6. 已验证与未验证边界
+## 5. 已验证与未验证
 
-**可据此判定，但仅限题面静态记录：**
+**已验证——仅指题设明确提供的事实，并非本地独立验证：**
 
-- 平台和产品要求被描述为 adaptive、单手 phone 操作和 tablet 分屏复核。
-- 固定 390 宽、JS Back、空 `BackHandler`、`40x40`、固定 14/禁用缩放、raw colors、共享 Cupertino/web controls、不变 tabs、500ms overshoot、缺少 reduced-motion 分支。
-- 这些陈述足以形成静态 conformance blocker，但不是源码或运行时观察。
+- 产品目标平台、用户、任务、定位、无障碍要求，以及 `DESIGN.md` 允许平台原生适配。
+- 题设列出的固定宽度、返回拦截、控件尺寸、字体缩放禁用、原始色值、共享控件/图标、固定底栏和无减弱动效分支。
+- 上述明确实现选择与 iOS/Android 原生尺寸、返回、字体缩放和 motion-accessibility 契约之间的静态冲突。
 
 **未验证：**
 
-- 是否存在题面未列出的 platform branch、`hitSlop`、native component mapping、语义 token 或替代导航路径。
-- VoiceOver/TalkBack labels、traits/roles、announcements、实际 traversal，以及外接键盘/D-pad/Switch Control 行为。
-- safe-area、status/navigation/IME/hinge insets、旋转、Split View、multi-window、fold posture、RTL 和本地化膨胀。
-- 草稿持久化、离线/失败重试、后台恢复、进程被杀、跨设备同步和重复完成保护。
-- 实际颜色组合及对比度、截图层级、动画流畅度、手势手感、haptics、性能与商店构建。
-- **iOS Simulator、Android Emulator、iOS real device、Android real device：全部无证据。**
+- 真实源码是否与描述完全一致，以及是否存在未提及的 `hitSlop`、平台分支或补偿逻辑。
+- VoiceOver/TalkBack 的 label、trait/role、value、遍历、焦点恢复和公告。
+- 外接键盘、D-pad、Switch Control 的实际遍历顺序与焦点可见性。
+- 色值的实际用途、背景组合、对比度、深色模式和高对比度最终渲染。
+- safe area、IME、旋转、Split View、multi-window、foldable 和大字号下的实际布局。
+- 自动保存、后台恢复、进程终止恢复、离线同步和完成幂等性。
+- predictive Back、iOS 边缘返回、动画顺滑度、性能、触觉反馈及真机手感。
+- 构建、截图、Simulator、Emulator 或任何真实设备结果。
 
-## 7. 最小 source/build/runtime 验证计划
+## 6. 最小源码、构建与运行验证计划
 
-1. **Source audit：**读取真实 `PRODUCT.md`、`DESIGN.md`、导航配置及 native 工程；针对 `width: 390`、`allowFontScaling`、`BackHandler`、`hitSlop`、literal colors、switch/icon adapter、window-size branch、reduced-motion subscription 和持久化调用做 targeted `rg`，确认是否存在补偿路径。
-2. **Static/unit：**测试 Back 仅在真实处理时消费；测试完成命令幂等、草稿重载；对 compact/medium/expanded 与放大字体渲染分支做组件测试。静态测试只证明分支，不证明设备行为。
-3. **Build：**使用项目实际 scheme/task 运行 iOS `xcodebuild` compile/test，以及 Android Gradle compile/unit/lint；当前没有源码，不能负责任地填入真实 workspace、scheme 或 module 名。
-4. **iOS Simulator — 当前缺失：**至少验证一台 iPhone 和一台 iPad；覆盖 portrait/landscape、iPad Split View、accessibility Dynamic Type、light/dark、Reduce Motion、VoiceOver、外接键盘、左缘返回、后台/终止后恢复。
-5. **Android Emulator — 当前缺失：**至少验证 phone 与 expanded tablet profile；覆盖 compact/medium/expanded、multi-window、font scale、Remove animations、TalkBack、键盘/D-pad、gesture navigation、predictive Back、IME 和 process recreation。
-6. **Real-device evidence — 当前缺失：**至少一台 iPhone、一台 iPad、一台 Android phone 和一台 Android tablet；验证单手可达性、真实返回手势、OEM 差异、haptics、性能，以及在完成前后被电话/锁屏/切后台打断时不丢进度。若 foldable 属于发布范围，再增加真实 foldable。
-7. **放行条件：**两个平台构建通过；同一任务可在 phone 完成、在 tablet 分屏复核；每个关键步骤被中断后可恢复；目标尺寸、字体缩放、读屏、键盘 traversal 和 reduced-motion 矩阵全部有具名 runtime 结果与 artifact。Browser 或静态截图不能替代上述 native evidence。
+1. **源码确认**：读取真实 `PRODUCT.md`、`DESIGN.md`、`package.json`、导航入口、目标 screen、theme/tokens、持久化层及 iOS/Android 工程配置；定位 `BackHandler`、`allowFontScaling`、`fontSize`、`width: 390`、原始色值、switch/icon、tab 和 spring 实现。
+2. **静态平台扫描**：对真实仓库运行 `design_craft_platform_scan.py --target <repo> --platform adaptive --json`，再人工核对每项命中；扫描结果只能作为源码证据，不能替代运行验证。
+3. **共享构建门禁**：按真实 `package.json` 选择现有 type-check、lint、unit/integration test；为草稿恢复、幂等完成和平台组件选择补 targeted tests。
+4. **iOS 构建**：使用真实 workspace/scheme 执行 `xcodebuild` build/test；这只能证明编译和测试，不能证明手势、VoiceOver或 iPad 窗口行为。
+5. **Android 构建**：使用真实 module 执行 Gradle assemble、lint 和 unit/instrumentation tests；同样不能替代 predictive Back、TalkBack 和 multi-window 观察。
+6. **iOS Simulator**：至少覆盖 iPhone 与 iPad、compact/regular、横竖屏或可调整窗口、最大 Dynamic Type、VoiceOver、Reduce Motion、外接键盘、边缘返回、后台及重新启动恢复。
+7. **Android Emulator**：至少覆盖 API 34+ gesture-navigation phone、tablet 和 foldable profile，测试 predictive Back、multi-window、200% font scale、TalkBack、Remove animations、键盘/D-pad、activity/process recreation。
+8. **真实设备发布门禁**：代表性 iPhone、iPad、Android gesture-navigation phone 和 Android 大屏设备上验证单手可达性、系统返回、屏幕阅读器、键盘、生命周期中断、OEM 差异、触觉反馈和持续性能。
 
-本次未编辑任何产品文件，也未声称 Simulator、Emulator 或真机验证完成。
+当前证据状态明确为：
 
+- **iOS Simulator: unverified locally**
+- **Android Emulator: unverified locally**
+- **iOS real device: unverified**
+- **Android real device: unverified**
+- **真实 iPad/Android tablet split-screen 或 multi-window: unverified**
+- **截图与 accessibility tree artifact: none**
