@@ -1,6 +1,6 @@
 {
-  "blind_map_sha256": "7f060da67bbbe98011b30d7bcd6db51d02b6199a39e1e5303231f28bee6e563d",
-  "blind_packet_sha256": "e8ae7164bc16dc73b065c9e2dd513adacac6489a2c23cfd6919c0c1340ec2155",
+  "blind_map_sha256": "4b2933e16b6cda37239830e5d7a410aec105deac54d6f824400723af889efa75",
+  "blind_packet_sha256": "208aac27f74fd413833b449420385e664c6609baffe029883340374c3dd13e73",
   "case_id": "taste-visual-critique-ablation",
   "focused_variant": "taste",
   "judge": {
@@ -8,50 +8,36 @@
     "model": "gpt-5.6-sol",
     "model_observation": "requested_by_cli",
     "raw_output_path": "judge-output.raw.txt",
-    "raw_output_sha256": "cca8071524a52a06958630ffe51c62401ac7a5a74bd31ca56cfb6272087db274",
+    "raw_output_sha256": "83eacd2b7af709d1aed0a78b6c352975be8e95c325e93f61b10372a202ec405d",
     "reasoning": "max",
     "reasoning_observation": "requested_by_cli",
     "run_path": "run.judge.json",
-    "run_sha256": "f439b9da778b7126e2ef00059d22e1f0b61e86604709df52b9bed187c2824e88",
+    "run_sha256": "1db7ec4bc0b51dfdc248609f7e7c01aeb9dbfe2cd12a0db2a09c32a1211b4c15",
     "runner_os": "macOS-15.7.7-arm64-arm-64bit-Mach-O",
     "version": "codex-cli 0.145.0"
   },
   "judgment_path": "blind-judgment.json",
   "judgment_schema_sha256": "f80a55f5da5692ecd98e1a34f3ab5e0884af7840e14870655dfb99dc5306cf58",
-  "judgment_sha256": "5175ad72081f4690378ef13834bf023e408a985c8e7d4121d9327f9d9a55a87a",
+  "judgment_sha256": "8500941a5012df61adfd0621002a20a2169129c781b8ed3566c0939498cb7b6d",
   "prompt_sha256": "24483d75b8bec334c978ae4f120d5523ec4ee54a1b8c3bbeef97aafbd6090ed9",
-  "rationale": "B wins narrowly because it most consistently translates the product authority into a full-surface implementation contract: next-hour exceptions lead; historical and diagnostic information is demoted; retained KPIs gain thresholds and semantic meaning; impact alignment, textual statuses, explicit actions, actionable insights, contrast, spacing, elevation, focus, responsive sizes, and operational states all receive observable treatment. C is an exceptionally close second with stronger first-viewport measurability in places, while A is also excellent but leaves the generic insight content less explicitly resolved.",
-  "recorded_at": "2026-07-25T10:08:48Z",
+  "rationale": "C is the strongest because it explicitly places diagnostics after the actionable queue, ties every retained chart or insight to a named triage question, and covers the entire surface with unusually specific craft and resilience criteria while clearly disclaiming runtime validation. B is a strong runner-up with better surface guidance than A, but it leaves several described problems without direct redesign moves. A is highly product-aligned and disciplined, yet its typography, spacing, elevation, and chart critiques are not carried through as concretely as C's.",
+  "recorded_at": "2026-07-26T04:20:54Z",
   "results": {
     "baseline": {
-      "blind_label": "A",
+      "blind_label": "B",
       "criteria": {
         "anti_generic": 15,
         "concrete_moves": 18,
         "evidence_honesty": 10,
         "product_fit": 15,
-        "product_hierarchy": 15,
+        "product_hierarchy": 14,
         "scope_discipline": 10,
         "visual_craft": 13
       },
-      "score": 96,
-      "summary": "A correctly recenters the surface on the next-hour exception queue and provides especially measurable first-viewport, row-content, status, action, and edge-case acceptance criteria. Its main gap is that the redesign moves flatten the nested insight area without explicitly removing or operationalizing the generic insight copy; its typography, contrast, and spacing corrections are also less testable than its table criteria."
+      "score": 95,
+      "summary": "B provides an especially coherent exception-first command band, strong table triage hierarchy, explicit semantic statuses and actions, and useful surface normalization through a defined spacing rhythm and reduced elevation. It is slightly incomplete because the fragmented page command area, long product-name behavior, oversized chart, and full production-state contract are not directly resolved in the redesign moves."
     },
     "design-craft": {
-      "blind_label": "B",
-      "criteria": {
-        "anti_generic": 15,
-        "concrete_moves": 19,
-        "evidence_honesty": 10,
-        "product_fit": 15,
-        "product_hierarchy": 15,
-        "scope_discipline": 10,
-        "visual_craft": 14
-      },
-      "score": 98,
-      "summary": "B is the most complete and economical response: it establishes the exception queue as the lead surface, tiers operational versus diagnostic metrics, converts vague insights into threshold-and-action content linked to the table, and covers typography, semantic color, alignment, spacing, elevation, keyboard focus, responsive behavior, and failure states. A few acceptance phrases such as “visually secondary” and “readable dense-table role” remain less measurable than ideal."
-    },
-    "taste": {
       "blind_label": "C",
       "criteria": {
         "anti_generic": 15,
@@ -60,10 +46,24 @@
         "product_fit": 15,
         "product_hierarchy": 15,
         "scope_discipline": 10,
-        "visual_craft": 13
+        "visual_craft": 15
       },
-      "score": 97,
-      "summary": "C offers a highly coherent urgency-first hierarchy, explicit first-viewport row capacity, strong product-identity handling, a useful global-header correction, and a clear rule that every secondary module must help prioritize exceptions. It is slightly behind B because its typography, contrast, spacing, elevation, and responsive-state acceptance criteria are less fully specified, while example actions such as “Snooze” and “Fix” are somewhat more speculative relative to the supplied workflows."
+      "score": 99,
+      "summary": "C most completely translates the product authority into a lead-summary, priority-metric, exception-queue, then diagnostics sequence. It combines product-specific anti-generic judgment with precise typography, contrast, spacing, elevation, semantic-color, table-scan, chart-purpose, long-content, and state-resilience corrections. Its acceptance criteria are comprehensive, with only minor looseness where a first-viewport lead summary could substitute for visible table rows and where accessible names are allowed as an alternative to visible row-action labels."
+    },
+    "taste": {
+      "blind_label": "A",
+      "criteria": {
+        "anti_generic": 15,
+        "concrete_moves": 17,
+        "evidence_honesty": 10,
+        "product_fit": 15,
+        "product_hierarchy": 14,
+        "scope_discipline": 10,
+        "visual_craft": 11
+      },
+      "score": 92,
+      "summary": "A correctly makes the exception queue primary, demotes lower-value metrics, replaces ambiguous status and action treatments, and remains rigorously grounded in static evidence. Its main weakness is incomplete visual-craft follow-through: inconsistent spacing, excessive borders and shadows, low-contrast typography, and the oversized chart are identified but not all receive implementation-ready corrections or acceptance criteria."
     }
   },
   "schema": "design-craft.comparative-result.v4",
@@ -71,64 +71,64 @@
   "scorecard_sha256": "a1f750a6c735ff178260bcc806a0ad089d0c4de4e2ff0cfd466ffcd08317d989",
   "variant_runs": {
     "baseline": {
-      "contract_sha256": "13e1d04a1ab3ee36baaa520cad18574c99d80a9fb5c17c1977ac68a3f8f641bc",
+      "contract_sha256": "754b4b9ba3f127a6bf99b51aa5fc923a72fef58a72e2625989b3f38fe2bc74f4",
       "host": "pi",
       "host_version": "0.80.6",
       "model": "codex/gpt-5.5",
       "output_path": "output.baseline.md",
-      "output_sha256": "cb64a0edad16c2682e4446aafc1b43836ddcc7965ef0050b5aed4c23e59e3182",
+      "output_sha256": "9fd34409878d9f04c532d2f819f247a4cf70cd544c1f0d68091035999d02edf6",
       "run_path": "run.baseline.json",
-      "run_sha256": "098ea382fcad447c878c87bd02295074f244ae67f8a88c817e47ea578a6ae9f8",
+      "run_sha256": "8b9643e75113cce4c0a9c3ff79026e8bce49bbbb79fe0bf29db3dd847027ec7d",
       "skill_install_mode": "isolated_case_projection",
       "skill_trees": {},
-      "source_commit": "199277d062137971ffadc0e1c47ec013ba03b4bc",
+      "source_commit": "0b4231e2da09252076e401b7203fbcd2f5698b23",
       "source_fingerprints": {},
       "source_trees": {},
       "thinking": "high"
     },
     "design-craft": {
-      "contract_sha256": "13e1d04a1ab3ee36baaa520cad18574c99d80a9fb5c17c1977ac68a3f8f641bc",
+      "contract_sha256": "754b4b9ba3f127a6bf99b51aa5fc923a72fef58a72e2625989b3f38fe2bc74f4",
       "host": "pi",
       "host_version": "0.80.6",
       "model": "codex/gpt-5.5",
       "output_path": "output.design-craft.md",
-      "output_sha256": "dac5c933abee420a76a02fa3423dfb15d83d12465422fd50932651ca04e4cd9e",
+      "output_sha256": "ae0ac9e5e82ac188d3702dd641b223deaf82c798868f2b5aeb32a0b29b8005f1",
       "run_path": "run.design-craft.json",
-      "run_sha256": "d8c4defcabec9af49f0e6a4a579f6ad8b5f63e6313a9d68d469b4392d32c2a1f",
+      "run_sha256": "25c766d34d51a717e4a09277090f5a670cbeaf0c83c71547bb4e3a9ab8786201",
       "skill_install_mode": "isolated_case_projection",
       "skill_trees": {
-        "skills/design-craft": "314b7ea7bedc0d1360c66de2e1c9ff7abc2bde152378e35a9a8d1364ab11c2db"
+        "skills/design-craft": "814819b878c6e8528ea14ffd03286e985791289aa9ef757be6eb0043163e8af5"
       },
-      "source_commit": "199277d062137971ffadc0e1c47ec013ba03b4bc",
+      "source_commit": "0b4231e2da09252076e401b7203fbcd2f5698b23",
       "source_fingerprints": {
         "skills/design-craft": {
           "domain": "skill-visual-critique",
           "kind": "evidence_domain",
-          "projected_tree_sha256": "314b7ea7bedc0d1360c66de2e1c9ff7abc2bde152378e35a9a8d1364ab11c2db",
-          "sha256": "571f063222c2853ae385c4c78affdc3997e0a1b0da71e6adf17b9482df31d703",
+          "projected_tree_sha256": "814819b878c6e8528ea14ffd03286e985791289aa9ef757be6eb0043163e8af5",
+          "sha256": "eff5682c4b1b615df5b8b1014b431f31b91608609db14e6e1c282476a70024ff",
           "source_dirty": false
         }
       },
       "source_trees": {
-        "skills/design-craft": "0bd975aa6f74b8af9c4ddd9c5182358a458c35212886e455e47b8e03434eb599"
+        "skills/design-craft": "4604ade449cbb80be40297779b7ebba7bb8bfb1572adc39ef429b38f83a38d43"
       },
       "thinking": "high"
     },
     "taste": {
-      "contract_sha256": "13e1d04a1ab3ee36baaa520cad18574c99d80a9fb5c17c1977ac68a3f8f641bc",
+      "contract_sha256": "754b4b9ba3f127a6bf99b51aa5fc923a72fef58a72e2625989b3f38fe2bc74f4",
       "host": "pi",
       "host_version": "0.80.6",
       "model": "codex/gpt-5.5",
       "output_path": "output.taste.md",
-      "output_sha256": "8f6c846de4538829f0df50c27e624aef83364710f1643a9509da0c3a9515a621",
+      "output_sha256": "36fbe3f9ac0695a3e2faa1da67702c6373e8b7af80b04a369c78a788144c796b",
       "run_path": "run.taste.json",
-      "run_sha256": "33549a25a11f2f7c214fba37bab0ad6dcddba42d3f1d85ea73f701deb51dc99c",
+      "run_sha256": "baea156b21473acf81afaa0b79cc13779b3af96976bc85068b0f9909c6eb1f07",
       "skill_install_mode": "isolated_case_projection",
       "skill_trees": {
         "upstreams/taste-skill/skills/redesign-skill": "1fd74922e6bb2011c7c0d82aefd70d0cc1dbd31bd904054bec3f6cae4d731b90",
         "upstreams/taste-skill/skills/taste-skill": "40ef50925b446e08a4ad5cead8edeb98f48982eb498b0073fe6a0b27ea736769"
       },
-      "source_commit": "199277d062137971ffadc0e1c47ec013ba03b4bc",
+      "source_commit": "0b4231e2da09252076e401b7203fbcd2f5698b23",
       "source_fingerprints": {
         "upstreams/taste-skill/skills/redesign-skill": {
           "kind": "tree",

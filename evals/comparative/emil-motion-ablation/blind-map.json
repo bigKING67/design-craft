@@ -4,32 +4,32 @@
   "judgment_schema_sha256": "6fc7376df30d7cff1ac8faf21ce6bcd63c76f72365458cfe0812ec88b16cd701",
   "outputs": {
     "A": {
-      "path": "output.baseline.md",
-      "run_path": "run.baseline.json",
-      "run_sha256": "2cb757a9edf9b8ff706e39eb3c38c8df0a577e49be771108dc5926f10187bb59",
-      "sha256": "32e1e1f3f2e71647168dbcee203cc32b2a1b3b4834b17eb132a47fb1e3f59b2f",
-      "variant": "baseline"
-    },
-    "B": {
-      "path": "output.design-craft.md",
-      "run_path": "run.design-craft.json",
-      "run_sha256": "679ad0bc125b836307456be4597eec5c1cdcf8fd4b8889e75bde5c4488ec0309",
-      "sha256": "bdabbf261ffe0766cfb9cbcdb34cc80017030bdf419630187f5c8800f8b5ee49",
-      "variant": "design-craft"
-    },
-    "C": {
       "path": "output.emil.md",
       "run_path": "run.emil.json",
-      "run_sha256": "7264b518a6b64a99c56ca7093d8bb7ab5ee44a6b0972d9d51574a1f80b572982",
-      "sha256": "8a391790fa232029cc151efba9dac7e4dc2cdc0947132168495fe28417cf3711",
+      "run_sha256": "290adde59e5f33a44ee2e0a3fa8e6cb48ce9338e10b20dfee7940f7031ad17db",
+      "sha256": "d226c639a34bcdf3cda284a8370e9def3e76f970b236c33e0c346f4452f94c7e",
       "variant": "emil"
+    },
+    "B": {
+      "path": "output.baseline.md",
+      "run_path": "run.baseline.json",
+      "run_sha256": "a5d5a08721d17bda87a5cc993f0ed374416ee5dc31882623a8f65e9cdc6bab61",
+      "sha256": "e37c6f3bfba70fe59ffc092013bbf16eba4174215890cfda443d8179cbed957d",
+      "variant": "baseline"
+    },
+    "C": {
+      "path": "output.design-craft.md",
+      "run_path": "run.design-craft.json",
+      "run_sha256": "3c2f92aa8375b75b5630b0c9f2f4e05180756fd8136c87276b9a887f4f21fd4b",
+      "sha256": "77cca96aa593ad76b6d10fa47d0a8409996406b0ba5cbadd93065744afcf5ff5",
+      "variant": "design-craft"
     }
   },
   "packet_path": "blind-packet.md",
-  "packet_sha256": "32e697d37e5f7e5faffe4c2e278e57a3d8b2ea7a7cf050a89b1509d6278c2a0a",
+  "packet_sha256": "152ab8c981d5915659989f99ce07cd80d63ddc69918a0b52a0746c8466363b06",
   "prompt_sha256": "32a158dae9908cefce2747965d6451cf024eb3a877438295898a75412e11e0c8",
   "schema": "design-craft.comparative-blind-map.v3",
   "scorecard_json_sha256": "8138c39d53d54e9513c89c172ab2cc5b53135fb06c58c4f42f99179b3b2f1c7e",
   "scorecard_sha256": "89663cb8f65c3bd9387414a1f79fcf0789dad360d4287d15130189ed7c11ee72",
-  "seed_sha256": "44fe9d1b3f50543ab7079146937534111bf0fe361eb7c455df343aaa1cb8e555"
+  "seed_sha256": "dd6e1ed2e0d46fcbfd099f5cf132aeeb3e100e41e694cd477c5aa2be0b485c00"
 }

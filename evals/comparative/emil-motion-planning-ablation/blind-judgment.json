@@ -1,51 +1,51 @@
 {
-  "rationale": "B 在全部关键维度上最接近满分：它既没有把缺失的静态证据误报成已发生的运行时问题，又把现有令牌、键盘吞吐、属性成本、弹层原点、拖拽指针跟踪、动画中断和 primitive 能力边界连成了可执行路线。相较之下，A 的队列方案对未知 API 和动量目标作了危险假设；C 则新增不必要的令牌体系，并遗漏了弹层原点及拖拽连续性的核心机制。因此 B 明确胜出。",
+  "rationale": "C 的总分最高。它不仅复用既有语义 token 和本地 Reduced Motion 先例，还最完整地覆盖评分要求中特别强调的 origin、interruption、pointer tracking 与动画 primitive 权衡，并把复杂的队列改造放在最后、附带清晰的停止条件。A 的结构和高频克制很强，但其 raw clientY 到 transform 的示例及假设性 spring 参数可能导致错误实现；B 稳健但技术诊断与优先级区分相对不足。三者都没有声称已执行运行时验证，但均缺少真正可量化的性能 trace 或帧预算检查，因此未给验证与性能项满分。",
   "results": [
+    {
+      "criteria": {
+        "accessibility_performance": 9,
+        "evidence_recon": 14,
+        "plan_self_containment": 18,
+        "prioritization": 9,
+        "project_conventions": 9,
+        "purpose_frequency": 10,
+        "technical_accuracy": 11,
+        "verification_quality": 8
+      },
+      "label": "A",
+      "summary": "侦察、频率判断和计划结构非常完整，对高频命令面板的克制尤其明确；但队列方案直接把原始 clientY 写入 transform，并给出未经证实的 spring API 形状，存在坐标系、变换覆盖和动画接口臆测风险。",
+      "total": 88
+    },
     {
       "criteria": {
         "accessibility_performance": 8,
         "evidence_recon": 14,
-        "plan_self_containment": 19,
+        "plan_self_containment": 18,
         "prioritization": 8,
-        "project_conventions": 10,
-        "purpose_frequency": 10,
-        "technical_accuracy": 9,
-        "verification_quality": 9
+        "project_conventions": 9,
+        "purpose_frequency": 9,
+        "technical_accuracy": 10,
+        "verification_quality": 8
       },
-      "label": "A",
-      "summary": "静态证据盘点完整，明确声明未执行运行时、浏览器、设备和可访问性验证；也充分复用了现有时长、缓动令牌及按钮的 Reduced Motion 先例。命令面板、弹层和 Toast 计划具体且可执行，但队列方案存在明显技术风险：未经授权把最近槽位语义改成速度投影目标，假设了未知 animateTo API 的 spring、duration、bounce 和 velocity 选项及单位，并直接写 transform 而未处理现有变换合成、指针捕获、抓取偏移、坐标空间和动画中断后的当前呈现值。验证清单较强，但缺少明确的性能录制或帧成本测量步骤，整体也明显不够精简。",
-      "total": 87
+      "label": "B",
+      "summary": "整体谨慎、可执行，能复用现有 token 和按钮先例，并对挂载方式与拖拽坐标语义设置检查点；但优先级存在重复的系统性条目，未充分处理 popover origin、动画中断和呈现值续接，队列的 JavaScript 时长常量也可能形成平行规范。",
+      "total": 84
     },
     {
       "criteria": {
         "accessibility_performance": 9,
-        "evidence_recon": 15,
-        "plan_self_containment": 20,
-        "prioritization": 9,
-        "project_conventions": 10,
-        "purpose_frequency": 10,
-        "technical_accuracy": 15,
-        "verification_quality": 10
-      },
-      "label": "B",
-      "summary": "三份输出中证据边界、技术诊断和实施约束最完整。它准确区分了静态证据与待验证状态，复用现有令牌和局部 Reduced Motion 先例，并围绕高频键盘入口、直接操控连续性和因果反馈排序。尤其是队列计划覆盖指针捕获、抓取偏移、局部坐标、px/s 速度、当前呈现值、中断重定向、目标选择与速度继承的边界，且明确禁止在未授权时把 nearest-slot 改成动量投影目标。三个计划均包含当前路径与摘录、目标、约定、步骤、边界、机械检查、体验检查、Reduced Motion 和漂移停止条件。主要缺口是未明确要求录制 Performance trace 或给出可量化帧预算，且篇幅超过了题目要求的精简程度。",
-      "total": 98
-    },
-    {
-      "criteria": {
-        "accessibility_performance": 8,
         "evidence_recon": 14,
-        "plan_self_containment": 17,
-        "prioritization": 7,
-        "project_conventions": 6,
-        "purpose_frequency": 9,
-        "technical_accuracy": 8,
+        "plan_self_containment": 19,
+        "prioritization": 9,
+        "project_conventions": 9,
+        "purpose_frequency": 10,
+        "technical_accuracy": 14,
         "verification_quality": 9
       },
       "label": "C",
-      "summary": "Recon、静态证据声明、Toast 属性修正、常规机械检查和 Reduced Motion 方向总体可靠，也能识别 command palette、transition: all、top 动画及固定 400ms settle 的问题。但其第一计划在已有 fast、panel 和 responsive 令牌足以覆盖当前表面的情况下，又建议新增 instant、attention、exit easing 及全局 Reduced Motion 令牌覆盖，形成不必要的并行体系。命令面板样式的实际落点没有给出确定文件路径；popover 未充分诊断中心 transform-origin 与触发点因果关系；队列计划主要缩短时长，缺少抓取偏移、指针捕获、坐标空间、释放速度、当前呈现值和中断机制的实施设计。优先先建全局合同再修高频入口也不如直接处理高影响问题稳健。",
-      "total": 78
+      "summary": "覆盖静态运动面、既有约定和证据边界最完整，且对属性成本、触发源 origin、挂载原语、拖拽坐标、pointer capture、释放速度、呈现值续接、中断及 Reduced Motion 的处理最严谨；少量拖拽增强仍需现场确认，且缺少明确的性能 trace 测量步骤。",
+      "total": 93
     }
   ],
-  "winner": "B"
+  "winner": "C"
 }
