@@ -23,10 +23,6 @@ from tools.design_craft.evaluation.cross_agent.contract import (
     scorecard_weights,
     sha256_text,
 )
-from design_craft_cross_agent_validate import (
-    validate_output,
-    validate_observed_score,
-)
 from design_craft_evidence_common import redacted_path, sha256_file, skill_provenance, tree_sha256
 from tools.design_craft.evaluation.evidence_graph import (
     binding_domain,
@@ -36,6 +32,8 @@ from tools.design_craft.evaluation.evidence_graph import (
     git_projected_skill_tree_sha256,
     projected_skill_tree_sha256,
 )
+from tools.design_craft.evaluation.cross_agent.output import validate_output
+from tools.design_craft.evaluation.cross_agent.score import validate_observed_score
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)

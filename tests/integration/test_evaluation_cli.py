@@ -27,6 +27,11 @@ def run_script(script: str, *arguments: str) -> subprocess.CompletedProcess[str]
 
 
 class EvaluationCliTests(unittest.TestCase):
+    def test_cross_agent_recorder_help_loads_current_validation_modules(self) -> None:
+        result = run_script("scripts/design_craft_cross_agent_record.py", "--help")
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertIn("Record a cryptographically bound cross-agent score", result.stdout)
+
     def test_active_cross_agent_comparisons_match_evidence_status(self) -> None:
         result = run_script(
             "scripts/design_craft_cross_agent_validate.py",
