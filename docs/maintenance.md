@@ -90,6 +90,19 @@ Run this on a fresh clone or another machine before trusting the package shape:
 make validate-portable
 ```
 
+`contracts/validation/gates.json` is the machine-readable source of truth for
+this gate. `scripts/validate.sh` remains the stable cross-platform shell entry,
+but owns only Git Bash normalization and the optional external Skill validator;
+it must not grow another hard-coded source-check list. The portable profile
+runs independent source gates through a bounded worker pool, then runs
+development maturity only after every source gate passes. `make contract-tests`
+selects the contract-only view from the same registry.
+
+Structured validation output uses `design-craft.validation-run.v2`:
+`duration_ms` is observed wall time, while `gate_duration_sum_ms` is the sum of
+individual process durations and may be greater than wall time when gates run
+in parallel.
+
 It expands to portable checks only: required files, package/version
 consistency, npm pack size/path hygiene, dependency-free Python/shell/JSON/Node
 lint, isolated runner/comparative/native/release contract self-checks,

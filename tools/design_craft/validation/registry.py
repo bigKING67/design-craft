@@ -9,7 +9,7 @@ from .model import GateSpec
 
 REGISTRY_SCHEMA = "design-craft.validation-gates.v1"
 KNOWN_PROFILES = frozenset(
-    {"portable", "local", "operational-release", "certified-release"}
+    {"contracts", "portable", "local", "operational-release", "certified-release"}
 )
 KNOWN_EXECUTION = frozenset({"parallel", "serial"})
 
@@ -84,12 +84,25 @@ def load_registry(path: Path | None = None) -> tuple[GateSpec, ...]:
         )
 
     gate_ids = {gate.gate_id for gate in gates}
+    gate_order = {gate.gate_id: index for index, gate in enumerate(gates)}
     for gate in gates:
         missing = set(gate.depends_on) - gate_ids
         if missing:
             raise ValueError(f"{gate.gate_id}.depends_on references unknown gates: {sorted(missing)}")
         if gate.gate_id in gate.depends_on:
             raise ValueError(f"{gate.gate_id} must not depend on itself")
+        if gate.execution == "parallel" and gate.depends_on:
+            raise ValueError(f"parallel gate {gate.gate_id} must not declare dependencies")
+        later_dependencies = sorted(
+            dependency
+            for dependency in gate.depends_on
+            if gate_order[dependency] >= gate_order[gate.gate_id]
+        )
+        if later_dependencies:
+            raise ValueError(
+                f"{gate.gate_id}.depends_on must reference earlier gates: "
+                f"{later_dependencies}"
+            )
     return tuple(gates)
 
 

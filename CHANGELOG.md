@@ -4,6 +4,12 @@ All notable local changes to `design-craft` are recorded here.
 
 ## Unreleased
 
+- Make `contracts/validation/gates.json` the single source of truth for source
+  validation. The stable `validate.sh` entry now only preserves portable shell
+  setup and optional external validation before delegating to the bounded
+  parallel runner; `contract-tests` is a declared profile rather than a second
+  command list. Validation result v2 reports wall time separately from summed
+  per-gate process time.
 - Recompute benchmark p50, p95, and max from recorded samples, reject source
   commit changes during measurement, and mark low-sample smoke comparisons as
   diagnostic-only evidence.

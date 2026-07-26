@@ -20,7 +20,13 @@ def build_parser() -> argparse.ArgumentParser:
     validate = subparsers.add_parser("validate", help="Run a declared validation profile.")
     validate.add_argument(
         "--profile",
-        choices=("portable", "local", "operational-release", "certified-release"),
+        choices=(
+            "contracts",
+            "portable",
+            "local",
+            "operational-release",
+            "certified-release",
+        ),
         default="portable",
     )
     maturity = subparsers.add_parser(

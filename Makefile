@@ -45,16 +45,7 @@ lint:
 	python3 scripts/design_craft_lint.py --check
 
 contract-tests:
-	python3 scripts/design_craft_cross_agent_run.py --check
-	python3 scripts/design_craft_cross_agent_validate.py --check
-	python3 scripts/design_craft_comparative_run.py --check
-	python3 scripts/design_craft_comparative_judge.py --check
-	python3 scripts/design_craft_comparative_validate.py --check
-	python3 scripts/design_craft_native_runtime_validate.py --check
-	python3 scripts/design_craft_github_checks.py --check
-	python3 scripts/design_craft_github_governance.py --check
-	python3 scripts/design_craft_workflow_validate.py --check --validate
-	python3 -m unittest discover -s tests -p 'test_*.py'
+	python3 -m tools.design_craft validate --profile contracts
 
 package-check:
 	python3 scripts/design_craft_package_validate.py --check --validate

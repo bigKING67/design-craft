@@ -563,24 +563,25 @@ def validate() -> dict:
             (
                 'cygpath -w "${BASH}"',
                 "export DESIGN_CRAFT_BASH",
-                "tools.design_craft.validation.repository_contracts",
-                "tools.design_craft.validation.tooling_contracts",
                 "tools.design_craft.validation.skill_schema",
-                "python3 -m unittest discover",
-                "--profile development",
+                "exec python3 -m tools.design_craft validate --profile portable",
             ),
             "scripts/validate.sh",
         )
     )
-    if re.search(
-        r"design_craft_maturity\.py\s+--profile\s+development[^\n]*>/dev/null",
-        portable_validator,
+    for forbidden in (
+        "design_craft_package_validate.py",
+        "python3 -m unittest discover",
+        "design_craft_maturity.py --profile development",
     ):
-        errors.append(
-            "scripts/validate.sh must preserve development maturity failure diagnostics"
-        )
+        if forbidden in portable_validator:
+            errors.append(
+                "scripts/validate.sh must delegate source gates to the validation registry: "
+                + forbidden
+            )
     if ".codex/skills/.system/skill-creator" in portable_validator:
         errors.append("scripts/validate.sh must not depend on a user-home skill validator")
+
     errors.extend(
         require_tokens(
             lint_validator,

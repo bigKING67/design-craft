@@ -5,7 +5,49 @@ import tempfile
 import unittest
 from pathlib import Path
 
+from tools.design_craft.validation.profile_contract import profile_contract_errors
 from tools.design_craft.validation.registry import load_registry, select_gates
+
+
+PORTABLE_PARALLEL_GATES = (
+    "skill-schema",
+    "repository-contracts",
+    "tooling-contracts",
+    "lint",
+    "package-boundary",
+    "public-repository",
+    "workflow-contract",
+    "upstream-review-contract",
+    "upstream-absorption-report",
+    "taste-absorption",
+    "impeccable-absorption",
+    "emil-absorption",
+    "cross-agent-run-self-check",
+    "cross-agent-validator-self-check",
+    "comparative-run-self-check",
+    "comparative-judge-self-check",
+    "comparative-validator-self-check",
+    "native-runtime-self-check",
+    "github-checks-self-check",
+    "github-governance-self-check",
+    "install-verifier-self-check",
+    "route-pack-self-check",
+    "maturity-self-check",
+    "unit-tests",
+)
+
+CONTRACT_GATES = (
+    "workflow-contract",
+    "cross-agent-run-self-check",
+    "cross-agent-validator-self-check",
+    "comparative-run-self-check",
+    "comparative-judge-self-check",
+    "comparative-validator-self-check",
+    "native-runtime-self-check",
+    "github-checks-self-check",
+    "github-governance-self-check",
+    "unit-tests",
+)
 
 
 class ValidationRegistryTests(unittest.TestCase):
@@ -13,13 +55,25 @@ class ValidationRegistryTests(unittest.TestCase):
         gates = select_gates(load_registry(), "portable")
         self.assertEqual(
             [gate.gate_id for gate in gates],
-            [
-                "repository-contracts",
-                "lint",
-                "contract-tests",
-                "development-maturity",
-            ],
+            [*PORTABLE_PARALLEL_GATES, "development-maturity"],
         )
+        self.assertEqual(gates[-1].depends_on, PORTABLE_PARALLEL_GATES)
+        self.assertEqual(profile_contract_errors(gates, "portable"), [])
+
+    def test_contract_profile_matches_public_contract_target(self) -> None:
+        gates = select_gates(load_registry(), "contracts")
+        self.assertEqual(tuple(gate.gate_id for gate in gates), CONTRACT_GATES)
+        self.assertTrue(all(gate.execution == "parallel" for gate in gates))
+        self.assertEqual(profile_contract_errors(gates, "contracts"), [])
+
+    def test_profile_contract_rejects_missing_bootstrap_gate(self) -> None:
+        gates = tuple(
+            gate
+            for gate in select_gates(load_registry(), "portable")
+            if gate.gate_id != "unit-tests"
+        )
+        errors = profile_contract_errors(gates, "portable")
+        self.assertTrue(any("unit-tests" in error for error in errors))
 
     def test_duplicate_gate_ids_fail(self) -> None:
         payload = {
@@ -73,6 +127,60 @@ class ValidationRegistryTests(unittest.TestCase):
             path.write_text(json.dumps(payload), encoding="utf-8")
             with self.assertRaisesRegex(ValueError, "without dependencies"):
                 select_gates(load_registry(path), "portable")
+
+    def test_dependency_must_precede_dependent_gate(self) -> None:
+        payload = {
+            "schema": "design-craft.validation-gates.v1",
+            "gates": [
+                {
+                    "id": "dependent",
+                    "command": ["python3", "--version"],
+                    "profiles": ["portable"],
+                    "timeout_seconds": 10,
+                    "execution": "serial",
+                    "depends_on": ["later"],
+                },
+                {
+                    "id": "later",
+                    "command": ["python3", "--version"],
+                    "profiles": ["portable"],
+                    "timeout_seconds": 10,
+                    "execution": "parallel",
+                },
+            ],
+        }
+        with tempfile.TemporaryDirectory() as raw:
+            path = Path(raw) / "gates.json"
+            path.write_text(json.dumps(payload), encoding="utf-8")
+            with self.assertRaisesRegex(ValueError, "must reference earlier gates"):
+                load_registry(path)
+
+    def test_parallel_gate_cannot_declare_dependencies(self) -> None:
+        payload = {
+            "schema": "design-craft.validation-gates.v1",
+            "gates": [
+                {
+                    "id": "base",
+                    "command": ["python3", "--version"],
+                    "profiles": ["portable"],
+                    "timeout_seconds": 10,
+                    "execution": "parallel",
+                },
+                {
+                    "id": "dependent",
+                    "command": ["python3", "--version"],
+                    "profiles": ["portable"],
+                    "timeout_seconds": 10,
+                    "execution": "parallel",
+                    "depends_on": ["base"],
+                },
+            ],
+        }
+        with tempfile.TemporaryDirectory() as raw:
+            path = Path(raw) / "gates.json"
+            path.write_text(json.dumps(payload), encoding="utf-8")
+            with self.assertRaisesRegex(ValueError, "must not declare dependencies"):
+                load_registry(path)
 
 
 if __name__ == "__main__":

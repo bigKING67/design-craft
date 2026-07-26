@@ -32,42 +32,14 @@ if [[ -z "${DESIGN_CRAFT_BASH:-}" ]]; then
 fi
 export DESIGN_CRAFT_BASH
 
-python3 -m tools.design_craft.validation.skill_schema --check "${SKILL_DIR}"
-
 if [[ "${PORTABLE}" == "0" && -n "${EXTERNAL_VALIDATOR}" ]]; then
   if [[ ! -f "${EXTERNAL_VALIDATOR}" ]]; then
     echo "Missing external skill validator: ${EXTERNAL_VALIDATOR}" >&2
     echo "Set SKILL_CREATOR_QUICK_VALIDATE to a compatible quick_validate.py path." >&2
     exit 1
   fi
+  python3 -m tools.design_craft.validation.skill_schema --check "${SKILL_DIR}"
   python3 "${EXTERNAL_VALIDATOR}" "${SKILL_DIR}"
 fi
 
-python3 -m tools.design_craft.validation.repository_contracts --check
-python3 -m tools.design_craft.validation.tooling_contracts --check
-python3 scripts/design_craft_lint.py --check
-python3 scripts/design_craft_package_validate.py --check --validate
-python3 scripts/design_craft_public_repo_validate.py --check --validate
-python3 scripts/design_craft_workflow_validate.py --check --validate
-
-node tests/contract/test_upstream_review_issue.cjs
-python3 scripts/upstream_absorption_report.py --check
-python3 scripts/design_craft_taste_absorption.py --check --strict
-python3 scripts/design_craft_impeccable_absorption.py --check --strict
-python3 scripts/design_craft_emil_absorption.py --check --strict
-python3 scripts/design_craft_cross_agent_run.py --check
-python3 scripts/design_craft_cross_agent_validate.py --check
-python3 scripts/design_craft_comparative_run.py --check
-python3 scripts/design_craft_comparative_judge.py --check
-python3 scripts/design_craft_comparative_validate.py --check
-python3 scripts/design_craft_native_runtime_validate.py --check
-python3 scripts/design_craft_github_checks.py --check
-python3 scripts/design_craft_github_governance.py --check
-python3 scripts/design_craft_install_verify.py --check
-python3 scripts/design_craft_codex_route_pack.py --check
-python3 scripts/design_craft_maturity.py --check
-
-python3 -m unittest discover -s tests -p 'test_*.py'
-python3 scripts/design_craft_maturity.py --profile development
-
-echo "design-craft validation passed."
+exec python3 -m tools.design_craft validate --profile portable
