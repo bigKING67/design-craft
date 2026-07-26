@@ -27,6 +27,7 @@ SMOKE_METRIC_NAMES = frozenset(
         "tree_scan_1000",
         "tree_scan_10000",
         "validation_registry",
+        "portable_validation",
         "lint_full",
         "evidence_validation",
         "package_validation",
@@ -120,11 +121,11 @@ def specialized_metric_errors(name: str, metric: object) -> list[str]:
         if metric.get("fixture_root") != "temporary_directory":
             errors.append(f"metric {name} must use a temporary fixture root")
         fixture_scope = metric.get("fixture_scope")
-        if fixture_scope is not None and fixture_scope != "benchmark_only_synthetic_changed_files":
+        if fixture_scope != "benchmark_only_synthetic_changed_files":
             errors.append(f"metric {name} has an invalid synthetic fixture scope")
     if name.startswith("validation_cache_"):
         fixture_scope = metric.get("fixture_scope")
-        if fixture_scope is not None and fixture_scope != "benchmark_only_synthetic_digest_cache":
+        if fixture_scope != "benchmark_only_synthetic_digest_cache":
             errors.append(f"metric {name} has an invalid synthetic cache scope")
         integer_fields = (
             "cache_capacity",
@@ -189,6 +190,32 @@ def specialized_metric_errors(name: str, metric: object) -> list[str]:
         errors.append("metric release_bundle_build must prove deterministic temporary output")
     if name == "route_pack" and metric.get("fixture_scope") != "portable_self_check":
         errors.append("metric route_pack must use the portable self-check fixture")
+    if name.startswith("tree_scan_"):
+        try:
+            expected_count = int(name.rsplit("_", 1)[1])
+        except ValueError:
+            return [*errors, f"metric {name} has an invalid tree file count"]
+        if (
+            metric.get("file_count") != expected_count
+            or metric.get("fixture_scope")
+            != "benchmark_only_synthetic_tree_digest"
+            or metric.get("scan_operation") != "sha256_file_tree"
+        ):
+            errors.append(
+                f"metric {name} must declare its synthetic SHA-256 tree fixture"
+            )
+    if name == "portable_validation" and (
+        metric.get("execution_scope") != "real_portable_validation_profile"
+        or metric.get("resource_scope") != "wall_clock_only"
+        or metric.get("validation_profile") != "portable"
+        or metric.get("validation_schema") != "design-craft.validation-run.v2"
+        or not isinstance(metric.get("gate_count"), int)
+        or isinstance(metric.get("gate_count"), bool)
+        or metric["gate_count"] <= 0
+    ):
+        errors.append(
+            "metric portable_validation must prove real portable wall-clock execution"
+        )
     return errors
 
 

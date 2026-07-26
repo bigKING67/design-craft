@@ -20,6 +20,10 @@ on:
         description: Successful Native runtime evidence run used for candidate certification
         required: false
         type: string
+      benchmark_baseline:
+        description: Committed matching-runner baseline required for candidate certification
+        required: false
+        type: string
 
 permissions:
   contents: read
@@ -109,6 +113,13 @@ jobs:
       - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
         with:
           python-version: "3.13"
+      - name: Validate benchmark baseline
+        env:
+          BENCHMARK_BASELINE: ${{ inputs.benchmark_baseline }}
+        run: |
+          [[ "${BENCHMARK_BASELINE}" == benchmarks/baselines/* ]]
+          [[ "${BENCHMARK_BASELINE}" != *..* ]]
+          test -f "${BENCHMARK_BASELINE}"
       - name: Validate native evidence run
         env:
           GH_TOKEN: ${{ github.token }}
@@ -145,11 +156,12 @@ jobs:
           --output "${RUNNER_TEMP}/operational-candidate/benchmark-result-full.json"
       - name: Certify Operational 95 release candidate
         env:
+          BENCHMARK_BASELINE: ${{ inputs.benchmark_baseline }}
           DESIGN_CRAFT_NATIVE_EVIDENCE_ROOT: ${{ runner.temp }}/native-evidence/combined
           PYTHONDONTWRITEBYTECODE: "1"
         run: >-
           make release-readiness-operational
-          BENCHMARK_BASELINE=benchmarks/baselines/v0.5.1-linux-x86_64-python3.13.json
+          BENCHMARK_BASELINE="${BENCHMARK_BASELINE}"
           BENCHMARK_RESULT="${RUNNER_TEMP}/operational-candidate/benchmark-result-full.json"
           OPERATIONAL_CANDIDATE_EVIDENCE="${RUNNER_TEMP}/operational-candidate/dist/evidence/operational-95-candidate.json"
       - name: Upload Operational 95 candidate evidence

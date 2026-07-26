@@ -15,6 +15,9 @@ The smoke suite records:
 - 1k and 10k file-tree hashing;
 - validation registry load, full lint, evidence validation, and package
   validation;
+- real end-to-end portable source validation through the canonical Python
+  registry runner. This metric records wall-clock time only; it does not claim
+  CPU time or peak RSS coverage;
 - synthetic changed-file validation for exactly 1, 10, and 100 fixture files;
   this measures the benchmark algorithm, not a production incremental engine;
 - synthetic bounded digest-cache cold, warm, and overflow behavior, including
@@ -40,6 +43,12 @@ timing.
 The route-pack benchmark deliberately uses its built-in temporary self-check
 fixture. It must not read the operator's `~/.codex` tree, so local and CI runs
 measure the same portable contract instead of leaking host configuration.
+
+The 1k, 10k, and 100k tree metrics are synthetic SHA-256 fixture scans, not a
+production repository scanner. Incremental-validation and digest-cache metrics
+are also benchmark-only synthetic algorithms. Their machine-readable
+`fixture_scope` fields are mandatory so they cannot be presented as runtime
+incremental validation, runtime caching, or real repository-scale throughput.
 
 ```bash
 python3 -m tools.design_craft benchmark --scale smoke --json
@@ -101,6 +110,13 @@ dispatch. Each run uploads the complete result JSON; smoke artifacts are kept
 for 30 days and full artifacts for 90 days. These artifacts are execution
 evidence, not automatically promoted release baselines. Baseline promotion
 still requires controlled same-runner comparison and review.
+
+Adding or removing a metric creates a new exact comparison contract. Older
+committed baselines remain historical provenance but cannot certify the new
+metric set. `operational-candidate` therefore requires an explicit
+`benchmark_baseline` workflow input naming a committed, matching-runner file;
+the workflow must not silently reuse a hard-coded baseline from an older
+release.
 
 For comparable results, a regression fails only when p95 is both more than 15%
 slower and more than 50 ms slower. Cache, rollback, lock-contention, temporary

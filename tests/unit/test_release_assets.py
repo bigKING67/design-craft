@@ -11,6 +11,7 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 
+from tests.fixtures.benchmark import full_benchmark_result
 from tools.design_craft.release.assets import (
     build_assets,
     load_release_evidence,
@@ -95,10 +96,7 @@ def benchmark_run_observation(run_id: int = 456) -> dict[str, object]:
 
 
 def write_benchmark_result(path: Path) -> None:
-    baseline_path = (
-        REPO_ROOT / "benchmarks/baselines/v0.5.1-linux-x86_64-python3.13.json"
-    )
-    payload = json.loads(baseline_path.read_text(encoding="utf-8"))
+    payload = full_benchmark_result(100.0)
     payload["source_commit"] = HEAD
     payload["source_dirty"] = False
     path.write_text(

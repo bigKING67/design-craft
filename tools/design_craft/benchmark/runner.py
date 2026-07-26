@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import os
 import platform
 import subprocess
@@ -80,6 +81,32 @@ def _measure_cache(
     )
     return metric
 
+
+def _portable_validation_gate_count(output: str) -> int:
+    try:
+        payload = json.loads(output)
+    except json.JSONDecodeError as exc:
+        raise RuntimeError(
+            f"portable validation benchmark emitted invalid JSON: {exc}"
+        ) from exc
+    if not isinstance(payload, dict):
+        raise RuntimeError("portable validation benchmark result must be an object")
+    expected = {
+        "schema": "design-craft.validation-run.v2",
+        "profile": "portable",
+        "status": "passed",
+    }
+    for field, value in expected.items():
+        if payload.get(field) != value:
+            raise RuntimeError(
+                f"portable validation benchmark {field} must be {value!r}"
+            )
+    gate_count = payload.get("gate_count")
+    if not isinstance(gate_count, int) or isinstance(gate_count, bool) or gate_count <= 0:
+        raise RuntimeError(
+            "portable validation benchmark gate_count must be a positive integer"
+        )
+    return gate_count
 
 
 def _git_value(*args: str) -> str:
@@ -192,21 +219,73 @@ def run_suite(scale: str = "smoke") -> dict[str, object]:
             fixture = temporary / f"tree-{count}"
             fixture.mkdir()
             _create_tree(fixture, count)
-            metrics[f"tree_scan_{count}"] = _measure(
+            metric = _measure(
                 lambda fixture=fixture: _tree_digest(fixture),
                 iterations if scale == "smoke" else MIN_FULL_SAMPLES,
             )
+            metric.update(
+                {
+                    "file_count": count,
+                    "fixture_scope": "benchmark_only_synthetic_tree_digest",
+                    "scan_operation": "sha256_file_tree",
+                }
+            )
+            metrics[f"tree_scan_{count}"] = metric
         if scale == "full":
             fixture = temporary / "tree-100000"
             fixture.mkdir()
             _create_tree(fixture, 100_000)
-            metrics["tree_scan_100000"] = _measure(
+            metric = _measure(
                 lambda: _tree_digest(fixture), MIN_FULL_SAMPLES
             )
+            metric.update(
+                {
+                    "file_count": 100_000,
+                    "fixture_scope": "benchmark_only_synthetic_tree_digest",
+                    "scan_operation": "sha256_file_tree",
+                }
+            )
+            metrics["tree_scan_100000"] = metric
 
         metrics["validation_registry"] = _measure(
             lambda: select_gates(load_registry(), "portable"), 20 if scale == "smoke" else 100
         )
+        portable_gate_counts: set[int] = set()
+
+        def validate_portable() -> None:
+            result = _run(
+                [
+                    sys.executable,
+                    "-m",
+                    "tools.design_craft",
+                    "validate",
+                    "--profile",
+                    "portable",
+                    "--json",
+                ],
+                timeout=600,
+            )
+            portable_gate_counts.add(
+                _portable_validation_gate_count(result.stdout)
+            )
+
+        portable_metric = _measure(
+            validate_portable, 1 if scale == "smoke" else MIN_FULL_SAMPLES
+        )
+        if len(portable_gate_counts) != 1:
+            raise RuntimeError(
+                "portable validation benchmark gate count changed between samples"
+            )
+        portable_metric.update(
+            {
+                "execution_scope": "real_portable_validation_profile",
+                "resource_scope": "wall_clock_only",
+                "validation_profile": "portable",
+                "validation_schema": "design-craft.validation-run.v2",
+                "gate_count": portable_gate_counts.pop(),
+            }
+        )
+        metrics["portable_validation"] = portable_metric
         metrics["lint_full"] = _measure(
             lambda: _run([sys.executable, "scripts/design_craft_lint.py"]),
             2 if scale == "smoke" else MIN_FULL_SAMPLES,
