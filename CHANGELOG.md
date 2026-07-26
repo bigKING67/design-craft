@@ -13,6 +13,15 @@ All notable local changes to `design-craft` are recorded here.
 - Recompute benchmark p50, p95, and max from recorded samples, reject source
   commit changes during measurement, and mark low-sample smoke comparisons as
   diagnostic-only evidence.
+- Measure the real end-to-end portable validation profile as a wall-clock
+  benchmark, require machine-readable synthetic scopes for tree, incremental,
+  and cache fixtures, and require Operational candidate runs to name an
+  explicit committed baseline with the current metric contract.
+- Promoted the original Ubuntu 24.04/Python 3.13 full artifact from run
+  `30185332403` as the v0.5.6 benchmark baseline (artifact SHA-256
+  `9f02d459f5525797f579735570a27d02a00127240ea1ef66ee353f071cd72f32`)
+  after three hosted runs. It forms a bidirectionally passing cluster with run
+  `30185173232`; the faster run `30185009281` remains an unpromoted outlier.
 - Move portable route resolution from an embedded-Python shell controller to a
   directly tested single-process Python runtime behind the unchanged
   `design_craft_route.sh` entrypoint. This preserves route JSON and exit codes
