@@ -60,14 +60,17 @@ def copy_definition_fixture(destination: Path) -> None:
 
 class CrossAgentValidationTests(unittest.TestCase):
     def test_localized_output_concepts_are_accepted(self) -> None:
-        for boundary_label in ("未验证", "未确认"):
+        for boundary_label, move_label in (
+            ("未验证", "具体设计改动"),
+            ("未确认", "具体设计 moves"),
+        ):
             with (
-                self.subTest(boundary_label=boundary_label),
+                self.subTest(boundary_label=boundary_label, move_label=move_label),
                 tempfile.TemporaryDirectory() as temp_dir,
             ):
                 task_dir = Path(temp_dir)
                 (task_dir / "codex-output.md").write_text(
-                    f"证据、{boundary_label}边界和具体设计改动。" * 40,
+                    f"证据、{boundary_label}边界和{move_label}。" * 40,
                     encoding="utf-8",
                 )
 

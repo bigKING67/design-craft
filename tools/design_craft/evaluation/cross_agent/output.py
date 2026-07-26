@@ -25,6 +25,8 @@ def validate_output(task_dir: Path, host: str) -> list[str]:
             "设计修正",
             "设计改进",
             "设计改动",
+            "设计 move",
+            "设计move",
         ),
     }
     for label, variants in required_concepts.items():
