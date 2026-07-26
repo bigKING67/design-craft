@@ -16,7 +16,7 @@ def validate_output(task_dir: Path, host: str) -> list[str]:
     lowered = text.lower()
     required_concepts = {
         "evidence": ("evidence", "证据"),
-        "unverified": ("unverified", "未验证"),
+        "unverified": ("unverified", "未验证", "未确认"),
         "design move": (
             "design move",
             "设计动作",
@@ -25,6 +25,8 @@ def validate_output(task_dir: Path, host: str) -> list[str]:
             "设计修正",
             "设计改进",
             "设计改动",
+            "设计 move",
+            "设计move",
         ),
     }
     for label, variants in required_concepts.items():

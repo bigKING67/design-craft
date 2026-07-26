@@ -2,7 +2,7 @@
 
 This document records the deliberate fusion and runtime boundary for
 `https://github.com/pbakaus/impeccable` at commit
-`af78b1e512148e2a2f2d2ded6786d265ea420191`. The compatibility submodule stays
+`d272b9bd5dcfcb52d32482d192d06045ca31c503`. The compatibility submodule stays
 pinned at `630fc2682a5bd39b25a8e61f74b6b3f14f2b1e21`.
 
 ## Contents
@@ -81,14 +81,17 @@ host's existing execution contracts.
 
 ## Latest reviewed range
 
-The latest range from `73819ff5736cf95270e6a3e6faf3f21e27d96f94`
-through `af78b1e512148e2a2f2d2ded6786d265ea420191` is
-`selective_absorbed`:
+The latest range after `af78b1e512148e2a2f2d2ded6786d265ea420191`
+through `d272b9bd5dcfcb52d32482d192d06045ca31c503` is `deferred`:
 
 | Capability | Status | Local target or boundary |
 | --- | --- | --- |
-| Two bounded rendered-verification rounds | absorbed | `SKILL.md` batches required desktop, mobile, and state inspection into one pass, applies material fixes together, and permits one confirmation pass instead of a per-tweak screenshot loop. |
-| Generated provider synchronization | provenance-only | The generated provider copy follows the source change but remains inside the rejected upstream provider/package runtime boundary. |
+| Named-color border and pseudo-element stripe detection | deferred | Valuable detector correctness work; absorb only with local deterministic fixtures instead of advancing the full upstream detector snapshot during release certification. |
+| Hidden/vendor traversal, source-line attribution, and commented-rule filtering | deferred | Review together with the local detector wrapper and adversarial fixtures after the release candidate is stable. |
+| Terminal live-session checkpoint cleanup | intentionally-rejected | This changes the upstream live runtime, which remains outside the browser67-owned lifecycle boundary. |
+| OpenCode install-path and symlink migration | intentionally-rejected | Provider installation and legacy migration remain outside the canonical Skill package and installer. |
+| Whole-cycle polish ceiling and terminal evidence handoff | absorbed | The existing bounded verification contract already caps repeated visual passes and requires an evidence-labeled final handoff. |
+| Generated degraded-mode/provider and asset-producer output | intentionally-rejected | Forced subagent/provider runtime generation remains outside the product boundary; generated copies are provenance only. |
 
 ### Cumulative selected boundary
 

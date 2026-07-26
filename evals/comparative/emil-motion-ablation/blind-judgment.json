@@ -1,20 +1,35 @@
 {
-  "rationale": "B 最完整地满足机器评分项：它不仅指出所有关键静态问题，还要求从当前屏幕呈现值无跳变地中断，并明确规定 CSS px/s 速度单位、受边界约束的投影端点、三态吸附选择及速度交接。相比之下，C 仅缺少明确速度单位，A 则同时存在确定化运行时措辞和较不完整的速度投影规格。",
+  "rationale": "C 以静态证据和条件性影响表述严格区分已知与未验证运行时表现，并完整满足所有高权重交互要求。A 的技术覆盖同样接近满分，但存在过强的运行时断言、未经提供的场景假设和轻微超量表达。B 虽然性能与无障碍建议可靠，却遗漏决定性的中途打断与当前呈现值交接，并且速度处理没有单位和投影模型，因此总分显著落后。",
   "results": [
     {
       "criteria": {
         "accessibility": 10,
-        "actionability": 10,
+        "actionability": 9,
         "direct_manipulation": 15,
         "evidence_honesty": 12,
         "interruption": 15,
         "motion_necessity": 10,
         "performance": 10,
-        "velocity_projection": 10
+        "velocity_projection": 15
       },
       "label": "A",
-      "summary": "覆盖了绝大多数静态缺陷并给出具体修正与验证步骤，但开篇将卡顿、跳变等运行时体感写成确定结论；速度方案也未明确单位、采样方式或向收敛动画交接释放速度。",
-      "total": 92
+      "summary": "覆盖全部关键技术问题，尤其完整指出动画锁定、从当前呈现位置接管、速度单位、投影端点与最终状态同步；但开头对用户必然看到卡顿作了未验证的运行时断言，还引入了题目未提供的“10,000-row”场景，且篇幅不够克制。",
+      "total": 96
+    },
+    {
+      "criteria": {
+        "accessibility": 10,
+        "actionability": 9,
+        "direct_manipulation": 12,
+        "evidence_honesty": 13,
+        "interruption": 1,
+        "motion_necessity": 8,
+        "performance": 10,
+        "velocity_projection": 7
+      },
+      "label": "B",
+      "summary": "静态证据、抓取偏移、指针捕获、布局属性、transform 所有权和 Reduced Motion 建议总体清楚；但几乎完全遗漏动画中的输入锁定、取消当前动画并从屏幕呈现值无跳变接管，也未给出速度单位或投影端点，因此两个高权重维度明显失分。",
+      "total": 70
     },
     {
       "criteria": {
@@ -23,29 +38,14 @@
         "direct_manipulation": 15,
         "evidence_honesty": 15,
         "interruption": 15,
-        "motion_necessity": 10,
+        "motion_necessity": 9,
         "performance": 10,
         "velocity_projection": 15
       },
-      "label": "B",
-      "summary": "证据、推断和未验证边界划分最清楚，完整覆盖输入锁、指针捕获、抓取偏移、一比一跟踪、当前呈现值中断，以及以 CSS px/s 表示的释放速度、受限投影、吸附选择和速度交接。",
-      "total": 100
-    },
-    {
-      "criteria": {
-        "accessibility": 10,
-        "actionability": 10,
-        "direct_manipulation": 15,
-        "evidence_honesty": 14,
-        "interruption": 15,
-        "motion_necessity": 10,
-        "performance": 10,
-        "velocity_projection": 14
-      },
       "label": "C",
-      "summary": "直接操控、中断、性能、必要动效和无障碍处理都很完整，也明确区分静态证据与运行时未知；仅释放速度的具体单位未明示，且开篇仍包含少量推测性体感判断。",
-      "total": 98
+      "summary": "证据边界最严谨且范围最克制，同时完整覆盖输入锁定、指针捕获、抓取偏移、一对一跟随、当前屏幕值接管、CSS px/s 速度、受限投影端点、显式 transform 所有权和非前庭 Reduced Motion 反馈；验证计划也是三者中最小而完整的。",
+      "total": 99
     }
   ],
-  "winner": "B"
+  "winner": "C"
 }

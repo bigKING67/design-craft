@@ -1,8 +1,8 @@
 {
   "command": "pi --print --no-session --no-context-files --no-skills --tools read,grep,find,ls --model codex/gpt-5.5 --thinking high --skill '$VARIANT_SKILL_1' --skill '$VARIANT_SKILL_2'",
-  "contract_sha256": "13e1d04a1ab3ee36baaa520cad18574c99d80a9fb5c17c1977ac68a3f8f641bc",
+  "contract_sha256": "754b4b9ba3f127a6bf99b51aa5fc923a72fef58a72e2625989b3f38fe2bc74f4",
   "cwd": "$VARIANT_WORKSPACE",
-  "duration_seconds": 42.019,
+  "duration_seconds": 41.948,
   "host": "pi",
   "host_version": "0.80.6",
   "installed_skill_paths": {
@@ -12,7 +12,7 @@
   "model": "codex/gpt-5.5",
   "model_observation": "requested_by_cli",
   "output_path": "output.taste.md",
-  "output_sha256": "8f6c846de4538829f0df50c27e624aef83364710f1643a9509da0c3a9515a621",
+  "output_sha256": "36fbe3f9ac0695a3e2faa1da67702c6373e8b7af80b04a369c78a788144c796b",
   "prompt_sha256": "24483d75b8bec334c978ae4f120d5523ec4ee54a1b8c3bbeef97aafbd6090ed9",
   "returncode": 0,
   "runner_os": "macOS-15.7.7-arm64-arm-64bit-Mach-O",
@@ -22,7 +22,7 @@
     "upstreams/taste-skill/skills/redesign-skill": "1fd74922e6bb2011c7c0d82aefd70d0cc1dbd31bd904054bec3f6cae4d731b90",
     "upstreams/taste-skill/skills/taste-skill": "40ef50925b446e08a4ad5cead8edeb98f48982eb498b0073fe6a0b27ea736769"
   },
-  "source_commit": "199277d062137971ffadc0e1c47ec013ba03b4bc",
+  "source_commit": "0b4231e2da09252076e401b7203fbcd2f5698b23",
   "source_fingerprints": {
     "upstreams/taste-skill/skills/redesign-skill": {
       "kind": "tree",
@@ -41,15 +41,15 @@
     "upstreams/taste-skill/skills/redesign-skill": "1fd74922e6bb2011c7c0d82aefd70d0cc1dbd31bd904054bec3f6cae4d731b90",
     "upstreams/taste-skill/skills/taste-skill": "40ef50925b446e08a4ad5cead8edeb98f48982eb498b0073fe6a0b27ea736769"
   },
-  "started_at": "2026-07-25T10:04:51Z",
+  "started_at": "2026-07-26T04:00:37Z",
   "stderr_bytes": 0,
   "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
   "thinking": "high",
   "thinking_observation": "requested_by_cli",
-  "timeout_seconds": 600,
+  "timeout_seconds": 900,
   "variant": "taste",
   "workspace_kind": "repo_external_isolated_project",
-  "worktree_after_sha256": "92f86b8954f46e46bd8e13c6d1d1dc1fdff6e7cc1a0027571b440c394d89cc75",
-  "worktree_before_sha256": "92f86b8954f46e46bd8e13c6d1d1dc1fdff6e7cc1a0027571b440c394d89cc75",
+  "worktree_after_sha256": "5ff1cf4ed8707c5d146986e08f2467deb7fa6a5c2dc81abc0529ada4fec4540d",
+  "worktree_before_sha256": "5ff1cf4ed8707c5d146986e08f2467deb7fa6a5c2dc81abc0529ada4fec4540d",
   "worktree_unchanged": true
 }

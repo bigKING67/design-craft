@@ -4,11 +4,11 @@
   "hosts": {
     "codex": {
       "status": "observed",
-      "reason": "Current-source score-v5/run-v3 recorded from clean source commit 199277d for behavior domain skill-motion-review and projection ccb3d1f2059d."
+      "reason": "Current-source score-v5/run-v3 recorded from clean source commit 03c14ae for behavior domain skill-motion-review and projection f62a193ff3a9."
     },
     "pi": {
       "status": "observed",
-      "reason": "Current-source score-v5/run-v3 recorded from clean source commit 199277d for behavior domain skill-motion-review and projection ccb3d1f2059d."
+      "reason": "Current-source score-v5/run-v3 recorded from clean source commit 03c14ae for behavior domain skill-motion-review and projection f62a193ff3a9."
     },
     "cursor": {
       "status": "pending",
