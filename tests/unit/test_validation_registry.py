@@ -34,6 +34,8 @@ PORTABLE_PARALLEL_GATES = (
     "route-pack-self-check",
     "maturity-self-check",
     "unit-tests",
+    "integration-tests",
+    "adversarial-tests",
 )
 
 CONTRACT_GATES = (
@@ -47,6 +49,9 @@ CONTRACT_GATES = (
     "github-checks-self-check",
     "github-governance-self-check",
     "unit-tests",
+    "integration-tests",
+    "adversarial-tests",
+    "installer-contract-tests",
 )
 
 
@@ -66,14 +71,22 @@ class ValidationRegistryTests(unittest.TestCase):
         self.assertTrue(all(gate.execution == "parallel" for gate in gates))
         self.assertEqual(profile_contract_errors(gates, "contracts"), [])
 
-    def test_profile_contract_rejects_missing_bootstrap_gate(self) -> None:
-        gates = tuple(
-            gate
-            for gate in select_gates(load_registry(), "portable")
-            if gate.gate_id != "unit-tests"
-        )
-        errors = profile_contract_errors(gates, "portable")
-        self.assertTrue(any("unit-tests" in error for error in errors))
+    def test_profile_contract_rejects_missing_bootstrap_test_gate(self) -> None:
+        for missing_gate_id in (
+            "unit-tests",
+            "integration-tests",
+            "adversarial-tests",
+        ):
+            with self.subTest(missing_gate_id=missing_gate_id):
+                gates = tuple(
+                    gate
+                    for gate in select_gates(load_registry(), "portable")
+                    if gate.gate_id != missing_gate_id
+                )
+                errors = profile_contract_errors(gates, "portable")
+                self.assertTrue(
+                    any(missing_gate_id in error for error in errors)
+                )
 
     def test_duplicate_gate_ids_fail(self) -> None:
         payload = {

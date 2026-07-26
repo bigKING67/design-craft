@@ -98,6 +98,13 @@ runs independent source gates through a bounded worker pool, then runs
 development maturity only after every source gate passes. `make contract-tests`
 selects the contract-only view from the same registry.
 
+Test ownership is explicit in that registry: `tests/unit`, `tests/integration`,
+and `tests/adversarial` run as independent source lanes. The slower installer
+transaction suite lives at `tests/contract/test_installer.py`; the contracts
+profile selects it directly, while portable and release profiles run it once
+inside standalone-complete development maturity. Do not add it back to general
+test discovery or select it twice in the same profile.
+
 Structured validation output uses `design-craft.validation-run.v2`:
 `duration_ms` is observed wall time, while `gate_duration_sum_ms` is the sum of
 individual process durations and may be greater than wall time when gates run

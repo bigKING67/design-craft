@@ -390,8 +390,8 @@ def build_score(root: Path, run_smoke: bool) -> list[Dimension]:
                 (has(root, "scripts/design_craft_workflow_validate.py"), "workflow and native runner contract validator exists", "Add a dedicated workflow pinning and native runner validator."),
                 (has(root, "scripts/design_craft_lint.py") and "contract-tests:" in read_text(root / "Makefile"), "dependency-free lint and contract-test lanes exist", "Add dedicated syntax/data lint and isolated contract-test targets."),
                 (
-                    has(root, "tests/integration/test_installer.py")
-                    and "TemporaryDirectory" in read_text(root / "tests/integration/test_installer.py"),
+                    has(root, "tests/contract/test_installer.py")
+                    and "TemporaryDirectory" in read_text(root / "tests/contract/test_installer.py"),
                     "installer integration uses isolated install roots",
                     "Verify install, locking, and rollback behavior in temporary roots.",
                 ),

@@ -164,9 +164,30 @@
     },
     {
       "id": "unit-tests",
-      "command": ["python3", "-m", "unittest", "discover", "-s", "tests", "-p", "test_*.py"],
+      "command": ["python3", "-m", "unittest", "discover", "-s", "tests/unit", "-p", "test_*.py"],
       "profiles": ["contracts", "portable", "local", "operational-release", "certified-release"],
       "timeout_seconds": 600,
+      "execution": "parallel"
+    },
+    {
+      "id": "integration-tests",
+      "command": ["python3", "-m", "unittest", "discover", "-s", "tests/integration", "-p", "test_*.py"],
+      "profiles": ["contracts", "portable", "local", "operational-release", "certified-release"],
+      "timeout_seconds": 600,
+      "execution": "parallel"
+    },
+    {
+      "id": "adversarial-tests",
+      "command": ["python3", "-m", "unittest", "discover", "-s", "tests/adversarial", "-p", "test_*.py"],
+      "profiles": ["contracts", "portable", "local", "operational-release", "certified-release"],
+      "timeout_seconds": 600,
+      "execution": "parallel"
+    },
+    {
+      "id": "installer-contract-tests",
+      "command": ["python3", "-m", "unittest", "tests.contract.test_installer"],
+      "profiles": ["contracts"],
+      "timeout_seconds": 180,
       "execution": "parallel"
     },
     {
@@ -199,7 +220,9 @@
         "install-verifier-self-check",
         "route-pack-self-check",
         "maturity-self-check",
-        "unit-tests"
+        "unit-tests",
+        "integration-tests",
+        "adversarial-tests"
       ]
     },
     {

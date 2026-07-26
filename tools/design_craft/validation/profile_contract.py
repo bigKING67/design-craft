@@ -12,12 +12,22 @@ SOURCE_BOOTSTRAP_GATES = frozenset(
         "public-repository",
         "workflow-contract",
         "unit-tests",
+        "integration-tests",
+        "adversarial-tests",
         "development-maturity",
     }
 )
 
 REQUIRED_GATES = {
-    "contracts": frozenset({"workflow-contract", "unit-tests"}),
+    "contracts": frozenset(
+        {
+            "workflow-contract",
+            "unit-tests",
+            "integration-tests",
+            "adversarial-tests",
+            "installer-contract-tests",
+        }
+    ),
     "portable": SOURCE_BOOTSTRAP_GATES,
     "local": SOURCE_BOOTSTRAP_GATES | {"install-provenance"},
     "operational-release": SOURCE_BOOTSTRAP_GATES

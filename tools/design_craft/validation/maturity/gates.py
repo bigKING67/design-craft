@@ -80,7 +80,7 @@ STATIC_GATES: dict[str, GateRunner] = {
             sys.executable,
             "-m",
             "unittest",
-            "tests.integration.test_installer",
+            "tests.contract.test_installer",
         ],
         timeout=180,
     ),

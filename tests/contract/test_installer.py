@@ -12,7 +12,7 @@ from pathlib import Path
 from tools.design_craft.repo import REPO_ROOT
 
 
-class InstallerIntegrationTests(unittest.TestCase):
+class InstallerContractTests(unittest.TestCase):
     def _bash_executable(self, environment: dict[str, str]) -> str:
         configured = environment.get("DESIGN_CRAFT_BASH", "").strip()
         executable = shutil.which(configured or "bash")

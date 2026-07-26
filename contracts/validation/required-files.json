@@ -104,7 +104,7 @@
     "skills/design-craft/scripts/design_craft_taste_review.sh",
     "tests/adversarial/test_route_pack_paths.py",
     "tests/contract/test_upstream_review_issue.cjs",
-    "tests/integration/test_installer.py",
+    "tests/contract/test_installer.py",
     "tests/integration/test_evaluation_cli.py",
     "tests/integration/test_native_bundle_cli.py",
     "tests/integration/test_release_certification_cli.py",
