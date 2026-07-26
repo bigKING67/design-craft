@@ -16,7 +16,7 @@ def validate_output(task_dir: Path, host: str) -> list[str]:
     lowered = text.lower()
     required_concepts = {
         "evidence": ("evidence", "证据"),
-        "unverified": ("unverified", "未验证"),
+        "unverified": ("unverified", "未验证", "未确认"),
         "design move": (
             "design move",
             "设计动作",

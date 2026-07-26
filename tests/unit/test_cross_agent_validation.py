@@ -60,16 +60,20 @@ def copy_definition_fixture(destination: Path) -> None:
 
 class CrossAgentValidationTests(unittest.TestCase):
     def test_localized_output_concepts_are_accepted(self) -> None:
-        with tempfile.TemporaryDirectory() as temp_dir:
-            task_dir = Path(temp_dir)
-            (task_dir / "codex-output.md").write_text(
-                "证据、未验证边界和具体设计改动。" * 40,
-                encoding="utf-8",
-            )
+        for boundary_label in ("未验证", "未确认"):
+            with (
+                self.subTest(boundary_label=boundary_label),
+                tempfile.TemporaryDirectory() as temp_dir,
+            ):
+                task_dir = Path(temp_dir)
+                (task_dir / "codex-output.md").write_text(
+                    f"证据、{boundary_label}边界和具体设计改动。" * 40,
+                    encoding="utf-8",
+                )
 
-            errors = validate_output(task_dir, "codex")
+                errors = validate_output(task_dir, "codex")
 
-        self.assertEqual(errors, [])
+            self.assertEqual(errors, [])
 
     def test_observed_hosts_requires_output_and_score_pair(self) -> None:
         with tempfile.TemporaryDirectory() as temp_dir:
