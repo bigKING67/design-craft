@@ -7,6 +7,8 @@ import tempfile
 import unittest
 from pathlib import Path
 
+from tests.bash_support import bash_command
+
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 DETECTOR = REPO_ROOT / "upstreams/impeccable/skill/scripts/detect.mjs"
@@ -93,13 +95,12 @@ def run_wrapper(detector: Path, *args: str) -> subprocess.CompletedProcess[str]:
     env = os.environ.copy()
     env["DESIGN_CRAFT_IMPECCABLE_DETECTOR"] = str(detector)
     return subprocess.run(
-        [
-            "bash",
-            str(WRAPPER),
+        bash_command(
+            WRAPPER,
             "--target",
             str(FIXTURES / "rounded-none-pass.tsx"),
             *args,
-        ],
+        ),
         cwd=REPO_ROOT,
         env=env,
         capture_output=True,

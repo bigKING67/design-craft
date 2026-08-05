@@ -118,6 +118,7 @@
     "skills/design-craft/scripts/design_craft_route_runtime.py",
     "skills/design-craft/scripts/design_craft_taste_review.sh",
     "tests/adversarial/test_route_pack_paths.py",
+    "tests/bash_support.py",
     "tests/contract/test_upstream_review_issue.cjs",
     "tests/contract/test_installer.py",
     "tests/integration/test_evaluation_cli.py",

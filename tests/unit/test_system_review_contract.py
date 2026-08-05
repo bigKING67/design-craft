@@ -5,6 +5,8 @@ import subprocess
 import unittest
 from pathlib import Path
 
+from tests.bash_support import bash_command
+
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 SKILL_ROOT = REPO_ROOT / "skills/design-craft"
@@ -90,9 +92,8 @@ class SystemReviewContractTests(unittest.TestCase):
 
     def test_cli_accepts_system_review_mode(self) -> None:
         result = subprocess.run(
-            [
-                "bash",
-                str(PASS_SCRIPT),
+            bash_command(
+                PASS_SCRIPT,
                 "--target",
                 str(SKILL_ROOT),
                 "--mode",
@@ -100,7 +101,7 @@ class SystemReviewContractTests(unittest.TestCase):
                 "--skip-route",
                 "--skip-detector",
                 "--skip-score",
-            ],
+            ),
             cwd=REPO_ROOT,
             capture_output=True,
             text=True,
@@ -114,7 +115,7 @@ class SystemReviewContractTests(unittest.TestCase):
         self.assertIn("pass, blocked, or incomplete", result.stdout)
 
         help_result = subprocess.run(
-            ["bash", str(PASS_SCRIPT), "--help"],
+            bash_command(PASS_SCRIPT, "--help"),
             cwd=REPO_ROOT,
             capture_output=True,
             text=True,
@@ -125,7 +126,7 @@ class SystemReviewContractTests(unittest.TestCase):
 
     def test_cli_still_rejects_unknown_mode(self) -> None:
         result = subprocess.run(
-            ["bash", str(AUDIT_SCRIPT), "--mode", "system-review-unknown"],
+            bash_command(AUDIT_SCRIPT, "--mode", "system-review-unknown"),
             cwd=REPO_ROOT,
             capture_output=True,
             text=True,

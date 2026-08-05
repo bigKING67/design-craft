@@ -83,6 +83,10 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
+if [[ -n "${DETECTOR}" ]]; then
+  DETECTOR="$(abspath "${DETECTOR}")"
+fi
+
 if [[ -z "${DETECTOR}" ]]; then
   detector_candidates=()
   if [[ -n "${SOURCE_ROOT}" ]]; then

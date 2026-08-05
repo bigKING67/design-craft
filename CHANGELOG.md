@@ -17,6 +17,9 @@ All notable local changes to `design-craft` are recorded here.
   `available_regex_fallback`, or `unavailable`, preserves findings from upstream
   exit code `2`, and never presents a missing optional static HTML/CSS parser as
   full runtime parity.
+- Normalize explicit detector paths inside the wrapper and route Python-driven
+  shell tests through the configured Git Bash executable with POSIX script
+  paths, preserving prototype and system-review CLI coverage on Windows.
 - Add a two-level visual-system consistency contract: every visible UI change
   now closes against its semantic family, project exemplar, same-state
   siblings, applicable interaction states, and themes, while the new
