@@ -4,6 +4,26 @@ All notable local changes to `design-craft` are recorded here.
 
 ## Unreleased
 
+- Selectively absorb current upstream behavior without importing its runtime:
+  pin the Impeccable source detector at `80e4dd0` for style-carrier,
+  comment-safe, versioned-stylesheet, `rounded-none`, retired single-font,
+  YAML-escape, and Blade-suffix correctness; add reference-first fidelity,
+  post-fix verdict, and conditional browser-native surface review; and add a
+  framework-neutral `prototype` mode from Emil's `70744e3` behavior while
+  rejecting fixed picker CSS/wiring, universal visual bans, live/provider/hook
+  runtime, and forced delegation.
+- Make source-detector capability explicit: selected Impeccable behavior is
+  covered at function level, while the wrapper reports `available`,
+  `available_regex_fallback`, or `unavailable`, preserves findings from upstream
+  exit code `2`, and never presents a missing optional static HTML/CSS parser as
+  full runtime parity.
+- Add a two-level visual-system consistency contract: every visible UI change
+  now closes against its semantic family, project exemplar, same-state
+  siblings, applicable interaction states, and themes, while the new
+  `system-review` mode inventories project surfaces, component families, and
+  interaction patterns before a `pass | blocked | incomplete` sign-off.
+  Screenshot presence, geometry/default-style checks, scanners, and successful
+  automation are explicitly insufficient as standalone visual acceptance.
 - Make `contracts/validation/gates.json` the single source of truth for source
   validation. The stable `validate.sh` entry now only preserves portable shell
   setup and optional external validation before delegating to the bounded

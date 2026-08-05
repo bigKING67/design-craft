@@ -88,6 +88,39 @@ COVERAGE = {
             "signals, not law",
             "DEGRADED: single-context",
             "Do not claim dual-agent",
+            "available_regex_fallback",
+            "optional static HTML/CSS parser dependencies unavailable",
+        ],
+    },
+    "detector_correctness": {
+        "paths": [
+            "skills/design-craft/references/impeccable-workflow.md",
+            "tests/unit/test_impeccable_detector_contract.py",
+        ],
+        "terms": [
+            "style carriers",
+            "comment-safe broken-image",
+            "query strings and fragments",
+            "rounded-none",
+            "single-font rule remains retired",
+            "YAML scalar escapes",
+            "Blade compound suffixes",
+            "kicker-above-heading",
+            "contextual signal",
+            "evals/fixtures/impeccable-detector",
+            "function-level",
+        ],
+    },
+    "reference_fidelity_and_verdict": {
+        "paths": ["skills/design-craft/references/system-review.md"],
+        "terms": [
+            "before reading the implementation summary",
+            "acceptable_adaptation",
+            "added_without_approval",
+            "resolved",
+            "partial",
+            "unresolved",
+            "Browser defaults are not automatically defects",
         ],
     },
     "platform_quality": {
@@ -154,6 +187,7 @@ def validate() -> dict:
     errors.extend(state_errors)
 
     main_skill = str(inventory.get("main_skill", ""))
+    command_metadata_path = str(inventory.get("command_metadata", ""))
     expected_commands = inventory.get("commands", [])
     detector_path = str(inventory.get("detector", ""))
     platform_references = inventory.get("platform_references", [])
@@ -162,11 +196,18 @@ def validate() -> dict:
 
     if not main_skill or not (upstream / main_skill).is_file():
         errors.append(f"impeccable main Skill is missing: {main_skill or 'unavailable'}")
-    observed_commands = sorted(
-        path.stem
-        for path in (upstream / "site/content/skills").glob("*.md")
-        if path.is_file()
-    )
+    command_metadata = {}
+    if not command_metadata_path or not (upstream / command_metadata_path).is_file():
+        errors.append(
+            "impeccable command metadata is missing: "
+            f"{command_metadata_path or 'unavailable'}"
+        )
+    else:
+        try:
+            command_metadata = read_json(upstream / command_metadata_path)
+        except (OSError, json.JSONDecodeError) as exc:
+            errors.append(f"impeccable command metadata is invalid: {exc}")
+    observed_commands = sorted([*command_metadata, "impeccable"])
     if observed_commands != sorted(expected_commands):
         errors.append(
             "impeccable command inventory drift: "
@@ -174,6 +215,12 @@ def validate() -> dict:
         )
     if set(command_decisions) != set(expected_commands):
         errors.append("command_decisions must cover every impeccable command exactly once")
+    for command in expected_commands:
+        if command == "impeccable":
+            continue
+        reference = upstream / f"skill/reference/{command}.md"
+        if not reference.is_file():
+            errors.append(f"impeccable command reference is missing: /{command}")
     for command, decision in command_decisions.items():
         if decision not in DECISION_STATUSES:
             errors.append(f"/{command}: invalid absorption decision {decision!r}")
@@ -252,6 +299,7 @@ def validate() -> dict:
         "upstream": {
             **state,
             "main_skill": main_skill,
+            "command_metadata": command_metadata_path,
             "command_count": len(observed_commands),
             "commands": observed_commands,
             "detector": detector_path,
@@ -271,6 +319,8 @@ def self_check() -> None:
         "hardening_and_performance",
         "production_audit_discipline",
         "detector_and_evidence",
+        "detector_correctness",
+        "reference_fidelity_and_verdict",
         "platform_quality",
         "design_system_corrections",
         "latest_judgment",

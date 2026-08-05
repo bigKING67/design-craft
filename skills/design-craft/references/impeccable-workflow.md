@@ -10,6 +10,8 @@ remaining inside this user's local Codex workflow.
 - [Direction and craft floor](#direction-and-craft-floor)
 - [Critique pass](#critique-pass)
 - [Audit dimensions](#audit-dimensions)
+- [Prototype pass](#prototype-pass)
+- [System review pass](#system-review-pass)
 - [Polish pass](#polish-pass)
 - [Harden pass](#harden-pass)
 - [Optimize pass](#optimize-pass)
@@ -26,6 +28,11 @@ remaining inside this user's local Codex workflow.
   when code changes are not yet requested.
 - `audit`: measurable quality check. Use for accessibility, responsiveness,
   performance, theming, and anti-patterns.
+- `prototype`: explicit, isolated divergence for one UI piece before a user or
+  explicitly delegated selection; follow `prototype-workflow.md`.
+- `system-review`: read-only system-consistency review. Use for whole-product or
+  multi-page work, shared visual/interaction systems, or a known consistency
+  regression; follow `system-review.md`.
 - `polish`: final refinement on a functionally complete UI.
 - `harden`: real-world resilience: error states, loading states, long text,
   empty states, i18n, permissions, offline, overflow, slow networks.
@@ -127,6 +134,35 @@ latency. Unless the source itself guarantees task failure at the stated scale,
 keep an unmeasured render/filter/asset hot path at P1 and promote it to P0 only
 after target-runtime evidence shows a release-blocking regression.
 
+## Prototype pass
+
+Use `prototype` only for an explicit exploration request. Keep production code
+unchanged while building an isolated surface, default to three genuinely
+different product-relevant axes, show one realistic interactive variant at a
+time, and verify the applicable runtime before asking for a selection. Do not
+copy an upstream picker visual/runtime contract. Promotion and cleanup follow
+`prototype-workflow.md` after explicit user selection or explicit delegated
+selection authority.
+
+## System review pass
+
+Use `system-review` when a critique of one screenshot or an audit of isolated
+properties cannot establish project-level consistency. It inventories the
+declared surfaces, semantic component families, interaction patterns,
+applicable states, and themes, then reviews visual, interaction, and motion
+systems through one finding ledger.
+
+Every visible UI change still receives the lightweight completion gate from
+`system-review.md`; the full mode is an escalation, not a replacement for clear
+scope. It finishes with `pass`, `blocked`, or `incomplete` and never invents a
+second numeric score.
+
+When an approved reference exists, inventory its salient elements directly
+before reading any builder-authored summary and use the fidelity matrix in
+`system-review.md`. After fixes, score the original findings as `resolved`,
+`partial`, or `unresolved`; a successful recapture is evidence input, not a
+visual verdict, and the verification pass must not reopen an unrelated hunt.
+
 ## Polish pass
 
 Polish only after the UI works. Check:
@@ -179,3 +215,44 @@ node upstreams/impeccable/skill/scripts/detect.mjs --json <target>
 In normal user projects, prefer local project validation first. Treat detector
 findings as signals, not law. Project `DESIGN.md` can intentionally allow
 patterns that generic detector rules dislike; document such exceptions.
+
+The source-repo detector compatibility pin includes focused correctness fixes:
+
+- page-level CSS patterns scan actual style carriers rather than comments,
+  prose, or code samples;
+- comment-safe broken-image scanning does not hide later real JSX;
+- local linked stylesheets remain visible through query strings and fragments;
+- `rounded-none` does not create a false rounded-border-accent finding;
+- the single-font rule remains retired because one family can still create
+  hierarchy through size, weight, width, and optical treatment;
+- quoted YAML scalar escapes in `DESIGN.md` parse predictably;
+- Blade compound suffixes such as `.blade.php` remain scannable without
+  broadening traversal to unrelated module extensions.
+
+These selected behaviors are pinned by local fixtures under
+`evals/fixtures/impeccable-detector` and function-level source tests. Those
+tests prove the selected source functions; they do not prove that the full
+static HTML/CSS detector CLI is executable in the current host.
+
+The full source-checkout static engine additionally resolves `htmlparser2`,
+`css-select`, `css-tree`, and `domutils`. Design Craft does not install or
+vendor those packages. When they are absent, `design_craft_detect.sh` still
+runs the upstream regex scan but reports
+`upstream_detector_status: available_regex_fallback`, `degraded: true`, and
+`optional static HTML/CSS parser dependencies unavailable` in human output and
+the equivalent fields in `--full-json`. The raw-compatible `--json-only` mode
+contains only upstream output and therefore cannot disclose wrapper capability;
+use default or `--full-json` output when capability provenance matters.
+An `available` status means the wrapper found an invocable detector and no
+known source-checkout parser gap. When that source static engine exists, its
+dependency probe passed; the status still does not prove that a particular HTML
+target or every static rule was exercised.
+
+The upstream `kicker-above-heading` result is still only a contextual signal
+here, not an absolute ban: semantic need, brand/editorial authority, repetition,
+and the rendered hierarchy decide whether an eyebrow or kicker is a defect.
+
+The source checkout uses its locked detector first. An installed host may fall
+back to a separately installed Impeccable detector and can therefore expose an
+older rule set; source-pin and function-level verification must not be reported
+as installed-host detector parity or full static-engine runtime parity.

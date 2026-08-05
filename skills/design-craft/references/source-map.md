@@ -52,24 +52,31 @@ preflight thinking.
 - License: Apache-2.0
 - Canonical provenance path: `upstreams/impeccable`
 - Pinned compatibility commit:
-  `630fc2682a5bd39b25a8e61f74b6b3f14f2b1e21`
+  `80e4dd0d581fcdb42be62252b7bc07dcd2238330`
 - Selected-behavior boundary:
-  `8634c538fbf860fcdd2a54c31676beb78a44eff4`
+  `80e4dd0d581fcdb42be62252b7bc07dcd2238330`
 - Cumulative status: `selective_absorbed` for the command taxonomy,
   brief/change-scope authority, surface modes, craft floor, applicable scoring,
-  detector/native guidance, hardening, measurement, evidence contracts, and
-  at-most-two batched rendered-verification passes.
+  detector/native guidance and correctness, reference-first fidelity,
+  post-fix verdicts, hardening, measurement, evidence contracts, and bounded
+  rendered-verification passes.
 - Contract: `docs/impeccable-absorption.md`, validated by
   `scripts/design_craft_impeccable_absorption.py` in the canonical repository.
+- Detector evidence boundary: local function-level fixtures prove selected
+  behavior at the compatibility pin. Full source-checkout static HTML/CSS
+  execution additionally requires `htmlparser2`, `css-select`, `css-tree`, and
+  `domutils`; the wrapper reports `available_regex_fallback` and degraded output
+  when those packages are absent. This is separate from installed-host parity.
 - Stable boundary: random concept selection, forced delegation, upstream
-  live/provider/hooks runtime, full detector/vendor bundles, generated provider
-  copies, promotional tone, and universal ecosystem prescriptions remain
-  outside the baseline.
+  live/provider/hooks runtime, generated provider copies, promotional tone,
+  forced reviewers/delegation, absolute visual bans, and universal ecosystem
+  prescriptions remain outside the baseline.
 - Primary material to inspect:
-  - `.agents/skills/impeccable/SKILL.md`
-  - `site/content/skills/*.md`
-  - `site/content/reference/detector.md`
+  - `skill/SKILL.src.md`
+  - `skill/scripts/command-metadata.json`
+  - `skill/reference/*.md`
   - `skill/scripts/detect.mjs`
+  - `cli/engine/engines/`
   - `cli/engine/rules/checks.mjs`
 
 Use this upstream for command taxonomy, audit/polish/harden/optimize/live
@@ -84,9 +91,10 @@ production-readiness flows.
 - Pinned compatibility commit:
   `7bb7061b5cf7de15ea1aeaf00fbd9e6592a20fce`
 - Selected-behavior boundary:
-  `d62b0d8f9a8eb795a512b76239bb873ab9ac7cd5`
-- Cumulative status: `selective_absorbed`; the motion-opportunity gate is local,
-  while the opinionated library picker and Base UI-only prescription are
+  `70744e3816f1d93eafb697161a8b880a7384c5ff`
+- Cumulative status: `selective_absorbed`; the motion-opportunity gate and
+  calibrated prototype workflow are local, while the opinionated library
+  picker, fixed picker visual/runtime, and Base UI-only prescription are
   intentionally rejected.
 - Stable selected behavior: original design-craft references cover
   product-design principles, Apple-style direct manipulation,
@@ -94,8 +102,9 @@ production-readiness flows.
   momentum projection, rubber-banding, accessibility variants, and optical
   typography.
 - Stable boundary: absolute heuristics remain calibrated by project authority
-  and runtime evidence; opinionated library substitution and README-only
-  provenance do not enter the installed behavior layer.
+  and runtime evidence; opinionated library substitution, fixed picker
+  markup/CSS/wiring, and README-only provenance do not enter the installed
+  behavior layer.
 - Primary material to inspect:
   - `skills/emil-design-eng/SKILL.md`
   - `skills/apple-design/SKILL.md`
@@ -105,13 +114,15 @@ production-readiness flows.
   - `skills/improve-animations/AUDIT.md`
   - `skills/improve-animations/PLAN-TEMPLATE.md`
   - `skills/animation-vocabulary/SKILL.md`
+  - reviewed remote `skills/prototype/SKILL.md` and `PICKER.md` at `70744e3`
 
 Use this upstream for motion purpose, frequency-based animation decisions,
 easing and duration standards, origin-aware physicality, interruptibility,
 gesture craft, animation performance, reduced-motion behavior, strict motion
 reviews, codebase-wide audit-to-plan workflows, and animation vocabulary. Do
-not absorb standalone tone or unqualified framework/performance claims; keep
-the local `design-craft` voice evidence-led, measured, and project-aware.
+not absorb standalone tone, fixed prototype chrome, or unqualified
+framework/performance claims; keep the local `design-craft` voice evidence-led,
+measured, and project-aware.
 In the canonical source repository, see `docs/emilkowalski-absorption.md` for
 the capability-level status matrix, including deliberate rejections and
 contextual partial coverage.
@@ -174,6 +185,22 @@ developer-product templates as a comparison baseline for missing system pieces.
   figure/ground, similarity, continuity, closure, and economy.
 - `references/design-move-library.md`: original action library that translates
   recurring critique patterns into concrete UI moves and acceptance criteria.
+- `references/system-review.md`: original two-level consistency contract for
+  semantic component families, project exemplars, sibling same-state
+  comparison, surface and interaction inventories, state/theme coverage, one
+  finding ledger, and `pass | blocked | incomplete` sign-off.
+- `references/prototype-workflow.md`: local calibration of the reviewed Emil
+  prototype idea into a framework-neutral, authority-preserving exploration,
+  explicit selection, promotion, and cleanup contract.
+- `evals/product-ui-taste/prototype-divergence/`: project-neutral golden
+  contract proving distinct product-relevant axes and the no-promotion-before-
+  selection boundary without claiming rendered UI evidence.
+- `evals/fixtures/impeccable-detector/`: local positive/negative detector
+  correctness fixtures for style carriers, comments, versioned stylesheets,
+  rounded-none, retired single-font behavior, YAML escapes, and Blade suffixes.
+- `evals/product-ui-taste/system-consistency-toolbar/`: project-neutral golden
+  fixture for detecting an inconsistent compact-toolbar component family
+  without redistributing a product screenshot or project data.
 - `evals/product-ui-taste/material-ops-home/`: first screenshot-derived
   calibration case for a clean but generic operations dashboard.
 - `evals/product-ui-taste/live-browser-samples/`: L2 browser evidence

@@ -23,12 +23,14 @@ COMPATIBILITY_PATH = ROOT / "skills/design-craft/COMPATIBILITY.json"
 LATEST_RANGE_ENTRYPOINT_DECISIONS = {
     "find-animation-opportunities": "absorbed",
     "pick-ui-library": "intentionally_rejected",
+    "prototype": "absorbed",
 }
 LATEST_RANGE_COVERAGE = {
     "paths": [
         "skills/design-craft/references/motion-quality.md",
         "skills/design-craft/references/motion-audit-planning.md",
         "skills/design-craft/references/motion-vocabulary.md",
+        "skills/design-craft/references/prototype-workflow.md",
     ],
     "terms": [
         "Motion needs a reason",
@@ -37,6 +39,12 @@ LATEST_RANGE_COVERAGE = {
         "Missed opportunities",
         "Reject duplicates",
         "at most four missed opportunities",
+        "one UI piece per run",
+        "Default to three variants",
+        "isolated prototype surface",
+        "Render one variant at a time",
+        "ready_for_selection",
+        "explicit user selection",
     ],
 }
 
@@ -282,6 +290,7 @@ def self_check() -> None:
     if LATEST_RANGE_ENTRYPOINT_DECISIONS != {
         "find-animation-opportunities": "absorbed",
         "pick-ui-library": "intentionally_rejected",
+        "prototype": "absorbed",
     }:
         raise RuntimeError("latest-range entrypoint decisions drifted")
 

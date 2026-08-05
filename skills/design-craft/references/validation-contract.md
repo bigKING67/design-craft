@@ -8,6 +8,8 @@ Use this before calling frontend work complete.
 - [Route planner argument hygiene](#route-planner-argument-hygiene)
 - [Browser validation](#browser-validation)
 - [Screenshot evidence](#screenshot-evidence)
+- [Visual review completion](#visual-review-completion)
+- [Prototype validation](#prototype-validation)
 - [Native runtime validation](#native-runtime-validation)
 - [Design-system validation](#design-system-validation)
 - [Evidence boundaries](#evidence-boundaries)
@@ -40,13 +42,21 @@ For the `design-craft` source repo itself, use:
 - `scripts/design_craft_route.sh --target <repo> --surface <surface> --intent <intent> --scope <scope>`
 - `scripts/design_craft_platform_scan.py --target <repo> --platform auto --json`
   for platform inference and conservative native source findings.
-- `scripts/design_craft_pass.sh --target <repo> --mode <critique|audit|polish|motion|harden|optimize|structure|architecture>`
+- `scripts/design_craft_pass.sh --target <repo> --mode <critique|audit|prototype|system-review|polish|motion|harden|optimize|structure|architecture>`
   as the preferred neutral pass wrapper.
-- `scripts/design_craft_audit.sh --target <repo> --mode <critique|audit|polish|motion|harden|optimize|structure|architecture>`
+- `scripts/design_craft_audit.sh --target <repo> --mode <critique|audit|prototype|system-review|polish|motion|harden|optimize|structure|architecture>`
   as the compatibility entrypoint behind the pass wrapper.
 - `scripts/design_craft_detect.sh --target <path>` for upstream Impeccable
-  findings plus local design-craft review signals; use `--json-only` only when
-  raw upstream detector compatibility is required.
+  findings plus local design-craft review signals. Default and `--full-json`
+  output disclose whether the upstream detector is `available`,
+  `available_regex_fallback`, or `unavailable`; the fallback is degraded because
+  optional static HTML/CSS parser dependencies are absent. Use `--json-only`
+  only when raw upstream detector compatibility is required, because raw output
+  intentionally omits wrapper capability metadata. `available` means the
+  wrapper found an invocable detector and no known source-checkout parser gap;
+  when that source static engine is present, its dependency probe passed. This
+  does not by itself prove that a particular HTML target or every static rule
+  was exercised.
 - `scripts/design_craft_seed_design.sh --target <project-dir>` when a new or
   weak developer-product surface needs the bundled original `DESIGN.md`
   pair as its initial design-system authority.
@@ -165,6 +175,68 @@ before/after evals, `scripts/design_craft_l4_capture.py --dry-run` may produce a
 TMWD-first capture plan, and the non-dry-run Chrome-headless fallback may write
 repo-external PNG artifacts plus `screenshots.json`; neither path verifies
 interaction states unless separate state evidence is captured.
+
+## Visual review completion
+
+Every visible UI change must complete the lightweight consistency gate in
+`system-review.md` before delivery. This is required even when the change is too
+small to justify a full project-system inventory. The gate identifies the
+semantic component family and project exemplar, compares sibling or equivalent
+controls in the same applicable states, covers project themes when applicable,
+and ends with `pass`, `blocked`, or `incomplete`.
+
+When an approved comp, screenshot, or reference is authoritative, inspect it
+directly and inventory its salient elements before reading the builder's
+summary. Classify each applicable element as `match`,
+`acceptable_adaptation`, `missing`, `contradicted`, or
+`added_without_approval`. An adaptation must cite accessibility, responsive,
+product, platform, safety, or explicit user-approval evidence.
+
+Run the full `system-review` mode for whole-product or multi-page work,
+design/visual/interaction/motion system changes, cross-family changes, explicit
+system-level requests, or a known visual-language consistency regression. Do
+not use the full mode merely to make a micro change look more rigorously tested.
+
+When the host route exposes staged visual-review fields, consume them directly:
+
+- `visual_review_mode=baseline_only` requires the baseline stage;
+- `visual_review_mode=before_after` requires baseline and final stages;
+- `visual_review_mode=final_only` requires the final stage;
+- `final_visual_review_required=true` makes the final Design Craft closeout
+  mandatory after rendered capture and before delivery;
+- `visual_review_blocks_delivery=true` keeps unresolved P0/P1 findings from
+  being reported as complete.
+
+Screenshot attachment is not visual review. DOM geometry, target size, default
+computed styles, scanner output, and test success are supporting evidence, not
+system-consistency acceptance. A required state, theme, platform, or surface
+that lacks decisive evidence keeps the status `incomplete`; a confirmed
+unresolved P0/P1 keeps it `blocked`.
+
+After fixes, revisit the original finding IDs and label each `resolved`,
+`partial`, or `unresolved` from the same decisive routes, viewports, states,
+themes, and references. A recapture or builder summary cannot by itself prove
+resolution, and verification must not restart an unbounded defect hunt.
+
+For web controls, visible keyboard focus remains mandatory. Text selection,
+caret, underline offset, tabular numerals, and scrollbar styling are reviewed
+when the project authority or changed surface owns them; browser defaults are
+not automatic defects and universal custom styling is not required.
+
+## Prototype validation
+
+The `prototype` mode follows `prototype-workflow.md`. A plan or static golden
+fixture can validate the workflow contract but cannot prove a runnable variant.
+Before reporting `ready_for_selection`, verify every candidate in the
+applicable browser/native runtime with the same realistic content and context,
+one full-size evaluation view at a time, decisive interactions, keyboard/input
+and focus behavior, required themes/viewports/states, and Reduced Motion.
+
+Keep prototype exploration files separate from production files. Production
+promotion requires explicit user selection or prior explicit delegated
+selection, then the normal implementation ladder plus the lightweight
+system-consistency closeout. Report cleanup as verified only after inspecting
+the prototype route/story/preview/import boundary.
 
 ## Native runtime validation
 
@@ -285,6 +357,11 @@ report:
 - `preflight_status` and `preflight_code`
 - `browser_validation_required`
 - `browser_screenshot_required`
+- `visual_review_mode`
+- `baseline_visual_review_required`
+- `final_visual_review_required`
+- `visual_review_contract`
+- `visual_review_blocks_delivery`
 - `preferred_screenshot_tool`
 - `screenshot_validation_plan`
 - `directory_governance_required`
@@ -298,6 +375,9 @@ Never say a subagent was enabled unless it actually spawned. Never say browser
 validation passed unless a browser tool verified the target.
 Never say screenshot validation passed unless `browser_screenshot_ops` or an
 equivalent browser screenshot tool produced artifact path/hash/dimensions.
+Never say visual review passed from screenshot presence alone; report the
+executed review stage, consistency sign-off, unresolved blockers, and missing
+evidence.
 
 ## Quality score
 

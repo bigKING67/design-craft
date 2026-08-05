@@ -1,8 +1,8 @@
-# Emil Kowalski five-skill absorption matrix
+# Emil Kowalski five-skill compatibility and prototype absorption matrix
 
 This document records the deliberate absorption boundary for
 `https://github.com/emilkowalski/skills` at commit
-`e695d13cb298db0f46d5ef05be2ad13fa12908a6`. The compatibility submodule
+`da80201b64de7d608a6dc5f723797ce6c65b692b`. The compatibility submodule
 stays pinned at `7bb7061b5cf7de15ea1aeaf00fbd9e6592a20fce`.
 
 ## Contents
@@ -26,8 +26,8 @@ The pinned compatibility snapshot contains:
 
 Therefore, "copy more source" means adapting Markdown rules and small CSS/JS
 examples. It does not mean vendoring an upstream implementation library that is
-not present. The reviewed remote range adds `find-animation-opportunities` and
-`pick-ui-library`; both receive an explicit decision below. The pristine
+not present. The reviewed remote history adds `find-animation-opportunities`,
+`pick-ui-library`, and `prototype`; all receive an explicit decision below. The pristine
 compatibility source remains available under `upstreams/emilkowalski-skills/`;
 the installed Skill receives only the high-value fusion layer.
 
@@ -105,9 +105,11 @@ the installed Skill receives only the high-value fusion layer.
 | --- | --- | --- | --- |
 | `find-animation-opportunities` | absorbed | `motion-quality.md`, `motion-audit-planning.md`, `motion-vocabulary.md` | Purpose, frequency, speed, function, missed-opportunity, explicit rejection, and bounded-output rules are already represented locally. The local workflow can report that no candidate survives rather than manufacturing motion. |
 | `pick-ui-library` | intentionally-rejected | project dependency authority | Its curated list is a personal library preference, not a stable cross-framework design baseline. Existing dependencies, project constraints, bundle/performance evidence, accessibility, and maintenance cost decide library selection. |
+| `prototype` | absorbed | `prototype-workflow.md`, `prototype` mode, project-neutral golden contract | Keep one-piece scope, named divergence axes, realistic interactive context, isolated non-production exploration, one full-size variant at a time, explicit selection before promotion, and default cleanup. |
+| Fixed picker markup, dark-glass CSS, URL/query wiring, and keyboard implementation | intentionally-rejected | project/framework/CSP/host authority | The harness is accessible infrastructure, not a universal visual system or runtime contract. |
 | Radix UI to Base UI-only prescription | intentionally-rejected | framework-neutral component guidance | `design-craft` supports both when project authority selects them; an upstream wording replacement does not justify ecosystem churn. |
-| README and library-link corrections | provenance-only | pristine upstream history | These edits do not add product behavior. |
-| `f6f79ca..e695d13` README copy cleanup | provenance-only | pristine upstream history | The new tail changes README wording only and adds no runtime or design behavior. |
+| Earlier README and library-link corrections | provenance-only | pristine upstream history | These edits do not add product behavior. |
+| `da80201` README update | provenance-only | pristine upstream history | The follow-up documents the new entrypoint but adds no further behavior. |
 
 ## Auxiliary-file matrix
 
@@ -142,10 +144,11 @@ The local fusion does not copy these as universal truth:
 reviewed remote head.
 
 The cumulative state is now `selective_absorbed`, not an unqualified full-copy
-claim. High-value behavior from the five pinned Skills and the new motion
-opportunity gate is local; the opinionated library picker, Base UI-only
-prescription, promotional text, aggressive review posture, host-policy
-conflicts, decorative recipes, and technically overbroad claims remain
+claim. High-value behavior from the five pinned Skills, the motion opportunity
+gate, and the reviewed prototype workflow is local; the fixed picker
+visual/runtime, opinionated library picker, Base UI-only prescription,
+promotional text, aggressive review posture, host-policy conflicts, decorative
+recipes, and technically overbroad claims remain
 `intentionally-rejected`, `partial`, or `provenance-only`.
 
 Current independent blind evidence is recorded in two cases:

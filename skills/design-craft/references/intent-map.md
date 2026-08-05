@@ -9,6 +9,13 @@ Project evidence still wins: live runtime, scoped `AGENTS.md`, project
 
 ## Visual and taste complaints
 
+- "给我几个真正不同的版本", "先做原型让我选", "prototype": use
+  `prototype`; narrow to one UI piece, preserve project authority, diverge on
+  named layout/density/interaction/disclosure/motion axes, keep exploration
+  isolated from production code, and stop for explicit selection before
+  promotion. Color, copy, icon, or decoration-only swaps are not separate
+  directions; do not copy a fixed picker/runtime contract blindly.
+
 - "太 AI", "模板味", "廉价", "不高级": start with `critique`; read
   `visual-judgment.md`; add `product-ui-taste-review.md` when the user wants a
   score, concrete top issues, or acceptance criteria; then use `polish` or
@@ -27,6 +34,13 @@ Project evidence still wins: live runtime, scoped `AGENTS.md`, project
 - "太挤", "太散", "卡片太多": use `critique` then `polish`; check density,
   grouping, section rhythm, and whether nested-card structure is hiding the
   actual task.
+- "视觉不统一", "同一工具栏风格不一致", "交互语言不一致": read
+  `system-review.md`; use its lightweight completion gate for one local
+  component or section, and use full `system-review` when the mismatch is an
+  observed regression or crosses component families or surfaces.
+- "整体视觉语言 Review", "设计体系 Review", "全站统一一下", "多页面一致性":
+  use full `system-review`; inventory surfaces, semantic component families,
+  interaction patterns, applicable states, and themes before signing off.
 - "动效怪", "花", "晕", "不顺": use `motion`; read
   `motion-quality.md`; add `interaction-physics.md` for gestures; check motion
   purpose, frequency, interruption, performance, and Reduced Motion.
@@ -43,9 +57,12 @@ Project evidence still wins: live runtime, scoped `AGENTS.md`, project
 - "文案弱", "空状态弱", "错误提示泛": use `polish` or `harden`; read
   `design-system-contract.md`; fix action/object labels, recovery copy, empty
   state first action, loading copy, and toast specificity.
-- "看一下哪里有问题", "整体审一下": use `critique` first when the request is
-  subjective; add `product-ui-taste-review.md` for product UI/screenshots; use
-  `audit` when the request asks for measurable release quality.
+- "看一下哪里有问题": use `critique` first when the request is subjective;
+  add `product-ui-taste-review.md` for product UI/screenshots; use `audit` when
+  the request asks for measurable release quality.
+- "整体审一下": use `critique` for one bounded surface, but use
+  `system-review` when "整体" means the product, multiple routes, or its visual
+  and interaction systems.
 - "上线前检查", "生产质量": use `audit` plus `harden`; include browser
   validation for visible UI and route-specific risk.
 

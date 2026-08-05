@@ -23,7 +23,7 @@ Usage:
 
 Options:
   --target <path>     Project, folder, or file to audit.
-  --mode <mode>       critique|audit|polish|motion|motion-plan|harden|optimize|structure|architecture.
+  --mode <mode>       critique|audit|prototype|system-review|polish|motion|motion-plan|harden|optimize|structure|architecture.
   --surface <value>   Route planner surface, default auto.
   --intent <value>    Route planner intent, default auto.
   --scope <value>     Route planner scope, default auto.
@@ -120,7 +120,7 @@ while [[ $# -gt 0 ]]; do
 done
 
 case "${MODE}" in
-  critique|audit|polish|motion|motion-plan|harden|optimize|structure|architecture) ;;
+  critique|audit|prototype|system-review|polish|motion|motion-plan|harden|optimize|structure|architecture) ;;
   *)
     echo "Unknown mode: ${MODE}" >&2
     usage >&2
@@ -229,6 +229,34 @@ EOF
 - Require browser validation for web UI and native runtime validation for iOS/Android/adaptive UI.
 - Require screenshot artifact evidence when route output requires browser screenshots.
 - Static native scans cannot be reported as simulator/emulator or hardware verification.
+EOF
+    ;;
+  prototype)
+    cat <<'EOF'
+- Read references/prototype-workflow.md and narrow the run to one UI piece.
+- Record product/style authority, stack, realistic context, required states, and production files excluded from exploration.
+- Default to three defensible directions with named product-relevant axes; color, copy, icon, spacing, or decoration-only changes are not separate directions.
+- During exploration, write only an isolated prototype surface and local fixtures; do not modify production behavior or shared primitives.
+- Render one variant at a time at usable size in the same realistic context; implement decisive interactions, keyboard/focus, themes, and Reduced Motion.
+- Do not copy a fixed picker, route, query, CSS, or host wiring when it conflicts with project, framework, or CSP authority.
+- Verify runnable variants in the applicable runtime before reporting ready_for_selection; static plans and tests are not rendered evidence.
+- Stop before production promotion until the user provides explicit selection or delegated selection; then integrate, run system-consistency closeout, and clean up the prototype by default.
+EOF
+    ;;
+  system-review)
+    cat <<'EOF'
+- Read references/system-review.md and declare the exact review scope, exclusions, authority, themes, platforms, and evidence baseline.
+- Build a surface/route inventory; do not present representative-route evidence as whole-product coverage.
+- When an approved reference exists, inventory its salient elements directly before reading a builder summary; classify match, acceptable adaptation, missing, contradicted, or added without approval.
+- Build semantic component-family and interaction-pattern inventories with a project exemplar and documented exceptions for each repeated family.
+- Review the visual system, visual language, interaction system, and motion system through one unified finding ledger.
+- Compare sibling or equivalent controls in the same applicable states; do not force unlike semantic roles into identical styling.
+- Complete the component-family x state x theme matrix with verified, not_applicable, unverified, or finding IDs.
+- Review visible focus, and conditionally selection, caret, underline offset, tabular numerals, and scrollbar styling when project authority owns those browser-native surfaces.
+- Treat screenshot attachment, geometry, default computed styles, scanner output, and automated tests as evidence rather than visual acceptance.
+- After fixes, score the original finding IDs resolved, partial, or unresolved from the same decisive evidence; do not restart an unrelated defect hunt.
+- Classify findings as P0/P1/P2/P3 and emit exactly one sign-off: pass, blocked, or incomplete. Unresolved P0/P1 blocks delivery.
+- Keep this review read-only unless the user separately authorizes implementation.
 EOF
     ;;
   polish)

@@ -12,6 +12,8 @@ JSON_ONLY=0
 FULL_JSON=0
 DEGRADED=0
 DETECTOR_STATUS="available"
+DETECTOR_MESSAGE=""
+DETECTOR_EXIT_CODE=""
 
 usage() {
   cat <<'EOF'
@@ -101,6 +103,24 @@ fi
 if [[ -z "${DETECTOR}" || ! -f "${DETECTOR}" ]] || ! command -v node >/dev/null 2>&1; then
   DEGRADED=1
   DETECTOR_STATUS="unavailable"
+  DETECTOR_MESSAGE="Impeccable detector or Node runtime is unavailable"
+else
+  DETECTOR_DIR="$(cd "$(dirname "${DETECTOR}")" && pwd)"
+  STATIC_HTML_ENGINE="${DETECTOR_DIR}/../../cli/engine/engines/static-html/detect-html.mjs"
+  if [[ -f "${STATIC_HTML_ENGINE}" ]] && ! node --input-type=module --eval '
+import { createRequire } from "node:module";
+import { pathToFileURL } from "node:url";
+
+const requireFromEngine = createRequire(pathToFileURL(process.argv[1]));
+for (const dependency of ["htmlparser2", "css-select", "css-tree", "domutils"]) {
+  const resolved = requireFromEngine.resolve(dependency);
+  await import(pathToFileURL(resolved).href);
+}
+' "${STATIC_HTML_ENGINE}" >/dev/null 2>&1; then
+    DEGRADED=1
+    DETECTOR_STATUS="available_regex_fallback"
+    DETECTOR_MESSAGE="optional static HTML/CSS parser dependencies unavailable; source detector is using its regex fallback"
+  fi
 fi
 
 TARGET="$(abspath "${TARGET}")"
@@ -114,10 +134,17 @@ fi
 TMP_JSON="$(mktemp -t design-craft-detect.XXXXXX)"
 trap 'rm -f "${TMP_JSON}"' EXIT
 
-if [[ "${DETECTOR_STATUS}" == "available" ]]; then
+if [[ "${DETECTOR_STATUS}" != "unavailable" ]]; then
+  set +e
   node "${DETECTOR}" --json "${DETECTOR_TARGET}" >"${TMP_JSON}"
+  DETECTOR_EXIT_CODE="$?"
+  set -e
+  if [[ "${DETECTOR_EXIT_CODE}" != "0" && "${DETECTOR_EXIT_CODE}" != "2" ]]; then
+    echo "design-craft detector: upstream detector exited ${DETECTOR_EXIT_CODE}" >&2
+    exit "${DETECTOR_EXIT_CODE}"
+  fi
 else
-  python3 - "${DETECTOR}" <<'PY' >"${TMP_JSON}"
+  python3 - "${DETECTOR}" "${DETECTOR_MESSAGE}" <<'PY' >"${TMP_JSON}"
 import json
 import sys
 
@@ -128,7 +155,7 @@ print(
             "degraded": True,
             "detector_path": sys.argv[1],
             "issues": [],
-            "message": "Impeccable detector or Node runtime is unavailable; portable design-craft scanners still ran.",
+            "message": sys.argv[2],
         },
         ensure_ascii=False,
         indent=2,
@@ -142,7 +169,7 @@ if [[ "${JSON_ONLY}" == "1" ]]; then
   exit 0
 fi
 
-python3 - "${TMP_JSON}" "${TARGET}" "${DETECTOR_TARGET}" "${DETECTOR_NOTE}" "${FULL_JSON}" "${SKILL_ROOT}" "${DETECTOR_STATUS}" "${DEGRADED}" <<'PY'
+python3 - "${TMP_JSON}" "${TARGET}" "${DETECTOR_TARGET}" "${DETECTOR_NOTE}" "${FULL_JSON}" "${SKILL_ROOT}" "${DETECTOR_STATUS}" "${DEGRADED}" "${DETECTOR}" "${DETECTOR_MESSAGE}" "${DETECTOR_EXIT_CODE}" <<'PY'
 import json
 import re
 import subprocess
@@ -158,6 +185,9 @@ full_json = sys.argv[5] == "1"
 skill_root = Path(sys.argv[6])
 detector_status = sys.argv[7]
 degraded = sys.argv[8] == "1"
+detector_path = sys.argv[9]
+detector_message = sys.argv[10]
+detector_exit_code = int(sys.argv[11]) if sys.argv[11] else None
 
 target_path = Path(target)
 scan_root = target_path if target_path.is_dir() else target_path.parent
@@ -514,8 +544,9 @@ if full_json:
                 "degraded": degraded,
                 "upstream_detector": {
                     "status": detector_status,
-                    "path": str(upstream_meta.get("detector_path") or ""),
-                    "message": str(upstream_meta.get("message") or ""),
+                    "path": str(upstream_meta.get("detector_path") or detector_path),
+                    "message": str(upstream_meta.get("message") or detector_message),
+                    "exit_code": detector_exit_code,
                 },
                 "upstream_findings": items,
                 "design_craft_signal_findings": local_signals,
@@ -535,6 +566,10 @@ if detector_note:
 print(f"upstream_detector_findings: {len(items)}")
 print(f"upstream_detector_status: {detector_status}")
 print(f"degraded: {str(degraded).lower()}")
+if detector_message:
+    print(f"upstream_detector_message: {detector_message}")
+if detector_exit_code is not None:
+    print(f"upstream_detector_exit_code: {detector_exit_code}")
 print(f"design_craft_signal_findings: {len(local_signals)}")
 for note in local_notes:
     print(f"design_craft_note: {note}")

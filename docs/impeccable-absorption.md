@@ -2,8 +2,9 @@
 
 This document records the deliberate fusion and runtime boundary for
 `https://github.com/pbakaus/impeccable` at commit
-`d272b9bd5dcfcb52d32482d192d06045ca31c503`. The compatibility submodule stays
-pinned at `630fc2682a5bd39b25a8e61f74b6b3f14f2b1e21`.
+`ae5e95101a6979e7f7973a4ff57680b3c7adc1ec`. The compatibility submodule is
+pinned at `80e4dd0d581fcdb42be62252b7bc07dcd2238330`, the last selected canonical
+detector correctness commit in that reviewed range.
 
 ## Contents
 
@@ -17,14 +18,15 @@ pinned at `630fc2682a5bd39b25a8e61f74b6b3f14f2b1e21`.
 
 ## Inventory truth
 
-The pinned compatibility snapshot exposes one generated Agent Skill,
-twenty-four public command documents, native platform references, a detector,
-and a substantial live-browser/manual-edit/provider/package runtime. The
-reviewed remote head expands that system substantially. `design-craft` absorbs
-only general workflow, judgment, selected detector signals, native quality
-guidance, and production hardening discipline. It deliberately does not vendor
-a second browser runtime or provider/package system beside browser67 and the
-host's existing execution contracts.
+The pinned compatibility snapshot exposes one canonical source Skill, metadata
+for twenty-three public commands plus the umbrella Skill, native platform
+references, a detector, generated multi-host copies, and a substantial
+live-browser/manual-edit/provider/package runtime. `design-craft` executes only
+the stable source detector entrypoint. It absorbs general workflow, judgment,
+selected detector correctness, native quality guidance, production hardening,
+and bounded reference-fidelity review. It deliberately does not vendor or call
+a second browser runtime, hook, forced reviewer, or provider/package system
+beside browser67 and the host's existing execution contracts.
 
 ## Status vocabulary
 
@@ -71,8 +73,13 @@ host's existing execution contracts.
 
 | Capability | Status | Local target |
 | --- | --- | --- |
-| Mechanical pre-scan and deterministic anti-pattern signals | absorbed | `design_craft_detect.sh` invokes `upstreams/impeccable/skill/scripts/detect.mjs` when the source checkout is available |
+| Mechanical pre-scan and deterministic anti-pattern signals | absorbed | `design_craft_detect.sh` invokes `upstreams/impeccable/skill/scripts/detect.mjs` when the source checkout is available and preserves JSON findings even when upstream exits `2` |
+| Style-carrier, comment-safe, linked-stylesheet, `rounded-none`, retired single-font, YAML-escape, and Blade-suffix correctness | absorbed | compatibility pin `80e4dd0`; selected behavior is proven by function-level `test_impeccable_detector_contract.py` coverage and `evals/fixtures/impeccable-detector/` |
+| Source detector capability disclosure | absorbed | default and `--full-json` output distinguish `available`, `available_regex_fallback`, and `unavailable`; raw `--json-only` intentionally has no wrapper metadata |
 | Detector/design-system reconciliation | absorbed | `impeccable-workflow.md`, project authority order, explicit exceptions |
+| Reference-first salient-element inventory and fidelity classification | absorbed | `system-review.md`: direct reference inspection before builder summary; match/adaptation/missing/contradicted/unapproved-added matrix |
+| Post-fix verdict | absorbed | original finding IDs return as resolved/partial/unresolved without a new defect hunt |
+| Browser-native selection/caret/focus/underline/numeral/scrollbar surfaces | partial | focus is required; other surfaces follow project/browser authority and defaults are not automatic defects |
 | Degraded/single-context evidence honesty | absorbed | critique method provenance and no-false-delegation rules |
 | iOS audit/adapt guidance | absorbed | `ios-quality.md`, platform scanner and fixtures |
 | Android audit/adapt guidance | absorbed | `android-quality.md`, platform scanner and fixtures |
@@ -81,13 +88,17 @@ host's existing execution contracts.
 
 ## Latest reviewed range
 
-The latest range after `af78b1e512148e2a2f2d2ded6786d265ea420191`
-through `d272b9bd5dcfcb52d32482d192d06045ca31c503` is `deferred`:
+The latest range after `d272b9bd5dcf52d32482d192d06045ca31c503`
+through `ae5e95101a6979e7f7973a4ff57680b3c7adc1ec` is
+`selective_absorbed`:
 
 | Capability | Status | Local target or boundary |
 | --- | --- | --- |
-| Named-color border and pseudo-element stripe detection | deferred | Valuable detector correctness work; absorb only with local deterministic fixtures instead of advancing the full upstream detector snapshot during release certification. |
-| Hidden/vendor traversal, source-line attribution, and commented-rule filtering | deferred | Review together with the local detector wrapper and adversarial fixtures after the release candidate is stable. |
+| Style-carrier scoping and comment-safe source scanning | absorbed | Pin the canonical detector behavior and prove selected functions do not let documentation/comments hide or create real findings. Full CLI style-carrier execution still requires the static parser packages. |
+| Versioned linked stylesheet, `rounded-none`, retired single-font, YAML scalar escape, and Blade compound-suffix behavior | absorbed | Source detector pin plus function-level positive/negative local fixtures; this is not a claim that every host has the full static engine installed. |
+| Reference-first comp fidelity and post-fix verdict | absorbed | Local `system-review` keeps its `pass | blocked | incomplete` sign-off while adding direct inventory, evidence-backed adaptation, and resolved/partial/unresolved verification. |
+| Text selection, caret, focus, underline offset, tabular numerals, and scrollbar consistency | partial | Focus is mandatory. The remaining browser-native surfaces are conditional and browser defaults are allowed unless project authority says otherwise. |
+| Absolute `kicker-above-heading` ban | intentionally-rejected | The raw detector may emit the signal, but local review applies project `DESIGN.md`, semantic need, repetition, and rendered hierarchy rather than a universal ban. |
 | Terminal live-session checkpoint cleanup | intentionally-rejected | This changes the upstream live runtime, which remains outside the browser67-owned lifecycle boundary. |
 | OpenCode install-path and symlink migration | intentionally-rejected | Provider installation and legacy migration remain outside the canonical Skill package and installer. |
 | Whole-cycle polish ceiling and terminal evidence handoff | absorbed | The existing bounded verification contract already caps repeated visual passes and requires an evidence-labeled final handoff. |
@@ -95,8 +106,8 @@ through `d272b9bd5dcfcb52d32482d192d06045ca31c503` is `deferred`:
 
 ### Cumulative selected boundary
 
-The cumulative absorption state remains `selective_absorbed` through
-`8634c538fbf860fcdd2a54c31676beb78a44eff4`:
+The cumulative absorption state remains `selective_absorbed` through the
+selected behavior boundary `80e4dd0d581fcdb42be62252b7bc07dcd2238330`:
 
 | Capability | Status | Local target or boundary |
 | --- | --- | --- |
@@ -105,16 +116,16 @@ The cumulative absorption state remains `selective_absorbed` through
 | Per-surface `Persuade`, `Operate`, `Read`, and `Experience` modes | absorbed | `surface-playbooks.md` |
 | Direction-first craft floor and applicable-denominator critique scoring | absorbed | `impeccable-workflow.md` |
 | At-most-two batched rendered-verification passes | absorbed | `SKILL.md`; per-tweak screenshot loops remain outside the default workflow |
-| Radial halo/spotlight glow, repeated kicker, meaningless section number, fake cursor/pulse, shape-assembled illustration, and aphoristic-copy signals | absorbed | `visual-judgment.md`; treated as contextual signals, not universal bans |
+| Radial halo/spotlight glow, kicker, meaningless section number, fake cursor/pulse, shape-assembled illustration, and aphoristic-copy signals | absorbed | `visual-judgment.md`; treated as contextual signals, not universal bans |
 | Random concept seeds, mandatory context loader and no-argument menu | intentionally-rejected | local routing and project discovery remain deterministic and task-led |
 | Live/browser/provider/hooks/doctor runtime, asset generation, full detector/vendor bundle, generated provider copies | intentionally-rejected | browser67, host tools, and existing repository governance own these boundaries |
 | `fc3dc50..bdaa5a4` live overlay/resume changes, TanStack adapters, deferred source writes, resolution caching, injection/progress coordination, tests, and generated providers | intentionally-rejected | The tail changes only the upstream live/provider runtime; no selected `design-craft` behavior was imported |
 | Universal category, font, framework, and library prescriptions | intentionally-rejected | project authority and observed performance/accessibility evidence win |
 | Promotional or "award-winning" tone | intentionally-rejected | local output remains factual and evidence-led |
 
-The compatibility pin remains unchanged. The selected-behavior boundary
-advances only through the bounded-verification source commit; the generated
-provider follow-up remains provenance-only.
+The compatibility pin advances only to the selected canonical detector
+boundary, not to the reviewed remote head. The later tail remains reviewed but
+outside the pin because it adds no further selected detector boundary.
 
 ## Runtime and packaging boundary
 
@@ -131,18 +142,23 @@ The following surfaces are `intentionally-rejected` from the baseline package:
 
 The pristine submodule remains available for provenance and selective manual
 use. `design-craft` calls only the detector path as an optional source-level
-signal and never claims live/browser evidence unless the corresponding local
-tool actually ran.
+signal. The full static HTML/CSS engine resolves `htmlparser2`, `css-select`,
+`css-tree`, and `domutils`; when they are absent, the wrapper runs the regex
+fallback and marks the result degraded instead of claiming full engine parity.
+Function-level selected-behavior tests, source pinning, and raw detector JSON do
+not establish installed-host parity. Design Craft never claims live/browser
+evidence unless the corresponding local tool actually ran.
 
 ## Current conclusion
 
 `missing-high-value`: none within the selected fusion boundary.
 
 The cumulative state is selective absorption. General workflow, brief and
-change-scope authority, surface modes, native quality, detector discipline,
-mechanical craft verification, hardening, and evidence honesty are local. The
-duplicative live/provider/package runtime and prescriptive ecosystem choices
-remain intentionally outside the product.
+change-scope authority, surface modes, native quality, detector discipline and
+correctness, reference-first fidelity, post-fix verdicts, mechanical craft
+verification, hardening, and evidence honesty are local. The duplicative
+live/provider/package/hook runtime, forced delegation, universal visual bans,
+and prescriptive ecosystem choices remain intentionally outside the product.
 
 Current independent blind evidence is recorded in
 `evals/comparative/impeccable-production-ablation/`: `design-craft` 100,

@@ -19,6 +19,14 @@ structure. It keeps scoped project rules, optional `PRODUCT.md`, project
   loops.
 - Design-system contract checks for `DESIGN.md`, token roles, light/dark parity,
   component states, focus, motion, and UI copy.
+- Two-level system-consistency review: a lightweight semantic-family,
+  same-state, and theme closeout for every visible UI change, plus full
+  `system-review` inventories and explicit sign-off for project-level work or
+  known consistency regressions.
+- Optional `prototype` divergence: explore one bounded UI piece through
+  genuinely different product-relevant axes on an isolated surface, verify one
+  full-size interactive variant at a time, and wait for explicit selection
+  before production promotion and default cleanup.
 - Emil Kowalski-style motion purpose, frequency, timing/easing, physicality,
   interruptibility, gesture, performance, reduced-motion, and animation
   vocabulary checks.
@@ -385,13 +393,44 @@ python3 skills/design-craft/scripts/design_craft_platform_scan.py \
 Static platform findings are review evidence only. They do not prove an iOS
 Simulator, Android Emulator, or real-device run.
 
-Run a critique/audit/polish/harden/optimize/structure/architecture pass:
+Run a critique/audit/prototype/system-review/polish/harden/optimize/structure/
+architecture pass:
 
 ```bash
 bash skills/design-craft/scripts/design_craft_pass.sh \
   --target /path/to/project \
   --mode critique
 ```
+
+Every visible UI change uses the lightweight closeout in
+[`system-review.md`](skills/design-craft/references/system-review.md). Run the
+full mode for whole-product or multi-page reviews,
+design/visual/interaction/motion system changes, or a known visual-language
+consistency regression:
+
+```bash
+bash skills/design-craft/scripts/design_craft_pass.sh \
+  --target /path/to/project \
+  --mode system-review
+```
+
+Both gates end with `pass`, `blocked`, or `incomplete`. Screenshot attachment,
+geometry checks, default computed styles, scanner output, and successful tests
+remain supporting evidence rather than visual acceptance.
+
+Use `prototype` only for explicit multi-direction exploration. It keeps
+exploration out of production code, rejects color/copy-only pseudo-variants,
+and stops at `ready_for_selection` until the user selects or explicitly
+delegates a winner:
+
+```bash
+bash skills/design-craft/scripts/design_craft_pass.sh \
+  --target /path/to/project \
+  --mode prototype
+```
+
+The harness is project/framework/CSP-aware infrastructure; Design Craft does
+not impose a fixed picker visual, route, query, or wiring contract.
 
 `skills/design-craft/scripts/` is the only runtime source; repository-root
 forwarding wrappers are intentionally not maintained.
@@ -572,7 +611,12 @@ interpretation prompts.
 
 Run the detector. Default text output includes pinned Impeccable findings plus
 local design-craft review signals; `--json-only` remains raw upstream JSON for
-compatibility, and `--full-json` emits the combined payload.
+compatibility, and `--full-json` emits the combined payload. Default and full
+JSON output also distinguish `available`, `available_regex_fallback`, and
+`unavailable`. The regex fallback still emits
+useful findings, but it is explicitly degraded when the optional static
+HTML/CSS parser packages are absent; raw `--json-only` output cannot carry that
+wrapper metadata.
 
 ```bash
 bash skills/design-craft/scripts/design_craft_detect.sh --target /path/to/project

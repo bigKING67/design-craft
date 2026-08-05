@@ -32,9 +32,9 @@ The preserved distribution license is available at:
 - Initial pinned commit:
   `d2ab4ddee6fa63002fae680652b5fbd31735e280`
 - Current absorbed commit:
-  `da99645a58400ed7acb201e6904f9413efd89c6e`
+  `80e4dd0d581fcdb42be62252b7bc07dcd2238330`
 - Current reviewed commit:
-  `630fc2682a5bd39b25a8e61f74b6b3f14f2b1e21`
+  `ae5e95101a6979e7f7973a4ff57680b3c7adc1ec`
 
 The fusion layer references and adapts ideas around command taxonomy, context
 setup, audit/polish/harden/optimize/live workflows, deterministic detector
@@ -43,8 +43,16 @@ The 2026-07-10 review selectively absorbed platform routing, native audit/adapt
 guidance, iOS/Android quality rules, and detector/design-system fixes. Generated
 provider bundles, site output, dependencies, and store packaging remain
 provenance only.
-The 2026-07-11 reviewed range changes only GitHub sheriff automation and tests;
-no additional fusion-layer behavior was imported.
+The 2026-08-05 selective update pins the canonical detector correctness
+boundary for style carriers, comment-safe image checks, versioned local
+stylesheets, `rounded-none`, retired single-font rules, YAML scalar escapes,
+and Blade compound suffixes. It also adapts reference-first fidelity and
+post-fix verdict ideas as original local contracts. Generated provider copies,
+live/browser-session and hook runtime, forced delegation, and universal visual
+bans remain outside the fusion layer. The upstream source detector remains an
+optional runtime: selected behavior has function-level local coverage, while
+full static HTML/CSS execution depends on upstream parser packages that Design
+Craft neither vendors nor silently treats as installed.
 
 The preserved distribution license and notice are available at:
 `LICENSES/Apache-2.0.txt` and `LICENSES/NOTICE-impeccable.md`.
@@ -72,9 +80,9 @@ longer contain Vercel-authored snapshot text. See
 - Initial pinned commit:
   `a47903a06a05d2e24c483bd8961c85969a51a494`
 - Current absorbed commit:
-  `b57fc72f8415d84db1e9cfb43270466bf12ac6e2`
+  `70744e3816f1d93eafb697161a8b880a7384c5ff`
 - Current reviewed commit:
-  `7bb7061b5cf7de15ea1aeaf00fbd9e6592a20fce`
+  `da80201b64de7d608a6dc5f723797ce6c65b692b`
 
 The fusion layer references and adapts ideas around motion purpose, animation
 frequency, easing and duration standards, physicality, gesture handling,
@@ -98,6 +106,10 @@ implementation recipes rather than redistributing an upstream component
 library; the reviewed upstream Skill tree contains no non-Markdown runtime
 source. Substantial adapted text and code snippets remain covered by the
 preserved MIT notice below.
+The 2026-08-05 review selectively adapts the new prototype workflow into an
+original framework-neutral exploration/selection/promotion contract. The fixed
+picker markup, dark-glass CSS, route/query wiring, and host-specific runtime are
+not copied.
 
 The preserved distribution license is available at:
 `LICENSES/MIT-upstreams.txt`.

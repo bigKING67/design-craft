@@ -159,6 +159,10 @@ def build_score(root: Path, run_smoke: bool) -> list[Dimension]:
     skill = read_text(root / "skills/design-craft/SKILL.md")
     validation = read_text(root / "skills/design-craft/references/validation-contract.md")
     design_system = read_text(root / "skills/design-craft/references/design-system-contract.md")
+    system_review = read_text(root / "skills/design-craft/references/system-review.md")
+    prototype_workflow = read_text(
+        root / "skills/design-craft/references/prototype-workflow.md"
+    )
     product_review = read_text(root / "skills/design-craft/references/product-ui-taste-review.md")
     taste_calibration = read_text(root / "skills/design-craft/references/taste-score-calibration.md")
     foundational_principles = read_text(root / "skills/design-craft/references/foundational-visual-principles.md")
@@ -183,6 +187,8 @@ def build_score(root: Path, run_smoke: bool) -> list[Dimension]:
     motion_plan_smoke = False
     seed_smoke = False
     taste_review_smoke = False
+    prototype_smoke = False
+    system_review_smoke = False
     if run_smoke:
         detector_smoke = check_command(
             ["bash", "skills/design-craft/scripts/design_craft_detect.sh", "--target", "skills/design-craft", "--json-only"],
@@ -226,6 +232,34 @@ def build_score(root: Path, run_smoke: bool) -> list[Dimension]:
         )
         taste_review_smoke = check_command(
             ["bash", "skills/design-craft/scripts/design_craft_taste_review.sh", "--target", "skills/design-craft", "--context", "score smoke", "--evidence-level", "L0"],
+            root,
+        )
+        prototype_smoke = check_command(
+            [
+                "bash",
+                "skills/design-craft/scripts/design_craft_pass.sh",
+                "--target",
+                "skills/design-craft",
+                "--mode",
+                "prototype",
+                "--skip-route",
+                "--skip-detector",
+                "--skip-score",
+            ],
+            root,
+        )
+        system_review_smoke = check_command(
+            [
+                "bash",
+                "skills/design-craft/scripts/design_craft_pass.sh",
+                "--target",
+                "skills/design-craft",
+                "--mode",
+                "system-review",
+                "--skip-route",
+                "--skip-detector",
+                "--skip-score",
+            ],
             root,
         )
 
@@ -298,6 +332,13 @@ def build_score(root: Path, run_smoke: bool) -> list[Dimension]:
                 ("theme parity" in design_system.lower(), "theme parity guidance present", "Cover light/dark token parity."),
                 ("token layers" in design_system.lower(), "token layer guidance present", "Cover token role separation."),
                 ("Page-type checks" in product_review, "page-type taste checks present", "Cover forms, tables, dashboards, modals, navigation, landing, and settings review."),
+                (
+                    has(root, "skills/design-craft/references/prototype-workflow.md")
+                    and "ready_for_selection" in prototype_workflow
+                    and "must not edit production behavior" in prototype_workflow,
+                    "prototype divergence and selection boundary present",
+                    "Add isolated multi-direction prototyping with an explicit selection gate.",
+                ),
                 ("emilkowalski-skills" in source_map, "Emil Kowalski upstream source mapped", "Map the emilkowalski/skills upstream in source-map."),
             ],
         ),
@@ -411,6 +452,29 @@ def build_score(root: Path, run_smoke: bool) -> list[Dimension]:
                 (has(root, "scripts/design_craft_active_scope_validate.py"), "active-scope validator exists", "Add a validator that keeps active generic gates project-neutral."),
                 ("browser validation" in validation.lower(), "browser validation contract present", "Document browser validation rules."),
                 ("browser_screenshot_required" in validation and "browser_screenshot_ops" in validation, "screenshot evidence contract present", "Document screenshot artifact evidence rules."),
+                (has(root, "skills/design-craft/references/system-review.md"), "system consistency review reference exists", "Add the two-level system consistency review contract."),
+                (
+                    "semantic component-family inventory" in system_review.lower()
+                    and "same-state comparison" in system_review.lower()
+                    and "state and theme matrix" in system_review.lower(),
+                    "system review covers semantic families, same-state comparison, states, and themes",
+                    "Cover semantic families, project exemplars, same-state sibling comparison, and state/theme evidence.",
+                ),
+                (
+                    "`pass`" in system_review
+                    and "`blocked`" in system_review
+                    and "`incomplete`" in system_review
+                    and "Screenshot attachment is not visual review" in validation,
+                    "system review has explicit sign-off and screenshot false-pass guards",
+                    "Define pass, blocked, and incomplete and reject screenshot presence as standalone review.",
+                ),
+                (
+                    has(root, "evals/product-ui-taste/system-consistency-toolbar/input.md")
+                    and has(root, "evals/product-ui-taste/system-consistency-toolbar/review.expected.md")
+                    and "`blocked`" in read_text(root / "evals/product-ui-taste/system-consistency-toolbar/review.expected.md"),
+                    "project-neutral system consistency golden case exists",
+                    "Add a project-neutral golden case for a blocked same-family toolbar mismatch.",
+                ),
                 (has(root, "evals/golden-tasks/generic-review-workbench.md"), "generic golden task evidence exists", "Add at least one generic golden real-task card."),
                 (has(root, "scripts/design_craft_score.py"), "score script exists", "Add deterministic score script."),
                 (has(root, "scripts/design_craft_native_runtime_validate.py"), "native runtime evidence validator exists", "Add strict native runtime evidence validation."),
@@ -465,10 +529,18 @@ def build_score(root: Path, run_smoke: bool) -> list[Dimension]:
                 (has_product_ui_l3_case(root), "product UI taste L3 resilient case exists", "Add at least one product UI taste case with responsive and state evidence."),
                 (has(root, "evals/product-ui-taste/before-after/README.md"), "L4 before/after eval scaffold exists", "Add L4 before/after eval scaffold."),
                 (has_product_ui_l4_before_after_case(root), "project-neutral product UI taste L4 before/after cases exist", "Add completed project-neutral L4 before/after product UI cases."),
+                (
+                    has(root, "evals/product-ui-taste/prototype-divergence/input.md")
+                    and has(root, "evals/product-ui-taste/prototype-divergence/plan.expected.md"),
+                    "project-neutral prototype divergence golden case exists",
+                    "Add a project-neutral prototype direction and selection-boundary case.",
+                ),
                 (has(root, "evals/cross-agent/README.md"), "cross-agent benchmark scaffold exists", "Add cross-agent benchmark scaffold."),
                 (has(root, "scripts/design_craft_cross_agent_validate.py"), "cross-agent benchmark validator exists", "Add a validator for cross-agent benchmark task definitions."),
                 (has(root, "evals/fixtures/css-smells/card-soup.css"), "static scanner fixture exists", "Add scanner fixtures."),
                 ("critique" in audit_helper, "critique mode present", "Add a lightweight critique mode."),
+                ("system-review" in audit_helper, "system-review mode present", "Add a full system consistency review mode."),
+                ("prototype" in audit_helper, "prototype mode present", "Add an isolated prototype divergence mode."),
                 ("motion" in audit_helper, "motion mode present", "Add a motion-specific quality pass."),
                 ("太 AI" in read_text(root / "skills/design-craft/references/intent-map.md"), "subjective intent mapping present", "Map subjective user phrases to workflow modes."),
                 (detector_smoke or not run_smoke, "detector smoke passes", "Fix detector smoke."),
@@ -479,6 +551,8 @@ def build_score(root: Path, run_smoke: bool) -> list[Dimension]:
                 (motion_plan_smoke or not run_smoke, "motion plan scaffold smoke passes", "Fix motion-plan scaffold smoke."),
                 (seed_smoke or not run_smoke, "seed helper smoke passes", "Fix developer-product seed helper smoke."),
                 (taste_review_smoke or not run_smoke, "taste review wrapper smoke passes", "Fix taste review wrapper smoke."),
+                (prototype_smoke or not run_smoke, "prototype wrapper smoke passes", "Fix prototype wrapper smoke."),
+                (system_review_smoke or not run_smoke, "system-review wrapper smoke passes", "Fix system-review wrapper smoke."),
             ],
         ),
     ]

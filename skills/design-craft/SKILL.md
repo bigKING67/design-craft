@@ -58,7 +58,10 @@ full evidence and completion boundary.
 6. Implement the smallest complete change. Verify visible behavior in a real
    browser or native runtime when the task requires it; report only artifacts
    actually produced.
-7. Deliver files changed, structure impact, validation, observed runtime
+7. Before delivering visible UI work, run the lightweight system-consistency
+   closeout in `references/system-review.md`; escalate to its full review when
+   the task or observed regression crosses the documented trigger boundary.
+8. Deliver files changed, structure impact, validation, observed runtime
    evidence, performance impact, and remaining risks. Never upgrade planned or
    static evidence into a runtime claim.
 
@@ -68,6 +71,10 @@ full evidence and completion boundary.
 - `craft`: new feature or substantial UI build.
 - `critique`: read-only design-rightness and product-fit review.
 - `audit`: read-only engineering and quality review.
+- `prototype`: isolated divergence for one UI piece; production promotion waits
+  for explicit selection.
+- `system-review`: read-only visual, interaction, state, theme, and cross-surface
+  consistency review with explicit sign-off.
 - `polish`: refinement of an already-correct interface.
 - `harden`: hostile data, recovery, accessibility, and edge states.
 - `optimize`: measured UI performance work.
@@ -128,6 +135,10 @@ Read only references required by the current task.
 - Product UI taste review and acceptance criteria:
   `references/product-ui-taste-review.md`; add
   `references/taste-score-calibration.md` when scoring is central.
+- Lightweight visible-change consistency and full project-system review:
+  `references/system-review.md`.
+- Isolated multi-direction exploration before production promotion:
+  `references/prototype-workflow.md`.
 - Concrete redesign moves and blocker-to-move coverage:
   `references/design-move-library.md`.
 - Impeccable-style critique/audit/polish/harden/optimize flow:
@@ -196,7 +207,8 @@ as unverified:
 - Product: preserves the user's job and information architecture, with owned
   loading, empty, error, long-data, permission, and recovery states.
 - Design system: respects token roles, style authority, theme parity, focus,
-  component states, and specific UI copy.
+  component states, semantic-family exemplars, sibling same-state consistency,
+  and specific UI copy.
 - Accessibility: keyboard, focus, labels, semantics, contrast, target size, and
   Reduced Motion match the platform and input mode.
 - Engineering: clear boundaries, justified abstractions, dependency checks,
@@ -209,7 +221,8 @@ as unverified:
   callers; avoid generic `utils`, `helpers`, `common`, or `misc` dumping grounds.
 - Validation: targeted type/lint/test/build plus browser or native evidence when
   visible behavior requires it. Screenshot success requires an actual artifact
-  when route output sets `browser_screenshot_required`.
+  when route output sets `browser_screenshot_required`; the artifact does not
+  itself constitute visual review.
 
 For direct manipulation, responsive geometry, static-evidence boundaries,
 scoring, state coverage, and output budgets, follow the routed reference rather
@@ -225,6 +238,8 @@ For frontend implementation, report only fields that apply:
 - style authority and design-system contract;
 - files changed and directory/architecture impact;
 - targeted validation and actual browser/native/screenshot artifacts;
+- required baseline/final visual-review stages and `pass`, `blocked`, or
+  `incomplete` consistency sign-off when visible UI is in scope;
 - performance impact, unresolved risks, and unverified hosts/devices.
 
 Respect explicit response-size limits. Use

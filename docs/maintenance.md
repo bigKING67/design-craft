@@ -177,7 +177,8 @@ Expected result:
 - Python scorer compiles and runs.
 - Detector smoke passes against `skills/design-craft` and keeps raw
   `--json-only` compatibility for upstream Impeccable output.
-- Preferred pass wrapper, audit wrapper, and critique mode smokes pass.
+- Preferred pass wrapper, audit wrapper, critique, prototype, and system-review
+  mode smokes pass.
 - Motion-specific pass smoke passes and the Emil-derived motion references are
   present.
 - Product UI taste-review packet smoke passes and keeps score evidence levels
