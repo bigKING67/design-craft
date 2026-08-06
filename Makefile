@@ -19,7 +19,7 @@ CERTIFIED_FINAL_EVIDENCE ?= $(RELEASE_EVIDENCE_DIR)/certified-100-final.json
 export PYTHONDONTWRITEBYTECODE := 1
 
 .PHONY: validate validate-portable lint contract-tests package-check public-repo-check workflow-check skill-quick-validate score \
-	maturity-development maturity-operational maturity-certified pass audit critique prototype system-review motion motion-plan-dry-run taste-review \
+	maturity-development maturity-operational maturity-certified pass audit critique prototype system-review motion primitive-selection motion-plan-dry-run taste-review \
 	seed-dry-run route-smoke doctor platform-scan-check native-runtime-probe native-runtime-check native-release-bundle-check \
 	native-release-bundle-build native-release-bundle-verify codex-route-pack-check codex-route-pack-host-check init-dry-run active-scope-check \
 	cross-agent-check cross-agent-history-check cross-agent-observed-check cross-agent-four-host-check \
@@ -92,6 +92,9 @@ prototype:
 system-review:
 	python3 -m unittest tests.unit.test_system_review_contract
 	bash skills/design-craft/scripts/design_craft_pass.sh --target skills/design-craft --mode system-review --skip-route --skip-detector --skip-score
+
+primitive-selection:
+	python3 -m unittest tests.unit.test_component_primitive_contract
 
 motion:
 	bash skills/design-craft/scripts/design_craft_pass.sh --target skills/design-craft --mode motion --skip-route --skip-score
@@ -257,7 +260,7 @@ install:
 install-verify:
 	python3 scripts/design_craft_install_verify.py --source skills/design-craft --installed "$(DESIGN_CRAFT_SKILL_ROOT)/design-craft" --expected-name design-craft --expected-version "$$(cat VERSION)" --require-metadata
 
-release-gate-source: validate-portable lint contract-tests package-check public-repo-check workflow-check skill-quick-validate score maturity-development pass audit critique prototype system-review motion motion-plan-dry-run taste-review seed-dry-run route-smoke doctor platform-scan-check native-release-bundle-check codex-route-pack-check init-dry-run active-scope-check cross-agent-check comparative-check l4-capture-check historical-l4-metadata-check smell-smoke upstream-report upstream-absorption-check github-governance-contract-check
+release-gate-source: validate-portable lint contract-tests package-check public-repo-check workflow-check skill-quick-validate score maturity-development pass audit critique prototype system-review motion primitive-selection motion-plan-dry-run taste-review seed-dry-run route-smoke doctor platform-scan-check native-release-bundle-check codex-route-pack-check init-dry-run active-scope-check cross-agent-check comparative-check l4-capture-check historical-l4-metadata-check smell-smoke upstream-report upstream-absorption-check github-governance-contract-check
 
 publish-local: release-gate-source
 	bash scripts/install_local.sh $(INSTALL_ARGS)

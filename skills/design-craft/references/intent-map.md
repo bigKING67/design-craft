@@ -37,7 +37,9 @@ Project evidence still wins: live runtime, scoped `AGENTS.md`, project
 - "视觉不统一", "同一工具栏风格不一致", "交互语言不一致": read
   `system-review.md`; use its lightweight completion gate for one local
   component or section, and use full `system-review` when the mismatch is an
-  observed regression or crosses component families or surfaces.
+  observed regression or crosses component families or surfaces. Do not infer
+  a Radix UI, Base UI, or other primitive-library migration from visual drift
+  without a confirmed library-level blocker.
 - "整体视觉语言 Review", "设计体系 Review", "全站统一一下", "多页面一致性":
   use full `system-review`; inventory surfaces, semantic component families,
   interaction patterns, applicable states, and themes before signing off.
@@ -77,6 +79,10 @@ Project evidence still wins: live runtime, scoped `AGENTS.md`, project
   `performance-quality.md`; establish a baseline before changing code.
 - "目录乱", "组件拆得怪", "复用混乱": use `structure` or `architecture`;
   read `project-structure.md` and `architecture-quality.md`.
+- "Base UI 还是 Radix", "选哪个 headless UI", "要不要迁组件库": use
+  `architecture`; read `component-primitive-selection.md`; resolve current
+  project authority and record `keep | adopt | migrate | defer` before changing
+  dependencies or wrappers.
 
 ## Design-system seed complaints
 

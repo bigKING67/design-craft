@@ -160,6 +160,13 @@ def build_score(root: Path, run_smoke: bool) -> list[Dimension]:
     validation = read_text(root / "skills/design-craft/references/validation-contract.md")
     design_system = read_text(root / "skills/design-craft/references/design-system-contract.md")
     system_review = read_text(root / "skills/design-craft/references/system-review.md")
+    component_primitives = read_text(
+        root / "skills/design-craft/references/component-primitive-selection.md"
+    )
+    component_primitive_expected = read_text(
+        root
+        / "evals/product-ui-taste/component-primitive-selection/decision.expected.md"
+    )
     prototype_workflow = read_text(
         root / "skills/design-craft/references/prototype-workflow.md"
     )
@@ -301,6 +308,14 @@ def build_score(root: Path, run_smoke: bool) -> list[Dimension]:
                 ("surface-specific" in surface.lower() or "surface playbooks" in surface.lower(), "surface playbooks present", "Cover surface-specific product jobs."),
                 ("candidate_skills" in skill, "route candidate semantics present", "Separate route candidates from selected skills."),
                 (has(root, "skills/design-craft/references/design-system-contract.md"), "design-system contract exists", "Add design-system contract reference."),
+                (has(root, "skills/design-craft/references/component-primitive-selection.md"), "component primitive selection contract exists", "Add a framework-neutral component primitive decision contract."),
+                ("keep | adopt | migrate | defer" in component_primitives, "component primitive decisions preserve project authority", "Record keep, adopt, migrate, or defer before changing primitive authority."),
+                (
+                    "Base UI is a supported project choice" in component_primitives
+                    and "Base UI-only universal prescription" in component_primitives,
+                    "Base UI support is conditional rather than exclusive",
+                    "Support Base UI when project evidence selects it without imposing a universal migration.",
+                ),
                 (
                     has(root, "skills/design-craft/templates/developer-product/design.md")
                     and has(root, "skills/design-craft/templates/developer-product/design.dark.md"),
@@ -474,6 +489,19 @@ def build_score(root: Path, run_smoke: bool) -> list[Dimension]:
                     and "`blocked`" in read_text(root / "evals/product-ui-taste/system-consistency-toolbar/review.expected.md"),
                     "project-neutral system consistency golden case exists",
                     "Add a project-neutral golden case for a blocked same-family toolbar mismatch.",
+                ),
+                (
+                    has(root, "evals/product-ui-taste/component-primitive-selection/input.md")
+                    and has(root, "evals/product-ui-taste/component-primitive-selection/decision.expected.md"),
+                    "project-neutral component primitive selection fixture exists",
+                    "Add project-neutral existing-library, new-project, and Base UI application cases.",
+                ),
+                (
+                    "Radix UI" in component_primitive_expected
+                    and "Base UI" in component_primitive_expected
+                    and "`defer`" in component_primitive_expected,
+                    "component primitive fixture covers keep, defer, and conditional Base UI adoption",
+                    "Cover existing Radix repair, evidence-gated selection, and existing Base UI use.",
                 ),
                 (has(root, "evals/golden-tasks/generic-review-workbench.md"), "generic golden task evidence exists", "Add at least one generic golden real-task card."),
                 (has(root, "scripts/design_craft_score.py"), "score script exists", "Add deterministic score script."),

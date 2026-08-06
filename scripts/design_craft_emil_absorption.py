@@ -31,6 +31,7 @@ LATEST_RANGE_COVERAGE = {
         "skills/design-craft/references/motion-audit-planning.md",
         "skills/design-craft/references/motion-vocabulary.md",
         "skills/design-craft/references/prototype-workflow.md",
+        "skills/design-craft/references/component-primitive-selection.md",
     ],
     "terms": [
         "Motion needs a reason",
@@ -45,6 +46,10 @@ LATEST_RANGE_COVERAGE = {
         "Render one variant at a time",
         "ready_for_selection",
         "explicit user selection",
+        "keep | adopt | migrate | defer",
+        "Base UI is a supported project choice",
+        "Primitive-library consistency cannot substitute for visual-system consistency",
+        "Base UI-only universal prescription",
     ],
 }
 

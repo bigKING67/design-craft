@@ -418,6 +418,15 @@ Both gates end with `pass`, `blocked`, or `incomplete`. Screenshot attachment,
 geometry checks, default computed styles, scanner output, and successful tests
 remain supporting evidence rather than visual acceptance.
 
+When a task selects or migrates a headless component library, use the
+framework-neutral
+[`component-primitive-selection.md`](skills/design-craft/references/component-primitive-selection.md)
+contract. A healthy existing project authority defaults to `keep`; Base UI is a
+supported conditional choice, not the universal answer. `adopt` or `migrate`
+requires project-specific blocker, compatibility, migration, validation, and
+rollback evidence. One shared primitive library is architecture consistency,
+not proof that the visual system is consistent.
+
 Use `prototype` only for explicit multi-direction exploration. It keeps
 exploration out of production code, rejects color/copy-only pseudo-variants,
 and stops at `ready_for_selection` until the user selects or explicitly

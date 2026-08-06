@@ -167,7 +167,7 @@
       "latest_range_status": "selective_absorbed",
       "reviewed_at": "2026-08-05",
       "decision": "partial",
-      "notes": "Pinned compatibility source remains 7bb7061. The e695d13..da80201 range was reviewed on 2026-08-05. The prototype behavior introduced by 70744e3 is selectively represented as a local optional mode: one UI piece, named divergence axes, isolated non-production exploration, realistic interactive context, one full-size variant at a time, explicit selection before promotion, and default cleanup. The fixed dark-glass picker markup/CSS, fixed route/query wiring, and any framework/CSP-specific runtime are intentionally not copied. The da80201 README-only follow-up is provenance-only.",
+      "notes": "Pinned compatibility source remains 7bb7061. The e695d13..da80201 range was reviewed on 2026-08-05. The prototype behavior introduced by 70744e3 is selectively represented as a local optional mode: one UI piece, named divergence axes, isolated non-production exploration, realistic interactive context, one full-size variant at a time, explicit selection before promotion, and default cleanup. Project-specific Base UI application is positively represented by the local component primitive selection contract, while pick-ui-library and a Base UI-only universal prescription remain intentionally rejected. The fixed dark-glass picker markup/CSS, fixed route/query wiring, and any framework/CSP-specific runtime are intentionally not copied. The da80201 README-only follow-up is provenance-only.",
       "coverage_contract": "design-craft.emil-absorption.v1",
       "coverage_matrix": "docs/emilkowalski-absorption.md",
       "skill_inventory": {

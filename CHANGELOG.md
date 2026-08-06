@@ -4,6 +4,14 @@ All notable local changes to `design-craft` are recorded here.
 
 ## Unreleased
 
+- Add a framework-neutral component primitive decision contract with
+  `keep | adopt | migrate | defer`, project authority, compatibility,
+  accessibility, maintenance, migration-cost, rollback, and visual-system
+  evidence. Base UI is positively supported when a project selects it, while a
+  Base UI-only universal prescription remains rejected. Three project-neutral
+  cases lock the existing-Radix repair path, evidence-gated new-project choice,
+  and existing-Base UI application; primitive-library consistency is explicitly
+  insufficient as visual-system acceptance.
 - Selectively absorb current upstream behavior without importing its runtime:
   pin the Impeccable source detector at `80e4dd0` for style-carrier,
   comment-safe, versioned-stylesheet, `rounded-none`, retired single-font,

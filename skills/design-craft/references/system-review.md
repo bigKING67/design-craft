@@ -14,6 +14,7 @@ mean forcing unlike controls to look identical.
 - [When to use each gate](#when-to-use-each-gate)
 - [Lightweight completion gate](#lightweight-completion-gate)
 - [Full system review workflow](#full-system-review-workflow)
+- [Component primitive boundary](#component-primitive-boundary)
 - [Reference fidelity matrix](#reference-fidelity-matrix)
 - [State and theme matrix](#state-and-theme-matrix)
 - [Browser-native surface consistency](#browser-native-surface-consistency)
@@ -172,6 +173,28 @@ When fixes were applied, run the post-fix verdict below against the original
 finding IDs rather than opening an unrelated new defect hunt. Then emit exactly
 one final status.
 
+## Component primitive boundary
+
+Primitive-library consistency cannot substitute for visual-system consistency.
+One shared library can still produce divergent semantic families, typography,
+density, tokens, states, themes, focus treatment, icons, feedback, and motion.
+Conversely, project-owned wrappers over more than one internal primitive can be
+coherent when project authority deliberately owns the differences.
+
+Do not treat a visual-language finding as evidence that the project must move
+between Radix UI, Base UI, React Aria, Ark UI, or another primitive. First trace
+the mismatch through the shared component, variant, token, semantic family,
+state/theme matrix, interaction contract, and finding ledger. Load
+`component-primitive-selection.md` only when the task explicitly selects or
+migrates a library, or when evidence traces an unresolved blocker to the
+primitive contract. Then record `keep | adopt | migrate | defer` and the
+required architecture evidence.
+
+Using one primitive library across every in-scope component is architecture
+evidence, not visual acceptance and not a `pass` signal. Library adoption or
+migration also does not close the original system-review findings; verify them
+against the same exemplars, states, themes, surfaces, and finding IDs.
+
 ## Reference fidelity matrix
 
 Use one row per salient reference element. Add project-specific evidence fields
@@ -315,7 +338,9 @@ The following evidence is useful but cannot independently produce `pass`:
 - the changed component matches itself or only its source-level tokens;
 - one theme, viewport, or idle state was reviewed while another applicable
   state remains unverified;
-- automated tests passed without a required browser/native visual judgment.
+- automated tests passed without a required browser/native visual judgment;
+- every in-scope component imports the same primitive library;
+- a visual inconsistency exists but no primitive-level blocker is confirmed.
 
 Stop at the earliest missing decisive evidence. Do not broaden into unrelated
 personal data, routes, or projects merely to make the inventory look complete.

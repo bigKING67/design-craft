@@ -92,17 +92,19 @@ production-readiness flows.
   `7bb7061b5cf7de15ea1aeaf00fbd9e6592a20fce`
 - Selected-behavior boundary:
   `70744e3816f1d93eafb697161a8b880a7384c5ff`
-- Cumulative status: `selective_absorbed`; the motion-opportunity gate and
-  calibrated prototype workflow are local, while the opinionated library
-  picker, fixed picker visual/runtime, and Base UI-only prescription are
-  intentionally rejected.
+- Cumulative status: `selective_absorbed`; the motion-opportunity gate,
+  calibrated prototype workflow, and project-authorized Base UI-specific
+  application are local. The opinionated library picker, fixed picker
+  visual/runtime, and Base UI-only universal prescription are intentionally
+  rejected.
 - Stable selected behavior: original design-craft references cover
   product-design principles, Apple-style direct manipulation,
   presentation-value interruption, spring response/damping, velocity handoff,
   momentum projection, rubber-banding, accessibility variants, and optical
   typography.
-- Stable boundary: absolute heuristics remain calibrated by project authority
-  and runtime evidence; opinionated library substitution, fixed picker
+- Stable boundary: absolute heuristics and primitive selection remain calibrated
+  by project authority and runtime evidence. Base UI may be applied when selected
+  by the project; opinionated universal library substitution, fixed picker
   markup/CSS/wiring, and README-only provenance do not enter the installed
   behavior layer.
 - Primary material to inspect:

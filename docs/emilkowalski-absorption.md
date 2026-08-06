@@ -43,6 +43,11 @@ the installed Skill receives only the high-value fusion layer.
   authority/runtime evidence, or impose an inappropriate operating policy.
 - `provenance-only`: retained for traceability but not used as local behavior.
 
+Library applicability is separate from this upstream status vocabulary. Base UI
+may be conditionally supported as a project-selected primitive while the
+opinionated `pick-ui-library` entrypoint and a Base UI-only universal
+prescription remain `intentionally-rejected`.
+
 ## Skill-level matrix
 
 ### `emil-design-eng`
@@ -107,6 +112,7 @@ the installed Skill receives only the high-value fusion layer.
 | `pick-ui-library` | intentionally-rejected | project dependency authority | Its curated list is a personal library preference, not a stable cross-framework design baseline. Existing dependencies, project constraints, bundle/performance evidence, accessibility, and maintenance cost decide library selection. |
 | `prototype` | absorbed | `prototype-workflow.md`, `prototype` mode, project-neutral golden contract | Keep one-piece scope, named divergence axes, realistic interactive context, isolated non-production exploration, one full-size variant at a time, explicit selection before promotion, and default cleanup. |
 | Fixed picker markup, dark-glass CSS, URL/query wiring, and keyboard implementation | intentionally-rejected | project/framework/CSP/host authority | The harness is accessible infrastructure, not a universal visual system or runtime contract. |
+| Base UI primitive-specific application | partial | `component-primitive-selection.md`, `motion-patterns.md` | Positively supported when project authority selects Base UI: use its real focus, overlay, state, positioning, and motion contracts through project wrappers. This does not authorize a universal migration. |
 | Radix UI to Base UI-only prescription | intentionally-rejected | framework-neutral component guidance | `design-craft` supports both when project authority selects them; an upstream wording replacement does not justify ecosystem churn. |
 | Earlier README and library-link corrections | provenance-only | pristine upstream history | These edits do not add product behavior. |
 | `da80201` README update | provenance-only | pristine upstream history | The follow-up documents the new entrypoint but adds no further behavior. |
@@ -145,11 +151,12 @@ reviewed remote head.
 
 The cumulative state is now `selective_absorbed`, not an unqualified full-copy
 claim. High-value behavior from the five pinned Skills, the motion opportunity
-gate, and the reviewed prototype workflow is local; the fixed picker
-visual/runtime, opinionated library picker, Base UI-only prescription,
-promotional text, aggressive review posture, host-policy conflicts, decorative
-recipes, and technically overbroad claims remain
-`intentionally-rejected`, `partial`, or `provenance-only`.
+gate, the reviewed prototype workflow, and project-authorized Base UI-specific
+application is local. The fixed picker visual/runtime, opinionated library
+picker, Base UI-only universal prescription, promotional text, aggressive
+review posture, host-policy conflicts, decorative recipes, and technically
+overbroad claims remain `intentionally-rejected`, `partial`, or
+`provenance-only` according to the matrix above.
 
 Current independent blind evidence is recorded in two cases:
 

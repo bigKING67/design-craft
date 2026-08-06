@@ -55,13 +55,18 @@ full evidence and completion boundary.
    references.
 5. Establish product and style authority before changing visual language or
    architecture. Measure before selecting or claiming performance fixes.
-6. Implement the smallest complete change. Verify visible behavior in a real
+6. When selecting or migrating a headless component primitive, read
+   `references/component-primitive-selection.md`, resolve project authority,
+   and record `keep | adopt | migrate | defer`. A healthy existing library
+   defaults to `keep`; adoption or migration requires project-specific
+   accessibility, compatibility, maintenance, and rollback evidence.
+7. Implement the smallest complete change. Verify visible behavior in a real
    browser or native runtime when the task requires it; report only artifacts
    actually produced.
-7. Before delivering visible UI work, run the lightweight system-consistency
+8. Before delivering visible UI work, run the lightweight system-consistency
    closeout in `references/system-review.md`; escalate to its full review when
    the task or observed regression crosses the documented trigger boundary.
-8. Deliver files changed, structure impact, validation, observed runtime
+9. Deliver files changed, structure impact, validation, observed runtime
    evidence, performance impact, and remaining risks. Never upgrade planned or
    static evidence into a runtime claim.
 
@@ -137,6 +142,8 @@ Read only references required by the current task.
   `references/taste-score-calibration.md` when scoring is central.
 - Lightweight visible-change consistency and full project-system review:
   `references/system-review.md`.
+- Base UI, Radix UI, React Aria, Ark UI, other headless primitives, and
+  project-owned equivalents: `references/component-primitive-selection.md`.
 - Isolated multi-direction exploration before production promotion:
   `references/prototype-workflow.md`.
 - Concrete redesign moves and blocker-to-move coverage:
@@ -212,7 +219,8 @@ as unverified:
 - Accessibility: keyboard, focus, labels, semantics, contrast, target size, and
   Reduced Motion match the platform and input mode.
 - Engineering: clear boundaries, justified abstractions, dependency checks,
-  explicit state ownership, and observable failures.
+  explicit state ownership, observable failures, and an evidence-bound
+  primitive decision when library selection or migration is in scope.
 - Performance: measurement-first reasoning, bounded render/data work, no layout
   thrashing, and appropriate bundle, chart, table, image, and motion choices.
 - Architecture: interfaces and data flow are explicit; migrations and
@@ -236,6 +244,8 @@ For frontend implementation, report only fields that apply:
   product context;
 - `candidate_skills` versus actual `selected_skills`;
 - style authority and design-system contract;
+- applicable primitive decision (`keep | adopt | migrate | defer`), decisive
+  project evidence, migration boundary, and rollback status;
 - files changed and directory/architecture impact;
 - targeted validation and actual browser/native/screenshot artifacts;
 - required baseline/final visual-review stages and `pass`, `blocked`, or
