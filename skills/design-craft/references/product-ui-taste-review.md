@@ -296,6 +296,16 @@ Remove generic insight copy, or replace it with a named entity/segment, observed
 count or threshold, business impact or urgency, owner or next action, and a
 direct filter/action into the affected data.
 
+Before delivery, run a coverage check against every explicit visual fact in the
+input. If the review cites small type, low contrast, irregular spacing, numeric
+alignment, or repeated border/radius/shadow treatment, at least one concrete
+move must bind each cited defect to an observable acceptance condition; combine
+related craft repairs inside one move rather than dropping them to stay under
+the move budget. In the validation plan, inspect the current baseline first:
+target viewport and fold, computed type/contrast, spacing/token use, and the
+existing decision path. Validate a redesigned artifact only after that baseline
+can support or overturn the diagnosis.
+
 When the user explicitly asks for an exhaustive review or full scorecard, use
 this expanded structure:
 

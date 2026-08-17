@@ -4,6 +4,10 @@ All notable local changes to `design-craft` are recorded here.
 
 ## 0.6.0 - Unreleased
 
+- Close visual-critique findings against measurable craft acceptance: explicit
+  type, contrast, spacing, numeric alignment, and surface-treatment facts must
+  map to a concrete move, while validation inspects the current viewport,
+  computed values, and decision path before a redesigned artifact.
 - Tighten motion-review evidence language so static property, timing, and input
   facts remain distinct from unobserved claims about lag, jumps, smoothness, or
   perceived responsiveness; definitive feel claims now require an identified
