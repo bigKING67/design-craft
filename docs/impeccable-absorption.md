@@ -1,8 +1,8 @@
 # pbakaus/impeccable absorption matrix
 
 This document records the deliberate fusion and runtime boundary for
-`https://github.com/pbakaus/impeccable` at commit
-`ae5e95101a6979e7f7973a4ff57680b3c7adc1ec`. The compatibility submodule is
+`https://github.com/pbakaus/impeccable` through reviewed remote commit
+`5c5553b1d7f9e89bb833f9179cea681742a17720`. The compatibility submodule is
 pinned at `80e4dd0d581fcdb42be62252b7bc07dcd2238330`, the last selected canonical
 detector correctness commit in that reviewed range.
 
@@ -88,21 +88,18 @@ beside browser67 and the host's existing execution contracts.
 
 ## Latest reviewed range
 
-The latest range after `d272b9bd5dcf52d32482d192d06045ca31c503`
-through `ae5e95101a6979e7f7973a4ff57680b3c7adc1ec` is
-`selective_absorbed`:
+The latest range after `ae5e95101a6979e7f7973a4ff57680b3c7adc1ec`
+through `5c5553b1d7f9e89bb833f9179cea681742a17720` was reviewed on
+2026-08-17 and is `partial`:
 
 | Capability | Status | Local target or boundary |
 | --- | --- | --- |
-| Style-carrier scoping and comment-safe source scanning | absorbed | Pin the canonical detector behavior and prove selected functions do not let documentation/comments hide or create real findings. Full CLI style-carrier execution still requires the static parser packages. |
-| Versioned linked stylesheet, `rounded-none`, retired single-font, YAML scalar escape, and Blade compound-suffix behavior | absorbed | Source detector pin plus function-level positive/negative local fixtures; this is not a claim that every host has the full static engine installed. |
-| Reference-first comp fidelity and post-fix verdict | absorbed | Local `system-review` keeps its `pass | blocked | incomplete` sign-off while adding direct inventory, evidence-backed adaptation, and resolved/partial/unresolved verification. |
-| Text selection, caret, focus, underline offset, tabular numerals, and scrollbar consistency | partial | Focus is mandatory. The remaining browser-native surfaces are conditional and browser defaults are allowed unless project authority says otherwise. |
-| Absolute `kicker-above-heading` ban | intentionally-rejected | The raw detector may emit the signal, but local review applies project `DESIGN.md`, semantic need, repetition, and rendered hierarchy rather than a universal ban. |
-| Terminal live-session checkpoint cleanup | intentionally-rejected | This changes the upstream live runtime, which remains outside the browser67-owned lifecycle boundary. |
-| OpenCode install-path and symlink migration | intentionally-rejected | Provider installation and legacy migration remain outside the canonical Skill package and installer. |
-| Whole-cycle polish ceiling and terminal evidence handoff | absorbed | The existing bounded verification contract already caps repeated visual passes and requires an evidence-labeled final handoff. |
-| Generated degraded-mode/provider and asset-producer output | intentionally-rejected | Forced subagent/provider runtime generation remains outside the product boundary; generated copies are provenance only. |
+| Reduced-motion alternatives and platform-specific capture evidence | absorbed | Local motion and native quality contracts already require intentional reduced-motion behavior, real simulator/emulator or device evidence, and explicit hardware limits. |
+| Capture validity, comp fidelity, bounded review passes, and scoped verdicts | absorbed with calibration | Local visual acceptance separates screenshot validity, rendered comparison, original findings, and exact verdict scope without importing a mandatory reviewer runtime. |
+| Shadow interpolation, layout-transition, ground-color, occlusion, image-backed contrast, scoped-ignore, and selector-compilation detector fixes | partial | These are useful canonical engine corrections, but the installed package uses the disclosed regex fallback because parser dependencies are not vendored. The compatibility pin does not advance without local executable fixtures for the selected engine boundary. |
+| Critique snapshot/routing and direction/comps workflow changes | partial | Evidence-led critique and direction-first composition already exist locally. Upstream question UI, persisted runtime, fixed routing mechanics, and provider-specific orchestration remain outside the package. |
+| Live/provider/browser-session, hook, asset-generation, and generated host copies | intentionally-rejected | These duplicate browser67 or host runtime ownership and would create a second session/evidence authority. |
+| Universal detector bans or automatic runtime claims | intentionally-rejected | Static findings remain contextual signals; source presence does not prove browser, native, performance, or installed-host behavior. |
 
 ### Cumulative selected boundary
 
@@ -123,9 +120,11 @@ selected behavior boundary `80e4dd0d581fcdb42be62252b7bc07dcd2238330`:
 | Universal category, font, framework, and library prescriptions | intentionally-rejected | project authority and observed performance/accessibility evidence win |
 | Promotional or "award-winning" tone | intentionally-rejected | local output remains factual and evidence-led |
 
-The compatibility pin advances only to the selected canonical detector
-boundary, not to the reviewed remote head. The later tail remains reviewed but
-outside the pin because it adds no further selected detector boundary.
+The compatibility pin remains at the selected canonical detector boundary, not
+the reviewed remote head. The later tail remains reviewed but outside the pin
+because its additional detector engine behavior is not executable in the
+dependency-free installed fallback and the runtime/provider changes are outside
+the product boundary.
 
 ## Runtime and packaging boundary
 
@@ -151,7 +150,8 @@ evidence unless the corresponding local tool actually ran.
 
 ## Current conclusion
 
-`missing-high-value`: none within the selected fusion boundary.
+`missing-high-value`: none within the selected fusion boundary through remote
+head `5c5553b1d7f9e89bb833f9179cea681742a17720`, reviewed on 2026-08-17.
 
 The cumulative state is selective absorption. General workflow, brief and
 change-scope authority, surface modes, native quality, detector discipline and
