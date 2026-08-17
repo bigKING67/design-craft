@@ -15,6 +15,7 @@ override project authority.
 - [Peekpaper adapter](#peekpaper-adapter)
 - [Evidence and artifact boundary](#evidence-and-artifact-boundary)
 - [Disposable Shadow Lab](#disposable-shadow-lab)
+- [Comparative Shadow Lab closeout](#comparative-shadow-lab-closeout)
 - [Operational cadence](#operational-cadence)
 - [Completion](#completion)
 
@@ -177,6 +178,47 @@ python3 scripts/design_craft_shadow_lab.py cleanup \
 source mismatch remains visible even though confirmed cleanup removes only the
 owned lab. Never report Shadow Lab success as browser, native, production, or
 visual acceptance evidence; it proves snapshot and source-write boundaries.
+
+Package managers may add internal symlinks inside the disposable worktree.
+`verify` fingerprints those links without following them only when their
+resolved targets remain inside the lab. Absolute or escaping links still fail
+closed. The fixed-commit snapshot itself remains symlink-free.
+
+## Comparative Shadow Lab closeout
+
+After two to five genuine directions have been implemented and observed, use
+`scripts/design_craft_shadow_compare.py` to bind the comparison. This is a
+closeout contract, not a design generator or permission to promote production
+code. It requires:
+
+- distinct Shadow Labs using the same source repository and fixed commit;
+- one shared target job, acceptance rules, required evidence roles, and runtime
+  checks;
+- a named divergence axis, hypothesis, invariants, and risks for each variant;
+- repo-external, hash-bound artifacts that cover every required evidence role;
+- the same runtime-check IDs for every variant, with failed and unverified
+  states kept visible;
+- an explicit `absorb`, `adapt`, `reject`, and `unverified` decision record.
+
+Create the spec outside the source repository, then write the comparison beside
+the external evidence bundle:
+
+```bash
+python3 scripts/design_craft_shadow_compare.py create \
+  --spec /absolute/external/path/comparison-spec.json \
+  --output /absolute/external/path/comparison.json
+python3 scripts/design_craft_shadow_compare.py validate \
+  --manifest /absolute/external/path/comparison.json \
+  --require-live-labs
+```
+
+Use `ready_for_selection` when no direction has been chosen. `recommended`
+requires the user to have delegated the recommendation; `selected` requires an
+explicit user selection. Every comparison fixes
+`production_promotion_authorized=false`: choosing a direction and authorizing
+production edits remain separate scopes. Static validation preserves the
+artifact hashes after closeout; `--require-live-labs` additionally rechecks
+the retained labs, their current tree fingerprints, and the source baseline.
 
 ## Operational cadence
 

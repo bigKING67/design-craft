@@ -40,6 +40,10 @@ structure. It keeps scoped project rules, optional `PRODUCT.md`, project
 - A bounded visual-reference intelligence layer that turns mutable discovery
   sources into reviewed Reference Cards and task-specific Reference Packs
   without copying third-party assets or overriding project authority.
+- Repo-external Shadow Labs and comparison closeouts that bind distinct
+  fixed-commit variants, shared acceptance rules, runtime evidence, and
+  `absorb | adapt | reject | unverified` decisions without authorizing edits to
+  the real target repository.
 
 The skill is intentionally personal and local-first. For dashboards, special
 reports, and similar business surfaces, scoped project rules, live

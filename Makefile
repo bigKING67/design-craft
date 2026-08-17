@@ -66,7 +66,7 @@ score:
 	python3 scripts/design_craft_score.py --self
 
 shadow-lab-check:
-	PYTHONDONTWRITEBYTECODE=1 python3 -m unittest tests.unit.test_shadow_lab tests.integration.test_shadow_lab_cli tests.adversarial.test_shadow_lab_boundaries
+	PYTHONDONTWRITEBYTECODE=1 python3 -m unittest tests.unit.test_shadow_lab tests.unit.test_shadow_lab_comparison tests.integration.test_shadow_lab_cli tests.integration.test_shadow_compare_cli tests.adversarial.test_shadow_lab_boundaries
 
 visual-reference-check: shadow-lab-check
 	PYTHONDONTWRITEBYTECODE=1 python3 -m unittest tests.unit.test_visual_reference_contract tests.unit.test_visual_reference_target_fixture tests.unit.test_visual_reference_comparative_fixture tests.unit.test_peekpaper_adapter tests.unit.test_route_runtime tests.integration.test_visual_reference_cli

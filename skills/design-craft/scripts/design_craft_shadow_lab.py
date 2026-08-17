@@ -412,24 +412,56 @@ def extract_archive(
             os.chmod(target, 0o755 if member.mode & 0o111 else 0o644)
 
 
-def tree_fingerprint(root: Path) -> dict[str, Any]:
+def tree_fingerprint(
+    root: Path,
+    *,
+    allow_internal_symlinks: bool = False,
+) -> dict[str, Any]:
     if not root.is_dir() or root.is_symlink():
         raise ShadowLabError(f"lab worktree must be a real directory: {root}")
     digest = hashlib.sha256()
     file_count = 0
+    symlink_count = 0
     total_bytes = 0
     for current_root, directories, files in os.walk(root, followlinks=False):
         current = Path(current_root)
         directories.sort()
         files.sort()
-        for name in [*directories, *files]:
+        symlinked_directories: list[str] = []
+        for name in directories:
             path = current / name
             if path.is_symlink():
+                symlinked_directories.append(name)
+        directories[:] = [name for name in directories if name not in symlinked_directories]
+        for name in [*symlinked_directories, *files]:
+            path = current / name
+            if not path.is_symlink():
+                continue
+            if not allow_internal_symlinks:
                 raise ShadowLabError(f"lab worktree contains a symlink: {path}")
+            target = os.readlink(path)
+            if os.path.isabs(target):
+                raise ShadowLabError(f"lab worktree symlink escapes the lab: {path}")
+            resolved_target = (path.parent / target).resolve(strict=False)
+            if not is_relative_to(resolved_target, root):
+                raise ShadowLabError(f"lab worktree symlink escapes the lab: {path}")
+            relative = path.relative_to(root).as_posix()
+            info = path.lstat()
+            digest.update(relative.encode("utf-8", errors="surrogateescape"))
+            digest.update(b"\0L\0")
+            digest.update(str(stat.S_IMODE(info.st_mode)).encode())
+            digest.update(b"\0")
+            digest.update(os.fsencode(target))
+            digest.update(b"\0")
+            symlink_count += 1
         for name in files:
             path = current / name
+            if path.is_symlink():
+                continue
             relative = path.relative_to(root).as_posix()
             info = path.stat()
+            if not stat.S_ISREG(info.st_mode):
+                raise ShadowLabError(f"lab worktree contains a special file: {path}")
             digest.update(relative.encode("utf-8", errors="surrogateescape"))
             digest.update(b"\0")
             digest.update(str(stat.S_IMODE(info.st_mode)).encode())
@@ -443,6 +475,7 @@ def tree_fingerprint(root: Path) -> dict[str, Any]:
     return {
         "sha256": digest.hexdigest(),
         "file_count": file_count,
+        "symlink_count": symlink_count,
         "total_bytes": total_bytes,
     }
 
@@ -627,7 +660,10 @@ def verify_lab(manifest_path: Path) -> dict[str, Any]:
         raise ShadowLabError("manifest source baseline must be an object")
     current = source_state(owned["source"])
     differences = state_differences(baseline, current)
-    current_tree = tree_fingerprint(owned["worktree"])
+    current_tree = tree_fingerprint(
+        owned["worktree"],
+        allow_internal_symlinks=True,
+    )
     source_unchanged = not differences
     return {
         "schema": VERIFICATION_SCHEMA,

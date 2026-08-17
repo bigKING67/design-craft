@@ -160,6 +160,33 @@ class ShadowLabTests(unittest.TestCase):
                     output_root_path=parent / "labs",
                 )
 
+    def test_verify_allows_generated_internal_symlinks_without_following_them(self) -> None:
+        if not hasattr(os, "symlink"):
+            self.skipTest("symlinks are unavailable")
+        with tempfile.TemporaryDirectory() as raw:
+            parent = Path(raw)
+            repo = create_repo(parent)
+            payload = shadow_lab.prepare_lab(
+                source_path=repo,
+                requested_ref="HEAD",
+                output_root_path=parent / "labs",
+            )
+            manifest_path = Path(payload["manifest"]["isolation"]["manifest_path"])
+            worktree = Path(payload["manifest"]["isolation"]["worktree"])
+            package = worktree / "node_modules" / ".store" / "package"
+            package.mkdir(parents=True)
+            (package / "index.js").write_text("export default true;\n")
+            (worktree / "node_modules" / "package").symlink_to(
+                ".store/package",
+                target_is_directory=True,
+            )
+
+            verification = shadow_lab.verify_lab(manifest_path)
+
+            self.assertTrue(verification["ok"])
+            self.assertEqual(verification["lab"]["symlink_count"], 1)
+            self.assertTrue(verification["source"]["source_unchanged"])
+
     def test_rejects_a_symlinked_output_root(self) -> None:
         if not hasattr(os, "symlink"):
             self.skipTest("symlinks are unavailable")
