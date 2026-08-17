@@ -271,6 +271,24 @@ def default_output_root() -> Path:
     return Path(tempfile.gettempdir()) / "design-craft-shadow-labs"
 
 
+def validate_output_root_permissions(
+    root_info: os.stat_result,
+    *,
+    platform_name: str = os.name,
+    current_uid: int | None = None,
+) -> None:
+    if platform_name == "nt":
+        return
+    if current_uid is None and hasattr(os, "getuid"):
+        current_uid = os.getuid()
+    if current_uid is not None and root_info.st_uid != current_uid:
+        raise ShadowLabError("output root must be owned by the current user")
+    if stat.S_IMODE(root_info.st_mode) & 0o077:
+        raise ShadowLabError(
+            "output root permissions must not allow group or other access"
+        )
+
+
 def prepare_output_root(output_root: Path) -> dict[str, Any]:
     expanded = output_root.expanduser().absolute()
     if expanded.is_symlink():
@@ -280,10 +298,7 @@ def prepare_output_root(output_root: Path) -> dict[str, Any]:
     root_info = output_root.lstat()
     if not stat.S_ISDIR(root_info.st_mode):
         raise ShadowLabError("output root must be a directory")
-    if hasattr(os, "getuid") and root_info.st_uid != os.getuid():
-        raise ShadowLabError("output root must be owned by the current user")
-    if stat.S_IMODE(root_info.st_mode) & 0o077:
-        raise ShadowLabError("output root permissions must not allow group or other access")
+    validate_output_root_permissions(root_info)
     marker_path = output_root / ROOT_MARKER_NAME
     if marker_path.exists():
         if marker_path.is_symlink() or not marker_path.is_file():

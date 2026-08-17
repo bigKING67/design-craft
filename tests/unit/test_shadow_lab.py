@@ -3,10 +3,12 @@ from __future__ import annotations
 import importlib.util
 import json
 import os
+import stat
 import subprocess
 import tempfile
 import unittest
 from pathlib import Path
+from types import SimpleNamespace
 
 from tools.design_craft.repo import REPO_ROOT
 
@@ -56,6 +58,27 @@ def create_repo(parent: Path) -> Path:
 
 
 class ShadowLabTests(unittest.TestCase):
+    def test_output_root_permissions_are_posix_only(self) -> None:
+        root_info = SimpleNamespace(st_uid=1000, st_mode=stat.S_IFDIR | 0o777)
+
+        shadow_lab.validate_output_root_permissions(
+            root_info,
+            platform_name="nt",
+            current_uid=2000,
+        )
+        with self.assertRaisesRegex(shadow_lab.ShadowLabError, "owned"):
+            shadow_lab.validate_output_root_permissions(
+                root_info,
+                platform_name="posix",
+                current_uid=2000,
+            )
+        with self.assertRaisesRegex(shadow_lab.ShadowLabError, "permissions"):
+            shadow_lab.validate_output_root_permissions(
+                root_info,
+                platform_name="posix",
+                current_uid=1000,
+            )
+
     def test_manifest_schema_declares_the_zero_write_contract(self) -> None:
         schema = json.loads(SCHEMA.read_text(encoding="utf-8"))
 

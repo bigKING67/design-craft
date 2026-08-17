@@ -184,6 +184,13 @@ Package managers may add internal symlinks inside the disposable worktree.
 resolved targets remain inside the lab. Absolute or escaping links still fail
 closed. The fixed-commit snapshot itself remains symlink-free.
 
+On POSIX hosts, the output root must be owned by the current user and deny
+group/other access. Native Windows access control is ACL-based, and Python's
+POSIX ownership and mode fields do not prove ACL privacy there, so the helper
+does not apply those two POSIX checks on Windows. It still requires a real,
+disjoint directory, an owned root marker, a direct-child lab layout, and scoped
+cleanup. This contract does not claim that Windows ACLs were audited.
+
 ## Comparative Shadow Lab closeout
 
 After two to five genuine directions have been implemented and observed, use
