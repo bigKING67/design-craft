@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import concurrent.futures
 import json
 import os
 import shutil
@@ -25,16 +26,18 @@ EXCLUDED_PARTS = {
 }
 
 
-def included(path: Path) -> bool:
-    try:
-        relative = path.relative_to(ROOT)
-    except ValueError:
-        return False
-    return not any(part in EXCLUDED_PARTS for part in relative.parts)
-
-
-def paths_with_suffix(suffix: str) -> list[Path]:
-    return sorted(path for path in ROOT.rglob(f"*{suffix}") if path.is_file() and included(path))
+def paths_by_suffix(suffixes: tuple[str, ...]) -> dict[str, list[Path]]:
+    paths = {suffix: [] for suffix in suffixes}
+    for directory, directory_names, file_names in os.walk(ROOT):
+        directory_names[:] = sorted(
+            name for name in directory_names if name not in EXCLUDED_PARTS
+        )
+        current = Path(directory)
+        for name in sorted(file_names):
+            suffix = Path(name).suffix
+            if suffix in paths:
+                paths[suffix].append(current / name)
+    return paths
 
 
 def unique_object(pairs: list[tuple[str, object]]) -> dict[str, object]:
@@ -88,8 +91,7 @@ def command_errors(command: list[str], paths: list[Path], label: str) -> list[st
         if command[0] == "bash" and os.name == "nt":
             guidance = "; set DESIGN_CRAFT_BASH to Git for Windows bash.exe"
         return [f"{command[0]} is required for {label} lint{guidance}"]
-    errors: list[str] = []
-    for path in paths:
+    def check(path: Path) -> str | None:
         result = subprocess.run(
             [executable, *command[1:], str(path)],
             cwd=ROOT,
@@ -100,15 +102,21 @@ def command_errors(command: list[str], paths: list[Path], label: str) -> list[st
         )
         if result.returncode != 0:
             detail = result.stderr.strip() or result.stdout.strip() or "syntax check failed"
-            errors.append(f"{path.relative_to(ROOT)}: {label}: {detail}")
-    return errors
+            return f"{path.relative_to(ROOT)}: {label}: {detail}"
+        return None
+
+    workers = min(8, len(paths))
+    with concurrent.futures.ThreadPoolExecutor(max_workers=workers) as executor:
+        results = executor.map(check, paths)
+        return [error for error in results if error is not None]
 
 
 def validate() -> dict:
-    python_paths = paths_with_suffix(".py")
-    shell_paths = paths_with_suffix(".sh")
-    json_paths = paths_with_suffix(".json")
-    node_paths = paths_with_suffix(".cjs")
+    paths = paths_by_suffix((".py", ".sh", ".json", ".cjs"))
+    python_paths = paths[".py"]
+    shell_paths = paths[".sh"]
+    json_paths = paths[".json"]
+    node_paths = paths[".cjs"]
     errors = [
         *python_errors(python_paths),
         *json_errors(json_paths),

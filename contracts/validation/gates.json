@@ -185,7 +185,7 @@
     },
     {
       "id": "installer-contract-tests",
-      "command": ["python3", "-m", "unittest", "tests.contract.test_installer"],
+      "command": ["python3", "scripts/design_craft_parallel_unittest.py", "--jobs", "4", "tests.contract.test_installer"],
       "profiles": ["contracts"],
       "timeout_seconds": 180,
       "execution": "parallel"
