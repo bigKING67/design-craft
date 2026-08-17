@@ -17,7 +17,10 @@ fixtures, and immutable history.
   catalog, Pack, target-fit, and false-transfer cases; screenshot binaries stay
   repo-external. `target-validation/` may contain controlled same-content
   browser fixtures, but those results remain prototype evidence and cannot be
-  presented as production or independent comparative validation.
+  presented as production evidence. `comparative-validation/` contains
+  pre-registered same-input comparisons on separate repository-local targets;
+  these may promote only hypotheses that already satisfy their target-evidence
+  prerequisite, and do not establish production value or human preference.
 - `history/`: retired repository-level narrative logs that cannot satisfy a
   current gate.
 

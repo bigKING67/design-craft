@@ -67,11 +67,13 @@
           },
           "target_validation_refs": {
             "type": "array",
+            "description": "Target or prototype evidence. An artifact listed here cannot also satisfy comparative_eval_refs for the same hypothesis.",
             "uniqueItems": true,
             "items": {"type": "string", "minLength": 1}
           },
           "comparative_eval_refs": {
             "type": "array",
+            "description": "Later same-input comparative evidence, distinct from every target_validation_ref for the same hypothesis.",
             "uniqueItems": true,
             "items": {"type": "string", "minLength": 1}
           },

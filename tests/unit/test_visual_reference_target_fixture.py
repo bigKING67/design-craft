@@ -85,10 +85,22 @@ class VisualReferenceTargetFixtureTests(unittest.TestCase):
         )
         self.assertEqual(
             hypotheses["proof-led-trust-sequencing"]["target_validation_refs"],
-            [],
+            [
+                "evals/visual-reference/comparative-validation/"
+                "reference-assisted-evidence-dossier/"
+                "result.md#controlled-comparison"
+            ],
         )
-        self.assertTrue(
-            all(item["status"] == "proposed" for item in hypotheses.values())
+        self.assertEqual(
+            hypotheses["typographic-single-focus-entry"]["status"], "proposed"
+        )
+        self.assertEqual(
+            hypotheses["proof-led-trust-sequencing"]["status"],
+            "project_validated",
+        )
+        self.assertEqual(
+            hypotheses["desktop-mobile-priority-reordering"]["status"],
+            "comparative_validated",
         )
 
     def test_screenshot_manifest_is_portable_and_responsive(self) -> None:

@@ -2097,13 +2097,15 @@
         "browser67://runs/design-craft/20260817T032024616Z-ddb8f586#origin_audit:nue",
         "browser67://runs/design-craft/20260817T032024616Z-ddb8f586#origin_audit:locket"
       ],
-      "status": "proposed",
+      "status": "project_validated",
       "supporting_card_ids": [
         "peekpaper-2026-08-11-lightspark",
         "peekpaper-2026-08-11-nue",
         "peekpaper-2026-08-11-locket"
       ],
-      "target_validation_refs": [],
+      "target_validation_refs": [
+        "evals/visual-reference/comparative-validation/reference-assisted-evidence-dossier/result.md#controlled-comparison"
+      ],
       "unique_origin_urls": [
         "https://lightspark.com/",
         "https://locket.com/",
@@ -2111,7 +2113,9 @@
       ]
     },
     {
-      "comparative_eval_refs": [],
+      "comparative_eval_refs": [
+        "evals/visual-reference/comparative-validation/reference-assisted-evidence-dossier/result.md#controlled-comparison"
+      ],
       "disconfirming_evidence": [
         "Priority changes can remove context that some audiences still need before acting.",
         "Static breakpoint captures do not prove intermediate widths, orientation changes, or dynamic layout stability."
@@ -2122,7 +2126,7 @@
         "browser67://runs/design-craft/20260817T032024616Z-ddb8f586#origin_audit:nue",
         "browser67://runs/design-craft/20260817T032024616Z-ddb8f586#origin_audit:locket"
       ],
-      "status": "proposed",
+      "status": "comparative_validated",
       "supporting_card_ids": [
         "peekpaper-2026-08-11-nue",
         "peekpaper-2026-08-11-bucks-sauce",

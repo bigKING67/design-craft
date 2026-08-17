@@ -170,6 +170,33 @@ class VisualReferenceContractTests(unittest.TestCase):
         errors, _ = reference_contract.validate_catalog(catalog(cards, [hypothesis]))
         self.assertTrue(any("three unique origins" in error for error in errors))
 
+    def test_hypothesis_cannot_reuse_one_artifact_for_two_promotion_rungs(self) -> None:
+        cards = [card(f"card-{index}") for index in range(3)]
+        shared_ref = "artifact://visual-reference/shared-result"
+        hypothesis = {
+            "id": "proof-priority",
+            "mechanism": "Move concrete proof ahead of supporting explanation.",
+            "supporting_card_ids": [item["id"] for item in cards],
+            "unique_origin_urls": sorted(item["origin"]["url"] for item in cards),
+            "disconfirming_evidence": [],
+            "origin_audit_refs": [],
+            "target_validation_refs": [shared_ref],
+            "comparative_eval_refs": [shared_ref],
+            "status": "comparative_validated",
+        }
+
+        errors, _ = reference_contract.validate_catalog(catalog(cards, [hypothesis]))
+        self.assertTrue(
+            any("must not reuse evidence" in error for error in errors),
+            errors,
+        )
+
+        hypothesis["comparative_eval_refs"] = [
+            "artifact://visual-reference/distinct-comparative-result"
+        ]
+        errors, _ = reference_contract.validate_catalog(catalog(cards, [hypothesis]))
+        self.assertEqual(errors, [])
+
     def test_pack_builder_blocks_beautiful_but_wrong_surface(self) -> None:
         reviewed = card("persuade-only")
         pack = reference_contract.build_reference_pack(

@@ -97,6 +97,10 @@ One work is an exemplar, not a pattern. Promotion requires:
 Only then may a hypothesis move through `proposed`, `project_validated`,
 `comparative_validated`, and `absorbed`. Golden contract fixtures prove schema
 and blocking behavior; they do not satisfy target or comparative evidence.
+One artifact may satisfy only one promotion rung for a given hypothesis:
+`target_validation_refs` and `comparative_eval_refs` must be disjoint. A first
+target result cannot be counted again as the later comparative evaluation;
+promotion requires a distinct result with its own pre-registered comparison.
 
 ## Peekpaper adapter
 

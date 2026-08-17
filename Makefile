@@ -66,10 +66,11 @@ score:
 	python3 scripts/design_craft_score.py --self
 
 visual-reference-check:
-	PYTHONDONTWRITEBYTECODE=1 python3 -m unittest tests.unit.test_visual_reference_contract tests.unit.test_visual_reference_target_fixture tests.unit.test_peekpaper_adapter tests.unit.test_route_runtime tests.integration.test_visual_reference_cli
-	PYTHONDONTWRITEBYTECODE=1 python3 skills/design-craft/scripts/design_craft_reference.py validate evals/visual-reference/peekpaper-pilot/catalog.json evals/visual-reference/golden/reference-transfer/expected.json evals/visual-reference/target-validation/reference-assisted-product-landing/reference-pack.json
+	PYTHONDONTWRITEBYTECODE=1 python3 -m unittest tests.unit.test_visual_reference_contract tests.unit.test_visual_reference_target_fixture tests.unit.test_visual_reference_comparative_fixture tests.unit.test_peekpaper_adapter tests.unit.test_route_runtime tests.integration.test_visual_reference_cli
+	PYTHONDONTWRITEBYTECODE=1 python3 skills/design-craft/scripts/design_craft_reference.py validate evals/visual-reference/peekpaper-pilot/catalog.json evals/visual-reference/golden/reference-transfer/expected.json evals/visual-reference/target-validation/reference-assisted-product-landing/reference-pack.json evals/visual-reference/comparative-validation/reference-assisted-evidence-dossier/reference-pack.json
 	PYTHONDONTWRITEBYTECODE=1 python3 skills/design-craft/scripts/design_craft_reference.py validate evals/visual-reference/golden/beautiful-but-wrong/expected.json
 	PYTHONDONTWRITEBYTECODE=1 python3 skills/design-craft/scripts/design_craft_l4_evidence_manifest.py --validate-screenshots-json evals/visual-reference/target-validation/reference-assisted-product-landing/screenshots.json --strict
+	PYTHONDONTWRITEBYTECODE=1 python3 skills/design-craft/scripts/design_craft_l4_evidence_manifest.py --validate-screenshots-json evals/visual-reference/comparative-validation/reference-assisted-evidence-dossier/screenshots.json --strict
 
 maturity-development:
 	python3 scripts/design_craft_maturity.py --profile development

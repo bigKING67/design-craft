@@ -570,6 +570,12 @@ def validate_catalog(
             errors.append(f"{path} requires target_validation_refs")
         if status in {"comparative_validated", "absorbed"} and not comparative_refs:
             errors.append(f"{path} requires comparative_eval_refs")
+        reused_refs = sorted(set(target_refs) & set(comparative_refs))
+        if reused_refs:
+            errors.append(
+                f"{path} must not reuse evidence across target_validation_refs "
+                f"and comparative_eval_refs: {reused_refs}"
+            )
         if status == "absorbed" and not origin_refs:
             errors.append(f"{path} requires origin_audit_refs")
     if len(hypothesis_ids) != len(set(hypothesis_ids)):

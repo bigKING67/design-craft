@@ -66,6 +66,32 @@ class VisualReferenceCliTests(unittest.TestCase):
         )
         self.assertEqual(len(catalog["hypotheses"]), 3)
 
+    def test_catalog_cli_rejects_double_counted_promotion_evidence(self) -> None:
+        catalog = json.loads(CATALOG.read_text(encoding="utf-8"))
+        hypothesis = next(
+            item
+            for item in catalog["hypotheses"]
+            if item["id"] == "desktop-mobile-priority-reordering"
+        )
+        hypothesis["comparative_eval_refs"] = [hypothesis["target_validation_refs"][0]]
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            invalid_path = Path(temp_dir) / "catalog.json"
+            invalid_path.write_text(json.dumps(catalog), encoding="utf-8")
+            completed = run_cli("validate", str(invalid_path))
+
+        self.assertEqual(completed.returncode, 2, completed.stdout + completed.stderr)
+        payload = json.loads(completed.stdout)
+        self.assertFalse(payload["ok"])
+        self.assertTrue(
+            any(
+                "must not reuse evidence" in error
+                for result in payload["results"]
+                for error in result["errors"]
+            ),
+            payload,
+        )
+
     def test_reference_transfer_golden_pack(self) -> None:
         completed = run_cli(
             "build-pack",
