@@ -2,7 +2,35 @@
 
 All notable local changes to `design-craft` are recorded here.
 
-## Unreleased
+## 0.6.0 - Unreleased
+
+- Add a bounded visual-reference intelligence workflow with versioned Reference
+  Card, Catalog, and task-specific Reference Pack contracts. Mutable discovery
+  sources such as Peekpaper remain subordinate to project authority, and every
+  reusable mechanism keeps source, license, fixed revision, adaptation, and
+  validation provenance instead of copying third-party product identity or
+  assets.
+- Require reference-assisted work to prove target relevance and comparative
+  value before promotion. Golden and target fixtures bind screen roles,
+  acceptance rules, screenshots, runtime checks, and explicit
+  `absorb | adapt | reject | unverified` decisions; a visually attractive
+  screenshot or passing static detector is not standalone acceptance evidence.
+- Add repo-external Shadow Labs for evaluating real frontend repositories as
+  fixed-commit, disposable inputs without including dirty tracked content,
+  untracked content, `.git`, submodules, or source-repository writes. Manifests
+  bind Git baselines and isolation boundaries, while cleanup requires an owned
+  root marker, direct-child layout, explicit confirmation, and a matching
+  source-state report.
+- Add comparative Shadow Lab closeout for two to five distinct variants from
+  the same source commit, with shared acceptance rules and evidence roles plus
+  per-variant divergence axes, hypotheses, invariants, risks, runtime results,
+  hash-bound external artifacts, and explicit selection authority.
+- Keep generated package-manager symlinks verifiable only when they remain
+  inside the disposable lab, reject absolute or escaping links, and make the
+  output-root boundary portable to native Windows. POSIX ownership and mode
+  checks remain strict on POSIX; Windows skips those synthetic fields without
+  claiming an ACL audit, while all structural isolation and cleanup checks stay
+  enforced.
 
 - Add a framework-neutral component primitive decision contract with
   `keep | adopt | migrate | defer`, project authority, compatibility,
