@@ -107,7 +107,9 @@ Use the smallest relevant bundled helper when available:
   `scripts/design_craft_l4_capture.py`, and
   `scripts/design_craft_browser_evidence.py`.
 - Visual references: `scripts/design_craft_reference.py` for bounded source
-  ingestion, contract validation, and task-specific Reference Packs.
+  ingestion, contract validation, and task-specific Reference Packs;
+  `scripts/design_craft_shadow_lab.py` for disposable fixed-commit snapshots
+  when a real target repository must remain source-read-only.
 - Platform and host checks: `scripts/design_craft_platform_scan.py`,
   `scripts/design_craft_codex_route_pack.py`, and
   `scripts/design_craft_score.py`.

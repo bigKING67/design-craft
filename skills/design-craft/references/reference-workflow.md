@@ -14,6 +14,7 @@ override project authority.
 - [Pattern promotion](#pattern-promotion)
 - [Peekpaper adapter](#peekpaper-adapter)
 - [Evidence and artifact boundary](#evidence-and-artifact-boundary)
+- [Disposable Shadow Lab](#disposable-shadow-lab)
 - [Operational cadence](#operational-cadence)
 - [Completion](#completion)
 
@@ -131,6 +132,51 @@ reachable interaction, keyboard focus, visible semantics, and console errors.
 Check Reduced Motion only when motion exists. Keep complete accessibility and
 performance status unverified unless separately measured with the applicable
 contract.
+
+## Disposable Shadow Lab
+
+Use `scripts/design_craft_shadow_lab.py` when a real target repository is only
+an evaluation input and must not receive edits, generated files, dependency
+installs, test artifacts, or cleanup. The helper creates a repo-external
+snapshot from one resolved Git commit. It does not copy dirty tracked content,
+untracked content, `.git`, submodules, or symlinks.
+
+The manifest contract is
+`contracts/shadow-lab-manifest.schema.json`. It records the fixed commit,
+repo-external worktree, source status and tracked-diff digests, dirty path
+metadata, Git index metadata, and an explicit `source_writes_allowed=false`
+boundary. Dirty and untracked file contents are not read for baseline capture.
+
+Prepare and inspect a lab:
+
+```bash
+python3 scripts/design_craft_shadow_lab.py prepare \
+  --source /absolute/path/to/target-repo \
+  --ref <full-commit> \
+  --output-root /tmp/design-craft-shadow-labs
+python3 scripts/design_craft_shadow_lab.py verify \
+  --manifest /tmp/design-craft-shadow-labs/<lab-id>/.design-craft-shadow-lab.json
+```
+
+Run only the selected design-craft checks against the manifest's `worktree`.
+Do not point package managers, formatters, screenshot output, caches, or build
+output at the source repository. A build may mutate the disposable worktree;
+that is acceptable, but it is not evidence that the source repository changed.
+The workflow does not authorize network access or external side effects.
+
+Cleanup is fail-closed and requires the root ownership marker, the direct-child
+lab layout, disjoint source/output paths, and explicit confirmation:
+
+```bash
+python3 scripts/design_craft_shadow_lab.py cleanup \
+  --manifest /tmp/design-craft-shadow-labs/<lab-id>/.design-craft-shadow-lab.json \
+  --confirm
+```
+
+`verify` and `cleanup` report whether the source baseline still matches. A
+source mismatch remains visible even though confirmed cleanup removes only the
+owned lab. Never report Shadow Lab success as browser, native, production, or
+visual acceptance evidence; it proves snapshot and source-write boundaries.
 
 ## Operational cadence
 
