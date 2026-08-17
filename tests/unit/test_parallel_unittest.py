@@ -18,6 +18,13 @@ class ParallelUnittestTests(unittest.TestCase):
             all(test_id.startswith("tests.contract.test_installer.") for test_id in test_ids)
         )
 
+    def test_discover_modules_is_complete_and_sorted(self) -> None:
+        modules = parallel_unittest.discover_modules("tests/unit", "test_*.py")
+
+        self.assertEqual(modules, sorted(modules))
+        self.assertIn("tests.unit.test_parallel_unittest", modules)
+        self.assertEqual(len(modules), len(set(modules)))
+
     def test_run_tests_preserves_input_order(self) -> None:
         def fake_run(test_id: str) -> parallel_unittest.TestResult:
             return parallel_unittest.TestResult(test_id, 0, "", "")
@@ -33,3 +40,13 @@ class ParallelUnittestTests(unittest.TestCase):
             results = parallel_unittest.run_tests(["test.failure"], jobs=4)
 
         self.assertEqual(results, [expected])
+
+    @mock.patch.object(parallel_unittest.subprocess, "run")
+    def test_subprocess_disables_bytecode_writes(self, run: mock.Mock) -> None:
+        run.return_value.returncode = 0
+        run.return_value.stdout = ""
+        run.return_value.stderr = ""
+
+        parallel_unittest.run_test("tests.unit.test_parallel_unittest")
+
+        self.assertEqual(run.call_args.kwargs["env"]["PYTHONDONTWRITEBYTECODE"], "1")

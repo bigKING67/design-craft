@@ -164,7 +164,7 @@
     },
     {
       "id": "unit-tests",
-      "command": ["python3", "-m", "unittest", "discover", "-s", "tests/unit", "-p", "test_*.py"],
+      "command": ["python3", "scripts/design_craft_parallel_unittest.py", "--jobs", "4", "--discover-dir", "tests/unit"],
       "profiles": ["contracts", "portable", "local", "operational-release", "certified-release"],
       "timeout_seconds": 600,
       "execution": "parallel"
