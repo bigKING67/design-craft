@@ -4,6 +4,11 @@ All notable local changes to `design-craft` are recorded here.
 
 ## 0.6.0 - Unreleased
 
+- Make combined production audits explicitly route resilience, accessibility,
+  responsive, performance, and validation guidance together. Static unbounded
+  work remains a decisive architecture risk without being promoted to P0 before
+  target-runtime evidence, and explicit output limits now require a compact,
+  non-repeating finding ledger with measurement and rollback space reserved.
 - Add a bounded visual-reference intelligence workflow with versioned Reference
   Card, Catalog, and task-specific Reference Pack contracts. Mutable discovery
   sources such as Peekpaper remain subordinate to project authority, and every

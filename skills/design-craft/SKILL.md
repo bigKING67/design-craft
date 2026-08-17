@@ -89,6 +89,15 @@ full evidence and completion boundary.
 For combined production work, use one causal order: baseline and audit,
 correctness/hardening, measured optimization, visual polish, then validation.
 
+For a combined production audit that spans resilience, accessibility,
+responsive behavior, and performance, load `references/impeccable-workflow.md`,
+`references/performance-quality.md`, and `references/validation-contract.md`
+together. Treat an unbounded static hot path as decisive architecture risk but
+keep it at P1 until target-runtime evidence proves release-blocking task
+failure. Treat every explicit output cap as a hard contract: use one compact
+finding ledger, avoid repeating fixes across sections, and leave room for
+measurement, rollback, and acceptance conditions.
+
 ## Helpers
 
 Use the smallest relevant bundled helper when available:
