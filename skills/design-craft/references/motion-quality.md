@@ -161,6 +161,16 @@ Rapidly-triggered UI should retarget smoothly.
 - On iOS/Android, read the system Reduce Motion/Remove animations setting;
   Reduced Transparency and increased contrast remain separate requirements.
 
+## Evidence language
+
+Static source can prove property choice, input ownership, timing configuration,
+missing branches, and whether work is structurally unbounded. It cannot prove
+that motion *will feel* laggy, jumpy, smooth, heavy, or responsive. Until a
+pointer trace, computed-style inspection, browser performance capture, or
+representative device run observes the effect, describe those outcomes as
+risks or hypotheses and name the decisive runtime check. Do not pair a
+definitive feel claim with a later disclaimer that feel was unverified.
+
 ## Review format
 
 For a normal motion review, lead with one verdict, no more than five blocking

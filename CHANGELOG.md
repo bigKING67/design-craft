@@ -4,6 +4,10 @@ All notable local changes to `design-craft` are recorded here.
 
 ## 0.6.0 - Unreleased
 
+- Tighten motion-review evidence language so static property, timing, and input
+  facts remain distinct from unobserved claims about lag, jumps, smoothness, or
+  perceived responsiveness; definitive feel claims now require an identified
+  browser trace or representative-device observation.
 - Make combined production audits explicitly route resilience, accessibility,
   responsive, performance, and validation guidance together. Static unbounded
   work remains a decisive architecture risk without being promoted to P0 before
