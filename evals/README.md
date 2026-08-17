@@ -13,6 +13,11 @@ fixtures, and immutable history.
 - `native-runtime/`: native fixtures and evidence contracts, with its own
   history boundary.
 - `product-ui-taste/`: calibrated product UI evaluation cases.
+- `visual-reference/`: bounded source pilots and deterministic Reference Card,
+  catalog, Pack, target-fit, and false-transfer cases; screenshot binaries stay
+  repo-external. `target-validation/` may contain controlled same-content
+  browser fixtures, but those results remain prototype evidence and cannot be
+  presented as production or independent comparative validation.
 - `history/`: retired repository-level narrative logs that cannot satisfy a
   current gate.
 

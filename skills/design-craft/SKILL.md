@@ -106,6 +106,8 @@ Use the smallest relevant bundled helper when available:
 - Evidence: `scripts/design_craft_l4_eval_case.sh`,
   `scripts/design_craft_l4_capture.py`, and
   `scripts/design_craft_browser_evidence.py`.
+- Visual references: `scripts/design_craft_reference.py` for bounded source
+  ingestion, contract validation, and task-specific Reference Packs.
 - Platform and host checks: `scripts/design_craft_platform_scan.py`,
   `scripts/design_craft_codex_route_pack.py`, and
   `scripts/design_craft_score.py`.
@@ -132,6 +134,9 @@ Read only references required by the current task.
   jank, or messy structure: `references/intent-map.md`.
 - Surface-specific landing, dashboard, data-viz, report, and mobile rules:
   `references/surface-playbooks.md`.
+- Supplied, generated, or discovery-source references:
+  `references/reference-workflow.md`; use its Reference Card, Pack, evidence,
+  rights, and promotion boundaries before implementation.
 
 ### Design systems and concrete redesign
 

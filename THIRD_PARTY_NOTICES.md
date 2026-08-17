@@ -129,6 +129,20 @@ fixture must still receive the URL callback and write the interaction marker.
 The AXe binary is not stored in this repository, included in the npm package,
 or redistributed in release assets.
 
+## Peekpaper discovery metadata
+
+- Source: https://peekpaper.com/
+- Structured issue endpoint: https://peekpaper.com/content/editions/YYYY/MM/DD.json
+- Source policy: https://peekpaper.com/robots.txt
+- Pilot observations: 2026-08-10 and 2026-08-11 issues, observed 2026-08-17
+
+Peekpaper is used only as a mutable, reference-only discovery source. The
+repository stores bounded metadata fixtures and original review annotations;
+it does not store or redistribute Peekpaper screenshots, origin-site assets,
+internal ranking fields, capture identifiers, or CDN keys. The adapter is
+original design-craft code, network access is opt-in, and source material does
+not become product authority or a training corpus.
+
 ## Fusion-layer policy
 
 - Keep upstream directories pristine.

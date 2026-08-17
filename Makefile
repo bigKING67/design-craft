@@ -18,7 +18,7 @@ CERTIFIED_CANDIDATE_EVIDENCE ?= $(RELEASE_EVIDENCE_DIR)/certified-100-candidate.
 CERTIFIED_FINAL_EVIDENCE ?= $(RELEASE_EVIDENCE_DIR)/certified-100-final.json
 export PYTHONDONTWRITEBYTECODE := 1
 
-.PHONY: validate validate-portable lint contract-tests package-check public-repo-check workflow-check skill-quick-validate score \
+.PHONY: validate validate-portable lint contract-tests package-check public-repo-check workflow-check skill-quick-validate score visual-reference-check \
 	maturity-development maturity-operational maturity-certified pass audit critique prototype system-review motion primitive-selection motion-plan-dry-run taste-review \
 	seed-dry-run route-smoke doctor platform-scan-check native-runtime-probe native-runtime-check native-release-bundle-check \
 	native-release-bundle-build native-release-bundle-verify codex-route-pack-check codex-route-pack-host-check init-dry-run active-scope-check \
@@ -64,6 +64,12 @@ skill-quick-validate:
 
 score:
 	python3 scripts/design_craft_score.py --self
+
+visual-reference-check:
+	PYTHONDONTWRITEBYTECODE=1 python3 -m unittest tests.unit.test_visual_reference_contract tests.unit.test_visual_reference_target_fixture tests.unit.test_peekpaper_adapter tests.unit.test_route_runtime tests.integration.test_visual_reference_cli
+	PYTHONDONTWRITEBYTECODE=1 python3 skills/design-craft/scripts/design_craft_reference.py validate evals/visual-reference/peekpaper-pilot/catalog.json evals/visual-reference/golden/reference-transfer/expected.json evals/visual-reference/target-validation/reference-assisted-product-landing/reference-pack.json
+	PYTHONDONTWRITEBYTECODE=1 python3 skills/design-craft/scripts/design_craft_reference.py validate evals/visual-reference/golden/beautiful-but-wrong/expected.json
+	PYTHONDONTWRITEBYTECODE=1 python3 skills/design-craft/scripts/design_craft_l4_evidence_manifest.py --validate-screenshots-json evals/visual-reference/target-validation/reference-assisted-product-landing/screenshots.json --strict
 
 maturity-development:
 	python3 scripts/design_craft_maturity.py --profile development
@@ -260,7 +266,7 @@ install:
 install-verify:
 	python3 scripts/design_craft_install_verify.py --source skills/design-craft --installed "$(DESIGN_CRAFT_SKILL_ROOT)/design-craft" --expected-name design-craft --expected-version "$$(cat VERSION)" --require-metadata
 
-release-gate-source: validate-portable lint contract-tests package-check public-repo-check workflow-check skill-quick-validate score maturity-development pass audit critique prototype system-review motion primitive-selection motion-plan-dry-run taste-review seed-dry-run route-smoke doctor platform-scan-check native-release-bundle-check codex-route-pack-check init-dry-run active-scope-check cross-agent-check comparative-check l4-capture-check historical-l4-metadata-check smell-smoke upstream-report upstream-absorption-check github-governance-contract-check
+release-gate-source: validate-portable lint contract-tests package-check public-repo-check workflow-check skill-quick-validate score visual-reference-check maturity-development pass audit critique prototype system-review motion primitive-selection motion-plan-dry-run taste-review seed-dry-run route-smoke doctor platform-scan-check native-release-bundle-check codex-route-pack-check init-dry-run active-scope-check cross-agent-check comparative-check l4-capture-check historical-l4-metadata-check smell-smoke upstream-report upstream-absorption-check github-governance-contract-check
 
 publish-local: release-gate-source
 	bash scripts/install_local.sh $(INSTALL_ARGS)

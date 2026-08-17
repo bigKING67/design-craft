@@ -125,6 +125,82 @@ class RouteRuntimeTests(unittest.TestCase):
         self.assertIn("references/adaptive-quality.md", references)
         self.assertIn("references/interaction-physics.md", references)
 
+    def test_reference_only_route_exposes_machine_readable_workflow(self) -> None:
+        payload = route_runtime.build_route_payload(
+            route_payload={"ok": True, "frontend_tier": "L1-V"},
+            platform_payload=platform_payload(),
+            route_source="codex_global",
+            surface="landing",
+            intent="reference-only",
+            scope="page",
+            style="auto",
+            style_authority_path="",
+            design_authority_mode="auto",
+            existing_project=True,
+            has_reference=False,
+            needs_reference=False,
+        )
+
+        self.assertFalse(payload["runtime_validation_required"])
+        self.assertEqual(
+            payload["reference_workflow"],
+            {
+                "required": True,
+                "triggers": ["reference-only"],
+                "contract": "references/reference-workflow.md",
+            },
+        )
+        self.assertIn(
+            "references/reference-workflow.md",
+            payload["recommended_design_craft_references"],
+        )
+
+    def test_reference_only_portable_fallback_does_not_require_style_authority(self) -> None:
+        payload = route_runtime.build_route_payload(
+            route_payload={},
+            platform_payload=platform_payload(),
+            route_source="portable_fallback",
+            surface="landing",
+            intent="reference-only",
+            scope="page",
+            style="auto",
+            style_authority_path="",
+            design_authority_mode="auto",
+            existing_project=True,
+            has_reference=False,
+            needs_reference=False,
+        )
+
+        self.assertTrue(payload["ok"])
+        self.assertEqual(payload["preflight_code"], "OK")
+        self.assertFalse(payload["runtime_validation_required"])
+        self.assertFalse(payload["browser_validation_required"])
+        self.assertFalse(payload["directory_governance_required"])
+        self.assertFalse(payload["performance_review_required"])
+        self.assertTrue(payload["reference_workflow"]["required"])
+
+    def test_reference_flags_trigger_workflow_without_changing_runtime_need(self) -> None:
+        payload = route_runtime.build_route_payload(
+            route_payload={"ok": True, "frontend_tier": "L1-V"},
+            platform_payload=platform_payload(),
+            route_source="codex_global",
+            surface="dashboard",
+            intent="visual-refine",
+            scope="component",
+            style="auto",
+            style_authority_path="DESIGN.md",
+            design_authority_mode="auto",
+            existing_project=True,
+            has_reference=True,
+            needs_reference=True,
+        )
+
+        self.assertTrue(payload["runtime_validation_required"])
+        self.assertEqual(
+            payload["reference_workflow"]["triggers"],
+            ["has-reference-image", "needs-generated-reference"],
+        )
+
     def test_route_loader_rejects_non_object_json(self) -> None:
         with tempfile.TemporaryDirectory(prefix="design-craft-route-runtime-") as raw:
             path = Path(raw) / "route.json"

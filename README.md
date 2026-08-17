@@ -37,6 +37,9 @@ structure. It keeps scoped project rules, optional `PRODUCT.md`, project
   specified developer-product surfaces.
 - Project quality gates for architecture, performance, code elegance, validation,
   and file/directory structure governance.
+- A bounded visual-reference intelligence layer that turns mutable discovery
+  sources into reviewed Reference Cards and task-specific Reference Packs
+  without copying third-party assets or overriding project authority.
 
 The skill is intentionally personal and local-first. For dashboards, special
 reports, and similar business surfaces, scoped project rules, live

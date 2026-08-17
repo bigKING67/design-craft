@@ -8,6 +8,7 @@ upstream files directly.
 
 - [Upstreams](#upstreams)
 - [External design references](#external-design-references)
+- [Mutable visual discovery sources](#mutable-visual-discovery-sources)
 - [Local calibration artifacts](#local-calibration-artifacts)
 - [Maintenance rule](#maintenance-rule)
 - [Attribution rule](#attribution-rule)
@@ -161,6 +162,29 @@ When a project already has a credible `DESIGN.md`, token system, brand guide, or
 strong runtime visual language, keep the project authority first and use the
 developer-product templates as a comparison baseline for missing system pieces.
 
+## Mutable visual discovery sources
+
+### Peekpaper
+
+- URL: `https://peekpaper.com/`
+- Structured data contract: `https://peekpaper.com/llms.txt`
+- Source policy: `https://peekpaper.com/robots.txt`
+- Local workflow: `references/reference-workflow.md`
+- Portable adapter: `lib/design_craft/peekpaper.py`
+- CLI: `scripts/design_craft_reference.py`
+
+Peekpaper is a mutable visual discovery source, not an upstream repository,
+design authority, code dependency, engineering proof source, asset library, or
+training corpus. Use official issue JSON for bounded discovery and cite the
+canonical Peekpaper post page plus the origin URL. Do not redistribute its
+screenshots or retain internal ranking, selection-reason, capture-id, or CDN
+fields.
+
+Individual works remain candidates or exemplars. Repeated observations become
+pattern hypotheses only through the Reference Card and catalog contracts, and
+promotion still requires origin runtime evidence, target validation, and a
+comparative evaluation. Recheck mutable source samples before reuse.
+
 ## Local calibration artifacts
 
 - `references/product-context.md`: original PRODUCT.md/DESIGN.md authority
@@ -194,6 +218,9 @@ developer-product templates as a comparison baseline for missing system pieces.
 - `references/prototype-workflow.md`: local calibration of the reviewed Emil
   prototype idea into a framework-neutral, authority-preserving exploration,
   explicit selection, promotion, and cleanup contract.
+- `references/reference-workflow.md`: original source-independent Reference
+  Card, catalog, Pack, rights, target-fit, evidence, and pattern-promotion
+  contract, with a bounded Peekpaper discovery adapter.
 - `evals/product-ui-taste/prototype-divergence/`: project-neutral golden
   contract proving distinct product-relevant axes and the no-promotion-before-
   selection boundary without claiming rendered UI evidence.

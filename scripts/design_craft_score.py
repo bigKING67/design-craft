@@ -196,6 +196,7 @@ def build_score(root: Path, run_smoke: bool) -> list[Dimension]:
     taste_review_smoke = False
     prototype_smoke = False
     system_review_smoke = False
+    reference_smoke = False
     if run_smoke:
         detector_smoke = check_command(
             ["bash", "skills/design-craft/scripts/design_craft_detect.sh", "--target", "skills/design-craft", "--json-only"],
@@ -266,6 +267,14 @@ def build_score(root: Path, run_smoke: bool) -> list[Dimension]:
                 "--skip-route",
                 "--skip-detector",
                 "--skip-score",
+            ],
+            root,
+        )
+        reference_smoke = check_command(
+            [
+                sys.executable,
+                "skills/design-craft/scripts/design_craft_reference.py",
+                "--help",
             ],
             root,
         )
@@ -505,6 +514,17 @@ def build_score(root: Path, run_smoke: bool) -> list[Dimension]:
                 ),
                 (has(root, "evals/golden-tasks/generic-review-workbench.md"), "generic golden task evidence exists", "Add at least one generic golden real-task card."),
                 (has(root, "scripts/design_craft_score.py"), "score script exists", "Add deterministic score script."),
+                (
+                    has(root, "skills/design-craft/references/reference-workflow.md")
+                    and has(root, "skills/design-craft/lib/design_craft/reference_contract.py")
+                    and has(root, "skills/design-craft/lib/design_craft/peekpaper.py")
+                    and has(root, "skills/design-craft/scripts/design_craft_reference.py")
+                    and has(root, "skills/design-craft/contracts/visual-reference-card.schema.json")
+                    and has(root, "skills/design-craft/contracts/visual-reference-catalog.schema.json")
+                    and has(root, "skills/design-craft/contracts/visual-reference-pack.schema.json"),
+                    "portable visual reference intelligence contract exists",
+                    "Add source-independent cards, catalogs, packs, and a bounded discovery adapter.",
+                ),
                 (has(root, "scripts/design_craft_native_runtime_validate.py"), "native runtime evidence validator exists", "Add strict native runtime evidence validation."),
                 (has(root, "scripts/design_craft_native_runtime_record.py") and "reactivecircus/android-emulator-runner@" in read_text(root / ".github/workflows/native-runtime.yml"), "native Simulator/Emulator evidence CI exists", "Add reproducible native runtime fixtures, recording, and CI."),
                 (has(root, "tools/design_craft/release/native_bundle.py") and has(root, "contracts/release/native-bundle.schema.json") and "native_release_bundle" in read_text(root / "skills/design-craft/COMPATIBILITY.json"), "deterministic native Release bundle contract exists", "Bind Simulator, Emulator, and physical-device evidence into a deterministic Release asset."),
@@ -581,6 +601,7 @@ def build_score(root: Path, run_smoke: bool) -> list[Dimension]:
                 (taste_review_smoke or not run_smoke, "taste review wrapper smoke passes", "Fix taste review wrapper smoke."),
                 (prototype_smoke or not run_smoke, "prototype wrapper smoke passes", "Fix prototype wrapper smoke."),
                 (system_review_smoke or not run_smoke, "system-review wrapper smoke passes", "Fix system-review wrapper smoke."),
+                (reference_smoke or not run_smoke, "visual-reference CLI smoke passes", "Fix visual-reference CLI smoke."),
             ],
         ),
     ]

@@ -12,7 +12,10 @@
     "release_verification": "design-craft.release-evidence.v1",
     "github_checks": "design-craft.github-checks.v2",
     "github_governance": "design-craft.github-governance.v2",
-    "github_artifact_observation": "design-craft.github-artifact-observation.v1"
+    "github_artifact_observation": "design-craft.github-artifact-observation.v1",
+    "visual_reference_card": "design-craft.visual-reference-card.v1",
+    "visual_reference_catalog": "design-craft.visual-reference-catalog.v1",
+    "visual_reference_pack": "design-craft.visual-reference-pack.v1"
   },
   "maintenance_contracts": {
     "install": "design-craft.install.v2",

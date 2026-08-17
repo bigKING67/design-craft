@@ -83,7 +83,7 @@ def portable_fallback_payload(
     needs_reference: bool,
 ) -> dict[str, object]:
     implementation_expected = intent != "reference-only"
-    authority_required = tier != "L0"
+    authority_required = tier != "L0" and implementation_expected
     authority_ok = bool(style_authority_path) or not authority_required
     visual = intent in VISUAL_INTENTS or has_reference or needs_reference
     browser_required = platform == "web" and tier != "L0" and implementation_expected
@@ -127,8 +127,10 @@ def portable_fallback_payload(
             else "not required by portable fallback"
         ),
         "preferred_screenshot_tool": "tmwd_browser.browser_screenshot_ops",
-        "directory_governance_required": tier != "L0",
-        "performance_review_required": tier in {"L1-V", "L2"},
+        "directory_governance_required": tier != "L0" and implementation_expected,
+        "performance_review_required": (
+            tier in {"L1-V", "L2"} and implementation_expected
+        ),
         "quality_tradeoff": (
             "Global Codex route planner unavailable; conservative portable fallback used."
         ),
@@ -250,6 +252,8 @@ def build_route_payload(
                 else "auto"
             ),
             "product_context_path": platform_payload.get("product_context_path", ""),
+            "has_reference_image": has_reference,
+            "needs_generated_reference": needs_reference,
         }
     )
 
@@ -260,6 +264,18 @@ def build_route_payload(
         intent=intent,
         existing_project=existing_project,
     )
+    triggers = reference_workflow_triggers(
+        intent=intent,
+        has_reference=has_reference,
+        needs_reference=needs_reference,
+    )
+    references = recommended_references(
+        platform=platform,
+        intent=intent,
+        developer_product_seed_applicable=seed_applicable,
+        has_reference=has_reference,
+        needs_reference=needs_reference,
+    )
     route_payload.update(
         {
             "developer_product_seed_applicable": seed_applicable,
@@ -267,13 +283,37 @@ def build_route_payload(
             # Compatibility fields for existing route consumers.
             "vercel_geist_seed_applicable": seed_applicable,
             "vercel_geist_seed_reason": seed_reason,
+            "reference_workflow": {
+                "required": bool(triggers),
+                "triggers": triggers,
+                "contract": "references/reference-workflow.md",
+            },
+            "recommended_design_craft_references": references,
         }
     )
     return route_payload
 
 
+def reference_workflow_triggers(
+    *, intent: str, has_reference: bool, needs_reference: bool
+) -> list[str]:
+    triggers: list[str] = []
+    if intent == "reference-only":
+        triggers.append("reference-only")
+    if has_reference:
+        triggers.append("has-reference-image")
+    if needs_reference:
+        triggers.append("needs-generated-reference")
+    return triggers
+
+
 def recommended_references(
-    *, platform: str, intent: str, developer_product_seed_applicable: bool
+    *,
+    platform: str,
+    intent: str,
+    developer_product_seed_applicable: bool,
+    has_reference: bool = False,
+    needs_reference: bool = False,
 ) -> list[str]:
     references = {"references/validation-contract.md", "references/product-context.md"}
     if platform == "ios":
@@ -297,6 +337,12 @@ def recommended_references(
                 "templates/developer-product/design.dark.md",
             }
         )
+    if reference_workflow_triggers(
+        intent=intent,
+        has_reference=has_reference,
+        needs_reference=needs_reference,
+    ):
+        references.add("references/reference-workflow.md")
     return sorted(references)
 
 
@@ -332,16 +378,14 @@ def print_route_payload(
         "browser_screenshot_required",
         "developer_product_seed_applicable",
         "developer_product_seed_reason",
+        "reference_workflow",
     ]:
         print(f"- {key}: {route_payload.get(key)}")
     print("- recommended_design_craft_references:")
-    for reference in recommended_references(
-        platform=str(route_payload["platform"]),
-        intent=intent,
-        developer_product_seed_applicable=bool(
-            route_payload["developer_product_seed_applicable"]
-        ),
-    ):
+    references = route_payload.get("recommended_design_craft_references", [])
+    if not isinstance(references, list):
+        references = []
+    for reference in references:
         print(f"  - {reference}")
     print("\nraw_json:")
     print(json.dumps(route_payload, ensure_ascii=False, indent=2, sort_keys=True))
