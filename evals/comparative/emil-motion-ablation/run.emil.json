@@ -2,7 +2,7 @@
   "command": "pi --print --no-session --no-context-files --no-skills --tools read,grep,find,ls --model codex/gpt-5.5 --thinking high --skill '$VARIANT_SKILL_1' --skill '$VARIANT_SKILL_2' --skill '$VARIANT_SKILL_3'",
   "contract_sha256": "754b4b9ba3f127a6bf99b51aa5fc923a72fef58a72e2625989b3f38fe2bc74f4",
   "cwd": "$VARIANT_WORKSPACE",
-  "duration_seconds": 56.293,
+  "duration_seconds": 56.882,
   "host": "pi",
   "host_version": "0.80.6",
   "installed_skill_paths": {
@@ -13,7 +13,7 @@
   "model": "codex/gpt-5.5",
   "model_observation": "requested_by_cli",
   "output_path": "output.emil.md",
-  "output_sha256": "d226c639a34bcdf3cda284a8370e9def3e76f970b236c33e0c346f4452f94c7e",
+  "output_sha256": "9811ab19e765a24fd6bb25d7c9d770c31dd3bf082a62385f2aec515b786192e4",
   "prompt_sha256": "32a158dae9908cefce2747965d6451cf024eb3a877438295898a75412e11e0c8",
   "returncode": 0,
   "runner_os": "macOS-15.7.7-arm64-arm-64bit-Mach-O",
@@ -24,7 +24,7 @@
     "upstreams/emilkowalski-skills/skills/improve-animations": "b4813f60575f3e1e3d916bb76def2b5821e91194fc6896e6d47177cc22a9e488",
     "upstreams/emilkowalski-skills/skills/review-animations": "b86f754de11344856c2e7ae5c809eb134c8b8c23920baa44adaa06e77cf4ad00"
   },
-  "source_commit": "0b4231e2da09252076e401b7203fbcd2f5698b23",
+  "source_commit": "dfeb3012e7a2a460b9f728552dd13d8c021c91d2",
   "source_fingerprints": {
     "upstreams/emilkowalski-skills/skills/apple-design": {
       "kind": "tree",
@@ -50,7 +50,7 @@
     "upstreams/emilkowalski-skills/skills/improve-animations": "b4813f60575f3e1e3d916bb76def2b5821e91194fc6896e6d47177cc22a9e488",
     "upstreams/emilkowalski-skills/skills/review-animations": "b86f754de11344856c2e7ae5c809eb134c8b8c23920baa44adaa06e77cf4ad00"
   },
-  "started_at": "2026-07-26T03:51:56Z",
+  "started_at": "2026-08-17T12:34:36Z",
   "stderr_bytes": 0,
   "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
   "thinking": "high",
@@ -58,7 +58,7 @@
   "timeout_seconds": 900,
   "variant": "emil",
   "workspace_kind": "repo_external_isolated_project",
-  "worktree_after_sha256": "7d0baa625aeac4cd46eb2ce7a2b9c83e0717a7c1b3fbdcecc024ec32a398bd43",
-  "worktree_before_sha256": "7d0baa625aeac4cd46eb2ce7a2b9c83e0717a7c1b3fbdcecc024ec32a398bd43",
+  "worktree_after_sha256": "c09cdae74206781d310ab4b8f9dfb1535a9b751534576a0f247632ac4e765176",
+  "worktree_before_sha256": "c09cdae74206781d310ab4b8f9dfb1535a9b751534576a0f247632ac4e765176",
   "worktree_unchanged": true
 }

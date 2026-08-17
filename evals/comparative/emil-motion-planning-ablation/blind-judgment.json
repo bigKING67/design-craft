@@ -1,51 +1,51 @@
 {
-  "rationale": "C 的总分最高。它不仅复用既有语义 token 和本地 Reduced Motion 先例，还最完整地覆盖评分要求中特别强调的 origin、interruption、pointer tracking 与动画 primitive 权衡，并把复杂的队列改造放在最后、附带清晰的停止条件。A 的结构和高频克制很强，但其 raw clientY 到 transform 的示例及假设性 spring 参数可能导致错误实现；B 稳健但技术诊断与优先级区分相对不足。三者都没有声称已执行运行时验证，但均缺少真正可量化的性能 trace 或帧预算检查，因此未给验证与性能项满分。",
+  "rationale": "A 明显最接近满分合同：它不仅复用了唯一被证明正确的本地约定，还以条件化语言覆盖了原点、属性成本、直接操控、抓取偏移、呈现值、中断、速度与 primitive 能力边界，并为每项计划给出机械检查、后续体验检查、Reduced Motion 和源漂移停止条件。B 是稳健但较浅的次选，尤其在拖拽技术链和 origin 上缺口明显；C 虽然更具体，却把未知框架变量、硬编码时间和未经证明的坐标/transform 重写直接写入实施步骤，技术风险最高。\nMemory: 已召回提示未用于评分；本次仅比较给定输出，候选与写入均为 0。",
   "results": [
     {
       "criteria": {
-        "accessibility_performance": 9,
-        "evidence_recon": 14,
-        "plan_self_containment": 18,
+        "accessibility_performance": 10,
+        "evidence_recon": 15,
+        "plan_self_containment": 19,
         "prioritization": 9,
-        "project_conventions": 9,
+        "project_conventions": 10,
         "purpose_frequency": 10,
-        "technical_accuracy": 11,
-        "verification_quality": 8
+        "technical_accuracy": 15,
+        "verification_quality": 10
       },
       "label": "A",
-      "summary": "侦察、频率判断和计划结构非常完整，对高频命令面板的克制尤其明确；但队列方案直接把原始 clientY 写入 transform，并给出未经证实的 spring API 形状，存在坐标系、变换覆盖和动画接口臆测风险。",
-      "total": 88
+      "summary": "证据边界、静态动效表面、现有 token、按钮先例、产品性格和频率分层均映射完整；对 popover 原点、显式属性、toast 布局属性、拖拽抓取偏移、pointer capture、当前呈现值、中断与底层 primitive 能力的处理最严谨。三份计划包含全部必需字段，验证项也明确标为后续执行。主要扣分是篇幅明显偏长，且少数步骤仍需在 `--duration-fast` 与 `--duration-panel`、具体样式归属之间现场择定。",
+      "total": 98
     },
     {
       "criteria": {
         "accessibility_performance": 8,
-        "evidence_recon": 14,
+        "evidence_recon": 15,
         "plan_self_containment": 18,
         "prioritization": 8,
-        "project_conventions": 9,
+        "project_conventions": 8,
         "purpose_frequency": 9,
         "technical_accuracy": 10,
         "verification_quality": 8
       },
       "label": "B",
-      "summary": "整体谨慎、可执行，能复用现有 token 和按钮先例，并对挂载方式与拖拽坐标语义设置检查点；但优先级存在重复的系统性条目，未充分处理 popover origin、动画中断和呈现值续接，队列的 JavaScript 时长常量也可能形成平行规范。",
+      "summary": "整体结构完整、静态证据声明诚实，overlay 与 toast 方案基本可执行，也持续复用现有 token 和 Reduced Motion 先例。但它没有真正处理 popover 的 transform origin，拖拽部分遗漏抓取偏移、pointer capture、当前呈现值和可靠中断，并把逐 pointer event 写入较快归因于需要 `requestAnimationFrame` 合并；同时，如何让数值型 `animateTo` 复用 CSS token 仍不明确。",
       "total": 84
     },
     {
       "criteria": {
-        "accessibility_performance": 9,
+        "accessibility_performance": 7,
         "evidence_recon": 14,
-        "plan_self_containment": 19,
-        "prioritization": 9,
-        "project_conventions": 9,
-        "purpose_frequency": 10,
-        "technical_accuracy": 14,
-        "verification_quality": 9
+        "plan_self_containment": 16,
+        "prioritization": 8,
+        "project_conventions": 5,
+        "purpose_frequency": 9,
+        "technical_accuracy": 8,
+        "verification_quality": 8
       },
       "label": "C",
-      "summary": "覆盖静态运动面、既有约定和证据边界最完整，且对属性成本、触发源 origin、挂载原语、拖拽坐标、pointer capture、释放速度、呈现值续接、中断及 Reduced Motion 的处理最严谨；少量拖拽增强仍需现场确认，且缺少明确的性能 trace 测量步骤。",
-      "total": 93
+      "summary": "重构后的代码片段让计划显得具体，频率导向和 transform/opacity 方向也基本正确，但多处具体化超出了证据：凭空引入 `--radix-popover-content-transform-origin`，新增硬编码 `120ms`、`220ms` 并在 TypeScript 中复制 easing；拖拽方案还可能覆盖既有 transform 组合、移除有意设计的 CSS 变量，并把可能是绝对坐标的 `currentY` 改成相对偏移。后置 stop condition 不能完全消除这些实施风险。",
+      "total": 75
     }
   ],
-  "winner": "C"
+  "winner": "A"
 }

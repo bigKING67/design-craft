@@ -3,34 +3,34 @@
   "task_id": "same-prompt-dashboard-review",
   "agent": "codex",
   "verified": true,
-  "agent_version": "codex-cli 0.145.0",
+  "agent_version": "codex-cli 0.147.0",
   "model": "gpt-5.6-sol",
   "model_observation": "requested_by_cli",
   "reasoning_profile": "max",
   "reasoning_observation": "requested_by_cli",
   "runner_os": "macOS-15.7.7-arm64-arm-64bit-Mach-O",
-  "date": "2026-07-26",
+  "date": "2026-08-17",
   "prompt_sha256": "7fd3c7f14647c8b54cc44ef371f2d7ea56bb77efa89cb8081f09a7b41ae777d6",
   "scorecard_json_sha256": "9b73f89575f83eecd859595a81851a57681987dbb8aee6d3b8230d5827081920",
   "contract_sha256": "69f694db240266e509b7efd666c627880175a7cf132ddde3ad651c4820f37122",
   "run_manifest_path": "run.codex.json",
-  "run_manifest_sha256": "7ccc8fc902b5916a3d7d657ee494f11032602abd0bdf2aacd2b51b18a427fc80",
-  "skill_version": "0.5.6",
-  "skill_source_commit": "03c14ae4175e05d01ac1ab3d863b9f4fa97ea6b6",
+  "run_manifest_sha256": "88bd7b8a7a52142cc50ee8241eaa4cf3b2997a5cdb424f14e1e76bba0823645c",
+  "skill_version": "0.6.0",
+  "skill_source_commit": "7fbbb1a1e5788e9417f240c530532b979974503e",
   "skill_source_dirty": false,
   "repo_dirty": true,
   "release_state": "unknown",
-  "skill_tree_sha256": "4604ade449cbb80be40297779b7ebba7bb8bfb1572adc39ef429b38f83a38d43",
+  "skill_tree_sha256": "0b6c1ad1af54ace726da84d72446551134e6bc1b09411a518ae63b668d1d4f22",
   "skill_path": "$BENCHMARK_WORKSPACE/.agents/skills/design-craft",
   "behavior_domain": "skill-production-review",
-  "behavior_sha256": "5940e9cd40317b1ad11e13ce0fc566a53f582eef05136e082d24b6e768b89f7e",
+  "behavior_sha256": "85becd78b543b04bb7444b8b416a85efed60b61363d727ea6adb4f17850135f1",
   "behavior_source_dirty": false,
-  "projected_skill_tree_sha256": "3261d4567dcf2c8ce008aa66ee63da2ec8df2afea5e09a6908e86ea93a784e32",
+  "projected_skill_tree_sha256": "8bf34f7cc8a72758d6e7c8047ab283d75db8719af645d3b0ba6dc752489346c0",
   "provenance_skill_path": "$DESIGN_CRAFT_HOME/skills/design-craft",
   "command_summary": "codex exec --ephemeral --sandbox read-only --skip-git-repo-check --ignore-rules -C '$BENCHMARK_WORKSPACE' --model gpt-5.6-sol -c 'model_reasoning_effort=\"max\"' --output-last-message '$BENCHMARK_WORKSPACE/.design-craft-host-output.md' -",
   "output_path": "codex-output.md",
-  "output_sha256": "e6e7866606459a162b826ab4ace1f3f775473409cb5979b82f16920f5fb28638",
-  "score": 97,
+  "output_sha256": "c7e3acf31a333ea64f45827b654496e4f9047ade75788c17e42f4f9cfdf25e19",
+  "score": 100,
   "criteria": {
     "style_authority": {
       "passed": true,
@@ -63,9 +63,9 @@
       "note": "Provides exactly eight implementable moves covering lead/support hierarchy, exception queue, diagnostic chart, task-first table, contextual rail, visual tokens, and resilient states."
     },
     "scope_control": {
-      "passed": false,
-      "earned": 7,
-      "note": "Keeps five blockers and eight moves clearly structured, but the 196-line response exceeds the explicit 150-line limit by 46 lines and over-expands supporting detail."
+      "passed": true,
+      "earned": 10,
+      "note": "Stays read-only and dashboard-specific within 141 lines, with five blockers, eight moves, explicit evidence boundaries, and a bounded validation plan."
     }
   }
 }

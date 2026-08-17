@@ -9,27 +9,27 @@
   "reasoning_profile": "high",
   "reasoning_observation": "requested_by_cli",
   "runner_os": "macOS-15.7.7-arm64-arm-64bit-Mach-O",
-  "date": "2026-07-26",
+  "date": "2026-08-17",
   "prompt_sha256": "15b25396696901c46fd0dde92cd556d10f30179ca38df969ab796228ce6d207f",
   "scorecard_json_sha256": "5b0b6a0d6df83ce49b9e2c598a9cdd79149efca50a9e12069667bc008462d183",
   "contract_sha256": "69f694db240266e509b7efd666c627880175a7cf132ddde3ad651c4820f37122",
   "run_manifest_path": "run.pi.json",
-  "run_manifest_sha256": "c3094f5cf866a8e0e5591c86e20e6edee2762cb0aa3d872b549a91a0450477bd",
-  "skill_version": "0.5.6",
-  "skill_source_commit": "03c14ae4175e05d01ac1ab3d863b9f4fa97ea6b6",
+  "run_manifest_sha256": "1735e3d217946b90ffc2a02e9f58687cde6826870680e60a36093a034b9fb40b",
+  "skill_version": "0.6.0",
+  "skill_source_commit": "dfeb3012e7a2a460b9f728552dd13d8c021c91d2",
   "skill_source_dirty": false,
   "repo_dirty": true,
   "release_state": "unknown",
-  "skill_tree_sha256": "4604ade449cbb80be40297779b7ebba7bb8bfb1572adc39ef429b38f83a38d43",
+  "skill_tree_sha256": "a1042918b108a6da77b2e22a52103764524f449879fe78d1d71bd79d34d40d79",
   "skill_path": "$BENCHMARK_WORKSPACE/.pi/skills/design-craft",
   "behavior_domain": "skill-motion-review",
-  "behavior_sha256": "966b206bf69b5086bd69775cf4c97c92a576359f7d9dc00ea66ad337ef1ee901",
+  "behavior_sha256": "ac517cc7d28d0c229df2bb332d4eb92ac9df7a2fce292db3fdd7e12c0a1c88e2",
   "behavior_source_dirty": false,
-  "projected_skill_tree_sha256": "f62a193ff3a90aa3709da757327c286ef58db0854702ea30bd2e299f6f8c7a22",
+  "projected_skill_tree_sha256": "655e4d14f57f4eb5569d95f41a2b94f2b8823fe9a0b6caac1edde35caabaff67",
   "provenance_skill_path": "$DESIGN_CRAFT_HOME/skills/design-craft",
   "command_summary": "pi --print --no-session --no-skills --skill '$BENCHMARK_SKILL' --no-context-files --tools read,grep,find,ls --model codex/gpt-5.5 --thinking high",
   "output_path": "pi-output.md",
-  "output_sha256": "832d9ee8395410ff7e07d7a1898302c42440714aed891679d165cad65cf29df5",
+  "output_sha256": "3803d0b6c1f87ec02b79b1860a7fbb0d2a69e99e9e12fa3fc943b42468711c9a",
   "score": 100,
   "criteria": {
     "style_authority": {
@@ -65,7 +65,7 @@
     "scope_control": {
       "passed": true,
       "earned": 10,
-      "note": "Stays read-only and motion-specific, fits within 104 lines, and prioritizes exactly five blockers and eight concrete moves."
+      "note": "Stays read-only and motion-specific, fits within 96 lines, and prioritizes exactly five blockers and eight concrete moves."
     }
   }
 }

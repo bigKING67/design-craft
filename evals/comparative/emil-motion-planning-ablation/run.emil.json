@@ -2,7 +2,7 @@
   "command": "pi --print --no-session --no-context-files --no-skills --tools read,grep,find,ls --model codex/gpt-5.5 --thinking high --skill '$VARIANT_SKILL_1' --skill '$VARIANT_SKILL_2' --skill '$VARIANT_SKILL_3'",
   "contract_sha256": "754b4b9ba3f127a6bf99b51aa5fc923a72fef58a72e2625989b3f38fe2bc74f4",
   "cwd": "$VARIANT_WORKSPACE",
-  "duration_seconds": 139.211,
+  "duration_seconds": 150.762,
   "host": "pi",
   "host_version": "0.80.6",
   "installed_skill_paths": {
@@ -13,7 +13,7 @@
   "model": "codex/gpt-5.5",
   "model_observation": "requested_by_cli",
   "output_path": "output.emil.md",
-  "output_sha256": "98024be06d6333dcbf30b4b7b900546e5da82fceeb31e0b2f594f2306cd14120",
+  "output_sha256": "be37639fc6e495d859a45d0ca43bf9df85aa8e8753d93f6b6403fcd9505fa15c",
   "prompt_sha256": "81453e8d19e3de0d27bf7603b60f045cedaafa90b1a6fd7ee6dcc7249ca639ba",
   "returncode": 0,
   "runner_os": "macOS-15.7.7-arm64-arm-64bit-Mach-O",
@@ -24,7 +24,7 @@
     "upstreams/emilkowalski-skills/skills/improve-animations": "b4813f60575f3e1e3d916bb76def2b5821e91194fc6896e6d47177cc22a9e488",
     "upstreams/emilkowalski-skills/skills/review-animations": "b86f754de11344856c2e7ae5c809eb134c8b8c23920baa44adaa06e77cf4ad00"
   },
-  "source_commit": "0b4231e2da09252076e401b7203fbcd2f5698b23",
+  "source_commit": "dfeb3012e7a2a460b9f728552dd13d8c021c91d2",
   "source_fingerprints": {
     "upstreams/emilkowalski-skills/skills/apple-design": {
       "kind": "tree",
@@ -50,7 +50,7 @@
     "upstreams/emilkowalski-skills/skills/improve-animations": "b4813f60575f3e1e3d916bb76def2b5821e91194fc6896e6d47177cc22a9e488",
     "upstreams/emilkowalski-skills/skills/review-animations": "b86f754de11344856c2e7ae5c809eb134c8b8c23920baa44adaa06e77cf4ad00"
   },
-  "started_at": "2026-07-26T03:55:35Z",
+  "started_at": "2026-08-17T12:41:33Z",
   "stderr_bytes": 0,
   "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
   "thinking": "high",
@@ -58,7 +58,7 @@
   "timeout_seconds": 900,
   "variant": "emil",
   "workspace_kind": "repo_external_isolated_project",
-  "worktree_after_sha256": "1f4651b4e89b41f455542ef0be7e0e0bfac41abf2b68b4e437ede8f8933a0f69",
-  "worktree_before_sha256": "1f4651b4e89b41f455542ef0be7e0e0bfac41abf2b68b4e437ede8f8933a0f69",
+  "worktree_after_sha256": "9922e8eeda977ec418c2895c36597b7abed2a636ec588b4ffd3e8716329af4c1",
+  "worktree_before_sha256": "9922e8eeda977ec418c2895c36597b7abed2a636ec588b4ffd3e8716329af4c1",
   "worktree_unchanged": true
 }

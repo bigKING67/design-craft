@@ -2,7 +2,7 @@
   "command": "pi --print --no-session --no-context-files --no-skills --tools read,grep,find,ls --model codex/gpt-5.5 --thinking high --skill '$VARIANT_SKILL_1'",
   "contract_sha256": "754b4b9ba3f127a6bf99b51aa5fc923a72fef58a72e2625989b3f38fe2bc74f4",
   "cwd": "$VARIANT_WORKSPACE",
-  "duration_seconds": 144.996,
+  "duration_seconds": 110.223,
   "host": "pi",
   "host_version": "0.80.6",
   "installed_skill_paths": {
@@ -11,28 +11,28 @@
   "model": "codex/gpt-5.5",
   "model_observation": "requested_by_cli",
   "output_path": "output.impeccable.md",
-  "output_sha256": "ef7e18fba3581d7219a206b1c621911a4472c5585a165782e69dc561d3856d7e",
+  "output_sha256": "78f6153b673647db10e2f4af2b86e17fd50457b71a69d0c78c507354943d9e4c",
   "prompt_sha256": "8efbd7f3fc974e0abcb8ef0d736102db96436e596a93cb040717a757ff451fde",
   "returncode": 0,
   "runner_os": "macOS-15.7.7-arm64-arm-64bit-Mach-O",
   "schema": "design-craft.comparative-run.v4",
   "skill_install_mode": "isolated_case_projection",
   "skill_trees": {
-    "upstreams/impeccable/.agents/skills/impeccable": "1fe1c4b76825c9538d5379a0a5d3d00378cf9420ce498f5b9309b79c888cc410"
+    "upstreams/impeccable/.agents/skills/impeccable": "a402eba7e7705aa0f648f5ff85a8b359ee77ba1732fe09dbc7e05416af34f14f"
   },
-  "source_commit": "0b4231e2da09252076e401b7203fbcd2f5698b23",
+  "source_commit": "7fbbb1a1e5788e9417f240c530532b979974503e",
   "source_fingerprints": {
     "upstreams/impeccable/.agents/skills/impeccable": {
       "kind": "tree",
-      "projected_tree_sha256": "1fe1c4b76825c9538d5379a0a5d3d00378cf9420ce498f5b9309b79c888cc410",
-      "sha256": "1fe1c4b76825c9538d5379a0a5d3d00378cf9420ce498f5b9309b79c888cc410",
+      "projected_tree_sha256": "a402eba7e7705aa0f648f5ff85a8b359ee77ba1732fe09dbc7e05416af34f14f",
+      "sha256": "a402eba7e7705aa0f648f5ff85a8b359ee77ba1732fe09dbc7e05416af34f14f",
       "source_dirty": false
     }
   },
   "source_trees": {
-    "upstreams/impeccable/.agents/skills/impeccable": "1fe1c4b76825c9538d5379a0a5d3d00378cf9420ce498f5b9309b79c888cc410"
+    "upstreams/impeccable/.agents/skills/impeccable": "a402eba7e7705aa0f648f5ff85a8b359ee77ba1732fe09dbc7e05416af34f14f"
   },
-  "started_at": "2026-07-26T04:03:58Z",
+  "started_at": "2026-08-17T13:14:59Z",
   "stderr_bytes": 0,
   "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
   "thinking": "high",
@@ -40,7 +40,7 @@
   "timeout_seconds": 900,
   "variant": "impeccable",
   "workspace_kind": "repo_external_isolated_project",
-  "worktree_after_sha256": "69a951cbadf1811b9117cfc68757ad1753927bdf9a975bddd6ecd3599abf38ca",
-  "worktree_before_sha256": "69a951cbadf1811b9117cfc68757ad1753927bdf9a975bddd6ecd3599abf38ca",
+  "worktree_after_sha256": "847160822b2f9e7c92ba03c30f5231da6a58048252d0f75d0ee9ff639b9ded9a",
+  "worktree_before_sha256": "847160822b2f9e7c92ba03c30f5231da6a58048252d0f75d0ee9ff639b9ded9a",
   "worktree_unchanged": true
 }

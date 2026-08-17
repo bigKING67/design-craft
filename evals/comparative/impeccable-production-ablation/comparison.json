@@ -1,6 +1,6 @@
 {
-  "blind_map_sha256": "a38d52acf67e09dc34da7d212638a1e475ff20f55acc1bebd82c6bbd5e058146",
-  "blind_packet_sha256": "119dff2cd833f489d2e823a089f969c9d40f671ff1036597a0f1281d44132b0e",
+  "blind_map_sha256": "827c828fc1fc73c9571e0a7cb45e33899adad770d380e606801d1f3b0cc1a8f7",
+  "blind_packet_sha256": "7e811883d4486c529add83a2c180498b9fd09e8aac5a8a7dcbf5b35c96ae4d44",
   "case_id": "impeccable-production-ablation",
   "focused_variant": "impeccable",
   "judge": {
@@ -8,37 +8,37 @@
     "model": "gpt-5.6-sol",
     "model_observation": "requested_by_cli",
     "raw_output_path": "judge-output.raw.txt",
-    "raw_output_sha256": "cbfa023551ee6a30903ca6daf0f43d45e6834c27fa43e6daf3cc04453dd6da86",
+    "raw_output_sha256": "3ad7c635944f5a2cfd2282956d046bfa20964efba2c5cf746c4d17b426870f9c",
     "reasoning": "max",
     "reasoning_observation": "requested_by_cli",
     "run_path": "run.judge.json",
-    "run_sha256": "31741aa0da8d3d7b167adf17f3b75846027687553dfa8ffbd1d9e2dfc99c56b8",
+    "run_sha256": "b41eac0016a31b74354061576ea9745e68c2066334674318d72a03c137d7b22d",
     "runner_os": "macOS-15.7.7-arm64-arm-64bit-Mach-O",
-    "version": "codex-cli 0.145.0"
+    "version": "codex-cli 0.147.0"
   },
   "judgment_path": "blind-judgment.json",
   "judgment_schema_sha256": "8ab06e3fbd808dfb94de68b17ca25a94d56d3e15c485f64756f3528fdfdae4ce",
-  "judgment_sha256": "98a2ba990475bd73f5047076e10a1b45e2f183297d835f13cacaf28bef20c42a",
+  "judgment_sha256": "19b99a0ab7342fafcc993860da3e8e49a8338f94ca52f261270b4464abd00b74",
   "prompt_sha256": "8efbd7f3fc974e0abcb8ef0d736102db96436e596a93cb040717a757ff451fde",
-  "rationale": "C是唯一同时做到完整生产加固覆盖、项目上下文下的静态信号校准、变更前基线、具体性能阈值以及独立回滚门禁的输出，并明确限定为静态只读审计。A的修复覆盖几乎同样完整，但测量被放在修复之后且验收目标偏定性；B虽有前置基线，却缺少量化阈值和明确触控目标修复，静态信号措辞也略显绝对。",
-  "recorded_at": "2026-07-26T04:21:03Z",
+  "rationale": "A最贴合全部满分条件：先审计并优先修复数据可靠性，再处理无障碍与平板适配，随后以基线和明确阈值驱动性能优化，最后才做受约束的视觉润色；它同时逐项区分静态事实与运行时未知，并为故障、数据、布局、交互、规模和回滚提供可执行验收条件。B的实施细节同样优秀，但测量门槛偏定性且严重级别与篇幅控制稍弱；C还遗漏了明确的触控热区修复，并在优先级和篇幅控制上进一步失分。\nMemory: 3条预检命中均未用于评分；0候选，0写入。",
+  "recorded_at": "2026-08-17T13:23:08Z",
   "results": {
     "baseline": {
-      "blind_label": "B",
+      "blind_label": "C",
       "criteria": {
-        "detector_reconciliation": 9,
-        "evidence_scope": 9,
+        "detector_reconciliation": 10,
+        "evidence_scope": 8,
         "hostile_data": 20,
-        "measured_performance": 13,
-        "mode_sequence": 10,
+        "measured_performance": 12,
+        "mode_sequence": 8,
         "production_fixes": 19,
-        "responsive_accessibility": 14
+        "responsive_accessibility": 13
       },
-      "score": 94,
-      "summary": "具备清晰的审计、加固、优化和回滚链路，失败状态矩阵、权限、冲突、离线、批量失败与性能基线覆盖充分。扣分点是性能目标仍偏定性，没有明确修复28px触控目标，部分仅能代表当前片段的静态缺失被列入决定性信号，且整体超过180行限制。"
+      "score": 90,
+      "summary": "状态生命周期、冲突恢复、批处理失败和静态证据分层均较扎实，但P0层级承载了过多未经运行测量的性能结论，未具体修复28像素触控热区，权限 affordance 与性能阈值不够落实，且明显超过180行限制。"
     },
     "design-craft": {
-      "blind_label": "C",
+      "blind_label": "A",
       "criteria": {
         "detector_reconciliation": 10,
         "evidence_scope": 10,
@@ -49,21 +49,21 @@
         "responsive_accessibility": 15
       },
       "score": 100,
-      "summary": "完整满足全部评分项：顺序和严重级别一致，覆盖敌对数据、上传、权限、冲突、离线及真实保存恢复，提供平板和无障碍修复，并以DOM边界、p95延迟、长任务、布局偏移和明确回滚条件构成真正的测量优先闭环。静态事实与运行时假设分离清楚，且明确声明未执行任何运行时工具。"
+      "summary": "排序清晰且严重级别克制，完整覆盖故障恢复、敌意数据、平板与无障碍、性能热点、静态信号边界以及实施级修复；还给出可量化的暂定性能阈值、验收条件和回滚门槛，并保持在篇幅与只读审计范围内。"
     },
     "impeccable": {
-      "blind_label": "A",
+      "blind_label": "B",
       "criteria": {
         "detector_reconciliation": 10,
         "evidence_scope": 9,
         "hostile_data": 20,
         "measured_performance": 12,
-        "mode_sequence": 10,
+        "mode_sequence": 9,
         "production_fixes": 20,
         "responsive_accessibility": 15
       },
-      "score": 96,
-      "summary": "覆盖范围和修复建议非常完整，P0-P3、敌对数据、失败恢复、无障碍、平板适配及静态信号分层均处理扎实。主要不足是性能验证被明确安排在修复之后，缺少真正的变更前运行基线和量化验收阈值；同时篇幅明显超过180行约束。"
+      "score": 95,
+      "summary": "覆盖面和修复细节非常充分，尤其是并发保存、幂等重试、批处理结果账本、选择模型与上传失败处理；主要扣分来自把尚未实测的性能风险列为P0、性能验收阈值多为定性描述，以及超过180行的范围约束。"
     }
   },
   "schema": "design-craft.comparative-result.v4",
@@ -76,12 +76,12 @@
       "host_version": "0.80.6",
       "model": "codex/gpt-5.5",
       "output_path": "output.baseline.md",
-      "output_sha256": "b2b7855398a558a16c582c35f5822d82f2910d5c41eb94eb0ae3a205aaffb386",
+      "output_sha256": "1635563c0526616ecbe00b40235f2e2092c1f64a8e9d90023a58d49905bf4161",
       "run_path": "run.baseline.json",
-      "run_sha256": "9e64cfbea197b6bb04c51681bcd8c81489239bd1772a5e3711e7961360f9e60c",
+      "run_sha256": "464cd64c2168d349853188b6c30c20f30c711a6ea5d307822f98ae12fcd9cd68",
       "skill_install_mode": "isolated_case_projection",
       "skill_trees": {},
-      "source_commit": "0b4231e2da09252076e401b7203fbcd2f5698b23",
+      "source_commit": "7fbbb1a1e5788e9417f240c530532b979974503e",
       "source_fingerprints": {},
       "source_trees": {},
       "thinking": "high"
@@ -92,25 +92,25 @@
       "host_version": "0.80.6",
       "model": "codex/gpt-5.5",
       "output_path": "output.design-craft.md",
-      "output_sha256": "9bbf4b489db53fa40819c76030a41cb6ceaa5ca9141b6a8940936c4473973625",
+      "output_sha256": "0de83006310adab06eff8f859d8d8faaa1221aae26e76879b980a0ba8a026ff5",
       "run_path": "run.design-craft.json",
-      "run_sha256": "32b4ee031a7baebbf0ebba249af3309f10ce95d0c2d38d661120805d55894422",
+      "run_sha256": "98e7fe61cafac2585336b12850f0406d80643c04c41f073065ddbd00d3ce7d43",
       "skill_install_mode": "isolated_case_projection",
       "skill_trees": {
-        "skills/design-craft": "3261d4567dcf2c8ce008aa66ee63da2ec8df2afea5e09a6908e86ea93a784e32"
+        "skills/design-craft": "8bf34f7cc8a72758d6e7c8047ab283d75db8719af645d3b0ba6dc752489346c0"
       },
-      "source_commit": "0b4231e2da09252076e401b7203fbcd2f5698b23",
+      "source_commit": "7fbbb1a1e5788e9417f240c530532b979974503e",
       "source_fingerprints": {
         "skills/design-craft": {
           "domain": "skill-production-review",
           "kind": "evidence_domain",
-          "projected_tree_sha256": "3261d4567dcf2c8ce008aa66ee63da2ec8df2afea5e09a6908e86ea93a784e32",
-          "sha256": "5940e9cd40317b1ad11e13ce0fc566a53f582eef05136e082d24b6e768b89f7e",
+          "projected_tree_sha256": "8bf34f7cc8a72758d6e7c8047ab283d75db8719af645d3b0ba6dc752489346c0",
+          "sha256": "85becd78b543b04bb7444b8b416a85efed60b61363d727ea6adb4f17850135f1",
           "source_dirty": false
         }
       },
       "source_trees": {
-        "skills/design-craft": "4604ade449cbb80be40297779b7ebba7bb8bfb1572adc39ef429b38f83a38d43"
+        "skills/design-craft": "0b6c1ad1af54ace726da84d72446551134e6bc1b09411a518ae63b668d1d4f22"
       },
       "thinking": "high"
     },
@@ -120,24 +120,24 @@
       "host_version": "0.80.6",
       "model": "codex/gpt-5.5",
       "output_path": "output.impeccable.md",
-      "output_sha256": "ef7e18fba3581d7219a206b1c621911a4472c5585a165782e69dc561d3856d7e",
+      "output_sha256": "78f6153b673647db10e2f4af2b86e17fd50457b71a69d0c78c507354943d9e4c",
       "run_path": "run.impeccable.json",
-      "run_sha256": "8abb59a6c12b2fe2cdccba1ddde5682802b90a55bd07ca1e11f4b058d1d7bd9e",
+      "run_sha256": "8fcec144a72da33c413ac931bd29de1627fe7b0c7c874f47da1edd25a192ebba",
       "skill_install_mode": "isolated_case_projection",
       "skill_trees": {
-        "upstreams/impeccable/.agents/skills/impeccable": "1fe1c4b76825c9538d5379a0a5d3d00378cf9420ce498f5b9309b79c888cc410"
+        "upstreams/impeccable/.agents/skills/impeccable": "a402eba7e7705aa0f648f5ff85a8b359ee77ba1732fe09dbc7e05416af34f14f"
       },
-      "source_commit": "0b4231e2da09252076e401b7203fbcd2f5698b23",
+      "source_commit": "7fbbb1a1e5788e9417f240c530532b979974503e",
       "source_fingerprints": {
         "upstreams/impeccable/.agents/skills/impeccable": {
           "kind": "tree",
-          "projected_tree_sha256": "1fe1c4b76825c9538d5379a0a5d3d00378cf9420ce498f5b9309b79c888cc410",
-          "sha256": "1fe1c4b76825c9538d5379a0a5d3d00378cf9420ce498f5b9309b79c888cc410",
+          "projected_tree_sha256": "a402eba7e7705aa0f648f5ff85a8b359ee77ba1732fe09dbc7e05416af34f14f",
+          "sha256": "a402eba7e7705aa0f648f5ff85a8b359ee77ba1732fe09dbc7e05416af34f14f",
           "source_dirty": false
         }
       },
       "source_trees": {
-        "upstreams/impeccable/.agents/skills/impeccable": "1fe1c4b76825c9538d5379a0a5d3d00378cf9420ce498f5b9309b79c888cc410"
+        "upstreams/impeccable/.agents/skills/impeccable": "a402eba7e7705aa0f648f5ff85a8b359ee77ba1732fe09dbc7e05416af34f14f"
       },
       "thinking": "high"
     }

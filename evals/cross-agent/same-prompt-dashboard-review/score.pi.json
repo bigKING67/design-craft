@@ -9,27 +9,27 @@
   "reasoning_profile": "high",
   "reasoning_observation": "requested_by_cli",
   "runner_os": "macOS-15.7.7-arm64-arm-64bit-Mach-O",
-  "date": "2026-07-26",
+  "date": "2026-08-17",
   "prompt_sha256": "7fd3c7f14647c8b54cc44ef371f2d7ea56bb77efa89cb8081f09a7b41ae777d6",
   "scorecard_json_sha256": "9b73f89575f83eecd859595a81851a57681987dbb8aee6d3b8230d5827081920",
   "contract_sha256": "69f694db240266e509b7efd666c627880175a7cf132ddde3ad651c4820f37122",
   "run_manifest_path": "run.pi.json",
-  "run_manifest_sha256": "7fa58d9a6abf24d919c180693ded97c83b53fbe6016f962d81a7bf67ca716c84",
-  "skill_version": "0.5.6",
-  "skill_source_commit": "03c14ae4175e05d01ac1ab3d863b9f4fa97ea6b6",
+  "run_manifest_sha256": "3a1ec7b67ad22167b23c89c175c4ec9155288862f1d6d1325a7f48241eae06db",
+  "skill_version": "0.6.0",
+  "skill_source_commit": "7fbbb1a1e5788e9417f240c530532b979974503e",
   "skill_source_dirty": false,
   "repo_dirty": true,
   "release_state": "unknown",
-  "skill_tree_sha256": "4604ade449cbb80be40297779b7ebba7bb8bfb1572adc39ef429b38f83a38d43",
+  "skill_tree_sha256": "0b6c1ad1af54ace726da84d72446551134e6bc1b09411a518ae63b668d1d4f22",
   "skill_path": "$BENCHMARK_WORKSPACE/.pi/skills/design-craft",
   "behavior_domain": "skill-production-review",
-  "behavior_sha256": "5940e9cd40317b1ad11e13ce0fc566a53f582eef05136e082d24b6e768b89f7e",
+  "behavior_sha256": "85becd78b543b04bb7444b8b416a85efed60b61363d727ea6adb4f17850135f1",
   "behavior_source_dirty": false,
-  "projected_skill_tree_sha256": "3261d4567dcf2c8ce008aa66ee63da2ec8df2afea5e09a6908e86ea93a784e32",
+  "projected_skill_tree_sha256": "8bf34f7cc8a72758d6e7c8047ab283d75db8719af645d3b0ba6dc752489346c0",
   "provenance_skill_path": "$DESIGN_CRAFT_HOME/skills/design-craft",
   "command_summary": "pi --print --no-session --no-skills --skill '$BENCHMARK_SKILL' --no-context-files --tools read,grep,find,ls --model codex/gpt-5.5 --thinking high",
   "output_path": "pi-output.md",
-  "output_sha256": "35010c219fcf73982092be30586a8a08084e5f774bbfe140ac39f21404d51684",
+  "output_sha256": "01b0eb4fe5b4955daa3002aec63d9b3fbf7372260ab7aa540dd4246d4ec9f7fc",
   "score": 100,
   "criteria": {
     "style_authority": {
@@ -50,7 +50,7 @@
     "evidence_level": {
       "passed": true,
       "earned": 15,
-      "note": "Explicitly labels the review prompt-only and low-confidence, and does not claim browser, responsive, accessibility, state, or data validation."
+      "note": "Explicitly labels the review prompt-only and does not claim browser, responsive, accessibility, state, or data validation."
     },
     "verified_boundary": {
       "passed": true,
@@ -65,7 +65,7 @@
     "scope_control": {
       "passed": true,
       "earned": 10,
-      "note": "Stays read-only, dashboard-specific, within 121 lines, and limits the critique to five blockers, eight moves, and decisive validation work."
+      "note": "Stays read-only and dashboard-specific within 75 lines, with five blockers, eight moves, and a bounded validation plan."
     }
   }
 }

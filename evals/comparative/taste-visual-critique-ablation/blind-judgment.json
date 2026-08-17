@@ -1,5 +1,5 @@
 {
-  "rationale": "C is the strongest because it explicitly places diagnostics after the actionable queue, ties every retained chart or insight to a named triage question, and covers the entire surface with unusually specific craft and resilience criteria while clearly disclaiming runtime validation. B is a strong runner-up with better surface guidance than A, but it leaves several described problems without direct redesign moves. A is highly product-aligned and disciplined, yet its typography, spacing, elevation, and chart critiques are not carried through as concretely as C's.",
+  "rationale": "C 在三份输出中拥有最强的实现可执行性：它不仅正确识别任务层级、卡片堆叠、空泛洞察和等权视觉问题，还给出了具体视口尺寸、首屏行数、两行产品名、表格数字对齐、约 14px/1.4 的密集产品文字基线、间距尺度及阴影使用边界。A 的视觉判断同样优秀，但动作存在重复并遗漏两个已识别区域的闭环；B 的产品与决策流覆盖全面，但视觉工艺验收明显少于 A 和 C。各 total 均由所列 criterion 分值重新求和。Memory: 本次盲评仅依据题面提供的 A、B、C 输出，未使用历史提示影响评分。",
   "results": [
     {
       "criteria": {
@@ -7,13 +7,13 @@
         "concrete_moves": 17,
         "evidence_honesty": 10,
         "product_fit": 15,
-        "product_hierarchy": 14,
+        "product_hierarchy": 15,
         "scope_discipline": 10,
-        "visual_craft": 11
+        "visual_craft": 14
       },
       "label": "A",
-      "summary": "A correctly makes the exception queue primary, demotes lower-value metrics, replaces ambiguous status and action treatments, and remains rigorously grounded in static evidence. Its main weakness is incomplete visual-craft follow-through: inconsistent spacing, excessive borders and shadows, low-contrast typography, and the oversized chart are identified but not all receive implementation-ready corrections or acceptance criteria.",
-      "total": 92
+      "summary": "层级诊断、表格重排和表面减噪都很扎实，且静态证据边界清楚；但 KPI 的两个整改动作部分重复，未将全局头部竞争与空泛 insight 同时闭环，正文可读性的验收也不够量化。",
+      "total": 96
     },
     {
       "criteria": {
@@ -21,13 +21,13 @@
         "concrete_moves": 18,
         "evidence_honesty": 10,
         "product_fit": 15,
-        "product_hierarchy": 14,
+        "product_hierarchy": 15,
         "scope_discipline": 10,
-        "visual_craft": 13
+        "visual_craft": 11
       },
       "label": "B",
-      "summary": "B provides an especially coherent exception-first command band, strong table triage hierarchy, explicit semantic statuses and actions, and useful surface normalization through a defined spacing rhythm and reduced elevation. It is slightly incomplete because the fragmented page command area, long product-name behavior, oversized chart, and full production-state contract are not directly resolved in the redesign moves.",
-      "total": 95
+      "summary": "完整覆盖核心任务、头部、表格、状态、动作和 insight，产品契合度与工作流约束处理得当；主要短板是视觉工艺多停留在问题识别，缺少字号、行高、对比度、间距、边框和阴影的实施级验收。",
+      "total": 94
     },
     {
       "criteria": {
@@ -40,7 +40,7 @@
         "visual_craft": 15
       },
       "label": "C",
-      "summary": "C most completely translates the product authority into a lead-summary, priority-metric, exception-queue, then diagnostics sequence. It combines product-specific anti-generic judgment with precise typography, contrast, spacing, elevation, semantic-color, table-scan, chart-purpose, long-content, and state-resilience corrections. Its acceptance criteria are comprehensive, with only minor looseness where a first-viewport lead summary could substitute for visible table rows and where accessible names are allowed as an alternative to visible row-action labels.",
+      "summary": "最完整地将首屏例外队列、决策扫描顺序、语义状态、数值排版和表面规范转化为可观察的验收条件，并给出诚实且足以改变结论的尺寸、状态、可读性和键盘验证计划；仅缺少针对全局头部竞争的独立整改动作。",
       "total": 99
     }
   ],

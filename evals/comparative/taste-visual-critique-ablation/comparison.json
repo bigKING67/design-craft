@@ -1,6 +1,6 @@
 {
-  "blind_map_sha256": "4b2933e16b6cda37239830e5d7a410aec105deac54d6f824400723af889efa75",
-  "blind_packet_sha256": "208aac27f74fd413833b449420385e664c6609baffe029883340374c3dd13e73",
+  "blind_map_sha256": "da1de6eaad7b0febf24b60f6581324419e5305b89b91d641183c25ce5a2ef95e",
+  "blind_packet_sha256": "0576b4d2af3b482a6938e32d573919137b027c450835918d483aa8e3a733c0a1",
   "case_id": "taste-visual-critique-ablation",
   "focused_variant": "taste",
   "judge": {
@@ -8,20 +8,20 @@
     "model": "gpt-5.6-sol",
     "model_observation": "requested_by_cli",
     "raw_output_path": "judge-output.raw.txt",
-    "raw_output_sha256": "83eacd2b7af709d1aed0a78b6c352975be8e95c325e93f61b10372a202ec405d",
+    "raw_output_sha256": "3389e6ad2452b8c15b58d759a4638cca5509a44476f531b42b5e04a80615a9f7",
     "reasoning": "max",
     "reasoning_observation": "requested_by_cli",
     "run_path": "run.judge.json",
-    "run_sha256": "1db7ec4bc0b51dfdc248609f7e7c01aeb9dbfe2cd12a0db2a09c32a1211b4c15",
+    "run_sha256": "004716f93e7208f11498141a25d7535949e6988da3dc4952fbaed32fd647dc5b",
     "runner_os": "macOS-15.7.7-arm64-arm-64bit-Mach-O",
-    "version": "codex-cli 0.145.0"
+    "version": "codex-cli 0.147.0"
   },
   "judgment_path": "blind-judgment.json",
   "judgment_schema_sha256": "f80a55f5da5692ecd98e1a34f3ab5e0884af7840e14870655dfb99dc5306cf58",
-  "judgment_sha256": "8500941a5012df61adfd0621002a20a2169129c781b8ed3566c0939498cb7b6d",
+  "judgment_sha256": "81b9366e6dc76a20681a6a2126e4a218f8bd01a91bcda193aece807f054d7eb7",
   "prompt_sha256": "24483d75b8bec334c978ae4f120d5523ec4ee54a1b8c3bbeef97aafbd6090ed9",
-  "rationale": "C is the strongest because it explicitly places diagnostics after the actionable queue, ties every retained chart or insight to a named triage question, and covers the entire surface with unusually specific craft and resilience criteria while clearly disclaiming runtime validation. B is a strong runner-up with better surface guidance than A, but it leaves several described problems without direct redesign moves. A is highly product-aligned and disciplined, yet its typography, spacing, elevation, and chart critiques are not carried through as concretely as C's.",
-  "recorded_at": "2026-07-26T04:20:54Z",
+  "rationale": "C 在三份输出中拥有最强的实现可执行性：它不仅正确识别任务层级、卡片堆叠、空泛洞察和等权视觉问题，还给出了具体视口尺寸、首屏行数、两行产品名、表格数字对齐、约 14px/1.4 的密集产品文字基线、间距尺度及阴影使用边界。A 的视觉判断同样优秀，但动作存在重复并遗漏两个已识别区域的闭环；B 的产品与决策流覆盖全面，但视觉工艺验收明显少于 A 和 C。各 total 均由所列 criterion 分值重新求和。Memory: 本次盲评仅依据题面提供的 A、B、C 输出，未使用历史提示影响评分。",
+  "recorded_at": "2026-08-17T13:04:06Z",
   "results": {
     "baseline": {
       "blind_label": "B",
@@ -30,12 +30,12 @@
         "concrete_moves": 18,
         "evidence_honesty": 10,
         "product_fit": 15,
-        "product_hierarchy": 14,
+        "product_hierarchy": 15,
         "scope_discipline": 10,
-        "visual_craft": 13
+        "visual_craft": 11
       },
-      "score": 95,
-      "summary": "B provides an especially coherent exception-first command band, strong table triage hierarchy, explicit semantic statuses and actions, and useful surface normalization through a defined spacing rhythm and reduced elevation. It is slightly incomplete because the fragmented page command area, long product-name behavior, oversized chart, and full production-state contract are not directly resolved in the redesign moves."
+      "score": 94,
+      "summary": "完整覆盖核心任务、头部、表格、状态、动作和 insight，产品契合度与工作流约束处理得当；主要短板是视觉工艺多停留在问题识别，缺少字号、行高、对比度、间距、边框和阴影的实施级验收。"
     },
     "design-craft": {
       "blind_label": "C",
@@ -49,7 +49,7 @@
         "visual_craft": 15
       },
       "score": 99,
-      "summary": "C most completely translates the product authority into a lead-summary, priority-metric, exception-queue, then diagnostics sequence. It combines product-specific anti-generic judgment with precise typography, contrast, spacing, elevation, semantic-color, table-scan, chart-purpose, long-content, and state-resilience corrections. Its acceptance criteria are comprehensive, with only minor looseness where a first-viewport lead summary could substitute for visible table rows and where accessible names are allowed as an alternative to visible row-action labels."
+      "summary": "最完整地将首屏例外队列、决策扫描顺序、语义状态、数值排版和表面规范转化为可观察的验收条件，并给出诚实且足以改变结论的尺寸、状态、可读性和键盘验证计划；仅缺少针对全局头部竞争的独立整改动作。"
     },
     "taste": {
       "blind_label": "A",
@@ -58,12 +58,12 @@
         "concrete_moves": 17,
         "evidence_honesty": 10,
         "product_fit": 15,
-        "product_hierarchy": 14,
+        "product_hierarchy": 15,
         "scope_discipline": 10,
-        "visual_craft": 11
+        "visual_craft": 14
       },
-      "score": 92,
-      "summary": "A correctly makes the exception queue primary, demotes lower-value metrics, replaces ambiguous status and action treatments, and remains rigorously grounded in static evidence. Its main weakness is incomplete visual-craft follow-through: inconsistent spacing, excessive borders and shadows, low-contrast typography, and the oversized chart are identified but not all receive implementation-ready corrections or acceptance criteria."
+      "score": 96,
+      "summary": "层级诊断、表格重排和表面减噪都很扎实，且静态证据边界清楚；但 KPI 的两个整改动作部分重复，未将全局头部竞争与空泛 insight 同时闭环，正文可读性的验收也不够量化。"
     }
   },
   "schema": "design-craft.comparative-result.v4",
@@ -76,12 +76,12 @@
       "host_version": "0.80.6",
       "model": "codex/gpt-5.5",
       "output_path": "output.baseline.md",
-      "output_sha256": "9fd34409878d9f04c532d2f819f247a4cf70cd544c1f0d68091035999d02edf6",
+      "output_sha256": "2d011ae58fdd9a729d3a04d22b08e06b58d9795ce7ea47b546715da3a39d1923",
       "run_path": "run.baseline.json",
-      "run_sha256": "8b9643e75113cce4c0a9c3ff79026e8bce49bbbb79fe0bf29db3dd847027ec7d",
+      "run_sha256": "004728dbf32366039f107cbc30c99179b3931c545a0d1cdba654480a23c82c49",
       "skill_install_mode": "isolated_case_projection",
       "skill_trees": {},
-      "source_commit": "0b4231e2da09252076e401b7203fbcd2f5698b23",
+      "source_commit": "7fbbb1a1e5788e9417f240c530532b979974503e",
       "source_fingerprints": {},
       "source_trees": {},
       "thinking": "high"
@@ -92,25 +92,25 @@
       "host_version": "0.80.6",
       "model": "codex/gpt-5.5",
       "output_path": "output.design-craft.md",
-      "output_sha256": "ae0ac9e5e82ac188d3702dd641b223deaf82c798868f2b5aeb32a0b29b8005f1",
+      "output_sha256": "ed88f904e745ea69158084e79da4fb9e3d84888eef4d109f0c79e3ad1d34954a",
       "run_path": "run.design-craft.json",
-      "run_sha256": "25c766d34d51a717e4a09277090f5a670cbeaf0c83c71547bb4e3a9ab8786201",
+      "run_sha256": "75b658b483e468568581e2bcdb39f33b8bc87276ee9d6f0c5ba5cc554b264ec8",
       "skill_install_mode": "isolated_case_projection",
       "skill_trees": {
-        "skills/design-craft": "814819b878c6e8528ea14ffd03286e985791289aa9ef757be6eb0043163e8af5"
+        "skills/design-craft": "68bc9a2f274799dfd4238970883bc3077e0452f0ff66526892a2a493b6c2cca3"
       },
-      "source_commit": "0b4231e2da09252076e401b7203fbcd2f5698b23",
+      "source_commit": "7fbbb1a1e5788e9417f240c530532b979974503e",
       "source_fingerprints": {
         "skills/design-craft": {
           "domain": "skill-visual-critique",
           "kind": "evidence_domain",
-          "projected_tree_sha256": "814819b878c6e8528ea14ffd03286e985791289aa9ef757be6eb0043163e8af5",
-          "sha256": "eff5682c4b1b615df5b8b1014b431f31b91608609db14e6e1c282476a70024ff",
+          "projected_tree_sha256": "68bc9a2f274799dfd4238970883bc3077e0452f0ff66526892a2a493b6c2cca3",
+          "sha256": "2bedb390c7e9c34fa0150bd784ef939da05c7634658f55f923b687e0213ee71c",
           "source_dirty": false
         }
       },
       "source_trees": {
-        "skills/design-craft": "4604ade449cbb80be40297779b7ebba7bb8bfb1572adc39ef429b38f83a38d43"
+        "skills/design-craft": "0b6c1ad1af54ace726da84d72446551134e6bc1b09411a518ae63b668d1d4f22"
       },
       "thinking": "high"
     },
@@ -120,15 +120,15 @@
       "host_version": "0.80.6",
       "model": "codex/gpt-5.5",
       "output_path": "output.taste.md",
-      "output_sha256": "36fbe3f9ac0695a3e2faa1da67702c6373e8b7af80b04a369c78a788144c796b",
+      "output_sha256": "3564202fa30024b5e65ac6ccd8e8d46c9d5d6ebdba48086fb326993ca7d403cc",
       "run_path": "run.taste.json",
-      "run_sha256": "baea156b21473acf81afaa0b79cc13779b3af96976bc85068b0f9909c6eb1f07",
+      "run_sha256": "dd70fa542558f8994e1448056646ccb281c4b32159a9168ed1cda119393b16ec",
       "skill_install_mode": "isolated_case_projection",
       "skill_trees": {
         "upstreams/taste-skill/skills/redesign-skill": "1fd74922e6bb2011c7c0d82aefd70d0cc1dbd31bd904054bec3f6cae4d731b90",
         "upstreams/taste-skill/skills/taste-skill": "40ef50925b446e08a4ad5cead8edeb98f48982eb498b0073fe6a0b27ea736769"
       },
-      "source_commit": "0b4231e2da09252076e401b7203fbcd2f5698b23",
+      "source_commit": "7fbbb1a1e5788e9417f240c530532b979974503e",
       "source_fingerprints": {
         "upstreams/taste-skill/skills/redesign-skill": {
           "kind": "tree",

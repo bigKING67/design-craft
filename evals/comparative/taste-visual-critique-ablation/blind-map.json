@@ -6,30 +6,30 @@
     "A": {
       "path": "output.taste.md",
       "run_path": "run.taste.json",
-      "run_sha256": "baea156b21473acf81afaa0b79cc13779b3af96976bc85068b0f9909c6eb1f07",
-      "sha256": "36fbe3f9ac0695a3e2faa1da67702c6373e8b7af80b04a369c78a788144c796b",
+      "run_sha256": "dd70fa542558f8994e1448056646ccb281c4b32159a9168ed1cda119393b16ec",
+      "sha256": "3564202fa30024b5e65ac6ccd8e8d46c9d5d6ebdba48086fb326993ca7d403cc",
       "variant": "taste"
     },
     "B": {
       "path": "output.baseline.md",
       "run_path": "run.baseline.json",
-      "run_sha256": "8b9643e75113cce4c0a9c3ff79026e8bce49bbbb79fe0bf29db3dd847027ec7d",
-      "sha256": "9fd34409878d9f04c532d2f819f247a4cf70cd544c1f0d68091035999d02edf6",
+      "run_sha256": "004728dbf32366039f107cbc30c99179b3931c545a0d1cdba654480a23c82c49",
+      "sha256": "2d011ae58fdd9a729d3a04d22b08e06b58d9795ce7ea47b546715da3a39d1923",
       "variant": "baseline"
     },
     "C": {
       "path": "output.design-craft.md",
       "run_path": "run.design-craft.json",
-      "run_sha256": "25c766d34d51a717e4a09277090f5a670cbeaf0c83c71547bb4e3a9ab8786201",
-      "sha256": "ae0ac9e5e82ac188d3702dd641b223deaf82c798868f2b5aeb32a0b29b8005f1",
+      "run_sha256": "75b658b483e468568581e2bcdb39f33b8bc87276ee9d6f0c5ba5cc554b264ec8",
+      "sha256": "ed88f904e745ea69158084e79da4fb9e3d84888eef4d109f0c79e3ad1d34954a",
       "variant": "design-craft"
     }
   },
   "packet_path": "blind-packet.md",
-  "packet_sha256": "208aac27f74fd413833b449420385e664c6609baffe029883340374c3dd13e73",
+  "packet_sha256": "0576b4d2af3b482a6938e32d573919137b027c450835918d483aa8e3a733c0a1",
   "prompt_sha256": "24483d75b8bec334c978ae4f120d5523ec4ee54a1b8c3bbeef97aafbd6090ed9",
   "schema": "design-craft.comparative-blind-map.v3",
   "scorecard_json_sha256": "fce00a94275af2560f20e1e69edb040a5c470a03a5caa51b71bb49ab07489c75",
   "scorecard_sha256": "a1f750a6c735ff178260bcc806a0ad089d0c4de4e2ff0cfd466ffcd08317d989",
-  "seed_sha256": "dd6e1ed2e0d46fcbfd099f5cf132aeeb3e100e41e694cd477c5aa2be0b485c00"
+  "seed_sha256": "f3252147afd513fc8dcb6ab288246e3402e37bbedf6539afbc9b1164f942614e"
 }

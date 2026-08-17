@@ -1,34 +1,6 @@
 {
-  "rationale": "C是唯一同时做到完整生产加固覆盖、项目上下文下的静态信号校准、变更前基线、具体性能阈值以及独立回滚门禁的输出，并明确限定为静态只读审计。A的修复覆盖几乎同样完整，但测量被放在修复之后且验收目标偏定性；B虽有前置基线，却缺少量化阈值和明确触控目标修复，静态信号措辞也略显绝对。",
+  "rationale": "A最贴合全部满分条件：先审计并优先修复数据可靠性，再处理无障碍与平板适配，随后以基线和明确阈值驱动性能优化，最后才做受约束的视觉润色；它同时逐项区分静态事实与运行时未知，并为故障、数据、布局、交互、规模和回滚提供可执行验收条件。B的实施细节同样优秀，但测量门槛偏定性且严重级别与篇幅控制稍弱；C还遗漏了明确的触控热区修复，并在优先级和篇幅控制上进一步失分。\nMemory: 3条预检命中均未用于评分；0候选，0写入。",
   "results": [
-    {
-      "criteria": {
-        "detector_reconciliation": 10,
-        "evidence_scope": 9,
-        "hostile_data": 20,
-        "measured_performance": 12,
-        "mode_sequence": 10,
-        "production_fixes": 20,
-        "responsive_accessibility": 15
-      },
-      "label": "A",
-      "summary": "覆盖范围和修复建议非常完整，P0-P3、敌对数据、失败恢复、无障碍、平板适配及静态信号分层均处理扎实。主要不足是性能验证被明确安排在修复之后，缺少真正的变更前运行基线和量化验收阈值；同时篇幅明显超过180行约束。",
-      "total": 96
-    },
-    {
-      "criteria": {
-        "detector_reconciliation": 9,
-        "evidence_scope": 9,
-        "hostile_data": 20,
-        "measured_performance": 13,
-        "mode_sequence": 10,
-        "production_fixes": 19,
-        "responsive_accessibility": 14
-      },
-      "label": "B",
-      "summary": "具备清晰的审计、加固、优化和回滚链路，失败状态矩阵、权限、冲突、离线、批量失败与性能基线覆盖充分。扣分点是性能目标仍偏定性，没有明确修复28px触控目标，部分仅能代表当前片段的静态缺失被列入决定性信号，且整体超过180行限制。",
-      "total": 94
-    },
     {
       "criteria": {
         "detector_reconciliation": 10,
@@ -39,10 +11,38 @@
         "production_fixes": 20,
         "responsive_accessibility": 15
       },
-      "label": "C",
-      "summary": "完整满足全部评分项：顺序和严重级别一致，覆盖敌对数据、上传、权限、冲突、离线及真实保存恢复，提供平板和无障碍修复，并以DOM边界、p95延迟、长任务、布局偏移和明确回滚条件构成真正的测量优先闭环。静态事实与运行时假设分离清楚，且明确声明未执行任何运行时工具。",
+      "label": "A",
+      "summary": "排序清晰且严重级别克制，完整覆盖故障恢复、敌意数据、平板与无障碍、性能热点、静态信号边界以及实施级修复；还给出可量化的暂定性能阈值、验收条件和回滚门槛，并保持在篇幅与只读审计范围内。",
       "total": 100
+    },
+    {
+      "criteria": {
+        "detector_reconciliation": 10,
+        "evidence_scope": 9,
+        "hostile_data": 20,
+        "measured_performance": 12,
+        "mode_sequence": 9,
+        "production_fixes": 20,
+        "responsive_accessibility": 15
+      },
+      "label": "B",
+      "summary": "覆盖面和修复细节非常充分，尤其是并发保存、幂等重试、批处理结果账本、选择模型与上传失败处理；主要扣分来自把尚未实测的性能风险列为P0、性能验收阈值多为定性描述，以及超过180行的范围约束。",
+      "total": 95
+    },
+    {
+      "criteria": {
+        "detector_reconciliation": 10,
+        "evidence_scope": 8,
+        "hostile_data": 20,
+        "measured_performance": 12,
+        "mode_sequence": 8,
+        "production_fixes": 19,
+        "responsive_accessibility": 13
+      },
+      "label": "C",
+      "summary": "状态生命周期、冲突恢复、批处理失败和静态证据分层均较扎实，但P0层级承载了过多未经运行测量的性能结论，未具体修复28像素触控热区，权限 affordance 与性能阈值不够落实，且明显超过180行限制。",
+      "total": 90
     }
   ],
-  "winner": "C"
+  "winner": "A"
 }

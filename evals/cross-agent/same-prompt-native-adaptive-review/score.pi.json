@@ -9,27 +9,27 @@
   "reasoning_profile": "high",
   "reasoning_observation": "requested_by_cli",
   "runner_os": "macOS-15.7.7-arm64-arm-64bit-Mach-O",
-  "date": "2026-07-26",
+  "date": "2026-08-17",
   "prompt_sha256": "61f2e14e7f03ad0f21bff2db3770e0b6c0ffba120aa7598dab1f73411256b2bd",
   "scorecard_json_sha256": "260126ae8e6eb6765184f92ad040b5e32995c941f559d654a303a0d5305e210f",
   "contract_sha256": "69f694db240266e509b7efd666c627880175a7cf132ddde3ad651c4820f37122",
   "run_manifest_path": "run.pi.json",
-  "run_manifest_sha256": "699971ddf02cf2bc75343ba784635f3a11284705200239b5d7a194e055d3f392",
-  "skill_version": "0.5.6",
-  "skill_source_commit": "03c14ae4175e05d01ac1ab3d863b9f4fa97ea6b6",
+  "run_manifest_sha256": "ad92c1e179e1bfa79c0a1716c86090bf18dbaa12e9479e924e62f63ffed36686",
+  "skill_version": "0.6.0",
+  "skill_source_commit": "ad39c99c610e32ab4467903917d5eb8a39bdb219",
   "skill_source_dirty": false,
   "repo_dirty": true,
   "release_state": "unknown",
-  "skill_tree_sha256": "4604ade449cbb80be40297779b7ebba7bb8bfb1572adc39ef429b38f83a38d43",
+  "skill_tree_sha256": "309934b5af34117955354bfa015491f63d51b0b21507c50ed968fc78d4076886",
   "skill_path": "$BENCHMARK_WORKSPACE/.pi/skills/design-craft",
   "behavior_domain": "skill-native-adaptive-review",
-  "behavior_sha256": "0fd4b83d2076696e7d924549a360454f14450524b7dfbf7ebb9902a2ff67375e",
+  "behavior_sha256": "316a191ef92771ad5c3b69df0fc89756f6cab80f90eca972a9c2444a588e9eac",
   "behavior_source_dirty": false,
-  "projected_skill_tree_sha256": "56ec2a41734cc906044ee1f1aee4791a79884277dc9f9e554e4207ed7743def2",
+  "projected_skill_tree_sha256": "41fb24460aaa41805be315a97c7bf5abd980d7858da397700588d679dd4625d7",
   "provenance_skill_path": "$DESIGN_CRAFT_HOME/skills/design-craft",
   "command_summary": "pi --print --no-session --no-skills --skill '$BENCHMARK_SKILL' --no-context-files --tools read,grep,find,ls --model codex/gpt-5.5 --thinking high",
   "output_path": "pi-output.md",
-  "output_sha256": "db39d28d579a075c4ea01999768fc64a8015f4e14999c14ff5ec145caa2fe59e",
+  "output_sha256": "fb684471ce0341dd4773f5c8c524a88c586cce515fc890762846dbd2f4942bb2",
   "score": 100,
   "criteria": {
     "style_authority": {
@@ -65,7 +65,7 @@
     "scope_control": {
       "passed": true,
       "earned": 10,
-      "note": "Stays read-only and native-UI-focused, fits within 118 lines, and limits the critique to five blockers, eight moves, and a minimal validation plan."
+      "note": "Stays read-only and native-UI-focused, fits within 68 lines, and limits the critique to five blockers, eight moves, and a minimal validation plan."
     }
   }
 }
