@@ -94,9 +94,23 @@ responsive behavior, and performance, load `references/impeccable-workflow.md`,
 `references/performance-quality.md`, and `references/validation-contract.md`
 together. Treat an unbounded static hot path as decisive architecture risk but
 keep it at P1 until target-runtime evidence proves release-blocking task
-failure. Treat every explicit output cap as a hard contract: use one compact
-finding ledger, avoid repeating fixes across sections, and leave room for
-measurement, rollback, and acceptance conditions.
+failure.
+
+Treat every explicit output cap as a hard contract. For a cap of 200 lines or
+fewer, draft to at most 75 percent of the cap and use one ledger with no more
+than eight findings. Each finding records priority, source proof, runtime
+unknown, concrete repair, and acceptance evidence once; later requested
+sections reference those finding IDs instead of repeating their details. Before
+returning, count newline-delimited lines and cut repetition until the draft is
+inside budget.
+
+Do not omit a numerically specified defect while compressing. When no project
+authority overrides it, a Web tablet target smaller than 44 CSS pixels needs an
+explicit effective-target repair. A performance plan without an existing
+budget must propose provisional, ratification-bound numeric gates for the
+relevant hot path, such as input/filter p95, maximum long task, mounted-row
+bound, CLS, memory, and base-to-head regression, with an explicit rollback
+condition. Never claim those provisional gates were measured.
 
 ## Helpers
 
