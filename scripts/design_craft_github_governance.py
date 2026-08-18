@@ -20,12 +20,23 @@ ACTIONS_PERMISSIONS = {
     "allowed_actions": "selected",
     "sha_pinning_required": True,
 }
+# GitHub evaluates nested repositories loaded by composite actions separately.
+REVIEWED_TRANSITIVE_ACTIONS = {
+    "actions/attest-build-provenance@*": frozenset(
+        {
+            "actions/attest-build-provenance/predicate@*",
+            "actions/attest@*",
+        }
+    ),
+}
 SELECTED_ACTIONS = {
     "github_owned_allowed": False,
     "verified_allowed": False,
     "patterns_allowed": [
         "actions/checkout@*",
         "actions/attest-build-provenance@*",
+        "actions/attest-build-provenance/predicate@*",
+        "actions/attest@*",
         "actions/github-script@*",
         "actions/setup-java@*",
         "actions/setup-node@*",
@@ -176,6 +187,22 @@ def workflow_action_patterns() -> set[str]:
     return patterns
 
 
+def reviewed_action_patterns() -> set[str]:
+    direct_patterns = workflow_action_patterns()
+    missing_parents = set(REVIEWED_TRANSITIVE_ACTIONS) - direct_patterns
+    if missing_parents:
+        raise RuntimeError(
+            "reviewed transitive action parent is not used by a workflow: "
+            f"{sorted(missing_parents)}"
+        )
+    transitive_patterns = {
+        pattern
+        for patterns in REVIEWED_TRANSITIVE_ACTIONS.values()
+        for pattern in patterns
+    }
+    return direct_patterns | transitive_patterns
+
+
 def normalize_rule_types(payload: dict) -> set[str]:
     return {
         str(item.get("type"))
@@ -311,7 +338,7 @@ def run_self_check() -> None:
         for error in validate_ruleset(invalid_tag, tag_expected)
     ):
         raise RuntimeError("governance self-check accepted a release-tag bypass actor")
-    if workflow_action_patterns() != set(SELECTED_ACTIONS["patterns_allowed"]):
+    if reviewed_action_patterns() != set(SELECTED_ACTIONS["patterns_allowed"]):
         raise RuntimeError("selected action allowlist does not match workflow usage")
     if validate_actions_permissions(ACTIONS_PERMISSIONS, SELECTED_ACTIONS):
         raise RuntimeError("governance self-check rejected desired Actions permissions")

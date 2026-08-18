@@ -287,7 +287,12 @@ release in place.
 audit of live branch/tag rulesets and the Actions allowlist. It uses the
 operator's existing authenticated `gh` session and is intentionally outside the
 release critical path because GitHub exposes those settings through
-administration-level endpoints.
+administration-level endpoints. The selected-actions contract combines action
+repositories referenced directly by workflows with an explicit set of reviewed
+transitive repositories loaded by composite actions. In particular,
+`actions/attest-build-provenance` currently loads its `predicate` repository and
+`actions/attest`; GitHub evaluates both against the allowlist independently.
+Keep those dependencies narrow and explicit rather than allowing `actions/*`.
 
 The main ruleset permits normal fast-forward pushes after local validation.
 Validate still runs on `main` pushes and release tags, but its status is

@@ -2,6 +2,12 @@
 
 All notable local changes to `design-craft` are recorded here.
 
+## Unreleased
+
+- Make the strict GitHub Actions allowlist model reviewed transitive
+  dependencies of `actions/attest-build-provenance` explicitly, so publication
+  attestation setup remains allowed without broadening policy to `actions/*`.
+
 ## 0.6.1 - 2026-08-18
 
 - Stabilize the real portable-validation benchmark on CPU-limited hosted
