@@ -72,15 +72,26 @@ class ParallelUnittestTests(unittest.TestCase):
                 observed[-1] = (observed[-1][0], chunksize)
                 return [parallel_unittest.TestResult(module, 0, "", "") for module in modules]
 
-        with mock.patch.object(
-            parallel_unittest.concurrent.futures,
-            "ProcessPoolExecutor",
-            FakeExecutor,
+        with (
+            mock.patch.object(
+                parallel_unittest.concurrent.futures,
+                "ProcessPoolExecutor",
+                FakeExecutor,
+            ),
+            mock.patch.object(parallel_unittest.os, "cpu_count", return_value=8),
         ):
             results = parallel_unittest.run_modules(["test.z", "test.a"], jobs=4)
 
         self.assertEqual([result.test_id for result in results], ["test.z", "test.a"])
         self.assertEqual(observed, [(2, 1)])
+
+    def test_module_workers_do_not_exceed_available_cpus(self) -> None:
+        with mock.patch.object(parallel_unittest.os, "cpu_count", return_value=4):
+            workers = parallel_unittest.module_worker_count(
+                [f"tests.unit.test_{index}" for index in range(10)], jobs=8
+            )
+
+        self.assertEqual(workers, 4)
 
     @mock.patch.object(parallel_unittest.subprocess, "run")
     def test_subprocess_disables_bytecode_writes(self, run: mock.Mock) -> None:

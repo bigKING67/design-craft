@@ -110,7 +110,7 @@ def run_module_test(module: str) -> TestResult:
 
 
 def run_modules(modules: list[str], jobs: int) -> list[TestResult]:
-    workers = min(max(1, jobs), len(modules))
+    workers = module_worker_count(modules, jobs)
     environment_value = os.environ.get("PYTHONDONTWRITEBYTECODE")
     os.environ["PYTHONDONTWRITEBYTECODE"] = "1"
     try:
@@ -121,6 +121,10 @@ def run_modules(modules: list[str], jobs: int) -> list[TestResult]:
             os.environ.pop("PYTHONDONTWRITEBYTECODE", None)
         else:
             os.environ["PYTHONDONTWRITEBYTECODE"] = environment_value
+
+
+def module_worker_count(modules: list[str], jobs: int) -> int:
+    return min(max(1, jobs), len(modules), os.cpu_count() or 1)
 
 
 def main() -> int:
@@ -151,7 +155,7 @@ def main() -> int:
 
     if args.discover_dir:
         results = run_modules(test_ids, args.jobs)
-        subprocess_count = min(args.jobs, len(test_ids))
+        subprocess_count = module_worker_count(test_ids, args.jobs)
     else:
         results = run_tests(test_ids, args.jobs)
         subprocess_count = len(results)
