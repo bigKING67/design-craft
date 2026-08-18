@@ -26,6 +26,12 @@ CORE_GATES = (
     "l4_evidence_contract",
 )
 
+# Source validation owns the portable installer contract. Release maturity keeps
+# the same gate so candidate/final evidence remains independently complete.
+DEVELOPMENT_GATES = tuple(
+    gate_id for gate_id in CORE_GATES if gate_id != "installer_contract"
+)
+
 IMMUTABLE_RELEASE_GATES = (
     "performance_regression",
     "comparative_evaluation",
@@ -57,7 +63,7 @@ def load_profile(name: str, phase: str) -> MaturityProfile:
             name=name,
             scope="development_baseline",
             release_level_score=None,
-            required_gate_ids=CORE_GATES,
+            required_gate_ids=DEVELOPMENT_GATES,
             allowed_unverified=(),
         )
 
@@ -114,6 +120,11 @@ def check_profile_invariants() -> list[str]:
         errors.append("final certification must not require admin-only GitHub governance access")
     if not set(operational.required_gate_ids) < set(certified.required_gate_ids):
         errors.append("certified_100 must strictly extend operational_95")
+    development = load_profile("development", "candidate")
+    if "installer_contract" in development.required_gate_ids:
+        errors.append("development maturity must not duplicate source installer tests")
+    if "installer_contract" not in operational.required_gate_ids:
+        errors.append("operational_95 must retain installer contract evidence")
     for gate in (
         "host_cursor_current_source",
         "host_claude_current_source",

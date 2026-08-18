@@ -14,6 +14,7 @@ SOURCE_BOOTSTRAP_GATES = frozenset(
         "unit-tests",
         "integration-tests",
         "adversarial-tests",
+        "installer-contract-tests",
         "development-maturity",
     }
 )

@@ -177,7 +177,7 @@
     },
     {
       "id": "integration-tests",
-      "command": ["python3", "-m", "unittest", "discover", "-s", "tests/integration", "-p", "test_*.py"],
+      "command": ["python3", "scripts/design_craft_parallel_unittest.py", "--jobs", "8", "--discover-dir", "tests/integration"],
       "profiles": ["contracts", "portable", "local", "operational-release", "certified-release"],
       "timeout_seconds": 600,
       "execution": "parallel",
@@ -194,9 +194,10 @@
     {
       "id": "installer-contract-tests",
       "command": ["python3", "scripts/design_craft_parallel_unittest.py", "--jobs", "5", "tests.contract.test_installer"],
-      "profiles": ["contracts"],
+      "profiles": ["contracts", "portable", "local", "operational-release", "certified-release"],
       "timeout_seconds": 180,
-      "execution": "parallel"
+      "execution": "parallel",
+      "priority": 85
     },
     {
       "id": "development-maturity",
@@ -230,7 +231,8 @@
         "maturity-self-check",
         "unit-tests",
         "integration-tests",
-        "adversarial-tests"
+        "adversarial-tests",
+        "installer-contract-tests"
       ]
     },
     {

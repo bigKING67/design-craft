@@ -107,6 +107,13 @@ class MaturityProfileTests(unittest.TestCase):
     def test_profile_invariants(self) -> None:
         self.assertEqual(check_profile_invariants(), [])
 
+    def test_installer_contract_is_deduplicated_only_for_development(self) -> None:
+        development = load_profile("development", "candidate")
+        operational = load_profile("operational_95", "candidate")
+
+        self.assertNotIn("installer_contract", development.required_gate_ids)
+        self.assertIn("installer_contract", operational.required_gate_ids)
+
     def test_operational_is_not_a_missing_evidence_cap(self) -> None:
         profile = load_profile("operational_95", "candidate")
         self.assertIn("host_codex_current_source", profile.required_gate_ids)

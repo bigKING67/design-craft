@@ -36,6 +36,7 @@ PORTABLE_PARALLEL_GATES = (
     "unit-tests",
     "integration-tests",
     "adversarial-tests",
+    "installer-contract-tests",
 )
 
 CONTRACT_GATES = (
@@ -66,6 +67,20 @@ class ValidationRegistryTests(unittest.TestCase):
         self.assertGreater(
             next(gate.priority for gate in gates if gate.gate_id == "unit-tests"),
             next(gate.priority for gate in gates if gate.gate_id == "skill-schema"),
+        )
+        integration = next(
+            gate for gate in gates if gate.gate_id == "integration-tests"
+        )
+        self.assertEqual(
+            integration.command,
+            (
+                "python3",
+                "scripts/design_craft_parallel_unittest.py",
+                "--jobs",
+                "8",
+                "--discover-dir",
+                "tests/integration",
+            ),
         )
         self.assertEqual(profile_contract_errors(gates, "portable"), [])
 
