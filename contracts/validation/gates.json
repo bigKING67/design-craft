@@ -168,36 +168,12 @@
       "execution": "parallel"
     },
     {
-      "id": "unit-tests",
-      "command": ["python3", "scripts/design_craft_parallel_unittest.py", "--jobs", "8", "--discover-dir", "tests/unit"],
+      "id": "source-test-suite",
+      "command": ["python3", "scripts/design_craft_parallel_unittest.py", "--jobs", "8", "--include-discover-dir=tests/unit", "--include-discover-dir=tests/integration", "--include-discover-dir=tests/adversarial", "--include-target=tests.contract.test_installer"],
       "profiles": ["contracts", "portable", "local", "operational-release", "certified-release"],
-      "timeout_seconds": 600,
+      "timeout_seconds": 900,
       "execution": "parallel",
       "priority": 100
-    },
-    {
-      "id": "integration-tests",
-      "command": ["python3", "scripts/design_craft_parallel_unittest.py", "--jobs", "8", "--discover-dir", "tests/integration"],
-      "profiles": ["contracts", "portable", "local", "operational-release", "certified-release"],
-      "timeout_seconds": 600,
-      "execution": "parallel",
-      "priority": 95
-    },
-    {
-      "id": "adversarial-tests",
-      "command": ["python3", "-m", "unittest", "discover", "-s", "tests/adversarial", "-p", "test_*.py"],
-      "profiles": ["contracts", "portable", "local", "operational-release", "certified-release"],
-      "timeout_seconds": 600,
-      "execution": "parallel",
-      "priority": 65
-    },
-    {
-      "id": "installer-contract-tests",
-      "command": ["python3", "scripts/design_craft_parallel_unittest.py", "--jobs", "5", "tests.contract.test_installer"],
-      "profiles": ["contracts", "portable", "local", "operational-release", "certified-release"],
-      "timeout_seconds": 180,
-      "execution": "parallel",
-      "priority": 85
     },
     {
       "id": "development-maturity",
@@ -229,10 +205,7 @@
         "install-verifier-self-check",
         "route-pack-self-check",
         "maturity-self-check",
-        "unit-tests",
-        "integration-tests",
-        "adversarial-tests",
-        "installer-contract-tests"
+        "source-test-suite"
       ]
     },
     {

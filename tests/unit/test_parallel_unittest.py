@@ -25,6 +25,20 @@ class ParallelUnittestTests(unittest.TestCase):
         self.assertIn("tests.unit.test_parallel_unittest", modules)
         self.assertEqual(len(modules), len(set(modules)))
 
+    def test_collect_isolated_tasks_combines_lanes_without_duplicates(self) -> None:
+        tasks = parallel_unittest.collect_isolated_tasks(
+            ["tests/integration", "tests/adversarial"],
+            ["tests.contract.test_installer"],
+            "test_*.py",
+        )
+
+        self.assertEqual(tasks, sorted(set(tasks)))
+        self.assertIn("tests.integration.test_visual_reference_cli", tasks)
+        self.assertIn("tests.adversarial.test_shadow_lab_boundaries", tasks)
+        self.assertTrue(
+            any(task.endswith("test_dry_run_does_not_write") for task in tasks)
+        )
+
     def test_run_tests_preserves_input_order(self) -> None:
         def fake_run(test_id: str) -> parallel_unittest.TestResult:
             return parallel_unittest.TestResult(test_id, 0, "", "")

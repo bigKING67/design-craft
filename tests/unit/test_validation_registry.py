@@ -33,10 +33,7 @@ PORTABLE_PARALLEL_GATES = (
     "install-verifier-self-check",
     "route-pack-self-check",
     "maturity-self-check",
-    "unit-tests",
-    "integration-tests",
-    "adversarial-tests",
-    "installer-contract-tests",
+    "source-test-suite",
 )
 
 CONTRACT_GATES = (
@@ -49,10 +46,7 @@ CONTRACT_GATES = (
     "native-runtime-self-check",
     "github-checks-self-check",
     "github-governance-self-check",
-    "unit-tests",
-    "integration-tests",
-    "adversarial-tests",
-    "installer-contract-tests",
+    "source-test-suite",
 )
 
 
@@ -65,21 +59,23 @@ class ValidationRegistryTests(unittest.TestCase):
         )
         self.assertEqual(gates[-1].depends_on, PORTABLE_PARALLEL_GATES)
         self.assertGreater(
-            next(gate.priority for gate in gates if gate.gate_id == "unit-tests"),
+            next(gate.priority for gate in gates if gate.gate_id == "source-test-suite"),
             next(gate.priority for gate in gates if gate.gate_id == "skill-schema"),
         )
-        integration = next(
-            gate for gate in gates if gate.gate_id == "integration-tests"
+        test_suite = next(
+            gate for gate in gates if gate.gate_id == "source-test-suite"
         )
         self.assertEqual(
-            integration.command,
+            test_suite.command,
             (
                 "python3",
                 "scripts/design_craft_parallel_unittest.py",
                 "--jobs",
                 "8",
-                "--discover-dir",
-                "tests/integration",
+                "--include-discover-dir=tests/unit",
+                "--include-discover-dir=tests/integration",
+                "--include-discover-dir=tests/adversarial",
+                "--include-target=tests.contract.test_installer",
             ),
         )
         self.assertEqual(profile_contract_errors(gates, "portable"), [])
@@ -91,11 +87,7 @@ class ValidationRegistryTests(unittest.TestCase):
         self.assertEqual(profile_contract_errors(gates, "contracts"), [])
 
     def test_profile_contract_rejects_missing_bootstrap_test_gate(self) -> None:
-        for missing_gate_id in (
-            "unit-tests",
-            "integration-tests",
-            "adversarial-tests",
-        ):
+        for missing_gate_id in ("source-test-suite",):
             with self.subTest(missing_gate_id=missing_gate_id):
                 gates = tuple(
                     gate

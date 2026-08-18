@@ -5,12 +5,13 @@ All notable local changes to `design-craft` are recorded here.
 ## 0.6.1 - 2026-08-18
 
 - Stabilize the real portable-validation benchmark on CPU-limited hosted
-  runners by executing the seven isolated integration modules through the
-  existing CPU-capped process pool instead of one serial discovery process.
+  runners by executing isolated unit, integration, adversarial, and installer
+  tasks through one shared CPU-capped process pool instead of competing nested
+  pools and a serial integration discovery process.
 - Keep installer coverage explicit without measuring it twice: portable and
-  release source profiles now own a first-class parallel installer-contract
-  gate, development maturity no longer duplicates that gate, and Operational
-  and Certified maturity still retain independent installer evidence.
+  release source profiles include it in the shared source test suite,
+  development maturity no longer duplicates it, and Operational and Certified
+  maturity still retain independent installer evidence.
 - Supersede the unpublished `v0.6.0` candidate after two immutable tag-bound
   benchmark runs exposed the same portable-validation regression. The failed
   tag and artifacts remain preserved; thresholds and benchmark provenance are

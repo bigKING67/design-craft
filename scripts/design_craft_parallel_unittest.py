@@ -63,6 +63,17 @@ def discover_modules(start_dir: str, pattern: str) -> list[str]:
     return modules
 
 
+def collect_isolated_tasks(
+    discovery_dirs: list[str], targets: list[str], pattern: str
+) -> list[str]:
+    tasks: set[str] = set()
+    for start_dir in discovery_dirs:
+        tasks.update(discover_modules(start_dir, pattern))
+    if targets:
+        tasks.update(collect_test_ids(targets))
+    return sorted(tasks)
+
+
 def run_test(test_id: str) -> TestResult:
     return run_test_group([test_id])
 
@@ -131,18 +142,37 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("targets", nargs="*", help="unittest module, class, or method")
     parser.add_argument("--discover-dir", help="run matching test modules in isolation")
+    parser.add_argument(
+        "--include-discover-dir",
+        action="append",
+        default=[],
+        help="add a discovery directory to one shared isolated process pool",
+    )
+    parser.add_argument(
+        "--include-target",
+        action="append",
+        default=[],
+        help="add individual tests from a target to the shared isolated process pool",
+    )
     parser.add_argument("--pattern", default="test_*.py")
     parser.add_argument("--jobs", type=int, default=4)
     args = parser.parse_args()
     if args.jobs < 1:
         parser.error("--jobs must be at least 1")
+    composite = bool(args.include_discover_dir or args.include_target)
     if args.discover_dir and args.targets:
         parser.error("targets and --discover-dir are mutually exclusive")
-    if not args.discover_dir and not args.targets:
+    if composite and (args.discover_dir or args.targets):
+        parser.error("include options cannot be combined with positional discovery modes")
+    if not composite and not args.discover_dir and not args.targets:
         parser.error("provide targets or --discover-dir")
 
     try:
-        test_ids = (
+        test_ids = collect_isolated_tasks(
+            args.include_discover_dir,
+            args.include_target,
+            args.pattern,
+        ) if composite else (
             discover_modules(args.discover_dir, args.pattern)
             if args.discover_dir
             else collect_test_ids(args.targets)
@@ -153,7 +183,7 @@ def main() -> int:
         print("no tests found", file=sys.stderr)
         return 2
 
-    if args.discover_dir:
+    if composite or args.discover_dir:
         results = run_modules(test_ids, args.jobs)
         subprocess_count = module_worker_count(test_ids, args.jobs)
     else:
