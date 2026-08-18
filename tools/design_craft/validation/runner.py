@@ -77,7 +77,10 @@ def _automatic_jobs(gate_count: int) -> int:
 
 def run_gates(gates: tuple[GateSpec, ...], *, jobs: int = 0) -> tuple[GateResult, ...]:
     results: dict[str, GateResult] = {}
-    parallel = [gate for gate in gates if gate.execution == "parallel"]
+    parallel = sorted(
+        (gate for gate in gates if gate.execution == "parallel"),
+        key=lambda gate: -gate.priority,
+    )
     serial = [gate for gate in gates if gate.execution == "serial"]
 
     if parallel:

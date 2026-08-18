@@ -58,6 +58,9 @@ def load_registry(path: Path | None = None) -> tuple[GateSpec, ...]:
         execution = _require_string(raw.get("execution"), f"{gate_id}.execution")
         if execution not in KNOWN_EXECUTION:
             raise ValueError(f"{gate_id}.execution must be one of {sorted(KNOWN_EXECUTION)}")
+        priority = raw.get("priority", 0)
+        if not isinstance(priority, int) or isinstance(priority, bool) or priority < 0:
+            raise ValueError(f"{gate_id}.priority must be a non-negative integer")
         depends_on_raw = raw.get("depends_on", [])
         if not isinstance(depends_on_raw, list):
             raise ValueError(f"{gate_id}.depends_on must be an array")
@@ -78,6 +81,7 @@ def load_registry(path: Path | None = None) -> tuple[GateSpec, ...]:
                 profiles=profiles,
                 timeout_seconds=timeout_seconds,
                 execution=execution,
+                priority=priority,
                 depends_on=depends_on,
                 environment=environment,
             )

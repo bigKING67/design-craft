@@ -5,6 +5,8 @@ from __future__ import annotations
 
 import argparse
 import concurrent.futures
+import contextlib
+import io
 import os
 import subprocess
 import sys
@@ -62,10 +64,15 @@ def discover_modules(start_dir: str, pattern: str) -> list[str]:
 
 
 def run_test(test_id: str) -> TestResult:
+    return run_test_group([test_id])
+
+
+def run_test_group(test_ids: list[str]) -> TestResult:
+    label = ", ".join(test_ids)
     environment = os.environ.copy()
     environment["PYTHONDONTWRITEBYTECODE"] = "1"
     result = subprocess.run(
-        [sys.executable, "-m", "unittest", test_id],
+        [sys.executable, "-m", "unittest", *test_ids],
         cwd=ROOT,
         env=environment,
         stdout=subprocess.PIPE,
@@ -73,13 +80,47 @@ def run_test(test_id: str) -> TestResult:
         text=True,
         check=False,
     )
-    return TestResult(test_id, result.returncode, result.stdout, result.stderr)
+    return TestResult(label, result.returncode, result.stdout, result.stderr)
 
 
 def run_tests(test_ids: list[str], jobs: int) -> list[TestResult]:
     workers = min(max(1, jobs), len(test_ids))
     with concurrent.futures.ThreadPoolExecutor(max_workers=workers) as executor:
         return list(executor.map(run_test, test_ids))
+
+
+def run_module_test(module: str) -> TestResult:
+    if str(ROOT) not in sys.path:
+        sys.path.insert(0, str(ROOT))
+    stdout = io.StringIO()
+    stderr = io.StringIO()
+    try:
+        suite = unittest.defaultTestLoader.loadTestsFromName(module)
+        runner = unittest.TextTestRunner(stream=stderr, verbosity=1)
+        with contextlib.redirect_stdout(stdout), contextlib.redirect_stderr(stderr):
+            result = runner.run(suite)
+    except Exception as exc:  # pragma: no cover - defensive worker boundary
+        return TestResult(module, 1, stdout.getvalue(), f"{type(exc).__name__}: {exc}")
+    return TestResult(
+        module,
+        0 if result.wasSuccessful() else 1,
+        stdout.getvalue(),
+        stderr.getvalue(),
+    )
+
+
+def run_modules(modules: list[str], jobs: int) -> list[TestResult]:
+    workers = min(max(1, jobs), len(modules))
+    environment_value = os.environ.get("PYTHONDONTWRITEBYTECODE")
+    os.environ["PYTHONDONTWRITEBYTECODE"] = "1"
+    try:
+        with concurrent.futures.ProcessPoolExecutor(max_workers=workers) as executor:
+            return list(executor.map(run_module_test, modules, chunksize=1))
+    finally:
+        if environment_value is None:
+            os.environ.pop("PYTHONDONTWRITEBYTECODE", None)
+        else:
+            os.environ["PYTHONDONTWRITEBYTECODE"] = environment_value
 
 
 def main() -> int:
@@ -108,7 +149,12 @@ def main() -> int:
         print("no tests found", file=sys.stderr)
         return 2
 
-    results = run_tests(test_ids, args.jobs)
+    if args.discover_dir:
+        results = run_modules(test_ids, args.jobs)
+        subprocess_count = min(args.jobs, len(test_ids))
+    else:
+        results = run_tests(test_ids, args.jobs)
+        subprocess_count = len(results)
     failures = [result for result in results if result.returncode != 0]
     if failures:
         for result in failures:
@@ -118,8 +164,8 @@ def main() -> int:
         return 1
 
     print(
-        f"parallel unittest verified: targets={len(results)}, "
-        f"jobs={min(args.jobs, len(results))}"
+        f"parallel unittest verified: targets={len(test_ids)}, "
+        f"jobs={min(args.jobs, len(test_ids))}, subprocesses={subprocess_count}"
     )
     return 0
 

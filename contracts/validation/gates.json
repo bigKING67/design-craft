@@ -34,14 +34,16 @@
       "command": ["python3", "scripts/design_craft_package_validate.py", "--check", "--validate"],
       "profiles": ["portable", "local", "operational-release", "certified-release"],
       "timeout_seconds": 240,
-      "execution": "parallel"
+      "execution": "parallel",
+      "priority": 60
     },
     {
       "id": "public-repository",
       "command": ["python3", "scripts/design_craft_public_repo_validate.py", "--check", "--validate"],
       "profiles": ["portable", "local", "operational-release", "certified-release"],
       "timeout_seconds": 240,
-      "execution": "parallel"
+      "execution": "parallel",
+      "priority": 75
     },
     {
       "id": "workflow-contract",
@@ -118,14 +120,16 @@
       "command": ["python3", "scripts/design_craft_comparative_validate.py", "--check"],
       "profiles": ["contracts", "portable", "local", "operational-release", "certified-release"],
       "timeout_seconds": 120,
-      "execution": "parallel"
+      "execution": "parallel",
+      "priority": 80
     },
     {
       "id": "native-runtime-self-check",
       "command": ["python3", "scripts/design_craft_native_runtime_validate.py", "--check"],
       "profiles": ["contracts", "portable", "local", "operational-release", "certified-release"],
       "timeout_seconds": 120,
-      "execution": "parallel"
+      "execution": "parallel",
+      "priority": 90
     },
     {
       "id": "github-checks-self-check",
@@ -146,7 +150,8 @@
       "command": ["python3", "scripts/design_craft_install_verify.py", "--check"],
       "profiles": ["portable", "local", "operational-release", "certified-release"],
       "timeout_seconds": 120,
-      "execution": "parallel"
+      "execution": "parallel",
+      "priority": 70
     },
     {
       "id": "route-pack-self-check",
@@ -164,28 +169,31 @@
     },
     {
       "id": "unit-tests",
-      "command": ["python3", "scripts/design_craft_parallel_unittest.py", "--jobs", "4", "--discover-dir", "tests/unit"],
+      "command": ["python3", "scripts/design_craft_parallel_unittest.py", "--jobs", "8", "--discover-dir", "tests/unit"],
       "profiles": ["contracts", "portable", "local", "operational-release", "certified-release"],
       "timeout_seconds": 600,
-      "execution": "parallel"
+      "execution": "parallel",
+      "priority": 100
     },
     {
       "id": "integration-tests",
       "command": ["python3", "-m", "unittest", "discover", "-s", "tests/integration", "-p", "test_*.py"],
       "profiles": ["contracts", "portable", "local", "operational-release", "certified-release"],
       "timeout_seconds": 600,
-      "execution": "parallel"
+      "execution": "parallel",
+      "priority": 95
     },
     {
       "id": "adversarial-tests",
       "command": ["python3", "-m", "unittest", "discover", "-s", "tests/adversarial", "-p", "test_*.py"],
       "profiles": ["contracts", "portable", "local", "operational-release", "certified-release"],
       "timeout_seconds": 600,
-      "execution": "parallel"
+      "execution": "parallel",
+      "priority": 65
     },
     {
       "id": "installer-contract-tests",
-      "command": ["python3", "scripts/design_craft_parallel_unittest.py", "--jobs", "4", "tests.contract.test_installer"],
+      "command": ["python3", "scripts/design_craft_parallel_unittest.py", "--jobs", "5", "tests.contract.test_installer"],
       "profiles": ["contracts"],
       "timeout_seconds": 180,
       "execution": "parallel"

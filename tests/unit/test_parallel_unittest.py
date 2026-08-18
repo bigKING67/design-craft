@@ -41,6 +41,47 @@ class ParallelUnittestTests(unittest.TestCase):
 
         self.assertEqual(results, [expected])
 
+    def test_module_worker_reports_success(self) -> None:
+        result = parallel_unittest.run_module_test(
+            "tests.unit.test_parallel_unittest.ParallelUnittestTests."
+            "test_discover_modules_is_complete_and_sorted"
+        )
+
+        self.assertEqual(result.returncode, 0)
+
+    def test_run_modules_preserves_input_order(self) -> None:
+        observed: list[tuple[int, int]] = []
+
+        class FakeExecutor:
+            def __init__(self, *, max_workers: int) -> None:
+                observed.append((max_workers, 0))
+
+            def __enter__(self) -> "FakeExecutor":
+                return self
+
+            def __exit__(self, *args: object) -> None:
+                return None
+
+            def map(
+                self,
+                function: object,
+                modules: list[str],
+                *,
+                chunksize: int,
+            ) -> list[parallel_unittest.TestResult]:
+                observed[-1] = (observed[-1][0], chunksize)
+                return [parallel_unittest.TestResult(module, 0, "", "") for module in modules]
+
+        with mock.patch.object(
+            parallel_unittest.concurrent.futures,
+            "ProcessPoolExecutor",
+            FakeExecutor,
+        ):
+            results = parallel_unittest.run_modules(["test.z", "test.a"], jobs=4)
+
+        self.assertEqual([result.test_id for result in results], ["test.z", "test.a"])
+        self.assertEqual(observed, [(2, 1)])
+
     @mock.patch.object(parallel_unittest.subprocess, "run")
     def test_subprocess_disables_bytecode_writes(self, run: mock.Mock) -> None:
         run.return_value.returncode = 0
@@ -50,3 +91,22 @@ class ParallelUnittestTests(unittest.TestCase):
         parallel_unittest.run_test("tests.unit.test_parallel_unittest")
 
         self.assertEqual(run.call_args.kwargs["env"]["PYTHONDONTWRITEBYTECODE"], "1")
+
+    @mock.patch.object(parallel_unittest.subprocess, "run")
+    def test_group_uses_one_subprocess_for_all_modules(self, run: mock.Mock) -> None:
+        run.return_value.returncode = 0
+        run.return_value.stdout = ""
+        run.return_value.stderr = ""
+
+        parallel_unittest.run_test_group(["tests.unit.test_a", "tests.unit.test_b"])
+
+        self.assertEqual(
+            run.call_args.args[0],
+            [
+                parallel_unittest.sys.executable,
+                "-m",
+                "unittest",
+                "tests.unit.test_a",
+                "tests.unit.test_b",
+            ],
+        )

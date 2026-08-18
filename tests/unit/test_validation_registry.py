@@ -63,6 +63,10 @@ class ValidationRegistryTests(unittest.TestCase):
             [*PORTABLE_PARALLEL_GATES, "development-maturity"],
         )
         self.assertEqual(gates[-1].depends_on, PORTABLE_PARALLEL_GATES)
+        self.assertGreater(
+            next(gate.priority for gate in gates if gate.gate_id == "unit-tests"),
+            next(gate.priority for gate in gates if gate.gate_id == "skill-schema"),
+        )
         self.assertEqual(profile_contract_errors(gates, "portable"), [])
 
     def test_contract_profile_matches_public_contract_target(self) -> None:
@@ -193,6 +197,26 @@ class ValidationRegistryTests(unittest.TestCase):
             path = Path(raw) / "gates.json"
             path.write_text(json.dumps(payload), encoding="utf-8")
             with self.assertRaisesRegex(ValueError, "must not declare dependencies"):
+                load_registry(path)
+
+    def test_priority_must_be_non_negative(self) -> None:
+        payload = {
+            "schema": "design-craft.validation-gates.v1",
+            "gates": [
+                {
+                    "id": "invalid-priority",
+                    "command": ["python3", "--version"],
+                    "profiles": ["portable"],
+                    "timeout_seconds": 10,
+                    "execution": "parallel",
+                    "priority": -1,
+                }
+            ],
+        }
+        with tempfile.TemporaryDirectory() as raw:
+            path = Path(raw) / "gates.json"
+            path.write_text(json.dumps(payload), encoding="utf-8")
+            with self.assertRaisesRegex(ValueError, "non-negative integer"):
                 load_registry(path)
 
 

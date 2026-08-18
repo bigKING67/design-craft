@@ -10,6 +10,7 @@ class GateSpec:
     profiles: frozenset[str]
     timeout_seconds: int
     execution: str
+    priority: int = 0
     depends_on: tuple[str, ...] = ()
     environment: dict[str, str] = field(default_factory=dict)
 

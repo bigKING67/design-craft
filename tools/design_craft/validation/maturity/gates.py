@@ -80,7 +80,7 @@ STATIC_GATES: dict[str, GateRunner] = {
             sys.executable,
             "scripts/design_craft_parallel_unittest.py",
             "--jobs",
-            "4",
+            "5",
             "tests.contract.test_installer",
         ],
         timeout=180,
