@@ -2,7 +2,7 @@
 
 All notable local changes to `design-craft` are recorded here.
 
-## 0.6.0 - Unreleased
+## 0.6.0 - 2026-08-18
 
 - Close visual-critique findings against measurable craft acceptance: explicit
   type, contrast, spacing, numeric alignment, and surface-treatment facts must
@@ -131,6 +131,10 @@ All notable local changes to `design-craft` are recorded here.
   contracts, static checks, runtime probes, and a thin orchestrator. Static
   reads now execute while the already-submitted runtime probe batch is active,
   without changing the report schema or issue ordering.
+- Stabilize Operational candidate validation on CPU-limited hosted runners by
+  reusing a CPU-capped process pool, scheduling long gates first, and keeping
+  the exact route-pack self-check free of unrelated CLI and semantic-audit
+  imports. Regression tests preserve both the worker cap and startup boundary.
 
 ## 0.5.6 - 2026-07-25
 
