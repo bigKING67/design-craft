@@ -13,7 +13,6 @@ from .manifest import (
     sha256_file,
     utc_now,
 )
-from .semantic_audit import semantic_validation
 
 
 def build_manifest(source_root: Path, *, include_semantic: bool = True) -> dict:
@@ -48,6 +47,8 @@ def build_manifest(source_root: Path, *, include_semantic: bool = True) -> dict:
     ]
     existing_files = [item for item in files if item["exists"]]
     if include_semantic and not missing_required and not manifest_error:
+        from .semantic_audit import semantic_validation
+
         semantic = semantic_validation(source_root)
     else:
         reason = (

@@ -10,6 +10,16 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO_ROOT))
 
+
+if __name__ == "__main__":
+    if sys.argv[1:] == ["--check"]:
+        from tools.design_craft.routing.self_check import self_check as run_cli
+    else:
+        from tools.design_craft.routing.cli import main as run_cli
+
+    raise SystemExit(run_cli())
+
+
 from tools.design_craft.routing.cli import main
 from tools.design_craft.routing.export import copy_pack, write_manifest
 from tools.design_craft.routing.manifest import (
@@ -46,7 +56,3 @@ __all__ = [
     "sha256_file",
     "write_manifest",
 ]
-
-
-if __name__ == "__main__":
-    raise SystemExit(main())
