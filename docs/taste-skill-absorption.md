@@ -2,7 +2,7 @@
 
 This document records the deliberate baseline-fusion boundary for
 `https://github.com/Leonxlnx/taste-skill` at commit
-`e988add20dab0fa97d7a76781c48961c8184288e`. The compatibility submodule stays
+`dfb6f9f9e93a39f673b1827c0889cc28326d1800`. The compatibility submodule stays
 pinned at `b17742737e796305d829b3ad39eda3add0d79060`.
 
 ## Contents
@@ -82,9 +82,10 @@ The cumulative state is selective absorption: high-value design judgment and
 redesign behavior are local, while specialized style, image-generation,
 Stitch, brand-kit, and output-policy Skills remain deliberately independent.
 The latest reviewed range from
-`98565e65bc3274ddf6eb0838734341714057178b` through
-`e988add20dab0fa97d7a76781c48961c8184288e` contains four commits that change
-only README sponsor presentation. Its latest-range status is
+`e988add20dab0fa97d7a76781c48961c8184288e` through
+`dfb6f9f9e93a39f673b1827c0889cc28326d1800` contains three commits that add a
+React Bits sponsor row and light/dark sponsor assets only. It changes no Skill
+entrypoint or runtime behavior. Its latest-range status is
 `provenance-only`; the submodule does not need to advance for those
 repository-presentation changes.
 

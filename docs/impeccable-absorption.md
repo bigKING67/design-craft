@@ -2,7 +2,7 @@
 
 This document records the deliberate fusion and runtime boundary for
 `https://github.com/pbakaus/impeccable` through reviewed remote commit
-`5c5553b1d7f9e89bb833f9179cea681742a17720`. The compatibility submodule is
+`f88b2837a7d7c3182e46307bbbb091a1ed547571`. The compatibility submodule is
 pinned at `80e4dd0d581fcdb42be62252b7bc07dcd2238330`, the last selected canonical
 detector correctness commit in that reviewed range.
 
@@ -88,7 +88,18 @@ beside browser67 and the host's existing execution contracts.
 
 ## Latest reviewed range
 
-The latest range after `ae5e95101a6979e7f7973a4ff57680b3c7adc1ec`
+The latest range after `5c5553b1d7f9e89bb833f9179cea681742a17720`
+through `f88b2837a7d7c3182e46307bbbb091a1ed547571` was reviewed on
+2026-08-18 and is `provenance-only`. Its single commit changes only `bun.lock`
+compatible dependency resolutions, including AI SDK, Claude agent SDK,
+Puppeteer, and Svelte entries. It changes no canonical Skill, command metadata,
+detector source, platform reference, or package manifest. Design Craft does not
+vendor or execute this Bun dependency graph, so neither the compatibility pin
+nor the selected behavior boundary advances.
+
+### Earlier behavior-bearing range
+
+The earlier range after `ae5e95101a6979e7f7973a4ff57680b3c7adc1ec`
 through `5c5553b1d7f9e89bb833f9179cea681742a17720` was reviewed on
 2026-08-17 and is `partial`:
 
@@ -151,7 +162,7 @@ evidence unless the corresponding local tool actually ran.
 ## Current conclusion
 
 `missing-high-value`: none within the selected fusion boundary through remote
-head `5c5553b1d7f9e89bb833f9179cea681742a17720`, reviewed on 2026-08-17.
+head `f88b2837a7d7c3182e46307bbbb091a1ed547571`, reviewed on 2026-08-18.
 
 The cumulative state is selective absorption. General workflow, brief and
 change-scope authority, surface modes, native quality, detector discipline and
