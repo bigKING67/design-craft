@@ -82,7 +82,12 @@ def _snapshot_file(path_value: Path, *, label: str, max_bytes: int = MAX_FILE_BY
     path = path_value.expanduser().absolute()
     if path.is_symlink():
         raise CompFidelityError(f"{label} must be a non-symlink file")
-    flags = os.O_RDONLY | getattr(os, "O_CLOEXEC", 0) | getattr(os, "O_NOFOLLOW", 0)
+    flags = (
+        os.O_RDONLY
+        | getattr(os, "O_BINARY", 0)
+        | getattr(os, "O_CLOEXEC", 0)
+        | getattr(os, "O_NOFOLLOW", 0)
+    )
     try:
         descriptor = os.open(path, flags)
     except OSError as exc:

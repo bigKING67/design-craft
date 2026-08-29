@@ -51,6 +51,29 @@ def spec_payload(width: int = 3, height: int = 2) -> dict[str, object]:
 
 
 class CompFidelityTests(unittest.TestCase):
+    def test_snapshot_requests_binary_mode_when_platform_exposes_it(self) -> None:
+        with tempfile.TemporaryDirectory() as raw:
+            path = Path(raw) / "bytes.bin"
+            payload = b"\x00\r\n\x1a\xff"
+            path.write_bytes(payload)
+            original_open = comp_module.os.open
+            binary_flag = 0x8000
+            observed_flags: list[int] = []
+
+            def open_without_synthetic_flag(path_value: Path, flags: int) -> int:
+                observed_flags.append(flags)
+                return original_open(path_value, flags & ~binary_flag)
+
+            with (
+                patch.object(comp_module.os, "O_BINARY", binary_flag, create=True),
+                patch.object(comp_module.os, "open", side_effect=open_without_synthetic_flag),
+            ):
+                snapshot = comp_module._snapshot_file(path, label="binary fixture")
+
+            self.assertEqual(snapshot.data, payload)
+            self.assertEqual(len(observed_flags), 1)
+            self.assertTrue(observed_flags[0] & binary_flag)
+
     def test_png_round_trip_preserves_rgba(self) -> None:
         image = PngImage(2, 1, bytes((1, 2, 3, 4, 250, 240, 230, 220)))
         with tempfile.TemporaryDirectory() as raw:

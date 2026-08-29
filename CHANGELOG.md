@@ -20,7 +20,8 @@ All notable local changes to `design-craft` are recorded here.
 - Add a dependency-free, measurement-only comp-fidelity workflow with bounded
   immutable input snapshots, strict PNG parsing, exact-coordinate overall and
   per-region metrics, heatmap and side-by-side artifacts, versioned schemas,
-  hash-bound strict validation, and an explicit human visual-review boundary.
+  hash-bound strict validation, Windows binary-mode descriptor reads, and an
+  explicit human visual-review boundary.
 - Make the strict GitHub Actions allowlist model reviewed transitive
   dependencies of `actions/attest-build-provenance` explicitly, so publication
   attestation setup remains allowed without broadening policy to `actions/*`.
