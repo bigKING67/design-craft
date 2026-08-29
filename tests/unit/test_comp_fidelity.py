@@ -57,12 +57,14 @@ class CompFidelityTests(unittest.TestCase):
             payload = b"\x00\r\n\x1a\xff"
             path.write_bytes(payload)
             original_open = comp_module.os.open
-            binary_flag = 0x8000
+            native_binary_flag = getattr(comp_module.os, "O_BINARY", 0)
+            binary_flag = native_binary_flag or 0x8000
             observed_flags: list[int] = []
 
             def open_without_synthetic_flag(path_value: Path, flags: int) -> int:
                 observed_flags.append(flags)
-                return original_open(path_value, flags & ~binary_flag)
+                platform_flags = flags if native_binary_flag else flags & ~binary_flag
+                return original_open(path_value, platform_flags)
 
             with (
                 patch.object(comp_module.os, "O_BINARY", binary_flag, create=True),
