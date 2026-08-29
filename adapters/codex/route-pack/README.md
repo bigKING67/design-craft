@@ -319,10 +319,12 @@ python3 ~/.codex/tools/frontend_route_browser_receipt.py \
 ```
 
 The observation document uses
-`frontend-route.browser-lifecycle-observations.v1` and binds the canonical
+`frontend-route.browser-lifecycle-observations.v2` and binds the canonical
 route SHA-256, expected workspace/task scope, ordered call arguments, and the
 exact `browser67.tool-outcome.v3` result. The adapter emits
-`frontend-route.browser-lifecycle-receipt.v1`. `receipt_valid` means the
+`frontend-route.browser-lifecycle-receipt.v2`. V2 additionally binds Browser
+Instance scope through privacy-safe references and fails closed on ambiguous
+or cross-instance evidence. `receipt_valid` means the
 binding and evidence normalized without ambiguity; `runtime_complete` is a
 separate decision and requires a non-dry-run scoped finalizer with verified
 closes, no remaining unkept tabs, and an exact cleanup delivery summary.

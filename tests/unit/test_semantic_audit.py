@@ -5,7 +5,7 @@ from pathlib import Path
 from unittest.mock import patch
 
 from tools.design_craft.routing.semantic_audit import _semantic_validation
-from tools.design_craft.routing.semantic_contract import semantic_paths
+from tools.design_craft.routing.semantic_contract import REQUIRED_FRAGMENTS, semantic_paths
 from tools.design_craft.routing.semantic_runtime import (
     RuntimeValidation,
     route_probe_requests,
@@ -74,6 +74,24 @@ class SemanticAuditTests(unittest.TestCase):
         self.assertEqual(names[-1], "frontend_worker_payload_core.py")
         self.assertEqual(len(names), 17)
         self.assertEqual(len(names), len(set(names)))
+
+    def test_browser_lifecycle_static_contract_requires_v2_schemas(self) -> None:
+        fragments = REQUIRED_FRAGMENTS["frontend_route_browser_contract.py"]
+
+        self.assertIn(
+            'RECEIPT_SCHEMA = "frontend-route.browser-lifecycle-receipt.v2"',
+            fragments,
+        )
+        self.assertIn(
+            'OBSERVATIONS_SCHEMA = "frontend-route.browser-lifecycle-observations.v2"',
+            fragments,
+        )
+        self.assertFalse(
+            any("browser-lifecycle-receipt.v1" in item for item in fragments)
+        )
+        self.assertFalse(
+            any("browser-lifecycle-observations.v1" in item for item in fragments)
+        )
 
     def test_runtime_probe_contract_keeps_five_bounded_routes(self) -> None:
         requests = route_probe_requests()

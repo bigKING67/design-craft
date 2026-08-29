@@ -577,10 +577,11 @@ summary can support a separate runtime created/adopted/released/closed receipt;
 the planner payload is not automatically updated after browser work. Use
 `frontend_route_browser_receipt.py` to bind a saved route digest to ordered
 `tmwd_browser/browser_tab_lifecycle` arguments and `browser67.tool-outcome.v3`
-results. Its `frontend-route.browser-lifecycle-receipt.v1` output keeps
-`receipt_valid` separate from `runtime_complete`, rejects dry-run or `scope=all`
-as completion evidence, and never copies URLs, titles, tab IDs, adoption tokens,
-or lease IDs.
+results. Its `frontend-route.browser-lifecycle-receipt.v2` output keeps
+`receipt_valid` separate from `runtime_complete`, binds Browser Instance scope
+through privacy-safe references, rejects ambiguous or cross-instance evidence,
+rejects dry-run or `scope=all` as completion evidence, and never copies URLs,
+titles, tab IDs, adoption tokens, or lease IDs.
 
 Keep scope normalization aligned with live browser67: `workspace_key` takes
 precedence and yields `scope=workspace`; a simultaneous `task_id` is an

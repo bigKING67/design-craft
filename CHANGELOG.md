@@ -33,6 +33,10 @@ All notable local changes to `design-craft` are recorded here.
   source-state audits; browser receipts fail closed on viewport, theme,
   rendered-hash, external-origin, or deterministic stabilization drift without
   treating runtime integrity as human visual acceptance.
+- Track the live frontend route-pack browser lifecycle V2 receipt and
+  observation schemas in semantic validation and maintenance guidance, so a
+  correct Browser Instance-aware global route pack is no longer reported as
+  stale V1 drift.
 - Make the strict GitHub Actions allowlist model reviewed transitive
   dependencies of `actions/attest-build-provenance` explicitly, so publication
   attestation setup remains allowed without broadening policy to `actions/*`.

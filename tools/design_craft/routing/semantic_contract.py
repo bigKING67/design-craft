@@ -169,8 +169,8 @@ REQUIRED_FRAGMENTS = {
         "def prune_capture_state",
     ),
     "frontend_route_browser_contract.py": (
-        'RECEIPT_SCHEMA = "frontend-route.browser-lifecycle-receipt.v1"',
-        'OBSERVATIONS_SCHEMA = "frontend-route.browser-lifecycle-observations.v1"',
+        'RECEIPT_SCHEMA = "frontend-route.browser-lifecycle-receipt.v2"',
+        'OBSERVATIONS_SCHEMA = "frontend-route.browser-lifecycle-observations.v2"',
         'OUTCOME_SCHEMA = "browser67.tool-outcome.v3"',
         "MAX_ROUTE_BYTES",
         "MAX_OBSERVATIONS",
