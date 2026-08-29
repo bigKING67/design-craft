@@ -27,6 +27,12 @@ All notable local changes to `design-craft` are recorded here.
   ordered browser/PDF plans stay external-runtime owned, closeout reuses strict
   comp-fidelity validation and audits source mutation, and visual acceptance
   remains an explicit decision with no global changed-pixel PASS threshold.
+- Bind optional Shadow Lab install/build and browser capture evidence into the
+  sealed-rendition authority graph. Phase receipts now preserve declared
+  network policy, real external-egress enforcement, command/output hashes, and
+  source-state audits; browser receipts fail closed on viewport, theme,
+  rendered-hash, external-origin, or deterministic stabilization drift without
+  treating runtime integrity as human visual acceptance.
 - Make the strict GitHub Actions allowlist model reviewed transitive
   dependencies of `actions/attest-build-provenance` explicitly, so publication
   attestation setup remains allowed without broadening policy to `actions/*`.

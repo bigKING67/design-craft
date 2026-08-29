@@ -203,7 +203,9 @@ comparative evaluation. Recheck mutable source samples before reuse.
 - `references/comp-fidelity.md`, `scripts/design_craft_comp_fidelity.py`, and
   `scripts/design_craft_sealed_rendition_gate.py`: exact-coordinate,
   hash-bound screenshot measurements plus sealed-input orchestration that keep
-  measurement integrity explicitly separate from human visual acceptance.
+  measurement integrity explicitly separate from human visual acceptance;
+  optional runtime receipts bind Shadow execution and browser network/capture
+  facts without promoting them into visual acceptance.
 - `references/motion-patterns.md`: original web implementation recipes for
   press feedback, anchored overlays, tooltip groups, interruptible state,
   percentage transforms, clip-path, crossfade repair, and transient lifecycle.

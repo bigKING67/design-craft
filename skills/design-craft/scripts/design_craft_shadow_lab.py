@@ -26,11 +26,18 @@ VERIFICATION_SCHEMA = "design-craft.shadow-lab-verification.v1"
 CLEANUP_SCHEMA = "design-craft.shadow-lab-cleanup.v1"
 MANIFEST_NAME = ".design-craft-shadow-lab.json"
 ROOT_MARKER_NAME = ".design-craft-shadow-root.json"
+RUNTIME_EVIDENCE_SCHEMA = "design-craft.runtime-evidence.v1"
+RUNTIME_EVIDENCE_DIR = ".design-craft-runtime-evidence"
 DEFAULT_MAX_ARCHIVE_BYTES = 256 * 1024 * 1024
 DEFAULT_MAX_FILES = 50_000
 DEFAULT_MAX_TOTAL_BYTES = 512 * 1024 * 1024
 MAX_MANIFEST_BYTES = 1024 * 1024
 GIT_TIMEOUT_SECONDS = 120
+DEFAULT_EXECUTION_TIMEOUT_SECONDS = 3600
+MAX_EXECUTION_TIMEOUT_SECONDS = 7200
+NETWORK_POLICIES = {"denied", "install_only", "allowed"}
+NETWORK_MODES = {"denied", "allowed"}
+EXECUTION_PHASES = {"install", "build", "test", "preview", "capture", "custom"}
 
 
 class ShadowLabError(RuntimeError):
@@ -41,12 +48,39 @@ def utc_now() -> str:
     return datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
 
 
+def validate_timestamp(value: Any, *, label: str) -> None:
+    if not isinstance(value, str) or "T" not in value:
+        raise ShadowLabError(f"{label} must be an ISO-8601 timestamp")
+    try:
+        parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
+    except ValueError as exc:
+        raise ShadowLabError(f"{label} must be an ISO-8601 timestamp") from exc
+    if parsed.tzinfo is None:
+        raise ShadowLabError(f"{label} must include a UTC offset")
+
+
 def json_text(payload: dict[str, Any]) -> str:
     return json.dumps(payload, ensure_ascii=True, indent=2, sort_keys=True) + "\n"
 
 
 def sha256_bytes(value: bytes) -> str:
     return hashlib.sha256(value).hexdigest()
+
+
+def sha256_file(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as handle:
+        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def file_record(path: Path) -> dict[str, Any]:
+    return {
+        "path": str(path.absolute()),
+        "bytes": path.stat().st_size,
+        "sha256": sha256_file(path),
+    }
 
 
 def atomic_write_json(path: Path, payload: dict[str, Any]) -> None:
@@ -503,7 +537,15 @@ def prepare_lab(
     max_archive_bytes: int = DEFAULT_MAX_ARCHIVE_BYTES,
     max_files: int = DEFAULT_MAX_FILES,
     max_total_bytes: int = DEFAULT_MAX_TOTAL_BYTES,
+    network_policy: str = "denied",
+    network_authorization: str = "shadow_lab_default",
 ) -> dict[str, Any]:
+    if network_policy not in NETWORK_POLICIES:
+        raise ShadowLabError(f"unsupported network policy: {network_policy}")
+    if network_authorization not in {"shadow_lab_default", "caller_declared"}:
+        raise ShadowLabError(
+            f"unsupported network authorization source: {network_authorization}"
+        )
     source = resolve_source(source_path)
     requested_output_root = output_root_path.expanduser().absolute()
     output_root = requested_output_root.resolve(strict=False)
@@ -575,7 +617,16 @@ def prepare_lab(
             },
             "isolation": {
                 "source_writes_allowed": False,
+                # Legacy field: the helper itself grants no network authority.
+                # Execution truth lives in network_boundary plus phase receipts.
                 "network_allowed": False,
+                "network_boundary": {
+                    "policy": network_policy,
+                    "authorization": network_authorization,
+                    "enforcement": "phase_receipts_required",
+                    "observation": "phase_receipts",
+                    "evidence_status": "pending",
+                },
                 "untracked_content_included": False,
                 "output_root": str(output_root),
                 "root_id": root_marker["root_id"],
@@ -667,6 +718,368 @@ def state_differences(before: dict[str, Any], after: dict[str, Any]) -> list[str
     return [key for key in keys if before.get(key) != after.get(key)]
 
 
+def _network_mode_allowed(policy: str, phase: str, mode: str) -> bool:
+    if mode == "denied":
+        return True
+    if policy == "allowed":
+        return True
+    return policy == "install_only" and phase == "install"
+
+
+def _network_denied_command(
+    command: list[str],
+    *,
+    platform_name: str | None = None,
+    sandbox_path: Path = Path("/usr/bin/sandbox-exec"),
+) -> tuple[list[str], str]:
+    platform_name = platform_name or sys.platform
+    if platform_name == "darwin" and sandbox_path.is_file():
+        profile = "(version 1)(allow default)(deny network-outbound)"
+        return [str(sandbox_path), "-p", profile, *command], "macos_sandbox_exec_egress"
+    raise ShadowLabError(
+        "network-denied enforcement is unavailable on this host; "
+        "refusing to execute without a real enforcer"
+    )
+
+
+def _runtime_evidence_directory(lab_dir: Path) -> Path:
+    path = lab_dir / RUNTIME_EVIDENCE_DIR
+    if path.exists() and (path.is_symlink() or not path.is_dir()):
+        raise ShadowLabError("runtime evidence path must be a real directory")
+    path.mkdir(mode=0o700, exist_ok=True)
+    return path
+
+
+def _validate_evidence_id(value: str) -> str:
+    if re.fullmatch(r"[a-z0-9][a-z0-9-]*", value) is None:
+        raise ShadowLabError("evidence id must be a lowercase slug")
+    return value
+
+
+def _execution_receipt(
+    path: Path,
+    *,
+    manifest_path: Path,
+    manifest: dict[str, Any],
+    owned: dict[str, Path],
+) -> dict[str, Any]:
+    if path.is_symlink() or not path.is_file():
+        raise ShadowLabError(f"runtime receipt must be a regular file: {path}")
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    expected_fields = {
+        "schema",
+        "kind",
+        "id",
+        "started_at",
+        "completed_at",
+        "authority",
+        "phase",
+        "enforcement",
+        "command",
+        "outputs",
+        "source_audit",
+        "status",
+    }
+    if not isinstance(payload, dict) or set(payload) != expected_fields:
+        raise ShadowLabError(f"runtime receipt fields are invalid: {path}")
+    if payload["schema"] != RUNTIME_EVIDENCE_SCHEMA or payload["kind"] != "shadow_command":
+        raise ShadowLabError(f"runtime receipt schema or kind is invalid: {path}")
+    _validate_evidence_id(payload.get("id", ""))
+    validate_timestamp(payload.get("started_at"), label="runtime receipt.started_at")
+    validate_timestamp(payload.get("completed_at"), label="runtime receipt.completed_at")
+    authority = payload.get("authority")
+    if not isinstance(authority, dict) or set(authority) != {
+        "shadow_lab_manifest",
+        "source_commit",
+        "worktree",
+    }:
+        raise ShadowLabError(f"runtime receipt authority is invalid: {path}")
+    expected_manifest = file_record(manifest_path)
+    if authority["shadow_lab_manifest"] != expected_manifest:
+        raise ShadowLabError(f"runtime receipt manifest binding is invalid: {path}")
+    if authority["source_commit"] != manifest.get("source", {}).get("commit"):
+        raise ShadowLabError(f"runtime receipt commit binding is invalid: {path}")
+    if authority["worktree"] != str(owned["worktree"]):
+        raise ShadowLabError(f"runtime receipt worktree binding is invalid: {path}")
+    phase = payload.get("phase")
+    if not isinstance(phase, dict) or set(phase) != {"kind", "network_mode"}:
+        raise ShadowLabError(f"runtime receipt phase is invalid: {path}")
+    if phase["kind"] not in EXECUTION_PHASES or phase["network_mode"] not in NETWORK_MODES:
+        raise ShadowLabError(f"runtime receipt phase values are invalid: {path}")
+    enforcement = payload.get("enforcement")
+    if not isinstance(enforcement, dict) or set(enforcement) != {"kind", "status"}:
+        raise ShadowLabError(f"runtime receipt enforcement is invalid: {path}")
+    if phase["network_mode"] == "denied":
+        if enforcement != {
+            "kind": "macos_sandbox_exec_egress",
+            "status": "enforced",
+        }:
+            raise ShadowLabError(f"runtime receipt lacks denied-network enforcement: {path}")
+    elif enforcement != {"kind": "not_required", "status": "not_required"}:
+        raise ShadowLabError(f"runtime receipt allowed-network enforcement is invalid: {path}")
+    command = payload.get("command")
+    if not isinstance(command, dict) or set(command) != {
+        "executable",
+        "argv_sha256",
+        "exit_code",
+    }:
+        raise ShadowLabError(f"runtime receipt command is invalid: {path}")
+    if (
+        not isinstance(command["executable"], str)
+        or not command["executable"]
+        or not isinstance(command["argv_sha256"], str)
+        or re.fullmatch(r"[0-9a-f]{64}", command["argv_sha256"]) is None
+        or isinstance(command["exit_code"], bool)
+        or not isinstance(command["exit_code"], int)
+    ):
+        raise ShadowLabError(f"runtime receipt command values are invalid: {path}")
+    outputs = payload.get("outputs")
+    if not isinstance(outputs, dict) or set(outputs) != {"stdout", "stderr"}:
+        raise ShadowLabError(f"runtime receipt outputs are invalid: {path}")
+    for name in ("stdout", "stderr"):
+        record = outputs[name]
+        if not isinstance(record, dict) or set(record) != {"path", "bytes", "sha256"}:
+            raise ShadowLabError(f"runtime receipt {name} record is invalid: {path}")
+        output_path = Path(str(record["path"])).absolute()
+        if output_path.parent != path.parent or output_path.is_symlink() or not output_path.is_file():
+            raise ShadowLabError(f"runtime receipt {name} path is invalid: {path}")
+        if record != file_record(output_path):
+            raise ShadowLabError(f"runtime receipt {name} hash is invalid: {path}")
+    source_audit = payload.get("source_audit")
+    if not isinstance(source_audit, dict) or set(source_audit) != {
+        "source_unchanged",
+        "difference_fields",
+    }:
+        raise ShadowLabError(f"runtime receipt source audit is invalid: {path}")
+    if (
+        not isinstance(source_audit["source_unchanged"], bool)
+        or not isinstance(source_audit["difference_fields"], list)
+        or any(
+            not isinstance(field, str) or not field
+            for field in source_audit["difference_fields"]
+        )
+        or len(source_audit["difference_fields"])
+        != len(set(source_audit["difference_fields"]))
+    ):
+        raise ShadowLabError(f"runtime receipt source audit values are invalid: {path}")
+    if source_audit["source_unchanged"] != (not source_audit["difference_fields"]):
+        raise ShadowLabError(f"runtime receipt source audit is inconsistent: {path}")
+    if payload["status"] not in {"pass", "fail"}:
+        raise ShadowLabError(f"runtime receipt status is invalid: {path}")
+    expected_status = (
+        "pass"
+        if command["exit_code"] == 0
+        and source_audit["source_unchanged"]
+        and not source_audit["difference_fields"]
+        else "fail"
+    )
+    if payload["status"] != expected_status:
+        raise ShadowLabError(f"runtime receipt status is inconsistent: {path}")
+    return payload
+
+
+def runtime_evidence_summary(
+    manifest_path: Path,
+    manifest: dict[str, Any],
+    owned: dict[str, Path],
+) -> dict[str, Any]:
+    boundary = manifest.get("isolation", {}).get("network_boundary")
+    if not isinstance(boundary, dict):
+        boundary = {
+            "policy": "denied",
+            "authorization": "shadow_lab_default",
+            "enforcement": "phase_receipts_required",
+            "observation": "phase_receipts",
+            "evidence_status": "pending",
+        }
+    expected_boundary_fields = {
+        "policy",
+        "authorization",
+        "enforcement",
+        "observation",
+        "evidence_status",
+    }
+    if set(boundary) != expected_boundary_fields:
+        raise ShadowLabError("network boundary fields are invalid")
+    policy = boundary.get("policy")
+    if (
+        policy not in NETWORK_POLICIES
+        or boundary.get("authorization")
+        not in {"shadow_lab_default", "caller_declared"}
+        or boundary.get("enforcement") != "phase_receipts_required"
+        or boundary.get("observation") != "phase_receipts"
+        or boundary.get("evidence_status") != "pending"
+    ):
+        raise ShadowLabError("network boundary values are invalid")
+    evidence_dir = owned["lab_dir"] / RUNTIME_EVIDENCE_DIR
+    receipts: list[dict[str, Any]] = []
+    if evidence_dir.exists():
+        if evidence_dir.is_symlink() or not evidence_dir.is_dir():
+            raise ShadowLabError("runtime evidence path must be a real directory")
+        for path in sorted(evidence_dir.glob("*.json")):
+            receipt = _execution_receipt(
+                path,
+                manifest_path=manifest_path,
+                manifest=manifest,
+                owned=owned,
+            )
+            if not _network_mode_allowed(
+                policy,
+                receipt["phase"]["kind"],
+                receipt["phase"]["network_mode"],
+            ):
+                raise ShadowLabError(
+                    f"runtime receipt violates network policy: {path}"
+                )
+            receipts.append(
+                {
+                    "id": receipt["id"],
+                    "phase": receipt["phase"]["kind"],
+                    "network_mode": receipt["phase"]["network_mode"],
+                    "status": receipt["status"],
+                    "receipt_path": str(path),
+                }
+            )
+    ids = [receipt["id"] for receipt in receipts]
+    if len(ids) != len(set(ids)):
+        raise ShadowLabError("runtime evidence ids must be unique")
+    evidence_status = (
+        "unverified"
+        if not receipts
+        else "observed"
+        if all(receipt["status"] == "pass" for receipt in receipts)
+        else "failed"
+    )
+    return {
+        "policy": policy,
+        "authorization": boundary.get("authorization"),
+        "enforcement": boundary.get("enforcement"),
+        "observation": boundary.get("observation"),
+        "evidence_status": evidence_status,
+        "receipt_count": len(receipts),
+        "receipts": receipts,
+    }
+
+
+def execute_in_lab(
+    *,
+    manifest_path: Path,
+    evidence_id: str,
+    phase: str,
+    network_mode: str,
+    command: list[str],
+    timeout_seconds: int = DEFAULT_EXECUTION_TIMEOUT_SECONDS,
+) -> dict[str, Any]:
+    evidence_id = _validate_evidence_id(evidence_id)
+    if phase not in EXECUTION_PHASES:
+        raise ShadowLabError(f"unsupported execution phase: {phase}")
+    if network_mode not in NETWORK_MODES:
+        raise ShadowLabError(f"unsupported network mode: {network_mode}")
+    if not command:
+        raise ShadowLabError("execute requires a command after --")
+    if timeout_seconds < 1 or timeout_seconds > MAX_EXECUTION_TIMEOUT_SECONDS:
+        raise ShadowLabError(
+            f"execution timeout must be between 1 and {MAX_EXECUTION_TIMEOUT_SECONDS} seconds"
+        )
+    path, manifest = load_manifest(manifest_path)
+    owned = verify_ownership(path, manifest)
+    policy = manifest.get("isolation", {}).get("network_boundary", {}).get(
+        "policy", "denied"
+    )
+    if not _network_mode_allowed(policy, phase, network_mode):
+        raise ShadowLabError(
+            f"network mode {network_mode} is not allowed for phase {phase} under policy {policy}"
+        )
+    evidence_dir = _runtime_evidence_directory(owned["lab_dir"])
+    receipt_path = evidence_dir / f"{evidence_id}.json"
+    stdout_path = evidence_dir / f"{evidence_id}.stdout.log"
+    stderr_path = evidence_dir / f"{evidence_id}.stderr.log"
+    if any(candidate.exists() for candidate in (receipt_path, stdout_path, stderr_path)):
+        raise ShadowLabError(f"runtime evidence id already exists: {evidence_id}")
+    before = source_state(owned["source"])
+    manifest_before = file_record(path)
+    execution_command = list(command)
+    if network_mode == "denied":
+        execution_command, enforcement_kind = _network_denied_command(command)
+        enforcement = {"kind": enforcement_kind, "status": "enforced"}
+    else:
+        enforcement = {"kind": "not_required", "status": "not_required"}
+    started_at = utc_now()
+    timed_out = False
+    with stdout_path.open("xb") as stdout_handle, stderr_path.open("xb") as stderr_handle:
+        try:
+            completed = subprocess.run(
+                execution_command,
+                cwd=owned["worktree"],
+                env=dict(os.environ),
+                stdin=subprocess.DEVNULL,
+                stdout=stdout_handle,
+                stderr=stderr_handle,
+                check=False,
+                timeout=timeout_seconds,
+            )
+            exit_code = completed.returncode
+        except subprocess.TimeoutExpired:
+            timed_out = True
+            exit_code = 124
+    completed_at = utc_now()
+    manifest_after = file_record(path)
+    if manifest_after != manifest_before:
+        raise ShadowLabError("Shadow Lab manifest changed during execution")
+    after = source_state(owned["source"])
+    differences = state_differences(before, after)
+    source_unchanged = not differences
+    status_value = "pass" if exit_code == 0 and source_unchanged else "fail"
+    receipt = {
+        "schema": RUNTIME_EVIDENCE_SCHEMA,
+        "kind": "shadow_command",
+        "id": evidence_id,
+        "started_at": started_at,
+        "completed_at": completed_at,
+        "authority": {
+            "shadow_lab_manifest": manifest_before,
+            "source_commit": manifest.get("source", {}).get("commit"),
+            "worktree": str(owned["worktree"]),
+        },
+        "phase": {"kind": phase, "network_mode": network_mode},
+        "enforcement": enforcement,
+        "command": {
+            "executable": Path(command[0]).name,
+            "argv_sha256": sha256_bytes(
+                json.dumps(command, ensure_ascii=False, separators=(",", ":")).encode(
+                    "utf-8"
+                )
+            ),
+            "exit_code": exit_code,
+        },
+        "outputs": {
+            "stdout": file_record(stdout_path),
+            "stderr": file_record(stderr_path),
+        },
+        "source_audit": {
+            "source_unchanged": source_unchanged,
+            "difference_fields": differences,
+        },
+        "status": status_value,
+    }
+    atomic_write_json(receipt_path, receipt)
+    os.chmod(receipt_path, 0o600)
+    validated = _execution_receipt(
+        receipt_path,
+        manifest_path=path,
+        manifest=manifest,
+        owned=owned,
+    )
+    return {
+        "schema": RUNTIME_EVIDENCE_SCHEMA,
+        "ok": validated["status"] == "pass",
+        "action": "execute",
+        "receipt_path": str(receipt_path),
+        "receipt": validated,
+        "timed_out": timed_out,
+    }
+
+
 def verify_lab(manifest_path: Path) -> dict[str, Any]:
     path, manifest = load_manifest(manifest_path)
     owned = verify_ownership(path, manifest)
@@ -680,9 +1093,10 @@ def verify_lab(manifest_path: Path) -> dict[str, Any]:
         allow_internal_symlinks=True,
     )
     source_unchanged = not differences
+    network = runtime_evidence_summary(path, manifest, owned)
     return {
         "schema": VERIFICATION_SCHEMA,
-        "ok": source_unchanged,
+        "ok": source_unchanged and network["evidence_status"] != "failed",
         "action": "verify",
         "lab_id": manifest.get("lab_id"),
         "source": {
@@ -697,6 +1111,7 @@ def verify_lab(manifest_path: Path) -> dict[str, Any]:
             "source_and_output_disjoint": True,
             "source_writes_allowed": False,
             "network_allowed": False,
+            "network": network,
         },
         "lab": {
             "manifest_path": str(path),
@@ -739,6 +1154,15 @@ def positive_int(value: str) -> int:
     return parsed
 
 
+def bounded_timeout(value: str) -> int:
+    parsed = positive_int(value)
+    if parsed > MAX_EXECUTION_TIMEOUT_SECONDS:
+        raise argparse.ArgumentTypeError(
+            f"value must be <= {MAX_EXECUTION_TIMEOUT_SECONDS}"
+        )
+    return parsed
+
+
 def parser() -> argparse.ArgumentParser:
     command = argparse.ArgumentParser(
         description="Prepare, verify, and clean disposable read-only Git snapshots."
@@ -756,9 +1180,27 @@ def parser() -> argparse.ArgumentParser:
     prepare.add_argument(
         "--max-total-bytes", type=positive_int, default=DEFAULT_MAX_TOTAL_BYTES
     )
+    prepare.add_argument(
+        "--network-policy",
+        choices=sorted(NETWORK_POLICIES),
+        default=None,
+        help="Declare the caller's intended network boundary; execution receipts remain required for proof.",
+    )
 
     verify = subcommands.add_parser("verify")
     verify.add_argument("--manifest", required=True, type=Path)
+
+    execute = subcommands.add_parser("execute")
+    execute.add_argument("--manifest", required=True, type=Path)
+    execute.add_argument("--evidence-id", required=True)
+    execute.add_argument("--phase", required=True, choices=sorted(EXECUTION_PHASES))
+    execute.add_argument("--network-mode", required=True, choices=sorted(NETWORK_MODES))
+    execute.add_argument(
+        "--timeout-seconds",
+        type=bounded_timeout,
+        default=DEFAULT_EXECUTION_TIMEOUT_SECONDS,
+    )
+    execute.add_argument("command", nargs=argparse.REMAINDER)
 
     cleanup = subcommands.add_parser("cleanup")
     cleanup.add_argument("--manifest", required=True, type=Path)
@@ -770,6 +1212,7 @@ def main(argv: list[str] | None = None) -> int:
     arguments = parser().parse_args(argv)
     try:
         if arguments.action == "prepare":
+            network_policy = arguments.network_policy or "denied"
             payload = prepare_lab(
                 source_path=arguments.source,
                 requested_ref=arguments.ref,
@@ -777,9 +1220,27 @@ def main(argv: list[str] | None = None) -> int:
                 max_archive_bytes=arguments.max_archive_bytes,
                 max_files=arguments.max_files,
                 max_total_bytes=arguments.max_total_bytes,
+                network_policy=network_policy,
+                network_authorization=(
+                    "caller_declared"
+                    if arguments.network_policy is not None
+                    else "shadow_lab_default"
+                ),
             )
         elif arguments.action == "verify":
             payload = verify_lab(arguments.manifest)
+        elif arguments.action == "execute":
+            command_arguments = list(arguments.command)
+            if command_arguments and command_arguments[0] == "--":
+                command_arguments.pop(0)
+            payload = execute_in_lab(
+                manifest_path=arguments.manifest,
+                evidence_id=arguments.evidence_id,
+                phase=arguments.phase,
+                network_mode=arguments.network_mode,
+                command=command_arguments,
+                timeout_seconds=arguments.timeout_seconds,
+            )
         else:
             payload = cleanup_lab(arguments.manifest, confirm=arguments.confirm)
         sys.stdout.write(json_text(payload))

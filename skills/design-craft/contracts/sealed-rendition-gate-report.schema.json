@@ -45,6 +45,7 @@
         "capture_integrity": {"const": "pass"},
         "comparison_integrity": {"const": "pass"},
         "source_mutation_audit": {"const": "pass"},
+        "runtime_evidence": {"const": "pass"},
         "visual_decision": {"$ref": "#/$defs/visualDecision"}
       }
     },
@@ -67,7 +68,8 @@
           "ordinal": {"type": "integer", "minimum": 1, "maximum": 12},
           "id": {"$ref": "#/$defs/slug"},
           "kind": {"enum": ["browser_viewport", "pdf_page"]},
-          "rendered": {"$ref": "#/$defs/fileRecord"}
+          "rendered": {"$ref": "#/$defs/fileRecord"},
+          "runtime_receipt": {"$ref": "#/$defs/fileRecord"}
         }
       }
     },

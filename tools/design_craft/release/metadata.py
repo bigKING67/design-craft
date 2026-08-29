@@ -66,6 +66,7 @@ def validate_release_metadata(
         "github_checks": "design-craft.github-checks.v2",
         "github_governance": "design-craft.github-governance.v2",
         "github_artifact_observation": "design-craft.github-artifact-observation.v1",
+        "runtime_evidence": "design-craft.runtime-evidence.v1",
     }
     expected_maintenance = {
         "release_assets": "design-craft.release-assets.v2",

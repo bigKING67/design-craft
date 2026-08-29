@@ -18,6 +18,7 @@
     "visual_reference_pack": "design-craft.visual-reference-pack.v1",
     "comp_fidelity_spec": "design-craft.comp-fidelity-spec.v1",
     "comp_fidelity_report": "design-craft.comp-fidelity-report.v1",
+    "runtime_evidence": "design-craft.runtime-evidence.v1",
     "sealed_rendition_gate_spec": "design-craft.sealed-rendition-gate-spec.v1",
     "sealed_rendition_capture_plan": "design-craft.sealed-rendition-capture-plan.v1",
     "sealed_rendition_gate_report": "design-craft.sealed-rendition-gate-report.v1"

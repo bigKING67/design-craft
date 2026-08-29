@@ -92,21 +92,32 @@ class GateFixture:
             encoding="utf-8",
         )
 
-    def capture(self, capture_id: str = "desktop") -> dict[str, object]:
+    def capture(
+        self,
+        capture_id: str = "desktop",
+        *,
+        runtime_evidence: bool = False,
+    ) -> dict[str, object]:
+        contract: dict[str, object] = {
+            "runtime": "browser67",
+            "viewport": {"width": self.width, "height": self.height},
+            "device_scale_factor": 1,
+            "theme": "light",
+            "network": "offline",
+            "wait_for": "document_complete",
+        }
+        if runtime_evidence:
+            contract["runtime_evidence"] = {
+                "network_proof": "required",
+                "stabilization": {"kind": "none"},
+            }
         return {
             "id": capture_id,
             "kind": "browser_viewport",
             "source": self.source.name,
             "reference": self.reference.name,
             "comparison_spec": str(self.comparison_spec),
-            "contract": {
-                "runtime": "browser67",
-                "viewport": {"width": self.width, "height": self.height},
-                "device_scale_factor": 1,
-                "theme": "light",
-                "network": "offline",
-                "wait_for": "document_complete",
-            },
+            "contract": contract,
         }
 
     def write_gate_spec(self, captures: list[dict[str, object]] | None = None) -> None:
@@ -140,6 +151,68 @@ class GateFixture:
         captures = plan["captures"]
         assert isinstance(captures, list)
         return Path(captures[index]["rendered_path"])
+
+    def write_runtime_receipt(
+        self,
+        plan: dict[str, object],
+        *,
+        index: int = 0,
+        origins: list[str] | None = None,
+        stabilization: dict[str, object] | None = None,
+    ) -> Path:
+        captures = plan["captures"]
+        assert isinstance(captures, list)
+        capture = captures[index]
+        rendered = Path(capture["rendered_path"])
+        receipt = Path(capture["runtime_receipt_path"])
+        receipt.write_text(
+            json.dumps(
+                {
+                    "schema": "design-craft.runtime-evidence.v1",
+                    "kind": "browser_capture",
+                    "id": capture["id"],
+                    "recorded_at": "2026-08-29T00:00:00Z",
+                    "runtime": "browser67",
+                    "runtime_context": {
+                        "browser_instance_id": "fixture-browser",
+                        "workspace_id": "fixture-workspace",
+                        "task_id": "fixture-task",
+                        "tab_id": "fixture-tab",
+                    },
+                    "page": {
+                        "url": "http://127.0.0.1:4173/",
+                        "document_ready_state": "complete",
+                    },
+                    "viewport": {
+                        **capture["contract"]["viewport"],
+                        "device_scale_factor": capture["contract"][
+                            "device_scale_factor"
+                        ],
+                    },
+                    "theme": capture["contract"]["theme"],
+                    "network": {
+                        "contract": capture["contract"]["network"],
+                        "proof": "browser67_network_observation",
+                        "status": "pass",
+                        "observed_origins": origins or [],
+                        "external_origin_count": 0,
+                        "unknown_origin_count": 0,
+                        "request_id": "fixture-request",
+                    },
+                    "stabilization": stabilization
+                    or {"kind": "none", "status": "not_required"},
+                    "rendered": {
+                        "path": str(rendered),
+                        "bytes": rendered.stat().st_size,
+                        "sha256": sha256(rendered),
+                        "width": self.width,
+                        "height": self.height,
+                    },
+                }
+            ),
+            encoding="utf-8",
+        )
+        return receipt
 
     def closeout(
         self,
@@ -195,6 +268,97 @@ class SealedRenditionGateTests(unittest.TestCase):
             )
             self.assertTrue(validation["ok"])
             self.assertIsNone(validation["global_pixel_pass_threshold"])
+            self.assertEqual(validation["runtime_evidence_count"], 0)
+
+    def test_runtime_evidence_is_required_hash_bound_and_revalidated(self) -> None:
+        with tempfile.TemporaryDirectory() as raw:
+            fixture = GateFixture(Path(raw))
+            fixture.write_gate_spec([fixture.capture(runtime_evidence=True)])
+            plan = fixture.prepare()
+            shutil.copyfile(fixture.reference, fixture.rendered_path(plan))
+
+            with self.assertRaisesRegex(SealedRenditionError, "runtime receipt"):
+                fixture.closeout()
+            self.assertFalse((fixture.output / "gate-report.json").exists())
+
+            fixture.write_runtime_receipt(plan)
+            report = fixture.closeout()
+            validation = validate_gate_report(
+                fixture.output / "gate-report.json", strict=True
+            )
+
+            self.assertEqual(report["statuses"]["runtime_evidence"], "pass")
+            self.assertIn("runtime_receipt", report["captures"][0])
+            self.assertEqual(validation["runtime_evidence_count"], 1)
+
+            runtime_path = fixture.output / report["captures"][0]["runtime_receipt"]["path"]
+            receipt = json.loads(runtime_path.read_text(encoding="utf-8"))
+            receipt["network"]["request_id"] = "tampered-request"
+            runtime_path.write_text(json.dumps(receipt), encoding="utf-8")
+            with self.assertRaisesRegex(SealedRenditionError, "hash or size mismatch"):
+                validate_gate_report(fixture.output / "gate-report.json", strict=True)
+
+    def test_runtime_evidence_rejects_external_origin_and_stabilization_drift(self) -> None:
+        with tempfile.TemporaryDirectory() as raw:
+            fixture = GateFixture(Path(raw))
+            capture = fixture.capture(runtime_evidence=True)
+            capture["contract"]["runtime_evidence"]["stabilization"] = {
+                "kind": "wait_for_text_then_pause_animation",
+                "selector": ".typewriter",
+                "expected_text": "ready",
+                "timeout_ms": 5000,
+            }
+            fixture.write_gate_spec([capture])
+            plan = fixture.prepare()
+            shutil.copyfile(fixture.reference, fixture.rendered_path(plan))
+            fixture.write_runtime_receipt(
+                plan,
+                origins=[[]],  # type: ignore[list-item]
+            )
+            with self.assertRaisesRegex(
+                SealedRenditionError,
+                "observed origins are invalid",
+            ):
+                fixture.closeout()
+
+            fixture.write_runtime_receipt(
+                plan,
+                origins=["https://example.com"],
+                stabilization={
+                    "kind": "wait_for_text_then_pause_animation",
+                    "status": "pass",
+                    "selector": ".typewriter",
+                    "expected_text": "ready",
+                    "observed_text": "wrong",
+                    "matched": True,
+                    "paused": True,
+                    "source_mutated": False,
+                    "displayed_text_changed": False,
+                },
+            )
+
+            with self.assertRaisesRegex(
+                SealedRenditionError,
+                "offline proof observed network origins",
+            ):
+                fixture.closeout()
+
+            fixture.write_runtime_receipt(
+                plan,
+                stabilization={
+                    "kind": "wait_for_text_then_pause_animation",
+                    "status": "pass",
+                    "selector": ".typewriter",
+                    "expected_text": "ready",
+                    "observed_text": "wrong",
+                    "matched": True,
+                    "paused": True,
+                    "source_mutated": False,
+                    "displayed_text_changed": False,
+                },
+            )
+            with self.assertRaisesRegex(SealedRenditionError, "stabilization"):
+                fixture.closeout()
 
     def test_input_mismatch_fails_before_capture_plan_exists(self) -> None:
         with tempfile.TemporaryDirectory() as raw:
@@ -401,6 +565,93 @@ class SealedRenditionGateTests(unittest.TestCase):
 
             self.assertEqual(report["authority"]["preflight"]["kind"], "git_commit")
             self.assertGreaterEqual(len(calls), 3)
+
+    def test_shadow_execution_receipt_binds_outputs_and_denied_network(self) -> None:
+        with tempfile.TemporaryDirectory() as raw:
+            root = Path(raw)
+            manifest = root / ".design-craft-shadow-lab.json"
+            worktree = root / "source"
+            evidence = root / ".design-craft-runtime-evidence"
+            worktree.mkdir()
+            evidence.mkdir()
+            manifest.write_text('{"schema":"fixture"}\n', encoding="utf-8")
+            stdout = evidence / "build.stdout.log"
+            stderr = evidence / "build.stderr.log"
+            stdout.write_text("built\n", encoding="utf-8")
+            stderr.write_text("", encoding="utf-8")
+            receipt = evidence / "build.json"
+            manifest_record = {
+                "path": str(manifest),
+                "bytes": manifest.stat().st_size,
+                "sha256": sha256(manifest),
+            }
+            receipt.write_text(
+                json.dumps(
+                    {
+                        "schema": "design-craft.runtime-evidence.v1",
+                        "kind": "shadow_command",
+                        "id": "build",
+                        "started_at": "2026-08-29T00:00:00Z",
+                        "completed_at": "2026-08-29T00:00:01Z",
+                        "authority": {
+                            "shadow_lab_manifest": manifest_record,
+                            "source_commit": "1" * 40,
+                            "worktree": str(worktree),
+                        },
+                        "phase": {"kind": "build", "network_mode": "denied"},
+                        "enforcement": {
+                            "kind": "macos_sandbox_exec_egress",
+                            "status": "enforced",
+                        },
+                        "command": {
+                            "executable": "pnpm",
+                            "argv_sha256": "2" * 64,
+                            "exit_code": 0,
+                        },
+                        "outputs": {
+                            "stdout": {
+                                "path": str(stdout),
+                                "bytes": stdout.stat().st_size,
+                                "sha256": sha256(stdout),
+                            },
+                            "stderr": {
+                                "path": str(stderr),
+                                "bytes": stderr.stat().st_size,
+                                "sha256": sha256(stderr),
+                            },
+                        },
+                        "source_audit": {
+                            "source_unchanged": True,
+                            "difference_fields": [],
+                        },
+                        "status": "pass",
+                    }
+                ),
+                encoding="utf-8",
+            )
+            manifest_snapshot = gate_module._snapshot_file(
+                manifest,
+                label="fixture manifest",
+            )
+
+            summary, records = gate_module._snapshot_shadow_execution_receipt(
+                receipt,
+                manifest_snapshot=manifest_snapshot,
+                commit="1" * 40,
+                worktree=worktree,
+            )
+
+            self.assertEqual(summary["network_mode"], "denied")
+            self.assertEqual(summary["enforcement"]["status"], "enforced")
+            self.assertEqual(len(records), 3)
+            stdout.write_text("tampered\n", encoding="utf-8")
+            with self.assertRaisesRegex(SealedRenditionError, "file record mismatch"):
+                gate_module._snapshot_shadow_execution_receipt(
+                    receipt,
+                    manifest_snapshot=manifest_snapshot,
+                    commit="1" * 40,
+                    worktree=worktree,
+                )
 
     def test_pass_visual_decision_requires_named_reviewer(self) -> None:
         with tempfile.TemporaryDirectory() as raw:

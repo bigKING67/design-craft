@@ -13,6 +13,7 @@ from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path, PurePosixPath
 from typing import Any, Callable
+from urllib.parse import urlsplit
 
 from .comp_fidelity import CompFidelityError, compare, load_spec, read_png, validate_report
 
@@ -21,6 +22,7 @@ SPEC_SCHEMA = "design-craft.sealed-rendition-gate-spec.v1"
 PLAN_SCHEMA = "design-craft.sealed-rendition-capture-plan.v1"
 REPORT_SCHEMA = "design-craft.sealed-rendition-gate-report.v1"
 VALIDATION_SCHEMA = "design-craft.sealed-rendition-gate-validation.v1"
+RUNTIME_EVIDENCE_SCHEMA = "design-craft.runtime-evidence.v1"
 SLUG = re.compile(r"^[a-z0-9][a-z0-9-]*$")
 SHA256 = re.compile(r"^[0-9a-f]{64}$")
 MAX_JSON_BYTES = 4 * 1024 * 1024
@@ -28,6 +30,7 @@ MAX_FILE_BYTES = 128 * 1024 * 1024
 MAX_AUTHORITY_FILES = 5_000
 MAX_AUTHORITY_BYTES = 512 * 1024 * 1024
 MAX_CAPTURES = 12
+MAX_EXECUTION_RECEIPTS = 16
 BINARY_READ_FLAGS = (
     os.O_RDONLY
     | getattr(os, "O_BINARY", 0)
@@ -405,11 +408,161 @@ def _snapshot_sealed_authority(authority: dict[str, Any]) -> AuthorityState:
     return AuthorityState(snapshot, root, tuple(protected_roots))
 
 
+def _snapshot_absolute_record(
+    record: Any,
+    *,
+    label: str,
+    required_parent: Path | None = None,
+) -> FileSnapshot:
+    value = _exact_fields(record, {"path", "bytes", "sha256"}, label=label)
+    path = _absolute_path(value["path"], label=f"{label}.path")
+    if required_parent is not None and path.parent != required_parent:
+        raise SealedRenditionError(f"{label}.path must stay beside its receipt")
+    snapshot = _snapshot_file(path, label=label)
+    _record_matches(value, snapshot, label=label)
+    return snapshot
+
+
+def _snapshot_shadow_execution_receipt(
+    receipt_path: Path,
+    *,
+    manifest_snapshot: FileSnapshot,
+    commit: str,
+    worktree: Path,
+) -> tuple[dict[str, Any], list[dict[str, Any]]]:
+    receipt_snapshot, receipt = _json_snapshot(
+        receipt_path, label="Shadow Lab execution receipt"
+    )
+    _exact_fields(
+        receipt,
+        {
+            "schema",
+            "kind",
+            "id",
+            "started_at",
+            "completed_at",
+            "authority",
+            "phase",
+            "enforcement",
+            "command",
+            "outputs",
+            "source_audit",
+            "status",
+        },
+        label="Shadow Lab execution receipt",
+    )
+    if receipt["schema"] != RUNTIME_EVIDENCE_SCHEMA or receipt["kind"] != "shadow_command":
+        raise SealedRenditionError("Shadow Lab execution receipt schema or kind is invalid")
+    receipt_id = _slug(receipt["id"], label="Shadow Lab execution receipt.id")
+    _utc_timestamp(receipt["started_at"], label=f"execution receipt {receipt_id}.started_at")
+    _utc_timestamp(receipt["completed_at"], label=f"execution receipt {receipt_id}.completed_at")
+    authority = _exact_fields(
+        receipt["authority"],
+        {"shadow_lab_manifest", "source_commit", "worktree"},
+        label=f"execution receipt {receipt_id}.authority",
+    )
+    _record_matches(
+        authority["shadow_lab_manifest"],
+        manifest_snapshot,
+        label=f"execution receipt {receipt_id} manifest",
+    )
+    if authority["source_commit"] != commit or authority["worktree"] != str(worktree):
+        raise SealedRenditionError(
+            f"execution receipt {receipt_id} authority binding is invalid"
+        )
+    phase = _exact_fields(
+        receipt["phase"],
+        {"kind", "network_mode"},
+        label=f"execution receipt {receipt_id}.phase",
+    )
+    if phase["kind"] not in {"install", "build", "test", "preview", "capture", "custom"}:
+        raise SealedRenditionError(f"execution receipt {receipt_id} phase is invalid")
+    if phase["network_mode"] not in {"denied", "allowed"}:
+        raise SealedRenditionError(f"execution receipt {receipt_id} network mode is invalid")
+    enforcement = _exact_fields(
+        receipt["enforcement"],
+        {"kind", "status"},
+        label=f"execution receipt {receipt_id}.enforcement",
+    )
+    expected_enforcement = (
+        {"kind": "macos_sandbox_exec_egress", "status": "enforced"}
+        if phase["network_mode"] == "denied"
+        else {"kind": "not_required", "status": "not_required"}
+    )
+    if enforcement != expected_enforcement:
+        raise SealedRenditionError(
+            f"execution receipt {receipt_id} network enforcement is invalid"
+        )
+    command = _exact_fields(
+        receipt["command"],
+        {"executable", "argv_sha256", "exit_code"},
+        label=f"execution receipt {receipt_id}.command",
+    )
+    if (
+        not isinstance(command["executable"], str)
+        or not command["executable"]
+        or not isinstance(command["argv_sha256"], str)
+        or SHA256.fullmatch(command["argv_sha256"]) is None
+        or command["exit_code"] != 0
+    ):
+        raise SealedRenditionError(f"execution receipt {receipt_id} command did not pass")
+    outputs = _exact_fields(
+        receipt["outputs"],
+        {"stdout", "stderr"},
+        label=f"execution receipt {receipt_id}.outputs",
+    )
+    output_snapshots = [
+        _snapshot_absolute_record(
+            outputs[name],
+            label=f"execution receipt {receipt_id} {name}",
+            required_parent=receipt_snapshot.path.parent,
+        )
+        for name in ("stdout", "stderr")
+    ]
+    source_audit = _exact_fields(
+        receipt["source_audit"],
+        {"source_unchanged", "difference_fields"},
+        label=f"execution receipt {receipt_id}.source_audit",
+    )
+    if (
+        source_audit["source_unchanged"] is not True
+        or source_audit["difference_fields"] != []
+        or receipt["status"] != "pass"
+    ):
+        raise SealedRenditionError(
+            f"execution receipt {receipt_id} is not a passing source-safe execution"
+        )
+    records = [
+        {
+            "scope": f"execution:{receipt_id}",
+            **_file_record(receipt_snapshot),
+        },
+        *[
+            {
+                "scope": f"execution:{receipt_id}:{name}",
+                **_file_record(snapshot),
+            }
+            for name, snapshot in zip(("stdout", "stderr"), output_snapshots)
+        ],
+    ]
+    summary = {
+        "id": receipt_id,
+        "phase": phase["kind"],
+        "network_mode": phase["network_mode"],
+        "enforcement": enforcement,
+        "receipt": _file_record(receipt_snapshot),
+    }
+    return summary, records
+
+
 def _snapshot_git_authority(
     authority: dict[str, Any],
     shadow_lab_verifier: ShadowLabVerifier | None,
 ) -> AuthorityState:
-    _exact_fields(authority, {"kind", "shadow_lab_manifest"}, label="spec.authority")
+    authority_fields = {"kind", "shadow_lab_manifest"}
+    if isinstance(authority, dict) and "execution_evidence" in authority:
+        authority_fields.add("execution_evidence")
+    _exact_fields(authority, authority_fields, label="spec.authority")
     if shadow_lab_verifier is None:
         raise SealedRenditionError("git_commit authority requires the Shadow Lab verifier")
     manifest_path = _absolute_path(
@@ -459,31 +612,83 @@ def _snapshot_git_authority(
     if not isinstance(commit, str) or re.fullmatch(r"[0-9a-f]{40,64}", commit) is None:
         raise SealedRenditionError("Shadow Lab verification commit is invalid")
     manifest_record = _file_record(manifest_snapshot)
+    records = [
+        {
+            "scope": "shadow-lab",
+            "path": manifest_path.name,
+            "bytes": manifest_snapshot.size,
+            "sha256": manifest_snapshot.sha256,
+        }
+    ]
+    execution_summaries: list[dict[str, Any]] = []
+    protected_roots: list[Path] = [source_root, capture_root]
+    execution_contract = authority.get("execution_evidence")
+    if execution_contract is not None:
+        execution_contract = _exact_fields(
+            execution_contract,
+            {"required_phase_ids", "receipts"},
+            label="spec.authority.execution_evidence",
+        )
+        required_ids = execution_contract["required_phase_ids"]
+        receipt_paths = execution_contract["receipts"]
+        if (
+            not isinstance(required_ids, list)
+            or not isinstance(receipt_paths, list)
+            or not 1 <= len(required_ids) <= MAX_EXECUTION_RECEIPTS
+            or len(receipt_paths) != len(required_ids)
+        ):
+            raise SealedRenditionError(
+                "execution evidence must bind one receipt per required phase id"
+            )
+        normalized_ids = [
+            _slug(value, label=f"execution evidence required_phase_ids[{index}]")
+            for index, value in enumerate(required_ids)
+        ]
+        if len(normalized_ids) != len(set(normalized_ids)):
+            raise SealedRenditionError("execution evidence phase ids must be unique")
+        normalized_receipt_paths: list[Path] = []
+        for index, value in enumerate(receipt_paths):
+            receipt_path = _absolute_path(
+                value, label=f"execution evidence receipts[{index}]"
+            )
+            if receipt_path in normalized_receipt_paths:
+                raise SealedRenditionError("execution evidence receipt paths must be unique")
+            normalized_receipt_paths.append(receipt_path)
+            summary, receipt_records = _snapshot_shadow_execution_receipt(
+                receipt_path,
+                manifest_snapshot=manifest_snapshot,
+                commit=commit,
+                worktree=capture_root,
+            )
+            execution_summaries.append(summary)
+            records.extend(receipt_records)
+            protected_roots.append(receipt_path.parent)
+        if [summary["id"] for summary in execution_summaries] != normalized_ids:
+            raise SealedRenditionError(
+                "execution evidence receipt ids must exactly match required_phase_ids order"
+            )
     digest_input = {
         "kind": "git_commit",
         "manifest": manifest_record,
         "source_repo": str(source_root),
         "commit": commit,
     }
+    if execution_contract is not None:
+        digest_input["execution_evidence"] = execution_summaries
     snapshot = {
         "kind": "git_commit",
         "root": str(capture_root),
         "shadow_lab_manifest": manifest_record,
         "source_repo": str(source_root),
         "commit": commit,
-        "record_count": 1,
-        "total_bytes": manifest_snapshot.size,
-        "records": [
-            {
-                "scope": "shadow-lab",
-                "path": manifest_path.name,
-                "bytes": manifest_snapshot.size,
-                "sha256": manifest_snapshot.sha256,
-            }
-        ],
+        "record_count": len(records),
+        "total_bytes": sum(record["bytes"] for record in records),
+        "records": records,
         "digest": _canonical_digest(digest_input),
     }
-    return AuthorityState(snapshot, capture_root, (source_root, capture_root))
+    if execution_contract is not None:
+        snapshot["execution_evidence"] = execution_summaries
+    return AuthorityState(snapshot, capture_root, tuple(protected_roots))
 
 
 def _snapshot_authority(
@@ -498,20 +703,62 @@ def _snapshot_authority(
     raise SealedRenditionError("spec.authority.kind must be sealed_manifest or git_commit")
 
 
+def _stabilization_contract(value: Any, *, label: str) -> dict[str, Any]:
+    if not isinstance(value, dict):
+        raise SealedRenditionError(f"{label} must be an object")
+    kind = value.get("kind")
+    if kind == "none":
+        return _exact_fields(value, {"kind"}, label=label)
+    if kind != "wait_for_text_then_pause_animation":
+        raise SealedRenditionError(f"{label}.kind is invalid")
+    contract = _exact_fields(
+        value,
+        {"kind", "selector", "expected_text", "timeout_ms"},
+        label=label,
+    )
+    selector = contract["selector"]
+    expected_text = contract["expected_text"]
+    timeout_ms = contract["timeout_ms"]
+    if not isinstance(selector, str) or not 1 <= len(selector) <= 256:
+        raise SealedRenditionError(f"{label}.selector must contain 1 to 256 characters")
+    if not isinstance(expected_text, str) or not 1 <= len(expected_text) <= 512:
+        raise SealedRenditionError(
+            f"{label}.expected_text must contain 1 to 512 characters"
+        )
+    if (
+        isinstance(timeout_ms, bool)
+        or not isinstance(timeout_ms, int)
+        or not 100 <= timeout_ms <= 60_000
+    ):
+        raise SealedRenditionError(f"{label}.timeout_ms must be between 100 and 60000")
+    return contract
+
+
+def _runtime_evidence_contract(value: Any, *, label: str) -> dict[str, Any]:
+    contract = _exact_fields(
+        value,
+        {"network_proof", "stabilization"},
+        label=label,
+    )
+    if contract["network_proof"] != "required":
+        raise SealedRenditionError(f"{label}.network_proof must be required")
+    _stabilization_contract(contract["stabilization"], label=f"{label}.stabilization")
+    return contract
+
+
 def _capture_contract(value: Any, *, kind: str, label: str) -> dict[str, Any]:
     if kind == "browser_viewport":
-        contract = _exact_fields(
-            value,
-            {
-                "runtime",
-                "viewport",
-                "device_scale_factor",
-                "theme",
-                "network",
-                "wait_for",
-            },
-            label=label,
-        )
+        fields = {
+            "runtime",
+            "viewport",
+            "device_scale_factor",
+            "theme",
+            "network",
+            "wait_for",
+        }
+        if isinstance(value, dict) and "runtime_evidence" in value:
+            fields.add("runtime_evidence")
+        contract = _exact_fields(value, fields, label=label)
         if contract["runtime"] != "browser67":
             raise SealedRenditionError(f"{label}.runtime must be browser67")
         viewport = _exact_fields(
@@ -531,6 +778,10 @@ def _capture_contract(value: Any, *, kind: str, label: str) -> dict[str, Any]:
             raise SealedRenditionError(f"{label}.network is invalid")
         if contract["wait_for"] != "document_complete":
             raise SealedRenditionError(f"{label}.wait_for must be document_complete")
+        if "runtime_evidence" in contract:
+            _runtime_evidence_contract(
+                contract["runtime_evidence"], label=f"{label}.runtime_evidence"
+            )
         return contract
     if kind == "pdf_page":
         contract = _exact_fields(
@@ -633,8 +884,7 @@ def _planned_captures(
             )
         source_snapshot = _snapshot_file(source, label=f"capture {capture_id} source")
         reference_snapshot = _snapshot_file(reference, label=f"capture {capture_id} reference")
-        planned.append(
-            {
+        planned_capture = {
                 "ordinal": ordinal,
                 "id": capture_id,
                 "kind": capture["kind"],
@@ -648,7 +898,11 @@ def _planned_captures(
                 "rendered_path": str(output_root / "captures" / capture_id / "rendered.png"),
                 "contract": contract,
             }
-        )
+        if capture["kind"] == "browser_viewport" and "runtime_evidence" in contract:
+            planned_capture["runtime_receipt_path"] = str(
+                output_root / "captures" / capture_id / "runtime-receipt.json"
+            )
+        planned.append(planned_capture)
     return planned
 
 
@@ -798,6 +1052,230 @@ def _relative_file_record(path: Path, root: Path) -> dict[str, Any]:
     return _file_record(snapshot, path=path.relative_to(root).as_posix())
 
 
+def _loopback_url(value: str, *, origin_only: bool = False) -> bool:
+    try:
+        parsed = urlsplit(value)
+    except ValueError:
+        return False
+    if parsed.scheme not in {"http", "https", "ws", "wss"}:
+        return False
+    if parsed.hostname not in {"localhost", "127.0.0.1", "::1"}:
+        return False
+    return not origin_only or (
+        parsed.path in {"", "/"} and not parsed.query and not parsed.fragment
+    )
+
+
+def _browser_runtime_receipt(
+    capture: dict[str, Any],
+    *,
+    output_root: Path,
+    rendered_snapshot: FileSnapshot,
+) -> tuple[FileSnapshot, dict[str, Any]]:
+    capture_id = capture["id"]
+    receipt_path = _absolute_path(
+        capture.get("runtime_receipt_path"),
+        label=f"capture {capture_id}.runtime_receipt_path",
+    )
+    expected_path = output_root / "captures" / capture_id / "runtime-receipt.json"
+    if receipt_path != expected_path:
+        raise SealedRenditionError(
+            f"capture {capture_id} runtime receipt path disagrees with its plan"
+        )
+    receipt_snapshot, receipt = _json_snapshot(
+        receipt_path, label=f"capture {capture_id} runtime receipt"
+    )
+    _exact_fields(
+        receipt,
+        {
+            "schema",
+            "kind",
+            "id",
+            "recorded_at",
+            "runtime",
+            "runtime_context",
+            "page",
+            "viewport",
+            "theme",
+            "network",
+            "stabilization",
+            "rendered",
+        },
+        label=f"capture {capture_id} runtime receipt",
+    )
+    if receipt["schema"] != RUNTIME_EVIDENCE_SCHEMA or receipt["kind"] != "browser_capture":
+        raise SealedRenditionError(
+            f"capture {capture_id} runtime receipt schema or kind is invalid"
+        )
+    if receipt["id"] != capture_id or receipt["runtime"] != "browser67":
+        raise SealedRenditionError(
+            f"capture {capture_id} runtime receipt identity is invalid"
+        )
+    runtime_context = _exact_fields(
+        receipt["runtime_context"],
+        {"browser_instance_id", "workspace_id", "task_id", "tab_id"},
+        label=f"capture {capture_id}.runtime_context",
+    )
+    if any(
+        not isinstance(runtime_context[field], str)
+        or not 1 <= len(runtime_context[field]) <= 256
+        for field in runtime_context
+    ):
+        raise SealedRenditionError(
+            f"capture {capture_id} browser runtime context is invalid"
+        )
+    _utc_timestamp(receipt["recorded_at"], label=f"capture {capture_id}.recorded_at")
+    page = _exact_fields(
+        receipt["page"],
+        {"url", "document_ready_state"},
+        label=f"capture {capture_id}.page",
+    )
+    if (
+        not isinstance(page["url"], str)
+        or not page["url"]
+        or page["document_ready_state"] != "complete"
+    ):
+        raise SealedRenditionError(f"capture {capture_id} page readiness is invalid")
+    contract = capture["contract"]
+    viewport = _exact_fields(
+        receipt["viewport"],
+        {"width", "height", "device_scale_factor"},
+        label=f"capture {capture_id}.viewport",
+    )
+    expected_viewport = {
+        **contract["viewport"],
+        "device_scale_factor": contract["device_scale_factor"],
+    }
+    if viewport != expected_viewport or receipt["theme"] != contract["theme"]:
+        raise SealedRenditionError(
+            f"capture {capture_id} viewport, DPR, or theme evidence disagrees with its contract"
+        )
+    network = _exact_fields(
+        receipt["network"],
+        {
+            "contract",
+            "proof",
+            "status",
+            "observed_origins",
+            "external_origin_count",
+            "unknown_origin_count",
+            "request_id",
+        },
+        label=f"capture {capture_id}.network",
+    )
+    if (
+        network["contract"] != contract["network"]
+        or network["proof"] not in {"browser67_network_observation", "external_sandbox"}
+        or network["status"] != "pass"
+        or network["external_origin_count"] != 0
+        or network["unknown_origin_count"] != 0
+        or not isinstance(network["request_id"], str)
+        or not network["request_id"]
+    ):
+        raise SealedRenditionError(
+            f"capture {capture_id} does not contain passing network proof"
+        )
+    origins = network["observed_origins"]
+    if (
+        not isinstance(origins, list)
+        or len(origins) > 64
+        or any(not isinstance(origin, str) or not origin for origin in origins)
+        or len(origins) != len(set(origins))
+    ):
+        raise SealedRenditionError(f"capture {capture_id} observed origins are invalid")
+    if contract["network"] == "offline":
+        if origins:
+            raise SealedRenditionError(
+                f"capture {capture_id} offline proof observed network origins"
+            )
+    else:
+        if not _loopback_url(page["url"]):
+            raise SealedRenditionError(
+                f"capture {capture_id} loopback contract used a non-loopback page URL"
+            )
+        if not origins or any(
+            not _loopback_url(origin, origin_only=True) for origin in origins
+        ):
+            raise SealedRenditionError(
+                f"capture {capture_id} loopback proof is empty or contains a non-loopback origin"
+            )
+        page_origin = urlsplit(page["url"])
+        normalized_page_origin = f"{page_origin.scheme}://{page_origin.netloc}"
+        if normalized_page_origin not in origins:
+            raise SealedRenditionError(
+                f"capture {capture_id} loopback proof omits the page origin"
+            )
+    stabilization_contract = contract["runtime_evidence"]["stabilization"]
+    stabilization = receipt["stabilization"]
+    if stabilization_contract["kind"] == "none":
+        expected_stabilization = {"kind": "none", "status": "not_required"}
+        if stabilization != expected_stabilization:
+            raise SealedRenditionError(
+                f"capture {capture_id} stabilization receipt is invalid"
+            )
+    else:
+        stabilization = _exact_fields(
+            stabilization,
+            {
+                "kind",
+                "status",
+                "selector",
+                "expected_text",
+                "observed_text",
+                "matched",
+                "paused",
+                "source_mutated",
+                "displayed_text_changed",
+            },
+            label=f"capture {capture_id}.stabilization",
+        )
+        if (
+            stabilization["kind"] != stabilization_contract["kind"]
+            or stabilization["status"] != "pass"
+            or stabilization["selector"] != stabilization_contract["selector"]
+            or stabilization["expected_text"] != stabilization_contract["expected_text"]
+            or stabilization["observed_text"] != stabilization_contract["expected_text"]
+            or stabilization["matched"] is not True
+            or stabilization["paused"] is not True
+            or stabilization["source_mutated"] is not False
+            or stabilization["displayed_text_changed"] is not False
+        ):
+            raise SealedRenditionError(
+                f"capture {capture_id} stabilization did not satisfy its exact contract"
+            )
+    rendered = _exact_fields(
+        receipt["rendered"],
+        {"path", "bytes", "sha256", "width", "height"},
+        label=f"capture {capture_id}.rendered",
+    )
+    try:
+        rendered_image = read_png(rendered_snapshot.path)
+    except CompFidelityError as exc:
+        raise SealedRenditionError(
+            f"capture {capture_id} rendered PNG is invalid: {exc}"
+        ) from exc
+    expected_rendered = {
+        **_file_record(rendered_snapshot, path=capture["rendered_path"]),
+        "width": rendered_image.width,
+        "height": rendered_image.height,
+    }
+    if rendered != expected_rendered:
+        raise SealedRenditionError(
+            f"capture {capture_id} rendered receipt hash or dimensions are invalid"
+        )
+    return receipt_snapshot, {
+        "network": {
+            "contract": network["contract"],
+            "proof": network["proof"],
+            "status": "pass",
+        },
+        "stabilization": {
+            "kind": stabilization["kind"],
+            "status": stabilization["status"],
+        },
+    }
+
+
 def closeout_gate(
     *,
     plan_path: Path,
@@ -820,6 +1298,9 @@ def closeout_gate(
     stage = Path(tempfile.mkdtemp(prefix=".closeout-", dir=output_root))
     comparisons: list[dict[str, Any]] = []
     captures: list[dict[str, Any]] = []
+    runtime_evidence_required = any(
+        "runtime_receipt_path" in capture for capture in plan["captures"]
+    )
     try:
         for capture in plan["captures"]:
             capture_id = capture["id"]
@@ -866,17 +1347,26 @@ def closeout_gate(
             rendered_snapshot = _snapshot_file(
                 rendered, label=f"capture {capture_id} rendered PNG"
             )
-            captures.append(
-                {
-                    "ordinal": capture["ordinal"],
-                    "id": capture_id,
-                    "kind": capture["kind"],
-                    "rendered": _file_record(
-                        rendered_snapshot,
-                        path=rendered.relative_to(output_root).as_posix(),
-                    ),
-                }
-            )
+            captured = {
+                "ordinal": capture["ordinal"],
+                "id": capture_id,
+                "kind": capture["kind"],
+                "rendered": _file_record(
+                    rendered_snapshot,
+                    path=rendered.relative_to(output_root).as_posix(),
+                ),
+            }
+            if "runtime_receipt_path" in capture:
+                runtime_snapshot, _runtime_summary = _browser_runtime_receipt(
+                    capture,
+                    output_root=output_root,
+                    rendered_snapshot=rendered_snapshot,
+                )
+                captured["runtime_receipt"] = _file_record(
+                    runtime_snapshot,
+                    path=runtime_snapshot.path.relative_to(output_root).as_posix(),
+                )
+            captures.append(captured)
             report_record = _relative_file_record(
                 comparison_dir / "report.json", stage
             )
@@ -912,6 +1402,8 @@ def closeout_gate(
             "source_mutation_audit": "pass",
             "visual_decision": visual_review["decision"],
         }
+        if runtime_evidence_required:
+            statuses["runtime_evidence"] = "pass"
         report = {
             "schema": REPORT_SCHEMA,
             "gate_id": plan["gate_id"],
@@ -1034,6 +1526,11 @@ def validate_gate_report(
         "source_mutation_audit": "pass",
         "visual_decision": visual_review["decision"],
     }
+    runtime_evidence_required = any(
+        "runtime_receipt_path" in capture for capture in plan["captures"]
+    )
+    if runtime_evidence_required:
+        expected_statuses["runtime_evidence"] = "pass"
     if report["statuses"] != expected_statuses:
         raise SealedRenditionError("gate report statuses are invalid")
     expected_boundary = {
@@ -1055,8 +1552,12 @@ def validate_gate_report(
     ):
         raise SealedRenditionError("gate report capture or comparison inventory mismatch")
     artifact_count = 0
+    runtime_evidence_count = 0
     for planned, captured, comparison in zip(plan["captures"], captures, comparisons):
-        _exact_fields(captured, {"ordinal", "id", "kind", "rendered"}, label="gate report capture")
+        captured_fields = {"ordinal", "id", "kind", "rendered"}
+        if "runtime_receipt_path" in planned:
+            captured_fields.add("runtime_receipt")
+        _exact_fields(captured, captured_fields, label="gate report capture")
         if (captured["ordinal"], captured["id"], captured["kind"]) != (
             planned["ordinal"],
             planned["id"],
@@ -1070,6 +1571,30 @@ def validate_gate_report(
             planned["rendered_path"]
         ).resolve(strict=True):
             raise SealedRenditionError("gate report rendered path disagrees with capture plan")
+        if "runtime_receipt_path" in planned:
+            runtime_snapshot = _artifact_from_record(
+                output_root,
+                captured["runtime_receipt"],
+                label=f"capture {captured['id']} runtime receipt",
+            )
+            expected_runtime = Path(planned["runtime_receipt_path"]).resolve(strict=True)
+            if runtime_snapshot.path.resolve(strict=True) != expected_runtime:
+                raise SealedRenditionError(
+                    "gate report runtime receipt path disagrees with capture plan"
+                )
+            verified_runtime, _runtime_summary = _browser_runtime_receipt(
+                planned,
+                output_root=output_root,
+                rendered_snapshot=rendered_snapshot,
+            )
+            if (
+                verified_runtime.size != runtime_snapshot.size
+                or verified_runtime.sha256 != runtime_snapshot.sha256
+            ):
+                raise SealedRenditionError(
+                    "gate report runtime receipt changed while it was validated"
+                )
+            runtime_evidence_count += 1
         _exact_fields(
             comparison,
             {
@@ -1133,6 +1658,7 @@ def validate_gate_report(
         "strict": strict,
         "capture_count": len(captures),
         "comparison_artifact_count": artifact_count,
+        "runtime_evidence_count": runtime_evidence_count,
         "visual_decision": visual_review["decision"],
         "global_pixel_pass_threshold": None,
     }

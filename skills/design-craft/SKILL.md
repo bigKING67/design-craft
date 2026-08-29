@@ -138,8 +138,9 @@ Use the smallest relevant bundled helper when available:
   `scripts/design_craft_comp_fidelity.py` for exact-coordinate, measurement-only
   comp comparisons after an existing capture path produces PNG evidence; and
   `scripts/design_craft_sealed_rendition_gate.py` for hash-first capture plans,
-  strict comparison closeout, source mutation audit, and an explicit visual
-  decision when a fixed Git snapshot or sealed manifest is the input authority.
+  strict comparison closeout, source mutation audit, optional hash-bound
+  Shadow/browser runtime receipts, and an explicit visual decision when a fixed
+  Git snapshot or sealed manifest is the input authority.
 - Platform and host checks: `scripts/design_craft_platform_scan.py`,
   `scripts/design_craft_codex_route_pack.py`, and
   `scripts/design_craft_score.py`.

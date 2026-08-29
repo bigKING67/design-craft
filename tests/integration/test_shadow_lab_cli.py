@@ -47,6 +47,136 @@ def run_cli(cwd: Path, *arguments: str) -> subprocess.CompletedProcess[bytes]:
 
 
 class ShadowLabCliTests(unittest.TestCase):
+    def test_execute_writes_policy_bound_receipt_and_detects_tamper(self) -> None:
+        with tempfile.TemporaryDirectory() as raw:
+            parent = Path(raw)
+            repo = parent / "source"
+            repo.mkdir()
+            git(repo, "init", "--quiet")
+            git(repo, "config", "user.name", "Design Craft Tests")
+            git(repo, "config", "user.email", "design-craft-tests@example.invalid")
+            (repo / "app.txt").write_text("fixture\n", encoding="utf-8")
+            git(repo, "add", "app.txt")
+            git(repo, "commit", "--quiet", "-m", "fixture")
+
+            prepared = run_cli(
+                REPO_ROOT,
+                "prepare",
+                "--source",
+                str(repo),
+                "--output-root",
+                str(parent / "labs"),
+                "--network-policy",
+                "install_only",
+            )
+            self.assertEqual(prepared.returncode, 0, prepared.stderr.decode())
+            manifest_path = Path(
+                json.loads(prepared.stdout)["manifest"]["isolation"]["manifest_path"]
+            )
+
+            refused = run_cli(
+                REPO_ROOT,
+                "execute",
+                "--manifest",
+                str(manifest_path),
+                "--evidence-id",
+                "build-allowed",
+                "--phase",
+                "build",
+                "--network-mode",
+                "allowed",
+                "--",
+                sys.executable,
+                "-c",
+                "print('must not run')",
+            )
+            self.assertEqual(refused.returncode, 2)
+            self.assertIn("not allowed", json.loads(refused.stdout)["error"])
+
+            executed = run_cli(
+                REPO_ROOT,
+                "execute",
+                "--manifest",
+                str(manifest_path),
+                "--evidence-id",
+                "install",
+                "--phase",
+                "install",
+                "--network-mode",
+                "allowed",
+                "--",
+                sys.executable,
+                "-c",
+                "print('installed fixture')",
+            )
+            self.assertEqual(executed.returncode, 0, executed.stderr.decode())
+            execution = json.loads(executed.stdout)
+            receipt_path = Path(execution["receipt_path"])
+            self.assertEqual(execution["receipt"]["status"], "pass")
+            self.assertEqual(execution["receipt"]["phase"]["network_mode"], "allowed")
+
+            verified = run_cli(REPO_ROOT, "verify", "--manifest", str(manifest_path))
+            self.assertEqual(verified.returncode, 0, verified.stderr.decode())
+            network = json.loads(verified.stdout)["boundary"]["network"]
+            self.assertEqual(network["policy"], "install_only")
+            self.assertEqual(network["evidence_status"], "observed")
+            self.assertEqual(network["receipt_count"], 1)
+
+            failed = run_cli(
+                REPO_ROOT,
+                "execute",
+                "--manifest",
+                str(manifest_path),
+                "--evidence-id",
+                "install-failed",
+                "--phase",
+                "install",
+                "--network-mode",
+                "allowed",
+                "--",
+                sys.executable,
+                "-c",
+                "raise SystemExit(7)",
+            )
+            self.assertEqual(failed.returncode, 2)
+            self.assertEqual(json.loads(failed.stdout)["receipt"]["status"], "fail")
+
+            failed_verification = run_cli(
+                REPO_ROOT, "verify", "--manifest", str(manifest_path)
+            )
+            self.assertEqual(failed_verification.returncode, 2)
+            failed_payload = json.loads(failed_verification.stdout)
+            self.assertFalse(failed_payload["ok"])
+            self.assertEqual(
+                failed_payload["boundary"]["network"]["evidence_status"],
+                "failed",
+            )
+
+            failed_receipt_path = Path(json.loads(failed.stdout)["receipt_path"])
+            original_failed_receipt = failed_receipt_path.read_bytes()
+            malformed_receipt = json.loads(original_failed_receipt)
+            malformed_receipt["source_audit"]["difference_fields"] = [[]]
+            failed_receipt_path.write_text(
+                json.dumps(malformed_receipt),
+                encoding="utf-8",
+            )
+            malformed = run_cli(
+                REPO_ROOT, "verify", "--manifest", str(manifest_path)
+            )
+            self.assertEqual(malformed.returncode, 2)
+            self.assertIn(
+                "source audit values are invalid",
+                json.loads(malformed.stdout)["error"],
+            )
+            failed_receipt_path.write_bytes(original_failed_receipt)
+
+            stdout_path = Path(execution["receipt"]["outputs"]["stdout"]["path"])
+            stdout_path.write_text("tampered\n", encoding="utf-8")
+            tampered = run_cli(REPO_ROOT, "verify", "--manifest", str(manifest_path))
+            self.assertEqual(tampered.returncode, 2)
+            self.assertIn("hash is invalid", json.loads(tampered.stdout)["error"])
+            self.assertTrue(receipt_path.is_file())
+
     def test_prepare_verify_and_confirmed_cleanup_preserve_dirty_source(self) -> None:
         with tempfile.TemporaryDirectory() as raw:
             parent = Path(raw)

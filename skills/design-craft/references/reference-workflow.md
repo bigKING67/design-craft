@@ -154,16 +154,51 @@ Prepare and inspect a lab:
 python3 scripts/design_craft_shadow_lab.py prepare \
   --source /absolute/path/to/target-repo \
   --ref <full-commit> \
+  --network-policy install_only \
   --output-root /tmp/design-craft-shadow-labs
 python3 scripts/design_craft_shadow_lab.py verify \
   --manifest /tmp/design-craft-shadow-labs/<lab-id>/.design-craft-shadow-lab.json
 ```
 
+`prepare` declares a network policy but does not claim to enforce or observe a
+command that has not run. Use `execute` for each evidence-bearing phase:
+
+```bash
+python3 scripts/design_craft_shadow_lab.py execute \
+  --manifest /tmp/design-craft-shadow-labs/<lab-id>/.design-craft-shadow-lab.json \
+  --evidence-id install \
+  --phase install \
+  --network-mode allowed \
+  -- pnpm install --frozen-lockfile
+
+python3 scripts/design_craft_shadow_lab.py execute \
+  --manifest /tmp/design-craft-shadow-labs/<lab-id>/.design-craft-shadow-lab.json \
+  --evidence-id build \
+  --phase build \
+  --network-mode denied \
+  -- pnpm build
+```
+
+`denied` is evidence only when the host has a supported enforcer. The current
+implementation uses macOS `sandbox-exec` with `deny network-outbound`: external
+egress is denied while local IPC remains available to build tools. Unsupported
+hosts fail closed instead of relabeling an ordinary subprocess as offline.
+`allowed` means no denial was required by the declared policy, not that network
+traffic occurred. Each command writes a manifest/commit/worktree-bound receipt
+plus hashed stdout and stderr outside the disposable worktree. `verify` reports
+`unverified`, `observed`, or `failed` from those receipts; a failed receipt
+makes verification return nonzero. The legacy
+`network_allowed=false` manifest field means the helper itself grants no
+network authority; actual phase truth is the explicit `network_boundary` and
+its receipts.
+
 Run only the selected design-craft checks against the manifest's `worktree`.
 Do not point package managers, formatters, screenshot output, caches, or build
 output at the source repository. A build may mutate the disposable worktree;
 that is acceptable, but it is not evidence that the source repository changed.
-The workflow does not authorize network access or external side effects.
+The workflow does not independently authorize network access or other external
+side effects; `--network-policy` records authority already granted by the
+caller.
 
 Cleanup is fail-closed and requires the root ownership marker, the direct-child
 lab layout, disjoint source/output paths, and explicit confirmation:

@@ -84,9 +84,14 @@ The spec, capture-plan, and report contracts are:
 - `contracts/sealed-rendition-gate-spec.schema.json`
 - `contracts/sealed-rendition-capture-plan.schema.json`
 - `contracts/sealed-rendition-gate-report.schema.json`
+- `contracts/runtime-evidence.schema.json`
 
 For `authority.kind=git_commit`, prepare an existing Shadow Lab and supply its
-manifest. For `authority.kind=sealed_manifest`, supply the immutable root,
+manifest. When install/build execution is material, bind the exact Shadow Lab
+receipt IDs and absolute receipt paths through `authority.execution_evidence`;
+the gate then hashes the receipts and their stdout/stderr, rejects nonzero or
+source-mutating executions, and preserves the network enforcement mode. For
+`authority.kind=sealed_manifest`, supply the immutable root,
 manifest path, expected manifest schema, inventory key, and any hash-bound
 anchor record groups. All operator paths are absolute; manifest file paths are
 safe POSIX-relative paths so the same contract remains portable across hosts.
@@ -99,6 +104,8 @@ python3 scripts/design_craft_sealed_rendition_gate.py prepare \
   --output-root /abs/new-evidence-root
 
 # browser67 or the selected PDF renderer now writes each planned rendered.png.
+# If runtime_evidence was requested, browser67 also writes the planned
+# runtime-receipt.json after observing the contracted page and request window.
 
 python3 scripts/design_craft_sealed_rendition_gate.py closeout \
   --plan /abs/new-evidence-root/capture-plan.json \
@@ -120,7 +127,18 @@ these independent statuses:
 - `capture_integrity`
 - `comparison_integrity`
 - `source_mutation_audit`
+- `runtime_evidence` when requested by at least one browser capture
 - `visual_decision = pending | pass | blocked | incomplete`
+
+Browser runtime evidence is opt-in and fail-closed. The receipt must match the
+planned viewport, DPR, theme, rendered PNG hash/dimensions, and the declared
+`offline` or `loopback_only` network contract. A loopback receipt must name the
+page origin and contain zero external or unknown origins. Dynamic copy may use
+only the declared `wait_for_text_then_pause_animation` stabilization contract:
+the selector, exact text, and bounded timeout are fixed in the spec, while the
+receipt proves the observed text matched, animation was paused, and neither
+source nor displayed text was changed. Arbitrary capture-time scripts are not
+part of the contract.
 
 `pass` and `blocked` visual decisions require a named reviewer. A successful
 strict comparison never promotes `measurement_only` into visual acceptance.

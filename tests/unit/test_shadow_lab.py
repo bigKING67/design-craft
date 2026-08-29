@@ -90,6 +90,16 @@ class ShadowLabTests(unittest.TestCase):
         self.assertEqual(isolation["source_writes_allowed"], {"const": False})
         self.assertEqual(isolation["network_allowed"], {"const": False})
         self.assertEqual(isolation["untracked_content_included"], {"const": False})
+        self.assertIn(
+            "network_boundary",
+            schema["properties"]["isolation"]["required"],
+        )
+        network = isolation["network_boundary"]["properties"]
+        self.assertEqual(
+            network["policy"]["enum"],
+            ["denied", "install_only", "allowed"],
+        )
+        self.assertEqual(network["enforcement"], {"const": "phase_receipts_required"})
 
     def test_prepare_uses_fixed_commit_and_excludes_worktree_wip(self) -> None:
         with tempfile.TemporaryDirectory() as raw:
@@ -115,10 +125,24 @@ class ShadowLabTests(unittest.TestCase):
             )
             self.assertFalse(manifest["isolation"]["untracked_content_included"])
             self.assertFalse((worktree / ".git").exists())
+            self.assertEqual(
+                manifest["isolation"]["network_boundary"],
+                {
+                    "policy": "denied",
+                    "authorization": "shadow_lab_default",
+                    "enforcement": "phase_receipts_required",
+                    "observation": "phase_receipts",
+                    "evidence_status": "pending",
+                },
+            )
 
             verification = shadow_lab.verify_lab(manifest_path)
             self.assertTrue(verification["ok"])
             self.assertTrue(verification["source"]["source_unchanged"])
+            self.assertEqual(
+                verification["boundary"]["network"]["evidence_status"],
+                "unverified",
+            )
 
             cleanup = shadow_lab.cleanup_lab(manifest_path, confirm=True)
             self.assertTrue(cleanup["ok"])
@@ -243,6 +267,34 @@ class ShadowLabTests(unittest.TestCase):
                 shadow_lab.cleanup_lab(manifest_path, confirm=False)
             self.assertTrue(manifest_path.is_file())
             shadow_lab.cleanup_lab(manifest_path, confirm=True)
+
+    def test_network_denied_command_is_explicit_and_fails_closed(self) -> None:
+        with tempfile.TemporaryDirectory() as raw:
+            sandbox = Path(raw) / "sandbox-exec"
+            sandbox.write_text("fixture", encoding="utf-8")
+
+            wrapped, enforcement = shadow_lab._network_denied_command(
+                ["tool", "arg"],
+                platform_name="darwin",
+                sandbox_path=sandbox,
+            )
+
+            self.assertEqual(enforcement, "macos_sandbox_exec_egress")
+            self.assertEqual(
+                wrapped[:3],
+                [
+                    str(sandbox),
+                    "-p",
+                    "(version 1)(allow default)(deny network-outbound)",
+                ],
+            )
+            self.assertEqual(wrapped[3:], ["tool", "arg"])
+            with self.assertRaisesRegex(shadow_lab.ShadowLabError, "unavailable"):
+                shadow_lab._network_denied_command(
+                    ["tool"],
+                    platform_name="linux",
+                    sandbox_path=sandbox,
+                )
 
 
 if __name__ == "__main__":

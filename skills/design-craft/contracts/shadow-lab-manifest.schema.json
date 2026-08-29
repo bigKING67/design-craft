@@ -74,6 +74,7 @@
       "required": [
         "source_writes_allowed",
         "network_allowed",
+        "network_boundary",
         "untracked_content_included",
         "output_root",
         "root_id",
@@ -85,6 +86,24 @@
       "properties": {
         "source_writes_allowed": {"const": false},
         "network_allowed": {"const": false},
+        "network_boundary": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "policy",
+            "authorization",
+            "enforcement",
+            "observation",
+            "evidence_status"
+          ],
+          "properties": {
+            "policy": {"enum": ["denied", "install_only", "allowed"]},
+            "authorization": {"enum": ["shadow_lab_default", "caller_declared"]},
+            "enforcement": {"const": "phase_receipts_required"},
+            "observation": {"const": "phase_receipts"},
+            "evidence_status": {"const": "pending"}
+          }
+        },
         "untracked_content_included": {"const": false},
         "output_root": {"type": "string", "minLength": 1},
         "root_id": {"type": "string", "pattern": "^[0-9a-f]{32}$"},

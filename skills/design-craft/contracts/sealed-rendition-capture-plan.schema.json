@@ -85,6 +85,7 @@
         "reference": {"$ref": "#/$defs/imageRecord"},
         "comparison_spec": {"$ref": "#/$defs/fileRecord"},
         "rendered_path": {"type": "string", "minLength": 1},
+        "runtime_receipt_path": {"type": "string", "minLength": 1},
         "contract": {"type": "object"}
       }
     }
