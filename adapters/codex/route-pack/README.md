@@ -34,6 +34,7 @@ tools/frontend_route_pack_manifest.json
 tools/frontend_route_plan.sh
 tools/frontend_route_core.py
 tools/frontend_route_authority.py
+tools/frontend_route_evidence.py
 tools/frontend_route_browser.py
 tools/frontend_route_browser_capture.py
 tools/frontend_route_browser_capture_sanitize.py
@@ -64,6 +65,7 @@ tools/frontend_preflight_log_rotate.sh
 tools/frontend_preflight_log_maintenance.sh
 tools/templates/frontend-preflight-ci.yml
 tools/tests/test_frontend_route_plan.sh
+tools/tests/test_frontend_route_evidence.py
 tools/tests/test_frontend_browser_capture.py
 tools/tests/test_frontend_browser_lifecycle_receipt.py
 tools/tests/test_frontend_browser_lifecycle_receipt.sh
@@ -145,6 +147,19 @@ bash ~/.codex/tools/frontend_route_plan.sh ... --output json
 authority, runtime, execution, quality, validation, and telemetry decisions plus
 versioned contract references. `human` is for interactive inspection. Full
 `json` remains available for contract audits and compatibility consumers.
+
+Reference-image evidence is an explicit route axis:
+
+```bash
+bash ~/.codex/tools/frontend_route_plan.sh ... \
+  --has-reference-image 1 \
+  --evidence-mode <comp-fidelity|sealed-rendition>
+```
+
+`comp-fidelity` routes measurement over existing comparable captures and does
+not request a capture runtime or imply visual acceptance. `sealed-rendition`
+routes a web capture plan, hash-bound artifacts, strict closeout, and a final
+named-reviewer decision. Neither mode defines a global pixel pass threshold.
 
 ## Export a migration bundle
 

@@ -460,6 +460,107 @@ class RouteRuntimeTests(unittest.TestCase):
             ["has-reference-image", "needs-generated-reference"],
         )
 
+    def test_comp_fidelity_route_is_measurement_only_without_runtime(self) -> None:
+        payload = route_runtime.build_route_payload(
+            route_payload={},
+            platform_payload=platform_payload(),
+            route_source="portable_fallback",
+            surface="landing",
+            intent="reference-only",
+            scope="page",
+            style="auto",
+            style_authority_path="",
+            design_authority_mode="auto",
+            existing_project=True,
+            has_reference=True,
+            needs_reference=False,
+            evidence_mode="comp-fidelity",
+        )
+
+        self.assertTrue(payload["ok"])
+        self.assertEqual(payload["evidence_mode"], "comp-fidelity")
+        self.assertFalse(payload["runtime_validation_required"])
+        self.assertFalse(payload["browser_validation_required"])
+        self.assertFalse(payload["browser_screenshot_required"])
+        self.assertFalse(payload["visual_contract_required"])
+        self.assertEqual(
+            payload["evidence_workflow"]["delivery_state"],
+            "measurement_only",
+        )
+        self.assertIsNone(
+            payload["evidence_workflow"]["global_pixel_pass_threshold"]
+        )
+        self.assertIn(
+            "references/comp-fidelity.md",
+            payload["recommended_design_craft_references"],
+        )
+
+    def test_sealed_rendition_route_requires_web_capture_and_authority(self) -> None:
+        payload = route_runtime.build_route_payload(
+            route_payload={},
+            platform_payload=platform_payload(),
+            route_source="portable_fallback",
+            surface="landing",
+            intent="reference-only",
+            scope="page",
+            style="auto",
+            style_authority_path="DESIGN.md",
+            design_authority_mode="auto",
+            existing_project=True,
+            has_reference=True,
+            needs_reference=False,
+            evidence_mode="sealed-rendition",
+        )
+
+        self.assertTrue(payload["ok"])
+        self.assertEqual(payload["evidence_mode"], "sealed-rendition")
+        self.assertTrue(payload["runtime_validation_required"])
+        self.assertTrue(payload["browser_validation_required"])
+        self.assertTrue(payload["browser_screenshot_required"])
+        self.assertTrue(payload["visual_contract_required"])
+        self.assertTrue(
+            payload["evidence_workflow"]["capture_plan_required"]
+        )
+        self.assertEqual(
+            payload["evidence_workflow"]["capture_runtime_owner"],
+            "sealed_capture_plan",
+        )
+
+    def test_evidence_mode_rejects_missing_reference_and_native_sealed_route(self) -> None:
+        with self.assertRaisesRegex(ValueError, "requires --has-reference-image 1"):
+            route_runtime.build_route_payload(
+                route_payload={},
+                platform_payload=platform_payload(),
+                route_source="portable_fallback",
+                surface="landing",
+                intent="reference-only",
+                scope="page",
+                style="auto",
+                style_authority_path="",
+                design_authority_mode="auto",
+                existing_project=True,
+                has_reference=False,
+                needs_reference=False,
+                evidence_mode="comp-fidelity",
+            )
+
+        with self.assertRaisesRegex(ValueError, "supports platform=web"):
+            route_runtime.build_route_payload(
+                route_payload={},
+                platform_payload=platform_payload("ios"),
+                route_source="portable_fallback",
+                surface="app",
+                intent="reference-only",
+                scope="page",
+                style="auto",
+                style_authority_path="DESIGN.md",
+                design_authority_mode="auto",
+                existing_project=True,
+                has_reference=True,
+                needs_reference=False,
+                evidence_mode="sealed-rendition",
+            )
+
     def test_route_loader_rejects_non_object_json(self) -> None:
         with tempfile.TemporaryDirectory(prefix="design-craft-route-runtime-") as raw:
             path = Path(raw) / "route.json"

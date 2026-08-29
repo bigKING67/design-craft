@@ -74,6 +74,7 @@ those stronger identities.
 
 ```text
 design-craft/
+├── AGENTS.md                    # Agent-facing repository maintenance boundaries
 ├── skills/design-craft/          # Only installable/published runtime product
 ├── adapters/                     # Thin Codex/Cursor/Claude/Pi/generic adapters
 ├── tools/design_craft/           # Repository governance and release tooling

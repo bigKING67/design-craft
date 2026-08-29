@@ -86,7 +86,7 @@ class RoutePackManifestTests(unittest.TestCase):
 
         batch = submit_runtime_probe_batch(executor, Path("/route-pack"), requests)
 
-        self.assertEqual(RUNTIME_PROBE_WORKERS, 10)
+        self.assertEqual(RUNTIME_PROBE_WORKERS, 11)
         self.assertEqual(len(executor.submissions), 4 + len(requests) + 1)
         futures = [submission[3] for submission in executor.submissions]
         self.assertIs(batch.schema, futures[0])

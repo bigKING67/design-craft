@@ -72,7 +72,9 @@ class SemanticAuditTests(unittest.TestCase):
 
         self.assertEqual(names[0], "frontend_route_plan.sh")
         self.assertEqual(names[-1], "frontend_worker_payload_core.py")
-        self.assertEqual(len(names), 17)
+        self.assertIn("frontend_route_evidence.py", names)
+        self.assertIn("frontend_route_visual_review.py", names)
+        self.assertEqual(len(names), 19)
         self.assertEqual(len(names), len(set(names)))
 
     def test_browser_lifecycle_static_contract_requires_v2_schemas(self) -> None:
@@ -93,13 +95,14 @@ class SemanticAuditTests(unittest.TestCase):
             any("browser-lifecycle-observations.v1" in item for item in fragments)
         )
 
-    def test_runtime_probe_contract_keeps_five_bounded_routes(self) -> None:
+    def test_runtime_probe_contract_keeps_six_bounded_routes(self) -> None:
         requests = route_probe_requests()
 
-        self.assertEqual(len(requests), 5)
+        self.assertEqual(len(requests), 6)
         self.assertEqual(requests[0][0][-1], "external")
         self.assertEqual(requests[3][0][-2:], ["--browser-context", "local"])
         self.assertEqual(requests[4][2], "ultra")
+        self.assertIn("comp-fidelity", requests[5][0])
 
 
 if __name__ == "__main__":

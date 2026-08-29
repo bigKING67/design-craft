@@ -15,6 +15,7 @@
     ".github/workflows/validate.yml",
     ".gitmodules",
     ".npmignore",
+    "AGENTS.md",
     "CHANGELOG.md",
     "CONTRIBUTING.md",
     "LICENSE",

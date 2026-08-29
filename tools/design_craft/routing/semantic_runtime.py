@@ -40,12 +40,27 @@ def route_probe_requests() -> list[RouteProbeRequest]:
         "--browser-context",
         "local",
     ]
+    evidence_arguments = [
+        "--surface",
+        "landing",
+        "--intent",
+        "reference-only",
+        "--scope",
+        "page",
+        "--has-reference-image",
+        "1",
+        "--evidence-mode",
+        "comp-fidelity",
+        "--output",
+        "json",
+    ]
     return [
         ([*probe_base, "--browser-context", "external"], None, None),
         ([*probe_base, "--browser-context", "local"], None, None),
         ([*probe_base, "--browser-context", "local"], "gpt-5.6-sol", "max"),
         (compact_arguments, "gpt-5.6-sol", "max"),
         ([*probe_base, "--browser-context", "local"], "gpt-5.6-sol", "ultra"),
+        (evidence_arguments, "gpt-5.6-sol", "max"),
     ]
 
 
@@ -219,6 +234,36 @@ def _validate_route_probes(
         issues.append(
             f"unauthorized ultra runtime route probe failed: {detail[:240]}"
         )
+
+    returncode, payload, detail = probe_results[5]
+    evidence_contract = payload.get("evidence_contract")
+    evidence_probe_ok = (
+        returncode == 0
+        and payload.get("evidence_mode") == "comp-fidelity"
+        and payload.get("runtime_validation_required") is False
+        and payload.get("browser_validation_required") is False
+        and payload.get("browser_screenshot_required") is False
+        and payload.get("visual_contract_required") is False
+        and payload.get("visual_review_required") is False
+        and payload.get("candidate_skills") == ["design-craft"]
+        and isinstance(evidence_contract, dict)
+        and evidence_contract.get("delivery_state") == "measurement_only"
+        and evidence_contract.get("measurement_is_visual_acceptance") is False
+        and evidence_contract.get("global_pixel_pass_threshold") is None
+    )
+    probes.append(
+        {
+            "name": "comp_fidelity_evidence_mode",
+            "ok": evidence_probe_ok,
+            "returncode": returncode,
+            "evidence_mode": payload.get("evidence_mode"),
+            "runtime_validation_required": payload.get(
+                "runtime_validation_required"
+            ),
+        }
+    )
+    if not evidence_probe_ok:
+        issues.append(f"comp-fidelity evidence route probe failed: {detail[:240]}")
     return probes, issues
 
 

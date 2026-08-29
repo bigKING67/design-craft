@@ -12,6 +12,8 @@ class SemanticPaths:
     route_core: Path
     route_authority: Path
     route_browser: Path
+    route_evidence: Path
+    route_visual_review: Path
     route_browser_capture: Path
     route_browser_capture_sanitize: Path
     route_browser_capture_store: Path
@@ -36,6 +38,8 @@ class SemanticPaths:
             self.route_core,
             self.route_authority,
             self.route_browser,
+            self.route_evidence,
+            self.route_visual_review,
             self.route_browser_capture,
             self.route_browser_capture_sanitize,
             self.route_browser_capture_store,
@@ -61,6 +65,8 @@ def semantic_paths(source_root: Path) -> SemanticPaths:
         route_core=tools / "frontend_route_core.py",
         route_authority=tools / "frontend_route_authority.py",
         route_browser=tools / "frontend_route_browser.py",
+        route_evidence=tools / "frontend_route_evidence.py",
+        route_visual_review=tools / "frontend_route_visual_review.py",
         route_browser_capture=tools / "frontend_route_browser_capture.py",
         route_browser_capture_sanitize=(
             tools / "frontend_route_browser_capture_sanitize.py"
@@ -102,6 +108,7 @@ REQUIRED_FRAGMENTS = {
         "--platform",
         "--product-context-path",
         "--browser-context",
+        "--evidence-mode",
         "--delegation-authorization",
         "--visual-contract",
         "compact-json",
@@ -110,6 +117,7 @@ REQUIRED_FRAGMENTS = {
     "frontend_route_core.py": (
         "from frontend_route_authority import",
         "from frontend_route_browser import resolve_browser_route",
+        "from frontend_route_evidence import resolve_evidence_contract",
         "from frontend_route_delivery import",
         "from frontend_route_runtime import resolve_runtime_profile",
         "from frontend_route_telemetry import ROUTE_TELEMETRY_SCHEMA, append_route_event",
@@ -126,6 +134,8 @@ REQUIRED_FRAGMENTS = {
         '"actual_browser_lifecycle_state": actual_browser_lifecycle_state',
         '"runtime_validation_kind": runtime_validation_kind',
         '"native_validation_required": native_validation_required',
+        '"evidence_mode": evidence_mode',
+        '"evidence_contract": evidence_contract',
     ),
     "frontend_route_authority.py": (
         "discover_design_md",
@@ -134,10 +144,24 @@ REQUIRED_FRAGMENTS = {
     ),
     "frontend_route_browser.py": (
         "resolve_browser_route",
+        "evidence_mode",
         '"preferred_browser_tool"',
         '"native_validation_required"',
         '"planned_browser_lifecycle"',
         '"actual_browser_lifecycle_state"',
+    ),
+    "frontend_route_evidence.py": (
+        "VALID_EVIDENCE_MODES",
+        "resolve_evidence_contract",
+        '"comp-fidelity"',
+        '"sealed-rendition"',
+        '"measurement_is_visual_acceptance"',
+        '"global_pixel_pass_threshold"',
+    ),
+    "frontend_route_visual_review.py": (
+        "resolve_visual_review_contract",
+        "evidence_mode",
+        'mode = "final_only"',
     ),
     "frontend_route_browser_capture.py": (
         "from frontend_route_browser_capture_sanitize import",

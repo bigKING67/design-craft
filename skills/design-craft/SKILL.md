@@ -1,6 +1,6 @@
 ---
 name: design-craft
-description: "Use primarily for web and desktop product UI/UX design engineering: product context, visual critique, design systems, UI polish, motion and interaction, accessibility, responsive behavior, and frontend implementation quality. When the target is explicitly native, also covers iOS, Android, and adaptive quality. Do not use for backend-only, database-only, algorithm-only, or CLI-only work."
+description: "Use primarily for web and desktop product UI/UX design engineering: product context, visual critique, design systems, UI polish, motion and interaction, accessibility, responsive behavior, and frontend implementation quality. Also use for controlled reference-image fidelity measurement, screenshot comparison, and fixed-commit or sealed-manifest rendition evidence closeout. When the target is explicitly native, also covers iOS, Android, and adaptive quality. Do not use for backend-only, database-only, algorithm-only, or CLI-only work."
 ---
 
 # Design Craft

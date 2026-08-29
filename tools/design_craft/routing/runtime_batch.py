@@ -9,7 +9,7 @@ from typing import Sequence
 
 from .probes import bundled_model_catalog, child_process_env, run_route_probe
 
-RUNTIME_PROBE_WORKERS = 10
+RUNTIME_PROBE_WORKERS = 11
 RouteProbeRequest = tuple[list[str], str | None, str | None]
 RouteProbeResult = tuple[int, dict, str]
 

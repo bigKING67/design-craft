@@ -26,6 +26,60 @@ DEVELOPER_PRODUCT_SURFACES = frozenset(
 NON_SEED_INTENTS = frozenset(
     {"brand", "high-motion", "mobile-flow", "reference-only"}
 )
+EVIDENCE_MODES = frozenset(
+    {"auto", "none", "comp-fidelity", "sealed-rendition"}
+)
+
+
+def resolve_evidence_mode(requested: str) -> str:
+    mode = requested.strip().lower() or "auto"
+    if mode not in EVIDENCE_MODES:
+        raise ValueError(f"unsupported evidence mode: {requested}")
+    return "none" if mode == "auto" else mode
+
+
+def validate_evidence_request(
+    *, requested: str, platform: str, has_reference: bool
+) -> str:
+    mode = resolve_evidence_mode(requested)
+    if mode != "none" and not has_reference:
+        raise ValueError(f"evidence mode {mode} requires --has-reference-image 1")
+    if mode == "sealed-rendition" and platform != "web":
+        raise ValueError("sealed-rendition evidence currently supports platform=web")
+    return mode
+
+
+def evidence_workflow_contract(requested: str) -> dict[str, object]:
+    mode = resolve_evidence_mode(requested)
+    required = mode != "none"
+    if mode == "comp-fidelity":
+        contract = "design-craft.comp-fidelity-report.v1"
+        capture_plan_required = False
+        runtime_owner = "existing_capture_path"
+        delivery_state = "measurement_only"
+    elif mode == "sealed-rendition":
+        contract = "design-craft.sealed-rendition-gate-report.v1"
+        capture_plan_required = True
+        runtime_owner = "sealed_capture_plan"
+        delivery_state = "explicit_visual_decision"
+    else:
+        contract = "not_applicable"
+        capture_plan_required = False
+        runtime_owner = "not_applicable"
+        delivery_state = "not_applicable"
+    return {
+        "required": required,
+        "mode": mode,
+        "contract": contract,
+        "reference": "references/comp-fidelity.md" if required else "",
+        "capture_plan_required": capture_plan_required,
+        "capture_runtime_owner": runtime_owner,
+        "comparison_is_measurement_only": required,
+        "measurement_is_visual_acceptance": False,
+        "human_visual_decision_required_for_pass": required,
+        "global_pixel_pass_threshold": None,
+        "delivery_state": delivery_state,
+    }
 
 
 def load_route_payload(path: Path) -> dict[str, object]:
@@ -48,14 +102,22 @@ def fallback_tier(
     design_authority_mode: str,
     has_reference: bool,
     needs_reference: bool,
+    evidence_mode: str = "none",
 ) -> str:
-    visual = intent in VISUAL_INTENTS or has_reference or needs_reference
+    resolved_evidence_mode = resolve_evidence_mode(evidence_mode)
+    visual = (
+        intent in VISUAL_INTENTS
+        or has_reference
+        or needs_reference
+        or resolved_evidence_mode != "none"
+    )
     large_scope = scope in {"page", "multi-page"} or intent in LARGE_SCOPE_INTENTS
     micro_visual_safe = (
         scope == "micro"
         and intent in {"auto", "functional", "visual-refine"}
         and not has_reference
         and not needs_reference
+        and resolved_evidence_mode == "none"
         and style in {"auto", "none"}
         and design_authority_mode != "evolve"
     )
@@ -83,17 +145,35 @@ def portable_fallback_payload(
     needs_reference: bool,
     style_authority_source: str = "none",
     style_authority_reason: str = "",
+    evidence_mode: str = "none",
 ) -> dict[str, object]:
+    resolved_evidence_mode = validate_evidence_request(
+        requested=evidence_mode,
+        platform=platform,
+        has_reference=has_reference,
+    )
+    evidence_contract = evidence_workflow_contract(resolved_evidence_mode)
     implementation_expected = intent != "reference-only"
-    authority_required = tier != "L0" and implementation_expected
+    sealed_capture_required = resolved_evidence_mode == "sealed-rendition"
+    measurement_only_route = (
+        resolved_evidence_mode == "comp-fidelity" and not implementation_expected
+    )
+    execution_required = implementation_expected or sealed_capture_required
+    authority_required = tier != "L0" and execution_required
     authority_ok = bool(style_authority_path) or not authority_required
-    visual = intent in VISUAL_INTENTS or has_reference or needs_reference
-    browser_required = platform == "web" and tier != "L0" and implementation_expected
+    visual = (
+        intent in VISUAL_INTENTS
+        or has_reference
+        or needs_reference
+        or resolved_evidence_mode != "none"
+    )
+    browser_required = platform == "web" and tier != "L0" and execution_required
     screenshot_required = (
         platform == "web"
-        and implementation_expected
+        and execution_required
         and (
-            tier == "L2"
+            sealed_capture_required
+            or tier == "L2"
             or has_reference
             or needs_reference
             or intent in LARGE_SCOPE_INTENTS
@@ -115,6 +195,14 @@ def portable_fallback_payload(
         "style_authority_mode": (
             "evolve" if design_authority_mode == "evolve" else "enforce"
         ),
+        "style_authority_applicability": (
+            "not_applicable"
+            if measurement_only_route
+            else "required"
+            if authority_required
+            else "not_applicable"
+        ),
+        "visual_contract_required": authority_required,
         "preflight_status": "pass" if authority_ok else "fail",
         "preflight_code": "OK" if authority_ok else "STYLE_AUTHORITY_MISSING",
         "gate_decision": "allow" if authority_ok else "deny",
@@ -128,6 +216,8 @@ def portable_fallback_payload(
             else "not required by portable fallback"
         ),
         "preferred_screenshot_tool": "tmwd_browser.browser_screenshot_ops",
+        "evidence_mode": resolved_evidence_mode,
+        "evidence_contract": evidence_contract,
         "directory_governance_required": tier != "L0" and implementation_expected,
         "performance_review_required": (
             tier in {"L1-V", "L2"} and implementation_expected
@@ -141,6 +231,7 @@ def portable_fallback_payload(
             "scope": scope,
             "style": style,
             "existing_project": existing_project,
+            "evidence_mode": resolved_evidence_mode,
         },
     }
 
@@ -152,6 +243,7 @@ def seed_applicability(
     surface: str,
     intent: str,
     existing_project: bool,
+    evidence_mode: str = "none",
 ) -> tuple[bool, str]:
     has_style_authority = bool(route_payload.get("style_authority_path"))
     applicable = (
@@ -159,6 +251,7 @@ def seed_applicability(
         and not has_style_authority
         and surface in DEVELOPER_PRODUCT_SURFACES
         and intent not in NON_SEED_INTENTS
+        and resolve_evidence_mode(evidence_mode) == "none"
     )
     if applicable:
         reason = (
@@ -174,7 +267,7 @@ def seed_applicability(
     elif surface not in DEVELOPER_PRODUCT_SURFACES:
         reason = "surface is not a default developer-product seed case"
     else:
-        reason = "intent calls for another style authority path"
+        reason = "intent or evidence workflow calls for another authority path"
     return applicable, reason
 
 
@@ -194,7 +287,13 @@ def build_route_payload(
     needs_reference: bool,
     style_authority_source: str = "none",
     style_authority_reason: str = "",
+    evidence_mode: str = "auto",
 ) -> dict[str, object]:
+    resolved_evidence_mode = validate_evidence_request(
+        requested=evidence_mode,
+        platform=str(platform_payload["platform"]),
+        has_reference=has_reference,
+    )
     effective_style_authority_source = style_authority_source
     if style_authority_path and style_authority_source == "none":
         effective_style_authority_source = "explicit_or_discovered"
@@ -205,6 +304,7 @@ def build_route_payload(
         design_authority_mode=design_authority_mode,
         has_reference=has_reference,
         needs_reference=needs_reference,
+        evidence_mode=resolved_evidence_mode,
     )
     platform = str(platform_payload["platform"])
     native = bool(platform_payload["native_validation_required"])
@@ -224,10 +324,19 @@ def build_route_payload(
             needs_reference=needs_reference,
             style_authority_source=effective_style_authority_source,
             style_authority_reason=style_authority_reason,
+            evidence_mode=resolved_evidence_mode,
         )
 
     tier = route_payload.get("frontend_tier") or resolved_fallback_tier
-    runtime_required = intent != "reference-only" and tier != "L0"
+    implementation_expected = intent != "reference-only"
+    runtime_required = (
+        tier != "L0"
+        and (
+            implementation_expected
+            or resolved_evidence_mode == "sealed-rendition"
+        )
+    )
+    evidence_contract = evidence_workflow_contract(resolved_evidence_mode)
     route_payload.update(
         {
             "design_tier": tier,
@@ -250,6 +359,8 @@ def build_route_payload(
             "runtime_validation_kind": platform_payload["runtime_validation_kind"],
             "native_validation_required": native and runtime_required,
             "preferred_runtime_tool": platform_payload["preferred_runtime_tool"],
+            "evidence_mode": resolved_evidence_mode,
+            "evidence_contract": evidence_contract,
         }
     )
     inputs = route_payload.setdefault("inputs", {})
@@ -267,6 +378,7 @@ def build_route_payload(
             "product_context_path": platform_payload.get("product_context_path", ""),
             "has_reference_image": has_reference,
             "needs_generated_reference": needs_reference,
+            "evidence_mode": resolved_evidence_mode,
         }
     )
 
@@ -276,6 +388,7 @@ def build_route_payload(
         surface=surface,
         intent=intent,
         existing_project=existing_project,
+        evidence_mode=resolved_evidence_mode,
     )
     triggers = reference_workflow_triggers(
         intent=intent,
@@ -293,6 +406,7 @@ def build_route_payload(
         has_reference=has_reference,
         needs_reference=needs_reference,
         react_native_expo=react_native_expo,
+        evidence_mode=resolved_evidence_mode,
     )
     route_payload.update(
         {
@@ -306,6 +420,7 @@ def build_route_payload(
                 "triggers": triggers,
                 "contract": "references/reference-workflow.md",
             },
+            "evidence_workflow": evidence_contract,
             "react_native_expo_motion_applicable": react_native_expo,
             "recommended_design_craft_references": references,
         }
@@ -334,6 +449,7 @@ def recommended_references(
     has_reference: bool = False,
     needs_reference: bool = False,
     react_native_expo: bool = False,
+    evidence_mode: str = "none",
 ) -> list[str]:
     references = {"references/validation-contract.md", "references/product-context.md"}
     if platform == "ios":
@@ -365,6 +481,8 @@ def recommended_references(
         needs_reference=needs_reference,
     ):
         references.add("references/reference-workflow.md")
+    if resolve_evidence_mode(evidence_mode) != "none":
+        references.add("references/comp-fidelity.md")
     return sorted(references)
 
 
@@ -398,6 +516,8 @@ def print_route_payload(
         "preferred_runtime_tool",
         "browser_validation_required",
         "browser_screenshot_required",
+        "evidence_mode",
+        "evidence_workflow",
         "developer_product_seed_applicable",
         "developer_product_seed_reason",
         "reference_workflow",

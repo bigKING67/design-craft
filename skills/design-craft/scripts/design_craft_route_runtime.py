@@ -131,6 +131,11 @@ def route_parser() -> argparse.ArgumentParser:
     parser.add_argument("--style-authority-path", default="")
     parser.add_argument("--has-reference-image", default="0")
     parser.add_argument("--needs-generated-reference", default="0")
+    parser.add_argument(
+        "--evidence-mode",
+        default="auto",
+        choices=("auto", "none", "comp-fidelity", "sealed-rendition"),
+    )
     parser.add_argument("--existing-project", default="1")
     parser.add_argument("--json-only", action="store_true")
     parser.add_argument("--dry-run", action="store_true")
@@ -148,6 +153,7 @@ def planner_command(
     design_authority_mode: str,
     has_reference_image: str,
     needs_generated_reference: str,
+    evidence_mode: str,
     existing_project: str,
     product_context_path: str,
     style_authority_path: str,
@@ -171,6 +177,8 @@ def planner_command(
         has_reference_image,
         "--needs-generated-reference",
         needs_generated_reference,
+        "--evidence-mode",
+        evidence_mode,
         "--existing-project",
         existing_project,
         "--output",
@@ -229,11 +237,22 @@ def run_route(argv: Sequence[str]) -> int:
         design_authority_mode=args.design_authority_mode,
         has_reference_image=args.has_reference_image,
         needs_generated_reference=args.needs_generated_reference,
+        evidence_mode=args.evidence_mode,
         existing_project=args.existing_project,
         product_context_path=product_context_shell,
         style_authority_path=style_authority_shell,
     )
     planner_available = route_plan_path.is_file() and os.access(route_plan_path, os.X_OK)
+
+    try:
+        route_contract.validate_evidence_request(
+            requested=args.evidence_mode,
+            platform=str(platform_payload["platform"]),
+            has_reference=args.has_reference_image == "1",
+        )
+    except ValueError as exc:
+        print(str(exc), file=sys.stderr)
+        return 2
 
     if args.dry_run:
         if planner_available:
@@ -281,6 +300,7 @@ def run_route(argv: Sequence[str]) -> int:
         existing_project=args.existing_project == "1",
         has_reference=args.has_reference_image == "1",
         needs_reference=args.needs_generated_reference == "1",
+        evidence_mode=args.evidence_mode,
         style_authority_source=style_resolution.source,
         style_authority_reason=style_resolution.reason,
     )

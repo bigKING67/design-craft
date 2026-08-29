@@ -4,6 +4,10 @@ All notable local changes to `design-craft` are recorded here.
 
 ## Unreleased
 
+- Add an evidence-mode route axis for measurement-only comp fidelity and
+  sealed-rendition closeout, including global Codex route policy, portable
+  fallback behavior, visual/runtime boundaries, semantic probes, Skill discovery
+  metadata, and concise repository-level Agent maintenance guidance.
 - Review Taste through `ccbc156`, Impeccable through `b0594c7`, and Emil's
   skills through `d23d7f8`; selectively absorb behavior without advancing the
   pinned compatibility snapshots or importing upstream browser/provider,

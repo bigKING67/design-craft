@@ -63,6 +63,25 @@ def validate_routing_config(path: Path) -> list[str]:
                     "delegation fallback must continue with the main agent"
                 )
         quality_governance = routing.get("quality_governance", {})
+        evidence_validation = quality_governance.get("evidence_validation")
+        if not isinstance(evidence_validation, dict):
+            issues.append(
+                "frontend_agent_routing.json missing "
+                "quality_governance.evidence_validation"
+            )
+        else:
+            if evidence_validation.get("default_mode") != "none":
+                issues.append("frontend evidence default mode must remain none")
+            if evidence_validation.get("supported_modes") != [
+                "none",
+                "comp-fidelity",
+                "sealed-rendition",
+            ]:
+                issues.append("frontend evidence modes must preserve the reviewed order")
+            if evidence_validation.get("measurement_is_visual_acceptance") is not False:
+                issues.append("frontend evidence measurements must not imply visual acceptance")
+            if evidence_validation.get("global_pixel_pass_threshold") is not None:
+                issues.append("frontend evidence policy must not define a global pixel PASS threshold")
         platform_validation = quality_governance.get("platform_validation")
         if not isinstance(platform_validation, dict):
             issues.append(
