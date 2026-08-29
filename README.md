@@ -44,6 +44,10 @@ structure. It keeps scoped project rules, optional `PRODUCT.md`, project
   fixed-commit variants, shared acceptance rules, runtime evidence, and
   `absorb | adapt | reject | unverified` decisions without authorizing edits to
   the real target repository.
+- A sealed-rendition gate that verifies fixed-commit or manifest authority
+  before capture, emits an ordered browser/PDF contract, strictly validates
+  comp evidence, audits source mutation, and keeps pixel metrics separate from
+  the explicit visual decision.
 
 The skill is intentionally personal and local-first. For dashboards, special
 reports, and similar business surfaces, scoped project rules, live

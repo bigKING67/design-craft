@@ -200,9 +200,10 @@ comparative evaluation. Recheck mutable source samples before reuse.
 - `references/react-native-expo-motion.md`: conditional ownership, gesture,
   haptic, Reduced Motion, and release-build evidence contract for dependency-
   proven React Native/Expo targets.
-- `references/comp-fidelity.md` and `scripts/design_craft_comp_fidelity.py`:
-  exact-coordinate, hash-bound screenshot measurements that remain explicitly
-  separate from human visual acceptance.
+- `references/comp-fidelity.md`, `scripts/design_craft_comp_fidelity.py`, and
+  `scripts/design_craft_sealed_rendition_gate.py`: exact-coordinate,
+  hash-bound screenshot measurements plus sealed-input orchestration that keep
+  measurement integrity explicitly separate from human visual acceptance.
 - `references/motion-patterns.md`: original web implementation recipes for
   press feedback, anchored overlays, tooltip groups, interruptible state,
   percentage transforms, clip-path, crossfade repair, and transient lifecycle.

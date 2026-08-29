@@ -4,6 +4,13 @@ Use this workflow when a supplied comp or approved reference must be compared
 with a captured implementation. It produces review evidence, not a visual
 verdict.
 
+## Contents
+
+- [Before comparison](#before-comparison)
+- [Run and verify](#run-and-verify)
+- [Interpret the report](#interpret-the-report)
+- [Sealed-rendition orchestration](#sealed-rendition-orchestration)
+
 ## Before comparison
 
 - Capture reference and rendered PNGs at the same exact dimensions, viewport,
@@ -63,3 +70,60 @@ to `contracts/comp-fidelity-report.schema.json`.
 Final acceptance still requires human visual review plus product correctness,
 responsive states, accessibility, interaction, and runtime evidence. Report
 the result as `measurement_only` until those separate gates are complete.
+
+## Sealed-rendition orchestration
+
+Use `scripts/design_craft_sealed_rendition_gate.py` when comparison inputs come
+from either an existing Shadow Lab fixed commit or a sealed JSON manifest with
+a complete file inventory. This wrapper does not navigate, render a PDF, or
+capture a browser. It verifies authority first and only then emits an ordered
+capture plan for the external runtime.
+
+The spec, capture-plan, and report contracts are:
+
+- `contracts/sealed-rendition-gate-spec.schema.json`
+- `contracts/sealed-rendition-capture-plan.schema.json`
+- `contracts/sealed-rendition-gate-report.schema.json`
+
+For `authority.kind=git_commit`, prepare an existing Shadow Lab and supply its
+manifest. For `authority.kind=sealed_manifest`, supply the immutable root,
+manifest path, expected manifest schema, inventory key, and any hash-bound
+anchor record groups. All operator paths are absolute; manifest file paths are
+safe POSIX-relative paths so the same contract remains portable across hosts.
+
+Run the three phases with a repo-external output root:
+
+```bash
+python3 scripts/design_craft_sealed_rendition_gate.py prepare \
+  --spec /abs/sealed-gate-spec.json \
+  --output-root /abs/new-evidence-root
+
+# browser67 or the selected PDF renderer now writes each planned rendered.png.
+
+python3 scripts/design_craft_sealed_rendition_gate.py closeout \
+  --plan /abs/new-evidence-root/capture-plan.json \
+  --visual-decision pending \
+  --visual-note "Awaiting explicit human visual review."
+
+python3 scripts/design_craft_sealed_rendition_gate.py validate \
+  --report /abs/new-evidence-root/gate-report.json \
+  --strict
+```
+
+Prepare creates no output when the authority hash or inventory is wrong, so a
+caller can fail before starting browser or PDF work. Closeout rechecks the
+preflight snapshot before comparison, runs the existing comp-fidelity engine,
+strictly validates every comparison, rechecks authority afterward, and writes
+these independent statuses:
+
+- `input_integrity`
+- `capture_integrity`
+- `comparison_integrity`
+- `source_mutation_audit`
+- `visual_decision = pending | pass | blocked | incomplete`
+
+`pass` and `blocked` visual decisions require a named reviewer. A successful
+strict comparison never promotes `measurement_only` into visual acceptance.
+The report permanently records `global_pixel_pass_threshold: null`: a tiny but
+material content error may affect fewer pixels than benign raster variance, so
+one global changed-pixel threshold is not a safe release verdict.

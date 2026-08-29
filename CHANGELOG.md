@@ -22,6 +22,11 @@ All notable local changes to `design-craft` are recorded here.
   per-region metrics, heatmap and side-by-side artifacts, versioned schemas,
   hash-bound strict validation, Windows binary-mode descriptor reads, and an
   explicit human visual-review boundary.
+- Add a sealed-rendition gate for either existing Shadow Lab commits or generic
+  hash-inventory manifests. Preflight fails before capture on input drift,
+  ordered browser/PDF plans stay external-runtime owned, closeout reuses strict
+  comp-fidelity validation and audits source mutation, and visual acceptance
+  remains an explicit decision with no global changed-pixel PASS threshold.
 - Make the strict GitHub Actions allowlist model reviewed transitive
   dependencies of `actions/attest-build-provenance` explicitly, so publication
   attestation setup remains allowed without broadening policy to `actions/*`.
