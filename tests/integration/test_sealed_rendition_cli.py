@@ -25,6 +25,8 @@ from design_craft.sealed_rendition import SPEC_SCHEMA
 def run_cli(*args: str) -> subprocess.CompletedProcess[str]:
     environment = dict(os.environ)
     environment["PYTHONDONTWRITEBYTECODE"] = "1"
+    # Exercise the Windows Git Bash code-page boundary on every platform.
+    environment["PYTHONIOENCODING"] = "cp1252"
     return subprocess.run(
         [sys.executable, str(SCRIPT), *args],
         cwd=REPO_ROOT,
@@ -72,7 +74,9 @@ class SealedRenditionCliTests(unittest.TestCase):
                 "2026-08-29T00:00:00Z",
             )
             self.assertEqual(prepared.returncode, 0, prepared.stderr)
+            self.assertTrue(prepared.stdout.isascii())
             plan = json.loads(prepared.stdout)
+            self.assertEqual(plan["authority"]["root"], str(fixture.sealed.resolve()))
             shutil.copyfile(fixture.reference, Path(plan["captures"][0]["rendered_path"]))
 
             closed = run_cli(

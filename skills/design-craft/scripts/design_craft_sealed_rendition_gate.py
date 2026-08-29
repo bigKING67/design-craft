@@ -32,6 +32,17 @@ from design_craft.sealed_rendition import (  # noqa: E402
 from design_craft_shadow_lab import ShadowLabError, verify_lab  # noqa: E402
 
 
+def _json_text(payload: dict[str, object], *, pretty: bool = False) -> str:
+    """Serialize machine output without depending on the console code page."""
+
+    return json.dumps(
+        payload,
+        ensure_ascii=True,
+        indent=2 if pretty else None,
+        sort_keys=pretty,
+    )
+
+
 def parser() -> argparse.ArgumentParser:
     root = argparse.ArgumentParser(description=__doc__)
     root.add_argument("--check", action="store_true", help="Run a dependency-free self-check")
@@ -202,7 +213,7 @@ def main(argv: list[str] | None = None) -> int:
             parser().print_help(sys.stderr)
             return 2
     except (SealedRenditionError, ShadowLabError, OSError, ValueError) as exc:
-        print(json.dumps({"ok": False, "error": str(exc)}, ensure_ascii=False), file=sys.stderr)
+        print(_json_text({"ok": False, "error": str(exc)}), file=sys.stderr)
         return 2
     if payload.get("schema") not in {
         REPORT_SCHEMA,
@@ -210,9 +221,9 @@ def main(argv: list[str] | None = None) -> int:
         "design-craft.sealed-rendition-gate-validation.v1",
         "design-craft.sealed-rendition-gate-self-check.v1",
     }:
-        print(json.dumps({"ok": False, "error": "unexpected output schema"}), file=sys.stderr)
+        print(_json_text({"ok": False, "error": "unexpected output schema"}), file=sys.stderr)
         return 2
-    print(json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True))
+    print(_json_text(payload, pretty=True))
     return 0
 
 
