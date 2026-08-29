@@ -24,6 +24,8 @@ LATEST_RANGE_ENTRYPOINT_DECISIONS = {
     "find-animation-opportunities": "absorbed",
     "pick-ui-library": "intentionally_rejected",
     "prototype": "absorbed",
+    "animate-expo": "partial",
+    "write-swift": "intentionally_rejected",
 }
 LATEST_RANGE_COVERAGE = {
     "paths": [
@@ -32,6 +34,7 @@ LATEST_RANGE_COVERAGE = {
         "skills/design-craft/references/motion-vocabulary.md",
         "skills/design-craft/references/prototype-workflow.md",
         "skills/design-craft/references/component-primitive-selection.md",
+        "skills/design-craft/references/react-native-expo-motion.md",
     ],
     "terms": [
         "Motion needs a reason",
@@ -50,6 +53,10 @@ LATEST_RANGE_COVERAGE = {
         "Base UI is a supported project choice",
         "Primitive-library consistency cannot substitute for visual-system consistency",
         "Base UI-only universal prescription",
+        "UI/worklet/native path",
+        "release build on every shipped target",
+        "adaptive or cross-platform scope requires both iOS and Android",
+        "There are no universal duration",
     ],
 }
 
@@ -296,6 +303,8 @@ def self_check() -> None:
         "find-animation-opportunities": "absorbed",
         "pick-ui-library": "intentionally_rejected",
         "prototype": "absorbed",
+        "animate-expo": "partial",
+        "write-swift": "intentionally_rejected",
     }:
         raise RuntimeError("latest-range entrypoint decisions drifted")
 

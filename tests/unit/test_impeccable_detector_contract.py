@@ -6,6 +6,7 @@ import subprocess
 import tempfile
 import unittest
 from pathlib import Path
+import sys
 
 from tests.bash_support import bash_command
 
@@ -22,6 +23,11 @@ CSS_CASCADE = (
 PARSER = REPO_ROOT / "upstreams/impeccable/skill/scripts/lib/design-parser.mjs"
 FIXTURES = REPO_ROOT / "evals/fixtures/impeccable-detector"
 WRAPPER = REPO_ROOT / "skills/design-craft/scripts/design_craft_detect.sh"
+LIB_DIR = REPO_ROOT / "skills/design-craft/lib"
+if str(LIB_DIR) not in sys.path:
+    sys.path.insert(0, str(LIB_DIR))
+
+from design_craft.detector_policy import linked_stylesheet_files, sanitize_payload
 
 
 def scan(relative_path: str) -> list[dict]:
@@ -110,6 +116,132 @@ def run_wrapper(detector: Path, *args: str) -> subprocess.CompletedProcess[str]:
 
 
 class ImpeccableDetectorContractTests(unittest.TestCase):
+    def test_detector_payload_url_credentials_are_redacted_in_all_json_modes(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            detector = root / "skill/scripts/detect.mjs"
+            detector.parent.mkdir(parents=True)
+            detector.write_text(
+                "process.stdout.write(JSON.stringify([{severity: 'warning', "
+                "message: 'fetch https://alice:secret@example.test/a.css?x=1'}]));\n",
+                encoding="utf-8",
+            )
+
+            raw = run_wrapper(detector, "--json-only")
+            full = run_wrapper(detector, "--full-json")
+
+        self.assertEqual(raw.returncode, 0, raw.stderr)
+        self.assertEqual(full.returncode, 0, full.stderr)
+        self.assertNotIn("alice", raw.stdout)
+        self.assertNotIn("secret", raw.stdout)
+        self.assertIn("https://[REDACTED]@example.test", raw.stdout)
+        self.assertNotIn("alice", full.stdout)
+        self.assertNotIn("secret", full.stdout)
+
+    def test_detector_stderr_url_credentials_are_redacted_in_all_json_modes(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            detector = root / "skill/scripts/detect.mjs"
+            detector.parent.mkdir(parents=True)
+            detector.write_text(
+                "process.stderr.write('failed https://alice:secret@example.test/a.css\\n');\n"
+                "process.stdout.write('[]\\n');\n",
+                encoding="utf-8",
+            )
+
+            raw = run_wrapper(detector, "--json-only")
+            full = run_wrapper(detector, "--full-json")
+
+        for result in (raw, full):
+            self.assertEqual(result.returncode, 0, result.stderr)
+            self.assertNotIn("alice", result.stderr)
+            self.assertNotIn("secret", result.stderr)
+            self.assertIn("https://[REDACTED]@example.test", result.stderr)
+
+    def test_recursive_payload_sanitizer_preserves_non_url_emails(self) -> None:
+        payload = sanitize_payload(
+            {
+                "message": "owner alice@example.test; source //bob:pw@example.test/file",
+                "nested": ["https://token@example.test/path"],
+            }
+        )
+
+        self.assertIn("alice@example.test", payload["message"])
+        self.assertNotIn("bob:pw", payload["message"])
+        self.assertEqual(payload["nested"], ["https://[REDACTED]@example.test/path"])
+
+    def test_linked_stylesheets_resolve_queries_and_reject_boundary_escapes(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp) / "project"
+            page = root / "pages/index.html"
+            css = root / "assets/theme.css"
+            outside = root.parent / "outside.css"
+            page.parent.mkdir(parents=True)
+            css.parent.mkdir(parents=True)
+            css.write_text(".safe { color: green; }", encoding="utf-8")
+            outside.write_text(".outside { color: red; }", encoding="utf-8")
+            page.write_text(
+                '<link rel="stylesheet" href="/assets/theme.css?v=7#stable">\n'
+                '<link rel="stylesheet" href="../../outside.css">\n',
+                encoding="utf-8",
+            )
+
+            files, issues = linked_stylesheet_files(page, root, asset_root=root)
+
+            self.assertEqual(files, [css.resolve()])
+            self.assertTrue(any("outside project root" in issue for issue in issues))
+
+    @unittest.skipUnless(hasattr(os, "symlink"), "symlinks unsupported")
+    def test_linked_stylesheets_reject_symlink_components(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp) / "project"
+            real = root / "real"
+            real.mkdir(parents=True)
+            (real / "theme.css").write_text(".x {}", encoding="utf-8")
+            (root / "linked").symlink_to(real, target_is_directory=True)
+            page = root / "index.html"
+            page.write_text(
+                '<link rel="stylesheet" href="linked/theme.css">', encoding="utf-8"
+            )
+
+            files, issues = linked_stylesheet_files(page, root)
+
+            self.assertEqual(files, [])
+            self.assertTrue(any("through symlink" in issue for issue in issues))
+
+    def test_root_relative_stylesheet_uses_package_local_asset_root(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp) / "repo"
+            package = root / "apps/web"
+            css = package / "assets/theme.css"
+            page = package / "index.html"
+            css.parent.mkdir(parents=True)
+            css.write_text(".package-local { color: green; }", encoding="utf-8")
+            page.write_text(
+                '<link rel="stylesheet" href="/assets/theme.css">', encoding="utf-8"
+            )
+
+            files, issues = linked_stylesheet_files(
+                page, root, asset_root=package
+            )
+
+            self.assertEqual(files, [css.resolve()])
+            self.assertEqual(issues, [])
+
+    def test_ambiguous_root_relative_stylesheet_is_reported(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp) / "repo"
+            page = root / "apps/web/index.html"
+            page.parent.mkdir(parents=True)
+            page.write_text(
+                '<link rel="stylesheet" href="/assets/theme.css">', encoding="utf-8"
+            )
+
+            files, issues = linked_stylesheet_files(page, root, asset_root=None)
+
+            self.assertEqual(files, [])
+            self.assertTrue(any("ambiguous root-relative" in issue for issue in issues))
+
     def test_wrapper_discloses_regex_fallback_and_preserves_findings(self) -> None:
         with tempfile.TemporaryDirectory() as temp:
             detector = write_fake_detector(

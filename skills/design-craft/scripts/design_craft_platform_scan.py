@@ -13,6 +13,18 @@ from pathlib import Path
 from typing import Iterable
 
 
+SCRIPT_DIR = Path(__file__).resolve().parent
+LIB_DIR = SCRIPT_DIR.parent / "lib"
+if str(LIB_DIR) not in sys.path:
+    sys.path.insert(0, str(LIB_DIR))
+from design_craft.authority import (
+    ProjectMetadataError,
+    project_root_for,
+    read_owned_text,
+    resolve_project_authority,
+)
+
+
 SCHEMA = "design-craft.platform-scan.v1"
 PLATFORMS = {"auto", "web", "ios", "android", "adaptive"}
 IGNORED_DIRS = {
@@ -102,14 +114,12 @@ def read_text(path: Path, limit: int = 1_000_000) -> str:
 
 
 def discover_product_context(target: Path, explicit: str) -> tuple[Path | None, str]:
-    if explicit:
-        path = Path(explicit).expanduser().resolve()
-        return path, "explicit"
-    for directory in (target, *target.parents):
-        candidate = directory / "PRODUCT.md"
-        if candidate.is_file():
-            return candidate, "product_context"
-    return None, "none"
+    resolution = resolve_project_authority(
+        target,
+        "PRODUCT.md",
+        explicit=explicit or None,
+    )
+    return resolution.path, resolution.source
 
 
 def parse_product_platform(path: Path | None) -> tuple[str | None, list[str]]:
@@ -135,20 +145,27 @@ def parse_product_platform(path: Path | None) -> tuple[str | None, list[str]]:
     return None, signals
 
 
-def package_dependencies(target: Path) -> set[str]:
-    path = target / "package.json"
-    if not path.is_file():
-        return set()
-    try:
-        payload = json.loads(path.read_text(encoding="utf-8"))
-    except (OSError, json.JSONDecodeError):
-        return set()
-    names: set[str] = set()
-    for key in ("dependencies", "devDependencies", "peerDependencies"):
-        values = payload.get(key)
-        if isinstance(values, dict):
-            names.update(str(name).lower() for name in values)
-    return names
+def package_dependencies(target: Path) -> tuple[set[str], str | None]:
+    boundary = project_root_for(target)
+    for directory in (target, *target.parents):
+        candidate = directory / "package.json"
+        if os.path.lexists(candidate):
+            try:
+                raw = read_owned_text(candidate, boundary, label="package.json")
+                payload = json.loads(raw)
+            except (ProjectMetadataError, json.JSONDecodeError) as exc:
+                return set(), f"package metadata unavailable: {exc}"
+            if not isinstance(payload, dict):
+                return set(), "package metadata unavailable: package.json must contain an object"
+            names: set[str] = set()
+            for key in ("dependencies", "devDependencies", "peerDependencies"):
+                values = payload.get(key)
+                if isinstance(values, dict):
+                    names.update(str(name).lower() for name in values)
+            return names, None
+        if directory == boundary:
+            return set(), None
+    return set(), None
 
 
 def has_any(target: Path, candidates: Iterable[str]) -> bool:
@@ -156,8 +173,10 @@ def has_any(target: Path, candidates: Iterable[str]) -> bool:
 
 
 def codebase_platform(target: Path) -> tuple[str, float, list[str]]:
-    deps = package_dependencies(target)
+    deps, metadata_issue = package_dependencies(target)
     signals: list[str] = []
+    if metadata_issue:
+        signals.append(metadata_issue)
 
     web_shell = any(
         name.startswith("@capacitor/")
@@ -220,7 +239,8 @@ def codebase_platform(target: Path) -> tuple[str, float, list[str]]:
     if deps & web_deps or has_any(target, ["index.html", "src/index.html", "app", "pages"]):
         signals.append("browser/web application markers")
         return "web", 0.78, signals
-    return "web", 0.5, ["no native target detected; defaulting to web"]
+    signals.append("no native target detected; defaulting to web")
+    return "web", 0.5, signals
 
 
 def resolve_platform(

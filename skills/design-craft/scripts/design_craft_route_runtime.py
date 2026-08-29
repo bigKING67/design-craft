@@ -24,6 +24,7 @@ if str(SCRIPT_DIR) not in sys.path:
     sys.path.insert(0, str(SCRIPT_DIR))
 platform_scan = importlib.import_module("design_craft_platform_scan")
 route_contract = importlib.import_module("design_craft.route_contract")
+authority = importlib.import_module("design_craft.authority")
 
 # Re-export pure policy seams for focused tests and benchmark profiling.
 build_route_payload = route_contract.build_route_payload
@@ -36,15 +37,6 @@ recommended_references = route_contract.recommended_references
 
 def resolve_target(raw: str) -> Path:
     return Path(raw).expanduser().resolve()
-
-
-def find_upward(target: Path, name: str) -> Path | None:
-    start = target.parent if target.is_file() else target
-    for directory in (start, *start.parents):
-        candidate = directory / name
-        if candidate.is_file():
-            return candidate
-    return None
 
 
 def shell_path(path: Path) -> str:
@@ -199,16 +191,18 @@ def run_route(argv: Sequence[str]) -> int:
         print(f"target is not a directory: {target}", file=sys.stderr)
         return 2
 
-    style_authority = (
-        Path(args.style_authority_path).expanduser().resolve()
-        if args.style_authority_path
-        else find_upward(target, "DESIGN.md")
+    style_resolution = authority.resolve_project_authority(
+        target,
+        "DESIGN.md",
+        explicit=args.style_authority_path or None,
     )
-    product_context = (
-        Path(args.product_context_path).expanduser().resolve()
-        if args.product_context_path
-        else find_upward(target, "PRODUCT.md")
+    product_resolution = authority.resolve_project_authority(
+        target,
+        "PRODUCT.md",
+        explicit=args.product_context_path or None,
     )
+    style_authority = style_resolution.path
+    product_context = product_resolution.path
     target_shell = shell_path(target)
     style_authority_shell = shell_path(style_authority) if style_authority else ""
     product_context_shell = shell_path(product_context) if product_context else ""
@@ -217,6 +211,8 @@ def run_route(argv: Sequence[str]) -> int:
         requested=args.platform,
         product_context_path=product_context,
     )
+    platform_payload["product_context_path_source"] = product_resolution.source
+    platform_payload["product_context_path_reason"] = product_resolution.reason
     route_plan_raw = os.environ.get(
         "DESIGN_CRAFT_ROUTE_PLAN",
         shell_path(Path.home() / ".codex/tools/frontend_route_plan.sh"),
@@ -285,6 +281,8 @@ def run_route(argv: Sequence[str]) -> int:
         existing_project=args.existing_project == "1",
         has_reference=args.has_reference_image == "1",
         needs_reference=args.needs_generated_reference == "1",
+        style_authority_source=style_resolution.source,
+        style_authority_reason=style_resolution.reason,
     )
     print_route_payload(route_payload, intent=args.intent, json_only=args.json_only)
     if route_source == "portable_fallback":

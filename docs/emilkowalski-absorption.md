@@ -2,7 +2,7 @@
 
 This document records the deliberate absorption boundary for
 `https://github.com/emilkowalski/skills` through reviewed remote commit
-`78761e1b57f97dce65b983d640c70a68f39e8163`. The compatibility submodule
+`d23d7f88a2e21c9e4b1418c7abe420f5c1052ba7`. The compatibility submodule
 stays pinned at `7bb7061b5cf7de15ea1aeaf00fbd9e6592a20fce`.
 
 ## Contents
@@ -27,8 +27,8 @@ The pinned compatibility snapshot contains:
 Therefore, "copy more source" means adapting Markdown rules and small CSS/JS
 examples. It does not mean vendoring an upstream implementation library that is
 not present. The reviewed remote history adds `find-animation-opportunities`,
-`pick-ui-library`, `prototype`, `animate`, and `ask-sonner`; all receive an
-explicit decision below. The pristine
+`pick-ui-library`, `prototype`, `animate`, `ask-sonner`, `animate-expo`, and
+`write-swift`; all receive an explicit decision below. The pristine
 compatibility source remains available under `upstreams/emilkowalski-skills/`;
 the installed Skill receives only the high-value fusion layer.
 
@@ -120,6 +120,9 @@ prescription remain `intentionally-rejected`.
 | `animate` construction skill (`de33dbe..78761e1`) | absorbed with calibration | `motion-quality.md`, `motion-patterns.md`, `motion-audit-planning.md`, `motion-vocabulary.md` | The ordered purpose/frequency gate, cheapest-fit tool choice, interruption and exit behavior, reduced-motion alternative, pointer gating, and bounded feel checks already exist locally. Absolute frequency, property, easing, GPU, and library prescriptions remain contextual rather than universal. |
 | `ask-sonner` (`e48aeea..78761e1`) | provenance-only | project dependency authority | This is operational documentation for one React toast library. It becomes relevant only when the target project already selects Sonner; it is not a cross-framework design baseline and adds no package runtime here. |
 | `78761e1` README and `.gitattributes` follow-up | provenance-only | pristine upstream history | Repository presentation and line-ending policy add no product behavior. |
+| `animate-expo` (`78761e1..d23d7f8`) | partial | `react-native-expo-motion.md`, adaptive platform route | UI/worklet ownership, gesture interruption, causal haptics, Reduced Motion, and release-build device verification are selectively absorbed only when dependencies prove React Native/Expo. Upstream absolute library, performance, duration, and platform prescriptions remain contextual. |
+| Expo recipe and README additions | provenance-only | pristine upstream history | Examples and discovery metadata do not become a package runtime or a default Web reference. |
+| `write-swift` | intentionally-rejected | separate Swift implementation authority | A general Swift coding and repository-editing entrypoint expands beyond this web-first UI/UX Skill. Native visual and interaction quality remains covered by the scoped iOS/adaptive references without importing a broad implementation agent. |
 
 ## Auxiliary-file matrix
 
@@ -151,13 +154,14 @@ The local fusion does not copy these as universal truth:
 ## Current conclusion
 
 `missing-high-value`: none within the selected fusion boundary through remote
-head `78761e1b57f97dce65b983d640c70a68f39e8163`, reviewed on 2026-08-17.
+head `d23d7f88a2e21c9e4b1418c7abe420f5c1052ba7`, reviewed on 2026-08-29.
 
 The cumulative state is now `selective_absorbed`, not an unqualified full-copy
 claim. High-value behavior from the five pinned Skills, the motion opportunity
 gate, the reviewed prototype workflow, the calibrated `animate` construction
-sequence, and project-authorized Base UI-specific application is local. The
-Sonner-specific API guide, fixed picker visual/runtime, opinionated library
+sequence, project-authorized Base UI-specific application, and conditional
+React Native/Expo motion contract are local. The Sonner-specific API guide,
+general `write-swift` entrypoint, fixed picker visual/runtime, opinionated library
 picker, Base UI-only universal prescription, promotional text, aggressive
 review posture, host-policy conflicts, decorative recipes, and technically
 overbroad claims remain `intentionally-rejected`, `partial`, or

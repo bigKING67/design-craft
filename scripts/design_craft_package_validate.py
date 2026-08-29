@@ -42,6 +42,9 @@ REQUIRED_PACKED_PATHS = {
     "skills/design-craft/VERSION",
     "skills/design-craft/COMPATIBILITY.json",
     "skills/design-craft/lib/design_craft/__init__.py",
+    "skills/design-craft/lib/design_craft/authority.py",
+    "skills/design-craft/lib/design_craft/comp_fidelity.py",
+    "skills/design-craft/lib/design_craft/detector_policy.py",
     "skills/design-craft/lib/design_craft/peekpaper.py",
     "skills/design-craft/lib/design_craft/reference_contract.py",
     "skills/design-craft/lib/design_craft/route_contract.py",
@@ -50,12 +53,17 @@ REQUIRED_PACKED_PATHS = {
     "skills/design-craft/contracts/visual-reference-pack.schema.json",
     "skills/design-craft/contracts/shadow-lab-comparison.schema.json",
     "skills/design-craft/contracts/shadow-lab-manifest.schema.json",
+    "skills/design-craft/contracts/comp-fidelity-spec.schema.json",
+    "skills/design-craft/contracts/comp-fidelity-report.schema.json",
+    "skills/design-craft/references/comp-fidelity.md",
+    "skills/design-craft/references/react-native-expo-motion.md",
     "skills/design-craft/references/reference-workflow.md",
     "skills/design-craft/scripts/design_craft_reference.py",
     "skills/design-craft/scripts/design_craft_shadow_compare.py",
     "skills/design-craft/scripts/design_craft_shadow_lab.py",
     "skills/design-craft/scripts/design_craft_route.sh",
     "skills/design-craft/scripts/design_craft_route_runtime.py",
+    "skills/design-craft/scripts/design_craft_comp_fidelity.py",
     "skills/design-craft/templates/developer-product/design.md",
     "skills/design-craft/templates/developer-product/design.dark.md",
 }
@@ -160,6 +168,8 @@ def package_errors(
             "visual_reference_card": "design-craft.visual-reference-card.v1",
             "visual_reference_catalog": "design-craft.visual-reference-catalog.v1",
             "visual_reference_pack": "design-craft.visual-reference-pack.v1",
+            "comp_fidelity_spec": "design-craft.comp-fidelity-spec.v1",
+            "comp_fidelity_report": "design-craft.comp-fidelity-report.v1",
         }
         if any(evidence.get(key) != value for key, value in expected_evidence.items()):
             errors.append("COMPATIBILITY.json must pin the release evidence contracts")
@@ -340,6 +350,8 @@ def self_check() -> list[str]:
             "visual_reference_card": "design-craft.visual-reference-card.v1",
             "visual_reference_catalog": "design-craft.visual-reference-catalog.v1",
             "visual_reference_pack": "design-craft.visual-reference-pack.v1",
+            "comp_fidelity_spec": "design-craft.comp-fidelity-spec.v1",
+            "comp_fidelity_report": "design-craft.comp-fidelity-report.v1",
         },
         "maintenance_contracts": {
             "install": "design-craft.install.v2",

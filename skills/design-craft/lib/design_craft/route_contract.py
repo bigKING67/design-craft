@@ -81,6 +81,8 @@ def portable_fallback_payload(
     existing_project: bool,
     has_reference: bool,
     needs_reference: bool,
+    style_authority_source: str = "none",
+    style_authority_reason: str = "",
 ) -> dict[str, object]:
     implementation_expected = intent != "reference-only"
     authority_required = tier != "L0" and implementation_expected
@@ -108,9 +110,8 @@ def portable_fallback_payload(
         "subagent_required": False,
         "subagent_recommended": False,
         "style_authority_path": style_authority_path,
-        "style_authority_source": (
-            "explicit_or_discovered" if style_authority_path else "none"
-        ),
+        "style_authority_source": style_authority_source,
+        "style_authority_reason": style_authority_reason,
         "style_authority_mode": (
             "evolve" if design_authority_mode == "evolve" else "enforce"
         ),
@@ -191,7 +192,12 @@ def build_route_payload(
     existing_project: bool,
     has_reference: bool,
     needs_reference: bool,
+    style_authority_source: str = "none",
+    style_authority_reason: str = "",
 ) -> dict[str, object]:
+    effective_style_authority_source = style_authority_source
+    if style_authority_path and style_authority_source == "none":
+        effective_style_authority_source = "explicit_or_discovered"
     resolved_fallback_tier = fallback_tier(
         intent=intent,
         scope=scope,
@@ -216,6 +222,8 @@ def build_route_payload(
             existing_project=existing_project,
             has_reference=has_reference,
             needs_reference=needs_reference,
+            style_authority_source=effective_style_authority_source,
+            style_authority_reason=style_authority_reason,
         )
 
     tier = route_payload.get("frontend_tier") or resolved_fallback_tier
@@ -233,6 +241,11 @@ def build_route_payload(
             "platform_signals": platform_payload.get("signals", []),
             "platform_contradictions": platform_payload.get("contradictions", []),
             "product_context_path": platform_payload.get("product_context_path", ""),
+            "product_context_path_source": platform_payload.get("product_context_path_source", "none"),
+            "product_context_path_reason": platform_payload.get("product_context_path_reason", ""),
+            "style_authority_path": style_authority_path,
+            "style_authority_source": effective_style_authority_source,
+            "style_authority_reason": style_authority_reason,
             "runtime_validation_required": runtime_required,
             "runtime_validation_kind": platform_payload["runtime_validation_kind"],
             "native_validation_required": native and runtime_required,
@@ -269,12 +282,17 @@ def build_route_payload(
         has_reference=has_reference,
         needs_reference=needs_reference,
     )
+    platform_signals = platform_payload.get("signals", [])
+    react_native_expo = platform != "web" and isinstance(platform_signals, list) and any(
+        signal == "React Native/Expo dependency" for signal in platform_signals
+    )
     references = recommended_references(
         platform=platform,
         intent=intent,
         developer_product_seed_applicable=seed_applicable,
         has_reference=has_reference,
         needs_reference=needs_reference,
+        react_native_expo=react_native_expo,
     )
     route_payload.update(
         {
@@ -288,6 +306,7 @@ def build_route_payload(
                 "triggers": triggers,
                 "contract": "references/reference-workflow.md",
             },
+            "react_native_expo_motion_applicable": react_native_expo,
             "recommended_design_craft_references": references,
         }
     )
@@ -314,6 +333,7 @@ def recommended_references(
     developer_product_seed_applicable: bool,
     has_reference: bool = False,
     needs_reference: bool = False,
+    react_native_expo: bool = False,
 ) -> list[str]:
     references = {"references/validation-contract.md", "references/product-context.md"}
     if platform == "ios":
@@ -330,6 +350,8 @@ def recommended_references(
         )
     if intent == "high-motion" or platform != "web":
         references.add("references/interaction-physics.md")
+    if react_native_expo and platform != "web":
+        references.add("references/react-native-expo-motion.md")
     if developer_product_seed_applicable:
         references.update(
             {

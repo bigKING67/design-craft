@@ -15,7 +15,9 @@
     "github_artifact_observation": "design-craft.github-artifact-observation.v1",
     "visual_reference_card": "design-craft.visual-reference-card.v1",
     "visual_reference_catalog": "design-craft.visual-reference-catalog.v1",
-    "visual_reference_pack": "design-craft.visual-reference-pack.v1"
+    "visual_reference_pack": "design-craft.visual-reference-pack.v1",
+    "comp_fidelity_spec": "design-craft.comp-fidelity-spec.v1",
+    "comp_fidelity_report": "design-craft.comp-fidelity-report.v1"
   },
   "maintenance_contracts": {
     "install": "design-craft.install.v2",

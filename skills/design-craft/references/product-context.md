@@ -86,6 +86,14 @@ Resolve an explicit `--product-context-path` before upward discovery. Report:
 - confidence from `0.0` to `1.0`
 - detection signals and contradictions
 
+Implicit `PRODUCT.md` and `DESIGN.md` discovery is project-owned: it stops at
+the nearest Git or recognized project boundary, rejects symlinked authority
+files, never inherits a home-directory authority, and applies a monorepo-root
+authority only when valid workspace metadata includes the target. Present but
+invalid, oversized, or symlinked workspace/package metadata fails closed and
+must be reported as degraded evidence. An explicit path remains the deliberate
+escape hatch when the user wants authority outside that boundary.
+
 Missing `PRODUCT.md` does not block an existing-project task. Infer the minimum
 context from source/runtime evidence, report confidence, and suggest creating
 the file after the scoped task. New product shaping may create it when the user

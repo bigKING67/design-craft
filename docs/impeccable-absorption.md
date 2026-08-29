@@ -2,9 +2,10 @@
 
 This document records the deliberate fusion and runtime boundary for
 `https://github.com/pbakaus/impeccable` through reviewed remote commit
-`f88b2837a7d7c3182e46307bbbb091a1ed547571`. The compatibility submodule is
-pinned at `80e4dd0d581fcdb42be62252b7bc07dcd2238330`, the last selected canonical
-detector correctness commit in that reviewed range.
+`b0594c72d18006b5865c70eb3a97e8b04064e600`. The compatibility submodule stays
+pinned at `80e4dd0d581fcdb42be62252b7bc07dcd2238330`; selected behavior from the
+newer reviewed range is represented by original local modules and contracts,
+not copied upstream runtime or generated files.
 
 ## Contents
 
@@ -73,7 +74,7 @@ beside browser67 and the host's existing execution contracts.
 
 | Capability | Status | Local target |
 | --- | --- | --- |
-| Mechanical pre-scan and deterministic anti-pattern signals | absorbed | `design_craft_detect.sh` invokes `upstreams/impeccable/skill/scripts/detect.mjs` when the source checkout is available and preserves JSON findings even when upstream exits `2` |
+| Mechanical pre-scan and deterministic anti-pattern signals | absorbed | `design_craft_detect.sh` invokes `upstreams/impeccable/skill/scripts/detect.mjs` when the source checkout is available, preserves JSON findings even when upstream exits `2`, and redacts URL userinfo before any JSON mode emits data |
 | Style-carrier, comment-safe, linked-stylesheet, `rounded-none`, retired single-font, YAML-escape, and Blade-suffix correctness | absorbed | compatibility pin `80e4dd0`; selected behavior is proven by function-level `test_impeccable_detector_contract.py` coverage and `evals/fixtures/impeccable-detector/` |
 | Source detector capability disclosure | absorbed | default and `--full-json` output distinguish `available`, `available_regex_fallback`, and `unavailable`; raw `--json-only` intentionally has no wrapper metadata |
 | Detector/design-system reconciliation | absorbed | `impeccable-workflow.md`, project authority order, explicit exceptions |
@@ -85,17 +86,27 @@ beside browser67 and the host's existing execution contracts.
 | Android audit/adapt guidance | absorbed | `android-quality.md`, platform scanner and fixtures |
 | Adaptive parity | absorbed | `adaptive-quality.md`, shared-versus-platform-specific contracts |
 | Hostile-data hardening and measurement-first optimization | absorbed | `impeccable-workflow.md`, engineering and performance references |
+| Workspace-owned design/product authority | absorbed with calibration | `authority.py` stops implicit inheritance at the nearest Git or recognized project boundary, rejects symlinked authority/metadata, bounds metadata reads, and fails closed when workspace ownership cannot be proved |
+| Safe single-file stylesheet context | absorbed with calibration | `detector_policy.py` resolves bounded package-local CSS, strips query/fragment syntax, reports ambiguous root-relative paths, and rejects project escapes and symlink traversal; detector stdout and stderr URL credentials are redacted |
+| Comp-fidelity evidence | absorbed with calibration | `comp-fidelity.md` and `design_craft_comp_fidelity.py` use one immutable snapshot per input for parsing, size, and hash; strict PNG/artifact validation produces exact-coordinate per-region measurements with a permanent `measurement_only` verdict |
 
 ## Latest reviewed range
 
-The latest range after `5c5553b1d7f9e89bb833f9179cea681742a17720`
-through `f88b2837a7d7c3182e46307bbbb091a1ed547571` was reviewed on
-2026-08-18 and is `provenance-only`. Its single commit changes only `bun.lock`
-compatible dependency resolutions, including AI SDK, Claude agent SDK,
-Puppeteer, and Svelte entries. It changes no canonical Skill, command metadata,
-detector source, platform reference, or package manifest. Design Craft does not
-vendor or execute this Bun dependency graph, so neither the compatibility pin
-nor the selected behavior boundary advances.
+The latest range after `f88b2837a7d7c3182e46307bbbb091a1ed547571`
+through `b0594c72d18006b5865c70eb3a97e8b04064e600` was reviewed on
+2026-08-29 and is `selective_absorbed`:
+
+| Capability | Status | Local target or boundary |
+| --- | --- | --- |
+| Monorepo-aware `DESIGN.md` and product-context ownership | absorbed with calibration | Original bounded fail-closed `authority.py` resolver, route/platform integration, negation/flow-YAML/malformed-config/symlink fixtures, and no implicit home-level authority |
+| Detector URL-userinfo redaction and safe root-relative linked stylesheets | absorbed with calibration | Original `detector_policy.py` plus stdout/stderr redaction, package-local asset roots, query/fragment, ambiguity, boundary-escape, and symlink fixtures |
+| Comp comparison, heatmaps, per-region reports, and artifact integrity | absorbed with calibration | Dependency-free `comp_fidelity.py`, CLI, schemas, immutable input snapshots, strict PNG state machine, bounded artifact metadata/I/O, recomputed metrics, and explicit no-registration/no-resize policy |
+| Broader parser/cascade/detector engine corrections | partial | The package keeps dependency-free local safeguards and the disclosed upstream regex fallback; it does not claim full upstream parser parity |
+| Agent-driven comp reconstruction, mandatory image generation, and automatic thresholds | intentionally-rejected | Existing project/browser authority owns capture and implementation; thresholds are optional project advisories, and human visual review remains separate |
+| Live/provider/hooks/generated copies and package runtime | intentionally-rejected | These duplicate browser67 or host runtime and widen the trust boundary |
+
+The compatibility pin stays at `80e4dd0`; only the reviewed and selected-
+behavior boundaries advance. No upstream runtime or generated copy is vendored.
 
 ### Earlier behavior-bearing range
 
@@ -115,7 +126,7 @@ through `5c5553b1d7f9e89bb833f9179cea681742a17720` was reviewed on
 ### Cumulative selected boundary
 
 The cumulative absorption state remains `selective_absorbed` through the
-selected behavior boundary `80e4dd0d581fcdb42be62252b7bc07dcd2238330`:
+selected behavior boundary `b0594c72d18006b5865c70eb3a97e8b04064e600`:
 
 | Capability | Status | Local target or boundary |
 | --- | --- | --- |
@@ -130,12 +141,13 @@ selected behavior boundary `80e4dd0d581fcdb42be62252b7bc07dcd2238330`:
 | `fc3dc50..bdaa5a4` live overlay/resume changes, TanStack adapters, deferred source writes, resolution caching, injection/progress coordination, tests, and generated providers | intentionally-rejected | The tail changes only the upstream live/provider runtime; no selected `design-craft` behavior was imported |
 | Universal category, font, framework, and library prescriptions | intentionally-rejected | project authority and observed performance/accessibility evidence win |
 | Promotional or "award-winning" tone | intentionally-rejected | local output remains factual and evidence-led |
+| Workspace-aware authority, credential-safe detector output, and bounded local stylesheet context | absorbed | original local resolver and detector-policy modules with focused regression tests |
+| Exact-coordinate comp comparison | absorbed with calibration | measurement-only hashes, heatmaps, side-by-side and region artifacts; human/product/runtime verdicts remain separate |
 
-The compatibility pin remains at the selected canonical detector boundary, not
-the reviewed remote head. The later tail remains reviewed but outside the pin
-because its additional detector engine behavior is not executable in the
-dependency-free installed fallback and the runtime/provider changes are outside
-the product boundary.
+The compatibility pin remains at the selected canonical detector snapshot, not
+the reviewed remote head. New selected behavior is cleanly implemented in the
+local dependency-free layer; unselected parser and runtime/provider behavior
+remains outside the package.
 
 ## Runtime and packaging boundary
 
@@ -162,11 +174,12 @@ evidence unless the corresponding local tool actually ran.
 ## Current conclusion
 
 `missing-high-value`: none within the selected fusion boundary through remote
-head `f88b2837a7d7c3182e46307bbbb091a1ed547571`, reviewed on 2026-08-18.
+head `b0594c72d18006b5865c70eb3a97e8b04064e600`, reviewed on 2026-08-29.
 
 The cumulative state is selective absorption. General workflow, brief and
 change-scope authority, surface modes, native quality, detector discipline and
-correctness, reference-first fidelity, post-fix verdicts, mechanical craft
+correctness, workspace-owned authority, credential-safe output, reference-first
+fidelity, measurement-only comp evidence, post-fix verdicts, mechanical craft
 verification, hardening, and evidence honesty are local. The duplicative
 live/provider/package/hook runtime, forced delegation, universal visual bans,
 and prescriptive ecosystem choices remain intentionally outside the product.

@@ -134,7 +134,9 @@ Use the smallest relevant bundled helper when available:
   `scripts/design_craft_shadow_lab.py` for disposable fixed-commit snapshots
   when a real target repository must remain source-read-only; and
   `scripts/design_craft_shadow_compare.py` for hash-bound, multi-direction
-  closeout without production promotion.
+  closeout without production promotion; and
+  `scripts/design_craft_comp_fidelity.py` for exact-coordinate, measurement-only
+  comp comparisons after an existing capture path produces PNG evidence.
 - Platform and host checks: `scripts/design_craft_platform_scan.py`,
   `scripts/design_craft_codex_route_pack.py`, and
   `scripts/design_craft_score.py`.
@@ -164,6 +166,9 @@ Read only references required by the current task.
 - Supplied, generated, or discovery-source references:
   `references/reference-workflow.md`; use its Reference Card, Pack, evidence,
   rights, and promotion boundaries before implementation.
+- Approved comp versus captured implementation measurements:
+  `references/comp-fidelity.md`; use only after both images share a controlled
+  coordinate and capture context.
 
 ### Design systems and concrete redesign
 
@@ -196,6 +201,9 @@ Read only references required by the current task.
   `references/motion-audit-planning.md`.
 - Drag, swipe, sheets, interruption, velocity, projection, and springs:
   `references/interaction-physics.md`.
+- React Native/Expo animation ownership, gestures, haptics, and release-build
+  evidence: `references/react-native-expo-motion.md`; load it only when project
+  dependencies or native targets prove that runtime.
 - Motion naming and reverse lookup: `references/motion-vocabulary.md`.
 
 ### Engineering, performance, and structure

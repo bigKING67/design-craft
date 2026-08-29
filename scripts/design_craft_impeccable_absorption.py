@@ -96,6 +96,8 @@ COVERAGE = {
         "paths": [
             "skills/design-craft/references/impeccable-workflow.md",
             "tests/unit/test_impeccable_detector_contract.py",
+            "skills/design-craft/lib/design_craft/authority.py",
+            "skills/design-craft/lib/design_craft/detector_policy.py",
         ],
         "terms": [
             "style carriers",
@@ -109,10 +111,17 @@ COVERAGE = {
             "contextual signal",
             "evals/fixtures/impeccable-detector",
             "function-level",
+            "workspace_owns",
+            "redact_url_userinfo",
+            "linked_stylesheet_files",
         ],
     },
     "reference_fidelity_and_verdict": {
-        "paths": ["skills/design-craft/references/system-review.md"],
+        "paths": [
+            "skills/design-craft/references/system-review.md",
+            "skills/design-craft/references/comp-fidelity.md",
+            "skills/design-craft/lib/design_craft/comp_fidelity.py",
+        ],
         "terms": [
             "before reading the implementation summary",
             "acceptable_adaptation",
@@ -121,6 +130,9 @@ COVERAGE = {
             "partial",
             "unresolved",
             "Browser defaults are not automatically defects",
+            "measurement_only",
+            "exact_coordinates_no_registration_or_resize",
+            "Human region review remains required",
         ],
     },
     "platform_quality": {

@@ -136,13 +136,69 @@ if [[ -n "${SOURCE_ROOT}" && "${TARGET}" == "${SOURCE_ROOT}" ]]; then
 fi
 
 TMP_JSON="$(mktemp -t design-craft-detect.XXXXXX)"
-trap 'rm -f "${TMP_JSON}"' EXIT
+TMP_STDERR="$(mktemp -t design-craft-detect-stderr.XXXXXX)"
+trap 'rm -f "${TMP_JSON}" "${TMP_STDERR}"' EXIT
 
 if [[ "${DETECTOR_STATUS}" != "unavailable" ]]; then
   set +e
-  node "${DETECTOR}" --json "${DETECTOR_TARGET}" >"${TMP_JSON}"
+  python3 - "$(command -v node)" "${DETECTOR}" "${DETECTOR_TARGET}" "${TMP_JSON}" "${TMP_STDERR}" "${SKILL_ROOT}" <<'PY'
+import subprocess
+import sys
+import threading
+from pathlib import Path
+
+sys.path.insert(0, str(Path(sys.argv[6]) / "lib"))
+from design_craft.detector_policy import redact_url_userinfo
+
+stdout_limit = 8 * 1024 * 1024
+stderr_limit = 1024 * 1024
+process = subprocess.Popen(
+    [sys.argv[1], sys.argv[2], "--json", sys.argv[3]],
+    stdout=subprocess.PIPE,
+    stderr=subprocess.PIPE,
+)
+buffers = {"stdout": bytearray(), "stderr": bytearray()}
+overflow = {"stdout": False, "stderr": False}
+
+
+def drain(name: str, stream, limit: int) -> None:
+    while True:
+        chunk = stream.read(64 * 1024)
+        if not chunk:
+            return
+        remaining = limit - len(buffers[name])
+        if remaining > 0:
+            buffers[name].extend(chunk[:remaining])
+        if len(chunk) > remaining:
+            overflow[name] = True
+
+
+threads = [
+    threading.Thread(target=drain, args=("stdout", process.stdout, stdout_limit)),
+    threading.Thread(target=drain, args=("stderr", process.stderr, stderr_limit)),
+]
+for thread in threads:
+    thread.start()
+returncode = process.wait()
+for thread in threads:
+    thread.join()
+
+Path(sys.argv[4]).write_bytes(bytes(buffers["stdout"]))
+stderr_text = buffers["stderr"].decode("utf-8", errors="replace")
+if overflow["stderr"]:
+    stderr_text += "\n[design-craft: detector stderr truncated at 1048576 bytes]\n"
+Path(sys.argv[5]).write_text(redact_url_userinfo(stderr_text), encoding="utf-8")
+if overflow["stdout"]:
+    with Path(sys.argv[5]).open("a", encoding="utf-8") as handle:
+        handle.write("design-craft detector: stdout exceeded 8388608 bytes\n")
+    raise SystemExit(70)
+raise SystemExit(returncode)
+PY
   DETECTOR_EXIT_CODE="$?"
   set -e
+  if [[ -s "${TMP_STDERR}" ]]; then
+    cat "${TMP_STDERR}" >&2
+  fi
   if [[ "${DETECTOR_EXIT_CODE}" != "0" && "${DETECTOR_EXIT_CODE}" != "2" ]]; then
     echo "design-craft detector: upstream detector exited ${DETECTOR_EXIT_CODE}" >&2
     exit "${DETECTOR_EXIT_CODE}"
@@ -168,6 +224,23 @@ print(
 PY
 fi
 
+python3 - "${TMP_JSON}" "${SKILL_ROOT}" <<'PY'
+import json
+import sys
+from pathlib import Path
+
+lib_dir = Path(sys.argv[2]) / "lib"
+sys.path.insert(0, str(lib_dir))
+from design_craft.detector_policy import sanitize_payload
+
+path = Path(sys.argv[1])
+payload = json.loads(path.read_text(encoding="utf-8"))
+path.write_text(
+    json.dumps(sanitize_payload(payload), ensure_ascii=False, indent=2) + "\n",
+    encoding="utf-8",
+)
+PY
+
 if [[ "${JSON_ONLY}" == "1" ]]; then
   cat "${TMP_JSON}"
   exit 0
@@ -180,6 +253,10 @@ import subprocess
 import sys
 from collections import Counter
 from pathlib import Path
+
+sys.path.insert(0, str(Path(sys.argv[6]) / "lib"))
+from design_craft.authority import asset_root_for, project_root_for, resolve_project_authority
+from design_craft.detector_policy import linked_stylesheet_files, sanitize_payload
 
 path = Path(sys.argv[1])
 target = sys.argv[2]
@@ -206,10 +283,10 @@ skip_dirs = {
     "out",
     "upstreams",
 }
-text_suffixes = {".css", ".js", ".jsx", ".md", ".mdx", ".scss", ".ts", ".tsx"}
+text_suffixes = {".css", ".html", ".js", ".jsx", ".md", ".mdx", ".scss", ".ts", ".tsx"}
 
 try:
-    payload = json.loads(path.read_text(encoding="utf-8"))
+    payload = sanitize_payload(json.loads(path.read_text(encoding="utf-8")))
 except Exception as exc:
     print(f"design-craft detector: failed to parse JSON for {target}: {exc}", file=sys.stderr)
     raise
@@ -273,12 +350,7 @@ def finding(rule: str, severity: str, candidate: Path, message: str) -> dict:
 
 
 def find_design_authority(root: Path) -> Path | None:
-    start = root if root.is_dir() else root.parent
-    for current in [start, *start.parents]:
-        design = current / "DESIGN.md"
-        if design.is_file():
-            return design
-    return None
+    return resolve_project_authority(root, "DESIGN.md").path
 
 
 def scan_local_signals(root: Path) -> tuple[list[dict], list[str]]:
@@ -289,6 +361,14 @@ def scan_local_signals(root: Path) -> tuple[list[dict], list[str]]:
         return signals, notes
 
     files = list(iter_text_files(root))
+    if root.is_file() and root.suffix.lower() in {".html", ".htm"}:
+        stylesheets, stylesheet_issues = linked_stylesheet_files(
+            root,
+            project_root_for(root),
+            asset_root=asset_root_for(root),
+        )
+        files.extend(stylesheet for stylesheet in stylesheets if stylesheet not in files)
+        notes.extend(stylesheet_issues)
     joined_names = " ".join(str(file).lower() for file in files)
     looks_frontend = any(
         marker in joined_names
@@ -540,7 +620,7 @@ local_notes.extend(scanner_notes)
 if full_json:
     print(
         json.dumps(
-            {
+            sanitize_payload({
                 "schema": "design-craft.detect.v2",
                 "target": target,
                 "detector_target": detector_target,
@@ -555,7 +635,7 @@ if full_json:
                 "upstream_findings": items,
                 "design_craft_signal_findings": local_signals,
                 "design_craft_notes": local_notes,
-            },
+            }),
             ensure_ascii=False,
             indent=2,
         )

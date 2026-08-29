@@ -5,6 +5,9 @@ import json
 import tempfile
 import unittest
 from pathlib import Path
+import os
+import subprocess
+import sys
 
 from tools.design_craft.repo import REPO_ROOT
 
@@ -18,13 +21,15 @@ route_runtime = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(route_runtime)
 
 
-def platform_payload(platform: str = "web") -> dict[str, object]:
+def platform_payload(
+    platform: str = "web", *, signals: list[str] | None = None
+) -> dict[str, object]:
     native = platform != "web"
     return {
         "platform": platform,
         "platform_source": "explicit",
         "platform_confidence": 1.0,
-        "signals": [],
+        "signals": signals or [],
         "contradictions": [],
         "product_context_path": "",
         "runtime_validation_kind": "browser" if not native else "native",
@@ -124,6 +129,260 @@ class RouteRuntimeTests(unittest.TestCase):
         self.assertIn("references/android-quality.md", references)
         self.assertIn("references/adaptive-quality.md", references)
         self.assertIn("references/interaction-physics.md", references)
+
+    def test_react_native_expo_reference_is_conditionally_routed(self) -> None:
+        payload = route_runtime.build_route_payload(
+            route_payload={"ok": True, "frontend_tier": "L1-V"},
+            platform_payload=platform_payload(
+                "adaptive", signals=["React Native/Expo dependency"]
+            ),
+            route_source="codex_global",
+            surface="app",
+            intent="visual-refine",
+            scope="component",
+            style="auto",
+            style_authority_path="DESIGN.md",
+            design_authority_mode="auto",
+            existing_project=True,
+            has_reference=False,
+            needs_reference=False,
+        )
+
+        self.assertTrue(payload["react_native_expo_motion_applicable"])
+        self.assertIn(
+            "references/react-native-expo-motion.md",
+            payload["recommended_design_craft_references"],
+        )
+
+    def test_non_react_native_adaptive_route_excludes_expo_reference(self) -> None:
+        payload = route_runtime.build_route_payload(
+            route_payload={"ok": True, "frontend_tier": "L1-V"},
+            platform_payload=platform_payload(
+                "adaptive", signals=["Flutter pubspec"]
+            ),
+            route_source="codex_global",
+            surface="app",
+            intent="visual-refine",
+            scope="component",
+            style="auto",
+            style_authority_path="DESIGN.md",
+            design_authority_mode="auto",
+            existing_project=True,
+            has_reference=False,
+            needs_reference=False,
+        )
+
+        self.assertFalse(payload["react_native_expo_motion_applicable"])
+        self.assertNotIn(
+            "references/react-native-expo-motion.md",
+            payload["recommended_design_craft_references"],
+        )
+
+    def test_expo_reference_routes_for_each_native_scope_without_expanding_scope(self) -> None:
+        for platform in ("ios", "android", "adaptive"):
+            with self.subTest(platform=platform):
+                payload = route_runtime.build_route_payload(
+                    route_payload={"ok": True, "frontend_tier": "L1-V"},
+                    platform_payload=platform_payload(
+                        platform, signals=["React Native/Expo dependency"]
+                    ),
+                    route_source="codex_global",
+                    surface="app",
+                    intent="visual-refine",
+                    scope="component",
+                    style="auto",
+                    style_authority_path="DESIGN.md",
+                    design_authority_mode="auto",
+                    existing_project=True,
+                    has_reference=False,
+                    needs_reference=False,
+                )
+                self.assertTrue(payload["react_native_expo_motion_applicable"])
+                self.assertIn(
+                    "references/react-native-expo-motion.md",
+                    payload["recommended_design_craft_references"],
+                )
+
+        reference = (
+            REPO_ROOT
+            / "skills/design-craft/references/react-native-expo-motion.md"
+        ).read_text(encoding="utf-8")
+        self.assertIn("release build on every shipped target", reference)
+        self.assertIn(
+            "single-platform scope does not create evidence obligations",
+            reference,
+        )
+
+    def test_explicit_web_route_excludes_expo_reference_even_with_dependency_signal(self) -> None:
+        payload = route_runtime.build_route_payload(
+            route_payload={"ok": True, "frontend_tier": "L1-V"},
+            platform_payload=platform_payload(
+                "web", signals=["React Native/Expo dependency"]
+            ),
+            route_source="codex_global",
+            surface="app",
+            intent="visual-refine",
+            scope="component",
+            style="auto",
+            style_authority_path="DESIGN.md",
+            design_authority_mode="auto",
+            existing_project=True,
+            has_reference=False,
+            needs_reference=False,
+        )
+
+        self.assertFalse(payload["react_native_expo_motion_applicable"])
+        self.assertNotIn(
+            "references/react-native-expo-motion.md",
+            payload["recommended_design_craft_references"],
+        )
+
+    def test_nested_expo_source_target_routes_from_nearest_package(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="design-craft-expo-route-") as raw:
+            root = Path(raw)
+            (root / ".git").mkdir()
+            (root / "DESIGN.md").write_text("# Design", encoding="utf-8")
+            (root / "package.json").write_text(
+                json.dumps({"workspaces": ["packages/*"]}), encoding="utf-8"
+            )
+            mobile = root / "packages/mobile"
+            target = mobile / "src/components"
+            target.mkdir(parents=True)
+            (mobile / "package.json").write_text(
+                json.dumps({"dependencies": {"expo": "latest"}}), encoding="utf-8"
+            )
+            environment = dict(os.environ)
+            environment["DESIGN_CRAFT_ROUTE_PLAN"] = str(root / "missing-plan.sh")
+            environment["PYTHONDONTWRITEBYTECODE"] = "1"
+
+            completed = subprocess.run(
+                [
+                    sys.executable,
+                    str(SCRIPT_PATH),
+                    "--target",
+                    str(target),
+                    "--surface",
+                    "app",
+                    "--intent",
+                    "visual-refine",
+                    "--scope",
+                    "component",
+                    "--json-only",
+                ],
+                cwd=REPO_ROOT,
+                env=environment,
+                capture_output=True,
+                text=True,
+                check=False,
+            )
+
+            self.assertEqual(completed.returncode, 0, completed.stderr)
+            payload = json.loads(completed.stdout)
+            self.assertEqual(payload["platform"], "adaptive")
+            self.assertTrue(payload["react_native_expo_motion_applicable"])
+            self.assertIn(
+                "references/react-native-expo-motion.md",
+                payload["recommended_design_craft_references"],
+            )
+
+    @unittest.skipUnless(hasattr(os, "symlink"), "symlinks unsupported")
+    def test_symlinked_package_metadata_cannot_inject_expo_signal(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="design-craft-expo-link-") as raw:
+            base = Path(raw)
+            root = base / "repo"
+            (root / ".git").mkdir(parents=True)
+            (root / "DESIGN.md").write_text("# Design", encoding="utf-8")
+            (root / "package.json").write_text(
+                json.dumps({"workspaces": ["packages/*"]}), encoding="utf-8"
+            )
+            mobile = root / "packages/mobile"
+            target = mobile / "src/components"
+            target.mkdir(parents=True)
+            outside = base / "outside-package.json"
+            outside.write_text(
+                json.dumps({"dependencies": {"expo": "latest"}}), encoding="utf-8"
+            )
+            (mobile / "package.json").symlink_to(outside)
+            environment = dict(os.environ)
+            environment["DESIGN_CRAFT_ROUTE_PLAN"] = str(root / "missing-plan.sh")
+            environment["PYTHONDONTWRITEBYTECODE"] = "1"
+
+            completed = subprocess.run(
+                [
+                    sys.executable,
+                    str(SCRIPT_PATH),
+                    "--target",
+                    str(target),
+                    "--surface",
+                    "app",
+                    "--intent",
+                    "visual-refine",
+                    "--scope",
+                    "component",
+                    "--json-only",
+                ],
+                cwd=REPO_ROOT,
+                env=environment,
+                capture_output=True,
+                text=True,
+                check=False,
+            )
+
+            self.assertEqual(completed.returncode, 0, completed.stderr)
+            payload = json.loads(completed.stdout)
+            self.assertEqual(payload["platform"], "web")
+            self.assertFalse(payload["react_native_expo_motion_applicable"])
+            self.assertTrue(
+                any(
+                    "package metadata unavailable" in signal
+                    for signal in payload["platform_signals"]
+                )
+            )
+
+    def test_oversized_package_metadata_is_bounded_and_degraded(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="design-craft-expo-oversized-") as raw:
+            root = Path(raw)
+            (root / ".git").mkdir()
+            (root / "DESIGN.md").write_text("# Design", encoding="utf-8")
+            mobile = root / "packages/mobile"
+            target = mobile / "src"
+            target.mkdir(parents=True)
+            with (mobile / "package.json").open("wb") as handle:
+                handle.truncate(1024 * 1024 + 1)
+            environment = dict(os.environ)
+            environment["DESIGN_CRAFT_ROUTE_PLAN"] = str(root / "missing-plan.sh")
+            environment["PYTHONDONTWRITEBYTECODE"] = "1"
+
+            completed = subprocess.run(
+                [
+                    sys.executable,
+                    str(SCRIPT_PATH),
+                    "--target",
+                    str(target),
+                    "--surface",
+                    "app",
+                    "--intent",
+                    "visual-refine",
+                    "--scope",
+                    "component",
+                    "--json-only",
+                ],
+                cwd=REPO_ROOT,
+                env=environment,
+                capture_output=True,
+                text=True,
+                check=False,
+            )
+
+            self.assertEqual(completed.returncode, 0, completed.stderr)
+            payload = json.loads(completed.stdout)
+            self.assertEqual(payload["platform"], "web")
+            self.assertTrue(
+                any(
+                    "exceeds 1048576 bytes" in signal
+                    for signal in payload["platform_signals"]
+                )
+            )
 
     def test_reference_only_route_exposes_machine_readable_workflow(self) -> None:
         payload = route_runtime.build_route_payload(

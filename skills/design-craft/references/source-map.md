@@ -55,12 +55,14 @@ preflight thinking.
 - Pinned compatibility commit:
   `80e4dd0d581fcdb42be62252b7bc07dcd2238330`
 - Selected-behavior boundary:
-  `80e4dd0d581fcdb42be62252b7bc07dcd2238330`
+  `b0594c72d18006b5865c70eb3a97e8b04064e600`
 - Cumulative status: `selective_absorbed` for the command taxonomy,
   brief/change-scope authority, surface modes, craft floor, applicable scoring,
   detector/native guidance and correctness, reference-first fidelity,
   post-fix verdicts, hardening, measurement, evidence contracts, and bounded
-  rendered-verification passes.
+  rendered-verification passes, workspace-owned authority, credential-safe
+  detector output, bounded linked stylesheets, and measurement-only comp
+  fidelity evidence.
 - Contract: `docs/impeccable-absorption.md`, validated by
   `scripts/design_craft_impeccable_absorption.py` in the canonical repository.
 - Detector evidence boundary: local function-level fixtures prove selected
@@ -92,10 +94,11 @@ production-readiness flows.
 - Pinned compatibility commit:
   `7bb7061b5cf7de15ea1aeaf00fbd9e6592a20fce`
 - Selected-behavior boundary:
-  `70744e3816f1d93eafb697161a8b880a7384c5ff`
+  `d23d7f88a2e21c9e4b1418c7abe420f5c1052ba7`
 - Cumulative status: `selective_absorbed`; the motion-opportunity gate,
-  calibrated prototype workflow, and project-authorized Base UI-specific
-  application are local. The opinionated library picker, fixed picker
+  calibrated prototype workflow, project-authorized Base UI-specific
+  application, and conditional React Native/Expo motion ownership and evidence
+  contract are local. The opinionated library picker, general Swift writer, fixed picker
   visual/runtime, and Base UI-only universal prescription are intentionally
   rejected.
 - Stable selected behavior: original design-craft references cover
@@ -194,6 +197,12 @@ comparative evaluation. Recheck mutable source samples before reuse.
 - `references/interaction-physics.md`: curated direct-manipulation,
   interruption, spring, velocity, projection, hysteresis, and rubber-band
   contract.
+- `references/react-native-expo-motion.md`: conditional ownership, gesture,
+  haptic, Reduced Motion, and release-build evidence contract for dependency-
+  proven React Native/Expo targets.
+- `references/comp-fidelity.md` and `scripts/design_craft_comp_fidelity.py`:
+  exact-coordinate, hash-bound screenshot measurements that remain explicitly
+  separate from human visual acceptance.
 - `references/motion-patterns.md`: original web implementation recipes for
   press feedback, anchored overlays, tooltip groups, interruptible state,
   percentage transforms, clip-path, crossfade repair, and transient lifecycle.

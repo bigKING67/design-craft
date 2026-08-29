@@ -30,6 +30,7 @@ RUNTIME_SCRIPTS = {
     "design_craft_l4_case_validate.py",
     "design_craft_platform_scan.py",
     "design_craft_route_runtime.py",
+    "design_craft_comp_fidelity.py",
 }
 
 

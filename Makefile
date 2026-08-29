@@ -18,7 +18,7 @@ CERTIFIED_CANDIDATE_EVIDENCE ?= $(RELEASE_EVIDENCE_DIR)/certified-100-candidate.
 CERTIFIED_FINAL_EVIDENCE ?= $(RELEASE_EVIDENCE_DIR)/certified-100-final.json
 export PYTHONDONTWRITEBYTECODE := 1
 
-.PHONY: validate validate-portable lint contract-tests package-check public-repo-check workflow-check skill-quick-validate score visual-reference-check shadow-lab-check \
+.PHONY: validate validate-portable lint contract-tests package-check public-repo-check workflow-check skill-quick-validate score visual-reference-check shadow-lab-check comp-fidelity-check \
 	maturity-development maturity-operational maturity-certified pass audit critique prototype system-review motion primitive-selection motion-plan-dry-run taste-review \
 	seed-dry-run route-smoke doctor platform-scan-check native-runtime-probe native-runtime-check native-release-bundle-check \
 	native-release-bundle-build native-release-bundle-verify codex-route-pack-check codex-route-pack-host-check init-dry-run active-scope-check \
@@ -67,6 +67,10 @@ score:
 
 shadow-lab-check:
 	PYTHONDONTWRITEBYTECODE=1 python3 -m unittest tests.unit.test_shadow_lab tests.unit.test_shadow_lab_comparison tests.integration.test_shadow_lab_cli tests.integration.test_shadow_compare_cli tests.adversarial.test_shadow_lab_boundaries
+
+comp-fidelity-check:
+	PYTHONDONTWRITEBYTECODE=1 python3 -m unittest tests.unit.test_comp_fidelity tests.integration.test_comp_fidelity_cli
+	PYTHONDONTWRITEBYTECODE=1 python3 skills/design-craft/scripts/design_craft_comp_fidelity.py --check >/dev/null
 
 visual-reference-check: shadow-lab-check
 	PYTHONDONTWRITEBYTECODE=1 python3 -m unittest tests.unit.test_visual_reference_contract tests.unit.test_visual_reference_target_fixture tests.unit.test_visual_reference_comparative_fixture tests.unit.test_peekpaper_adapter tests.unit.test_route_runtime tests.integration.test_visual_reference_cli

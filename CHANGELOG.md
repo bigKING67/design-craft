@@ -4,6 +4,23 @@ All notable local changes to `design-craft` are recorded here.
 
 ## Unreleased
 
+- Review Taste through `ccbc156`, Impeccable through `b0594c7`, and Emil's
+  skills through `d23d7f8`; selectively absorb behavior without advancing the
+  pinned compatibility snapshots or importing upstream browser/provider,
+  generated-host, general Swift-editing, or forced-agent runtimes.
+- Make implicit `DESIGN.md` and `PRODUCT.md` authority fail closed at project
+  and workspace boundaries. Bounded non-symlink metadata reads, workspace
+  negation and flow-YAML handling, package-local asset roots, and explicit
+  degraded signals prevent invalid or external metadata from silently shaping
+  routing; detector stdout and stderr now redact URL userinfo before emission.
+- Add dependency-proven React Native/Expo motion guidance for UI/worklet state
+  ownership, interruption, causal haptics, Reduced Motion, and release-build
+  evidence on each actually shipped platform, without universal library,
+  timing, spring, or performance prescriptions.
+- Add a dependency-free, measurement-only comp-fidelity workflow with bounded
+  immutable input snapshots, strict PNG parsing, exact-coordinate overall and
+  per-region metrics, heatmap and side-by-side artifacts, versioned schemas,
+  hash-bound strict validation, and an explicit human visual-review boundary.
 - Make the strict GitHub Actions allowlist model reviewed transitive
   dependencies of `actions/attest-build-provenance` explicitly, so publication
   attestation setup remains allowed without broadening policy to `actions/*`.
