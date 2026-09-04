@@ -52,6 +52,12 @@ All notable local changes to `design-craft` are recorded here.
 - Make the strict GitHub Actions allowlist model reviewed transitive
   dependencies of `actions/attest-build-provenance` explicitly, so publication
   attestation setup remains allowed without broadening policy to `actions/*`.
+- Promote the original Ubuntu 24.04/Python 3.13 full artifact from workflow run
+  `33857608115` as the v0.7.0 benchmark baseline (artifact SHA-256
+  `15e7e81c934b5e6a7c77e854df1926165a1d71f65ecebd3928f29fddcfd4e684`)
+  after three sequential hosted runs at source commit `3b8eefe`. It forms a
+  bidirectionally passing cluster with run `33858222081`; the faster run
+  `33857151645` remains an unpromoted outlier.
 
 ## 0.6.1 - 2026-08-18
 
