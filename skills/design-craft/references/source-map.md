@@ -55,14 +55,17 @@ preflight thinking.
 - Pinned compatibility commit:
   `80e4dd0d581fcdb42be62252b7bc07dcd2238330`
 - Selected-behavior boundary:
-  `b0594c72d18006b5865c70eb3a97e8b04064e600`
+  `6fe900dbb47a649ffd54044d4ac16ce04618ddbe`
 - Cumulative status: `selective_absorbed` for the command taxonomy,
   brief/change-scope authority, surface modes, craft floor, applicable scoring,
   detector/native guidance and correctness, reference-first fidelity,
   post-fix verdicts, hardening, measurement, evidence contracts, and bounded
   rendered-verification passes, workspace-owned authority, credential-safe
   detector output, bounded linked stylesheets, and measurement-only comp
-  fidelity evidence.
+  fidelity evidence. Runtime-unavailable review may also use a repository-owned
+  committed visual-regression baseline after exact target, freshness,
+  theme/variant, and source reconciliation, without upgrading it to live
+  browser or native evidence.
 - Contract: `docs/impeccable-absorption.md`, validated by
   `scripts/design_craft_impeccable_absorption.py` in the canonical repository.
 - Detector evidence boundary: local function-level fixtures prove selected

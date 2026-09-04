@@ -126,6 +126,26 @@ def catalog(cards: list[dict], hypotheses: list[dict] | None = None) -> dict:
 
 
 class VisualReferenceContractTests(unittest.TestCase):
+    def test_runtime_unavailable_visual_baseline_remains_degraded(self) -> None:
+        reference = (
+            REPO_ROOT / "skills/design-craft/references/reference-workflow.md"
+        ).read_text(encoding="utf-8")
+        validation = (
+            REPO_ROOT / "skills/design-craft/references/validation-contract.md"
+        ).read_text(encoding="utf-8")
+        contract = " ".join(f"{reference}\n{validation}".split())
+
+        for fragment in (
+            "Runtime-unavailable visual baseline",
+            "committed visual-regression golden or screenshot fixture",
+            "exact tracked target, repository revision, viewport, theme, and variant",
+            "current tokens, CSS, components, assets",
+            "runtime-unavailable fallback",
+            "the task remains `incomplete`",
+            "no browser/native success may be claimed",
+        ):
+            self.assertIn(fragment, contract)
+
     def test_candidate_and_reviewed_cards_are_strictly_distinct(self) -> None:
         candidate_errors, _ = reference_contract.validate_card(
             card("candidate-card", status="candidate")

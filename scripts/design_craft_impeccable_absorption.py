@@ -120,6 +120,8 @@ COVERAGE = {
         "paths": [
             "skills/design-craft/references/system-review.md",
             "skills/design-craft/references/comp-fidelity.md",
+            "skills/design-craft/references/reference-workflow.md",
+            "skills/design-craft/references/validation-contract.md",
             "skills/design-craft/lib/design_craft/comp_fidelity.py",
         ],
         "terms": [
@@ -133,6 +135,9 @@ COVERAGE = {
             "measurement_only",
             "exact_coordinates_no_registration_or_resize",
             "Human region review remains required",
+            "committed visual-regression golden",
+            "runtime-unavailable fallback",
+            "the task remains `incomplete`",
         ],
     },
     "platform_quality": {
@@ -273,6 +278,12 @@ def validate() -> dict:
     ):
         if term.casefold() not in matrix_text.casefold():
             errors.append(f"absorption matrix is missing runtime boundary term: {term}")
+    for label, sha in (
+        ("reviewed boundary", state["reviewed_through_commit"]),
+        ("selected behavior boundary", state["behavior_absorbed_through_commit"]),
+    ):
+        if sha not in matrix_text:
+            errors.append(f"absorption matrix is missing {label}: {sha}")
 
     coverage_payload = {}
     for capability, spec in COVERAGE.items():

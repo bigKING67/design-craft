@@ -14,6 +14,7 @@ override project authority.
 - [Pattern promotion](#pattern-promotion)
 - [Peekpaper adapter](#peekpaper-adapter)
 - [Evidence and artifact boundary](#evidence-and-artifact-boundary)
+- [Runtime-unavailable visual baseline](#runtime-unavailable-visual-baseline)
 - [Disposable Shadow Lab](#disposable-shadow-lab)
 - [Comparative Shadow Lab closeout](#comparative-shadow-lab-closeout)
 - [Operational cadence](#operational-cadence)
@@ -133,6 +134,29 @@ reachable interaction, keyboard focus, visible semantics, and console errors.
 Check Reduced Motion only when motion exists. Keep complete accessibility and
 performance status unverified unless separately measured with the applicable
 contract.
+
+## Runtime-unavailable visual baseline
+
+When the target app cannot run, start with a committed visual-regression golden
+or screenshot fixture only when the target repository owns it. Treat this as a
+runtime-unavailable fallback, not as a replacement for current browser or
+native evidence:
+
+- resolve the exact tracked target, repository revision, viewport, theme, and
+  variant that the artifact claims to represent;
+- compare its provenance and capture context with current tokens, CSS,
+  components, assets, content shape, and applicable platform rules;
+- inspect every relevant committed theme or variant capture instead of choosing
+  the most favorable image;
+- mark the sample `stale` or `unavailable` when its target, freshness, or
+  capture context cannot be reconciled with current source;
+- use a valid sample only for visible composition, hierarchy, density, color,
+  and regression hypotheses. Keep interaction, focus, accessibility,
+  performance, and current runtime behavior unverified.
+
+An untracked screenshot, unexplained export, or stale golden is not an
+incumbent visual authority. When live validation is required but unavailable,
+the task remains `incomplete` even if the fallback is useful for diagnosis.
 
 ## Disposable Shadow Lab
 

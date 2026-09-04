@@ -2,7 +2,7 @@
 
 This document records the deliberate fusion and runtime boundary for
 `https://github.com/pbakaus/impeccable` through reviewed remote commit
-`b0594c72d18006b5865c70eb3a97e8b04064e600`. The compatibility submodule stays
+`4c5243fcd42d39c1fc281adcaf10be0913095f74`. The compatibility submodule stays
 pinned at `80e4dd0d581fcdb42be62252b7bc07dcd2238330`; selected behavior from the
 newer reviewed range is represented by original local modules and contracts,
 not copied upstream runtime or generated files.
@@ -92,7 +92,28 @@ beside browser67 and the host's existing execution contracts.
 
 ## Latest reviewed range
 
-The latest range after `f88b2837a7d7c3182e46307bbbb091a1ed547571`
+The latest range after `b0594c72d18006b5865c70eb3a97e8b04064e600`
+through `4c5243fcd42d39c1fc281adcaf10be0913095f74` was reviewed on
+2026-09-04 and is `selective_absorbed`:
+
+| Capability | Status | Local target or boundary |
+| --- | --- | --- |
+| Runtime-unavailable incumbent visual evidence | absorbed with calibration | `reference-workflow.md` and `validation-contract.md` allow repository-owned committed visual-regression goldens or screenshot fixtures only after exact target, provenance, freshness, current-source, viewport, theme, and variant reconciliation; visible hypotheses do not become a browser/native pass |
+| Brief-pinned constraint and direction authority | absorbed | Existing `visual-judgment.md` already keeps product truth and explicit brief constraints authoritative while allowing deliberate visual-world replacement |
+| Development direction metadata outside production output | absorbed | Existing `prototype-workflow.md` already separates direction exploration from production implementation and requires prototype residue removal before delivery |
+| Critique snapshot lifecycle and persisted runtime state | partial | Evidence provenance and bounded critique are local; a second persistent critique/runtime state machine remains outside the package |
+| Roboto/system-stack, flat-hierarchy, gray-on-color, advisory, and URL detector corrections | partial | Useful upstream engine corrections were reviewed, but this absorption does not import parser dependencies or claim correctness beyond the pinned detector and disclosed regex fallback |
+| Live-browser, HMR, provider, hook, and image-generation runtime | intentionally-rejected | These duplicate browser67 or host runtime ownership and widen the trust boundary |
+| Generated host copies, fixtures, harness artifacts, and package output | provenance-only | Reviewed as downstream/generated surfaces; not vendored into the canonical Skill package |
+
+The reviewed range changed 863 files, dominated by generated provider and
+harness copies. The selected local behavior comes from upstream commit
+`6fe900dbb47a649ffd54044d4ac16ce04618ddbe`; the compatibility pin remains
+`80e4dd0d581fcdb42be62252b7bc07dcd2238330`.
+
+### Previous reviewed range
+
+The previous range after `f88b2837a7d7c3182e46307bbbb091a1ed547571`
 through `b0594c72d18006b5865c70eb3a97e8b04064e600` was reviewed on
 2026-08-29 and is `selective_absorbed`:
 
@@ -126,7 +147,7 @@ through `5c5553b1d7f9e89bb833f9179cea681742a17720` was reviewed on
 ### Cumulative selected boundary
 
 The cumulative absorption state remains `selective_absorbed` through the
-selected behavior boundary `b0594c72d18006b5865c70eb3a97e8b04064e600`:
+selected behavior boundary `6fe900dbb47a649ffd54044d4ac16ce04618ddbe`:
 
 | Capability | Status | Local target or boundary |
 | --- | --- | --- |
@@ -143,6 +164,7 @@ selected behavior boundary `b0594c72d18006b5865c70eb3a97e8b04064e600`:
 | Promotional or "award-winning" tone | intentionally-rejected | local output remains factual and evidence-led |
 | Workspace-aware authority, credential-safe detector output, and bounded local stylesheet context | absorbed | original local resolver and detector-policy modules with focused regression tests |
 | Exact-coordinate comp comparison | absorbed with calibration | measurement-only hashes, heatmaps, side-by-side and region artifacts; human/product/runtime verdicts remain separate |
+| Runtime-unavailable committed visual baseline | absorbed with calibration | Repository-owned goldens or screenshot fixtures require exact target, provenance, freshness, current-source, viewport, theme, and variant reconciliation; useful visible evidence does not turn an unavailable runtime into a pass |
 
 The compatibility pin remains at the selected canonical detector snapshot, not
 the reviewed remote head. New selected behavior is cleanly implemented in the
@@ -174,15 +196,16 @@ evidence unless the corresponding local tool actually ran.
 ## Current conclusion
 
 `missing-high-value`: none within the selected fusion boundary through remote
-head `b0594c72d18006b5865c70eb3a97e8b04064e600`, reviewed on 2026-08-29.
+head `4c5243fcd42d39c1fc281adcaf10be0913095f74`, reviewed on 2026-09-04.
 
 The cumulative state is selective absorption. General workflow, brief and
 change-scope authority, surface modes, native quality, detector discipline and
 correctness, workspace-owned authority, credential-safe output, reference-first
-fidelity, measurement-only comp evidence, post-fix verdicts, mechanical craft
-verification, hardening, and evidence honesty are local. The duplicative
-live/provider/package/hook runtime, forced delegation, universal visual bans,
-and prescriptive ecosystem choices remain intentionally outside the product.
+fidelity, measurement-only comp evidence, runtime-unavailable committed visual
+baselines, post-fix verdicts, mechanical craft verification, hardening, and
+evidence honesty are local. The duplicative live/provider/package/hook runtime,
+forced delegation, universal visual bans, and prescriptive ecosystem choices
+remain intentionally outside the product.
 
 Current independent blind evidence is recorded in
 `evals/comparative/impeccable-production-ablation/`: `design-craft` 100,

@@ -13,10 +13,11 @@ All notable local changes to `design-craft` are recorded here.
   sealed-rendition closeout, including global Codex route policy, portable
   fallback behavior, visual/runtime boundaries, semantic probes, Skill discovery
   metadata, and concise repository-level Agent maintenance guidance.
-- Review Taste through `ccbc156`, Impeccable through `b0594c7`, and Emil's
-  skills through `d23d7f8`; selectively absorb behavior without advancing the
-  pinned compatibility snapshots or importing upstream browser/provider,
-  generated-host, general Swift-editing, or forced-agent runtimes.
+- Review Taste through `ccbc156`, Impeccable through `4c5243f`, and Emil's
+  skills through `d23d7f8`; selectively absorb a freshness-checked committed
+  visual-baseline fallback without advancing pinned compatibility snapshots or
+  importing upstream detector/browser/provider, generated-host, general
+  Swift-editing, forced-agent, hook, or persistent critique runtimes.
 - Make implicit `DESIGN.md` and `PRODUCT.md` authority fail closed at project
   and workspace boundaries. Bounded non-symlink metadata reads, workspace
   negation and flow-YAML handling, package-local asset roots, and explicit

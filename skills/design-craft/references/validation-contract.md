@@ -326,6 +326,12 @@ Check and report:
 - Live browser/native behavior outranks static inference. A screenshot proves
   rendered appearance, not hidden interaction states; source proves only the
   supplied code and explicit branches.
+- When the required runtime cannot start, a committed visual-regression golden
+  or screenshot fixture may be used only as a runtime-unavailable fallback
+  after its exact target, repository provenance, freshness against current
+  tokens/CSS/components/assets, viewport, theme, and variant are reconciled.
+  This can support visible-layout hypotheses, but the task must remain
+  `incomplete` and no browser/native success may be claimed.
 - Contextual static signals such as fixed geometry, removed outlines, global
   booleans, easing, and shared transforms are review risks until complete
   ownership or runtime evidence rules out compensating behavior. Describe the
