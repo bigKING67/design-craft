@@ -32,6 +32,22 @@ Do not split merely to reduce file length if cohesion is still high.
 - Do not use React state for high-frequency scroll/pointer values.
 - Validate external API data at the boundary when shape is uncertain.
 
+## Lifecycle ownership
+
+- Every route into the same state must run the same required finalization side
+  effects. Prefer one transition or finalization boundary over duplicating
+  cleanup, progress, interaction, and notification work across observers,
+  recovery paths, callbacks, or normal user actions.
+- Async resource setup that crosses an `await` must be invalidatable by
+  teardown. Use an `AbortSignal`, a generation token, or epoch; re-check it
+  after every meaningful `await` and immediately before publishing DOM,
+  canvas, WebGL, object-URL, or other externally visible resources. Remove
+  orphaned nodes and release handles when construction loses ownership.
+- When one logical component may have multiple live instances, resolve its
+  owner by stable identity and semantic validity instead of the first DOM
+  match. Capture the instance set before a batch mutation, then restore or
+  release the same captured instance set.
+
 ## Errors and observability
 
 - Loading, empty, error, permission, and partial-data states are UI states, not

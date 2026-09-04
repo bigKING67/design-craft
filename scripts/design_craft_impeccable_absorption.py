@@ -60,6 +60,18 @@ COVERAGE = {
             "Loading, empty, error",
         ],
     },
+    "lifecycle_ownership": {
+        "paths": [
+            "skills/design-craft/references/engineering-quality.md",
+            "skills/design-craft/references/validation-contract.md",
+        ],
+        "terms": [
+            "Every route into the same state",
+            "generation token, or epoch",
+            "same captured instance set",
+            "Static source or source-shape tests can prove these guards",
+        ],
+    },
     "production_audit_discipline": {
         "paths": [
             "skills/design-craft/SKILL.md",
@@ -340,6 +352,7 @@ def self_check() -> None:
     if set(COVERAGE) != {
         "workflow_modes",
         "hardening_and_performance",
+        "lifecycle_ownership",
         "production_audit_discipline",
         "detector_and_evidence",
         "detector_correctness",

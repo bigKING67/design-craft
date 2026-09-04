@@ -2,7 +2,7 @@
 
 This document records the deliberate fusion and runtime boundary for
 `https://github.com/pbakaus/impeccable` through reviewed remote commit
-`4c5243fcd42d39c1fc281adcaf10be0913095f74`. The compatibility submodule stays
+`695df68a5860da4d25cd629fc3727ec8f3c0991b`. The compatibility submodule stays
 pinned at `80e4dd0d581fcdb42be62252b7bc07dcd2238330`; selected behavior from the
 newer reviewed range is represented by original local modules and contracts,
 not copied upstream runtime or generated files.
@@ -92,7 +92,28 @@ beside browser67 and the host's existing execution contracts.
 
 ## Latest reviewed range
 
-The latest range after `b0594c72d18006b5865c70eb3a97e8b04064e600`
+The latest range after `4c5243fcd42d39c1fc281adcaf10be0913095f74`
+through `695df68a5860da4d25cd629fc3727ec8f3c0991b` was reviewed on
+2026-09-04 and is `selective_absorbed`:
+
+| Capability | Status | Local target or boundary |
+| --- | --- | --- |
+| State-transition convergence | absorbed with calibration | `engineering-quality.md` requires every route into the same state to converge on one required finalization boundary; `validation-contract.md` exercises applicable normal, recovery/resume, observer, and hot-replacement paths |
+| Async construction and teardown ownership | absorbed with calibration | Local contracts require an `AbortSignal`, generation token, or epoch across meaningful `await` boundaries, a final ownership check before resource publication, and release of orphan DOM/browser resources |
+| Repeated-instance resolution and cleanup-set symmetry | absorbed with calibration | Local contracts prefer stable identity and semantic validity over first-match DOM lookup, capture the changed instance set, and restore or release that same set |
+| Upstream live-browser, HMR, session, shader, provider, and hook implementation | intentionally-rejected | browser67 and project tools retain runtime authority; upstream selectors, state machine, resource objects, and provider copies are not imported |
+| Regression tests, live-E2E harness changes, and sixteen generated provider copies | provenance-only | Reviewed as supporting or generated surfaces; they do not become local runtime or package code |
+
+The range changed 21 paths across six commits: one canonical live-browser
+implementation, four test or harness files, and sixteen generated provider
+copies. The selected local behavior comes from behavior-bearing commit
+`524fb8c9500e16a00fa2d55b5ee2d8ca787e2b36`; later commit `3b0f467` only
+strengthens upstream regression guards, and `695df68` synchronizes generated
+provider output. The compatibility pin remains `80e4dd0`.
+
+### Previous reviewed range
+
+The previous range after `b0594c72d18006b5865c70eb3a97e8b04064e600`
 through `4c5243fcd42d39c1fc281adcaf10be0913095f74` was reviewed on
 2026-09-04 and is `selective_absorbed`:
 
@@ -111,7 +132,7 @@ harness copies. The selected local behavior comes from upstream commit
 `6fe900dbb47a649ffd54044d4ac16ce04618ddbe`; the compatibility pin remains
 `80e4dd0d581fcdb42be62252b7bc07dcd2238330`.
 
-### Previous reviewed range
+### Earlier reviewed range
 
 The previous range after `f88b2837a7d7c3182e46307bbbb091a1ed547571`
 through `b0594c72d18006b5865c70eb3a97e8b04064e600` was reviewed on
@@ -147,7 +168,7 @@ through `5c5553b1d7f9e89bb833f9179cea681742a17720` was reviewed on
 ### Cumulative selected boundary
 
 The cumulative absorption state remains `selective_absorbed` through the
-selected behavior boundary `6fe900dbb47a649ffd54044d4ac16ce04618ddbe`:
+selected behavior boundary `524fb8c9500e16a00fa2d55b5ee2d8ca787e2b36`:
 
 | Capability | Status | Local target or boundary |
 | --- | --- | --- |
@@ -165,6 +186,7 @@ selected behavior boundary `6fe900dbb47a649ffd54044d4ac16ce04618ddbe`:
 | Workspace-aware authority, credential-safe detector output, and bounded local stylesheet context | absorbed | original local resolver and detector-policy modules with focused regression tests |
 | Exact-coordinate comp comparison | absorbed with calibration | measurement-only hashes, heatmaps, side-by-side and region artifacts; human/product/runtime verdicts remain separate |
 | Runtime-unavailable committed visual baseline | absorbed with calibration | Repository-owned goldens or screenshot fixtures require exact target, provenance, freshness, current-source, viewport, theme, and variant reconciliation; useful visible evidence does not turn an unavailable runtime into a pass |
+| Lifecycle transitions, async teardown, and repeated-instance cleanup | absorbed with calibration | Original local engineering and validation contracts require transition-side-effect convergence, invalidation before async resource publication, stable instance identity, and cleanup over the same captured set |
 
 The compatibility pin remains at the selected canonical detector snapshot, not
 the reviewed remote head. New selected behavior is cleanly implemented in the
@@ -196,14 +218,16 @@ evidence unless the corresponding local tool actually ran.
 ## Current conclusion
 
 `missing-high-value`: none within the selected fusion boundary through remote
-head `4c5243fcd42d39c1fc281adcaf10be0913095f74`, reviewed on 2026-09-04.
+head `695df68a5860da4d25cd629fc3727ec8f3c0991b`, reviewed on 2026-09-04.
 
 The cumulative state is selective absorption. General workflow, brief and
 change-scope authority, surface modes, native quality, detector discipline and
 correctness, workspace-owned authority, credential-safe output, reference-first
 fidelity, measurement-only comp evidence, runtime-unavailable committed visual
 baselines, post-fix verdicts, mechanical craft verification, hardening, and
-evidence honesty are local. The duplicative live/provider/package/hook runtime,
+evidence honesty are local. Lifecycle transition convergence, cancellation-safe
+async resource ownership, and symmetric repeated-instance cleanup are now also
+explicit local contracts. The duplicative live/provider/package/hook runtime,
 forced delegation, universal visual bans, and prescriptive ecosystem choices
 remain intentionally outside the product.
 

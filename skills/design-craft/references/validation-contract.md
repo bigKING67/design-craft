@@ -158,6 +158,28 @@ Static schema, syntax, or catalog validation cannot prove visual correctness,
 responsive layout, accessible interaction, data-binding truth, or runtime
 performance. Report those boundaries separately.
 
+### Lifecycle and repeated-instance checks
+
+When changed UI owns state transitions, async resources, or repeated live
+instances:
+
+- Exercise every route into the same state that exists in the changed flow,
+  including normal interaction, recovery/resume, observer callbacks, and hot
+  replacement where applicable. Verify identical required finalization,
+  progress, interaction, and notification side effects.
+- Pause async setup at meaningful resource-creating `await` boundaries, then
+  trigger teardown, unmount, replacement, or rapid reinvocation. Verify stale
+  work cannot publish after losing ownership and that orphan DOM, canvas,
+  WebGL, object URLs, observers, and handles are released.
+- When repeated instances are possible, exercise at least two candidates,
+  including an empty or stale first match when realistic. Verify stable
+  identity or semantic ownership selects the active instance, and that batch
+  rollback or cleanup restores the same captured instance set it changed.
+
+Static source or source-shape tests can prove these guards exist, but they do
+not prove browser timing, teardown ordering, or resource release. Keep runtime
+behavior unverified unless the applicable browser or native path actually ran.
+
 ## Screenshot evidence
 
 Use screenshot evidence when route output sets `browser_screenshot_required` or
