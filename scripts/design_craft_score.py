@@ -315,6 +315,20 @@ def build_score(root: Path, run_smoke: bool) -> list[Dimension]:
                 ("DESIGN.md" in skill, "DESIGN.md precedence present", "Make DESIGN.md/style authority explicit."),
                 ("report" in report.lower(), "report/data surface covered", "Add report/data-surface grammar."),
                 ("surface-specific" in surface.lower() or "surface playbooks" in surface.lower(), "surface playbooks present", "Cover surface-specific product jobs."),
+                (
+                    "## Chart or report intent" in report
+                    and "Count charts by independent conclusions" in report
+                    and "two or three candidates" in report,
+                    "project-neutral chart intent, selection, and composition contract present",
+                    "Add chart/report scope separation plus evidence-led chart selection and composition.",
+                ),
+                (
+                    "Lieflat Charts" in source_map
+                    and "external reference only" in source_map
+                    and "No source, templates, catalogs, tokens, media, or runtime" in source_map,
+                    "restricted chart reference provenance and redistribution boundary present",
+                    "Map the fixed chart reference without importing its restricted payload.",
+                ),
                 ("candidate_skills" in skill, "route candidate semantics present", "Separate route candidates from selected skills."),
                 (has(root, "skills/design-craft/references/design-system-contract.md"), "design-system contract exists", "Add design-system contract reference."),
                 (has(root, "skills/design-craft/references/component-primitive-selection.md"), "component primitive selection contract exists", "Add a framework-neutral component primitive decision contract."),

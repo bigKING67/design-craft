@@ -4,6 +4,11 @@ All notable local changes to `design-craft` are recorded here.
 
 ## Unreleased
 
+- Add project-neutral chart/report intent, question-and-data-shape selection,
+  encoding-integrity, multi-chart composition, and browser-evidence guidance
+  after a fixed-commit Lieflat Charts review. Record it as a restricted external
+  reference without redistributing its source, templates, catalogs, tokens,
+  media, runtime, or dependencies.
 - Add an evidence-mode route axis for measurement-only comp fidelity and
   sealed-rendition closeout, including global Codex route policy, portable
   fallback behavior, visual/runtime boundaries, semantic probes, Skill discovery

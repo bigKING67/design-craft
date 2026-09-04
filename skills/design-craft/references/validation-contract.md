@@ -134,6 +134,30 @@ Default flow:
 4. Inspect DOM/computed style only when needed to prove a specific condition.
 5. Finalize managed tabs unless the user asked to keep them.
 
+### Chart and report checks
+
+When chart or report behavior changes, validate the rendered result against the
+source data, not only against the expected layout:
+
+- Trace displayed values, units, filters, aggregation, and rounding from source
+  records to marks and labels.
+- Verify zero baselines for length-encoded bars, visible zero crossings for
+  diverging values, square-root radius scaling for area encodings,
+  non-negative hierarchical weights for treemaps, and explicit normalized
+  meaning for choropleth fills.
+- Exercise negative, zero, missing, single-value, dense, extreme, and
+  greater-than-100-percent inputs when those states are possible.
+- Confirm color is not the only cue and that legends, direct labels, tooltips,
+  focus, keyboard access, and Reduced Motion remain usable where applicable.
+- Confirm tooltips and drill-down resolve to real queryable records instead of
+  fabricated detail or precision.
+- Check desktop and narrow layouts, long-label wrapping, empty states, tooltip
+  clipping, and resize after a hidden container becomes visible.
+
+Static schema, syntax, or catalog validation cannot prove visual correctness,
+responsive layout, accessible interaction, data-binding truth, or runtime
+performance. Report those boundaries separately.
+
 ## Screenshot evidence
 
 Use screenshot evidence when route output sets `browser_screenshot_required` or

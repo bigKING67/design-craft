@@ -54,10 +54,25 @@ Primary job: monitor, compare, operate, decide.
 
 Primary job: reveal a comparison, trend, composition, distribution, or anomaly.
 
-- Pick the chart from the analytical question, not decoration.
+- Keep the requested deliverable honest: a chart request stays a chart request;
+  analysis alone does not imply a complete report. Use the report mode only
+  when the user asks for a structured narrative deliverable.
+- Pick the chart from the analytical question and data shape, not decoration,
+  a gallery category, or the chart library's most convenient example.
+- Count charts by independent conclusions, not available columns or template
+  slots. Remove repeated views that make the same point.
+- Prefer the simplest familiar encoding that preserves magnitude, order, and
+  uncertainty. For ambiguous or high-consequence choices, compare two or three
+  candidates on encoding truth, label density, reading time, and interaction
+  need; do not force this ceremony for an obvious simple choice.
+- Preserve project `DESIGN.md`, existing component/library choices, and runtime
+  constraints as authority over external chart galleries.
 - Keep tables as supporting evidence when charts can carry the story.
-- Use accessible color ramps and direct labels where possible.
+- Use accessible color ramps and direct labels where possible; color must not
+  be the only cue for series, state, direction, or selection.
 - Verify tooltip overflow, legend wrapping, and small viewport readability.
+- For report composition and encoding-integrity checks, also read
+  `references/report-quality.md`.
 
 ## Static or special report
 

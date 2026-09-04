@@ -135,6 +135,28 @@ contextual partial coverage.
 
 ## External design references
 
+### Lieflat Charts — restricted external data-visualization reference
+
+- URL: `https://github.com/larashero3-dotcom/lieflat-charts`
+- Reviewed reference commit: `475c9b67ead1f3d63bda73a94b9bf339e9d5c0b6`
+- Review date: 2026-09-04.
+- License: PolyForm Noncommercial License 1.0.0.
+- Role: external reference only; not an upstream submodule, code dependency,
+  template authority, or package payload.
+- Local behavior adaptation:
+  - `references/surface-playbooks.md`
+  - `references/report-quality.md`
+  - `references/validation-contract.md`
+
+The fixed commit was reviewed for chart-versus-report intent, analytical
+question and data-shape selection, encoding integrity, multi-chart composition,
+and queryable interaction. The local guidance is original, project-neutral,
+and subordinate to project `DESIGN.md`, business truth, installed libraries,
+and runtime evidence. No source, templates, catalogs, tokens, media, or runtime
+are redistributed from this reference. Personal noncommercial use of the
+standalone project is a separate license decision from redistribution in this
+MIT-licensed package.
+
 ### Vercel design references and clean-room replacement
 
 - URLs:

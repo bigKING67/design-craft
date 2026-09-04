@@ -189,6 +189,7 @@
     "tests/unit/test_comparative_validation.py",
     "tests/unit/test_component_primitive_contract.py",
     "tests/unit/test_cross_agent_validation.py",
+    "tests/unit/test_data_visualization_contract.py",
     "tests/unit/test_maturity_profiles.py",
     "tests/unit/test_github_runs.py",
     "tests/unit/test_github_governance.py",
