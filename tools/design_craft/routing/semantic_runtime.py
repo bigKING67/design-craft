@@ -112,7 +112,7 @@ def _validate_route_probes(
     ) in zip(
         [
             ("external", "tmwd_browser"),
-            ("local", "in_app_browser"),
+            ("local", "tmwd_browser"),
         ],
         probe_results[:2],
     ):
@@ -194,11 +194,11 @@ def _validate_route_probes(
         and payload.get("planned_browser_lifecycle")
         == payload.get("browser_lifecycle")
         and payload.get("actual_browser_lifecycle_state", {}).get("state")
-        == "not_applicable"
+        == "not_started"
         and payload.get("actual_browser_lifecycle_state", {}).get(
             "finalize_result"
         )
-        == "not_applicable"
+        == "not_started"
     )
     probes.append(
         {
