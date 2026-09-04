@@ -4,6 +4,8 @@ All notable local changes to `design-craft` are recorded here.
 
 ## Unreleased
 
+## 0.7.0 - 2026-09-04
+
 - Add project-neutral chart/report intent, question-and-data-shape selection,
   encoding-integrity, multi-chart composition, and browser-evidence guidance
   after a fixed-commit Lieflat Charts review. Record it as a restricted external
