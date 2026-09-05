@@ -90,6 +90,55 @@ beside browser67 and the host's existing execution contracts.
 | Safe single-file stylesheet context | absorbed with calibration | `detector_policy.py` resolves bounded package-local CSS, strips query/fragment syntax, reports ambiguous root-relative paths, and rejects project escapes and symlink traversal; detector stdout and stderr URL credentials are redacted |
 | Comp-fidelity evidence | absorbed with calibration | `comp-fidelity.md` and `design_craft_comp_fidelity.py` use one immutable snapshot per input for parsing, size, and hash; strict PNG/artifact validation produces exact-coordinate per-region measurements with a permanent `measurement_only` verdict |
 
+## Pending engine migration assessment (2026-09-05)
+
+Disposition: **defer engine adoption; keep the compatibility pin**. This is a
+bounded compatibility assessment, not a completed review of the new runtime.
+The lock's reviewed and absorbed boundaries remain unchanged.
+
+Examined range: `695df68a5860da4d25cd629fc3727ec8f3c0991b` through
+`8dac6ae7e020c43ab10ce9b41939f6fd42627b96`: 14 commits and 4,156 file records
+from a local forward Git comparison with rename detection disabled. The
+GitHub compare response contained only 300 records; that partial response is
+not sufficient inventory evidence. The report now detects that boundary and
+can recover the full range from existing local objects without fetching or
+changing the checkout.
+
+Assessment coverage and decisions:
+
+- The 14 changed canonical `skill/SKILL.src.md` / `skill/reference/*` documents
+  were compared at token level. Their changes replace Node script invocations
+  with engine verbs and describe the binary launcher. No additional local
+  design-method change was selected from those deltas.
+- The new tree deletes `skill/scripts/detect.mjs` and
+  `cli/engine/detect-antipatterns.mjs`. The local
+  `skills/design-craft/scripts/design_craft_detect.sh` still discovers the
+  former JS entrypoint. Updating the pin alone would remove that candidate;
+  it would not adapt the wrapper to the Rust detector. Existing unavailable
+  and fallback behavior must remain explicit.
+- `skill/scripts/impeccable` introduces binary discovery, an engine handshake,
+  a versioned cache, and a download fallback. These are upstream runtime
+  mechanisms, not automatically authorized local dependencies or host writes.
+- [Signed bundle verification](https://github.com/pbakaus/impeccable/commit/8dac6ae7e020c43ab10ce9b41939f6fd42627b96)
+  was inspected as a future distribution reference: authenticate before
+  extraction, bind assets to one release, and reuse the verified file handle.
+  It was not implemented locally. The current local installer stages and
+  verifies repository source; it does not consume that upstream remote ZIP.
+- The full Rust engine, generated provider trees, extension runtime, and
+  release chain were not built or independently validated. Inventory coverage
+  does not imply behavioral or security review of all 4,156 records.
+
+Local validation: `PYTHONDONTWRITEBYTECODE=1 python3 -m unittest
+tests.unit.test_impeccable_detector_contract` passed all 14 tests against the
+unchanged `80e4dd0d581fcdb42be62252b7bc07dcd2238330` pin. This is current-pin
+source/contract evidence, not proof of new-engine compatibility or performance.
+
+Reconsider adoption only for a concrete local need. An authorized migration
+would first compare detector output/exit behavior, unavailable-runtime handling,
+platform support, distribution trust, and rollback against the current wrapper.
+Keep browser67 and project authority intact; do not advance review metadata
+merely to clear a remote freshness alert.
+
 ## Latest reviewed range
 
 The latest range after `4c5243fcd42d39c1fc281adcaf10be0913095f74`

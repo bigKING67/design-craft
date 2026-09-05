@@ -4,6 +4,10 @@ All notable local changes to `design-craft` are recorded here.
 
 ## Unreleased
 
+- Record the bounded Impeccable Rust-engine assessment and current detector
+  compatibility boundary; defer adoption without advancing upstream pins or
+  review metadata.
+
 - Decode local Git comparison output explicitly as UTF-8 so Windows locale
   defaults cannot corrupt non-ASCII paths; preserve literal filename newlines.
 
