@@ -25,7 +25,7 @@ export PYTHONDONTWRITEBYTECODE := 1
 	cross-agent-check cross-agent-history-check cross-agent-observed-check cross-agent-four-host-check \
 	cross-agent-motion-observed-check cross-agent-native-observed-check comparative-check comparative-history-check \
 	comparative-observed-check history-audit l4-capture-check historical-l4-metadata-check real-l4-check smell-smoke static-review-smoke \
-	upstream-report upstream-absorption-check taste-absorption-check impeccable-absorption-check emil-absorption-check \
+	upstream-report upstream-absorption-check taste-absorption-check impeccable-absorption-check emil-absorption-check jakub-absorption-check \
 	upstream-freshness-audit upstream-remote-report sync-status-check sync-status sync-status-remote install install-verify \
 	github-governance-contract-check github-governance-check github-governance-apply release-gate-source publish-local \
 	release-readiness-operational release-tag-verify-operational release-assets-build-operational \
@@ -256,7 +256,10 @@ impeccable-absorption-check:
 emil-absorption-check:
 	python3 scripts/design_craft_emil_absorption.py --check --strict
 
-upstream-absorption-check: taste-absorption-check impeccable-absorption-check emil-absorption-check
+jakub-absorption-check:
+	python3 -m unittest tests.unit.test_jakub_upstream_contract
+
+upstream-absorption-check: taste-absorption-check impeccable-absorption-check emil-absorption-check jakub-absorption-check
 
 upstream-freshness-audit:
 	python3 scripts/upstream_absorption_report.py --remote-details --fail-on-unreviewed

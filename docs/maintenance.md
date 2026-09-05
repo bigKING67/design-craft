@@ -6,7 +6,8 @@ This document is the local release and maintenance checklist for
 ## Maintenance rules
 
 - Keep `upstreams/` pristine. Do not edit `upstreams/taste-skill`,
-  `upstreams/impeccable`, or `upstreams/emilkowalski-skills` directly.
+  `upstreams/impeccable`, `upstreams/emilkowalski-skills`, or
+  `upstreams/jakubkrehel-skills` directly.
 - Keep the installable skill lean. `README.md`, `CHANGELOG.md`, release notes,
   and maintenance docs belong at the repo root or under `docs/`, not inside
   `skills/design-craft/`.
@@ -22,9 +23,10 @@ This document is the local release and maintenance checklist for
   optional project `PRODUCT.md` plus project `DESIGN.md` outrank the fusion
   references. PRODUCT owns product/platform facts; DESIGN remains the only
   visual/token/component/theme/motion authority.
-- Treat `upstreams/taste-skill`, `upstreams/impeccable`, and
-  `upstreams/emilkowalski-skills` as provenance and deliberate absorption inputs
-  only. Do not reintroduce automatic upstream skill overwrites or legacy taste
+- Treat `upstreams/taste-skill`, `upstreams/impeccable`,
+  `upstreams/emilkowalski-skills`, and `upstreams/jakubkrehel-skills` as
+  provenance and deliberate absorption inputs only. Do not reintroduce
+  automatic upstream skill overwrites or legacy taste
   routing.
 - Keep helper scripts deterministic and cheap enough to run before real
   UI/UX/design/frontend work.
@@ -211,6 +213,9 @@ Expected result:
 - Upstream absorption report runs without fetching or modifying submodules; the
   optional `--remote` check reports remote drift with `git ls-remote`.
 - Upstream lock commits match checked-out submodule commits.
+- Jakub inventory, selected source hashes, local mappings, and review boundaries
+  are checked by `make jakub-absorption-check`; remote freshness uses the shared
+  lock-driven report. Deferred entrypoints are not counted as absorbed.
 - Taste, Impeccable, and Emil absorption matrices validate their complete
   entrypoint inventories, local coverage, cumulative state, latest reviewed
   range, and intentional rejection boundaries.

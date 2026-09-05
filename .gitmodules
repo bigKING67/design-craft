@@ -7,3 +7,6 @@
 [submodule "upstreams/emilkowalski-skills"]
 	path = upstreams/emilkowalski-skills
 	url = https://github.com/emilkowalski/skills.git
+[submodule "upstreams/jakubkrehel-skills"]
+	path = upstreams/jakubkrehel-skills
+	url = https://github.com/jakubkrehel/skills.git

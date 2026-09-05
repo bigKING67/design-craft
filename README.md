@@ -658,7 +658,7 @@ python3 scripts/upstream_absorption_report.py --remote-details
 
 Verify the reviewed inventory, cumulative absorption state, latest-range
 decision, local capability mapping, and explicit rejection boundary for all
-three upstreams:
+four upstreams:
 
 ```bash
 make upstream-absorption-check
@@ -669,12 +669,10 @@ The human-readable matrices are:
 - `docs/taste-skill-absorption.md`
 - `docs/impeccable-absorption.md`
 - `docs/emilkowalski-absorption.md`
-
-Candidate references are assessed separately from those registered upstreams:
-
-- [Jakub Krehel skills candidate review](docs/jakubkrehel-candidate-review.md):
-  fixed-revision screening and selected writing/component-scenario adaptations;
-  remaining entrypoints are candidates, outside automated freshness checks.
+- [Jakub Krehel review](docs/jakubkrehel-candidate-review.md): fixed-revision
+  screening and selected writing/component-scenario adaptations. Its registered
+  submodule participates in freshness checks; remaining entrypoints are deferred
+  candidates, not additional adopted behavior.
 
 The taste and Emil Skill trees contain instructions and snippets rather than a
 component/runtime source library. Impeccable includes a substantial live and
@@ -701,6 +699,7 @@ The upstream repositories are kept as pinned submodules:
 - `upstreams/taste-skill`
 - `upstreams/impeccable`
 - `upstreams/emilkowalski-skills`
+- `upstreams/jakubkrehel-skills`
 
 Do not edit upstream files directly. Update the fusion layer under
 `skills/design-craft/`, update attribution when needed, and record upstream

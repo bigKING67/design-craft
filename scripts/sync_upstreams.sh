@@ -8,7 +8,7 @@ COMMIT=""
 usage() {
   cat <<'EOF'
 Usage:
-  scripts/sync_upstreams.sh --name <taste-skill|impeccable|emilkowalski-skills> --commit <sha>
+  scripts/sync_upstreams.sh --name <taste-skill|impeccable|emilkowalski-skills|jakubkrehel-skills> --commit <sha>
 
 Fetches and checks out one explicit upstream commit, then updates only the
 compatibility `commit` field in upstreams.lock.json. Review metadata and
@@ -40,9 +40,9 @@ while [[ $# -gt 0 ]]; do
 done
 
 case "${NAME}" in
-  taste-skill|impeccable|emilkowalski-skills) ;;
+  taste-skill|impeccable|emilkowalski-skills|jakubkrehel-skills) ;;
   *)
-    echo "--name must be taste-skill, impeccable, or emilkowalski-skills" >&2
+    echo "--name must be taste-skill, impeccable, emilkowalski-skills, or jakubkrehel-skills" >&2
     exit 2
     ;;
 esac

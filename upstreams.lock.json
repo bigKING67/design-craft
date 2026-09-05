@@ -192,6 +192,63 @@
           "write-swift": "intentionally_rejected"
         }
       }
+    },
+    "jakubkrehel-skills": {
+      "repo": "https://github.com/jakubkrehel/skills.git",
+      "path": "upstreams/jakubkrehel-skills",
+      "license": "MIT",
+      "commit": "267330e1adfc66a718fb65fa6918c1f06d0a689e",
+      "reviewed_commit": "267330e1adfc66a718fb65fa6918c1f06d0a689e",
+      "absorbed_commit": "267330e1adfc66a718fb65fa6918c1f06d0a689e",
+      "reviewed_through_commit": "267330e1adfc66a718fb65fa6918c1f06d0a689e",
+      "behavior_absorbed_through_commit": "267330e1adfc66a718fb65fa6918c1f06d0a689e",
+      "latest_range_base_commit": "267330e1adfc66a718fb65fa6918c1f06d0a689e",
+      "latest_range_head_commit": "267330e1adfc66a718fb65fa6918c1f06d0a689e",
+      "cumulative_status": "selective_absorbed",
+      "latest_range_status": "selective_absorbed",
+      "reviewed_at": "2026-09-05",
+      "decision": "partial",
+      "notes": "Initial fixed-snapshot review, so latest range base equals head. All 11 entrypoints were screened; only better-writing and break received detailed source review and selected local adaptations. Other supporting references remain unreviewed. Registration enables freshness tracking without expanding behavioral adoption or importing plugin, host, or browser runtime.",
+      "coverage_contract": "design-craft.jakub-absorption.v1",
+      "coverage_matrix": "docs/jakubkrehel-candidate-review.md",
+      "skill_inventory": {
+        "skills": [
+          "better-accessibility",
+          "better-colors",
+          "better-interface",
+          "better-layout",
+          "better-typography",
+          "better-ui",
+          "better-writing",
+          "break",
+          "explain-interface",
+          "interface-review",
+          "variant"
+        ],
+        "entrypoint_decisions": {
+          "better-accessibility": "deferred",
+          "better-colors": "deferred",
+          "better-interface": "deferred",
+          "better-layout": "deferred",
+          "better-typography": "deferred",
+          "better-ui": "deferred",
+          "better-writing": "partial",
+          "break": "partial",
+          "explain-interface": "deferred",
+          "interface-review": "deferred",
+          "variant": "deferred"
+        },
+        "local_coverage": {
+          "better-writing": "skills/design-craft/references/design-system-contract.md",
+          "break": "skills/design-craft/references/impeccable-workflow.md"
+        },
+        "reviewed_source_sha256": {
+          "skills/better-writing/SKILL.md": "d53163382a058f06e00ac0b36312189108b006aa0b05869c71a70f5c213c44ae",
+          "skills/break/SKILL.md": "4b8a1d6b60c2d522432765ab90e9b794fa36dc54f08d1a734c5cb2a1baa69ff1",
+          "skills/break/scenarios.md": "5aacf085d5eca87b7b5e4f1b0a7412bfd532c8eaa574f455a5b1ffb00cdf86e9",
+          "LICENSE": "ed1dfe988fc40511b4845ccd9050a143a2002fee3bedc8064c47fa342b5d8d4f"
+        }
+      }
     }
   }
 }

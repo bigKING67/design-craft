@@ -4,6 +4,10 @@ All notable local changes to `design-craft` are recorded here.
 
 ## Unreleased
 
+- Register Jakub Krehel skills as a fourth pinned provenance submodule, with
+  selective adoption metadata, inventory/hash checks, and shared freshness and
+  explicit-pin synchronization support. Keep remaining entrypoints deferred.
+
 - Add a persistent-agent surface playbook for truthful task status,
   control handoff, task-shaped results, and recurring work, with scoped use
   and attribution to xAI's design case study. Preserve product architecture,

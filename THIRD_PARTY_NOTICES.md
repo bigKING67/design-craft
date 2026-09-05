@@ -3,7 +3,7 @@
 This project is a personal fusion layer built on top of upstream open-source
 design engineering and frontend quality skill projects. Upstream repositories
 registered in the upstream lock are kept as pristine submodules under
-`upstreams/`. Selected external references are identified separately below.
+`upstreams/`. Reviewed sources and their adoption boundaries are identified below.
 
 ## jakubkrehel/skills
 
@@ -16,10 +16,12 @@ registered in the upstream lock are kept as pristine submodules under
 Original local adaptations cover flow vocabulary, enabled-state toggle labels,
 complete localized messages, persistent guidance outside empty states, and
 component-input-driven scenario inspection. They live in the existing
-design-system and hardening references. No upstream plugin, host configuration,
-browser runtime or source snapshot is distributed. Other entrypoints remain
-screened candidates, not adopted behavior. This fixed external reference is
-not enrolled in the three-submodule freshness checks.
+design-system and hardening references. The installed package includes no
+upstream plugin, host configuration, browser runtime or source snapshot. The
+repository keeps pristine provenance at `upstreams/jakubkrehel-skills`.
+Other entrypoints remain
+screened candidates, not adopted behavior. This fixed selective reference is
+registered in `upstreams.lock.json` and enrolled in upstream freshness checks.
 
 The preserved distribution license is `LICENSES/MIT-upstreams.txt`.
 

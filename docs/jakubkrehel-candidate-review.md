@@ -3,7 +3,8 @@
 Decision: use `jakubkrehel/skills` as a **fixed selective reference** for the
 writing and component-scenario instructions below. Remaining entrypoints stay
 candidates. This is not a whole-upstream absorption-complete claim or a runtime
-dependency. It does not enroll a fourth submodule in automated freshness checks.
+dependency. It is now registered as the fourth pristine submodule for automated
+freshness checks; registration does not expand the reviewed or adopted scope.
 
 ## Source and evidence boundary
 
@@ -183,12 +184,20 @@ preserving the original project. Coverage remains partial: this was main-agent
 application, not independent Host testing or full writing-flow validation.
 Older source-bound host/comparative/native receipts are not reused as proof.
 
-Keep `upstreams.lock.json` and its three registered submodules unchanged until
-formal tracking is in scope. Adding this candidate to automated freshness
-requires deliberate integration with the existing lock/report validators;
-do not silently add an unsupported status or label it absorbed. Review future
-changes by relevant source paths/content as well as revision, so host metadata
-or README churn does not imply changed design behavior.
+## Formal tracking
 
-No global route-pack write, installation, commit, push or release is part of
-this candidate record.
+Registered on 2026-09-05 at the same reviewed revision under
+`upstreams/jakubkrehel-skills`, with `selective_absorbed` cumulative status.
+The initial snapshot uses equal latest-range base/head; this records an initial
+review, not a claim that an empty diff supplied the adopted behavior.
+`upstreams.lock.json` owns the inventory, partial/deferred decisions, selected
+source hashes, and local mappings; this document remains the human rationale.
+
+`make jakub-absorption-check` verifies that contract and participates in
+`make upstream-absorption-check`. The shared report and scheduled audit discover
+the new lock entry automatically. Review future changes by relevant source
+paths/content as well as revision; README or host metadata churn does not imply
+changed design behavior. Synchronizing a pin never advances review or absorption
+metadata automatically.
+
+Global route-pack writes, installation, push and release remain separate actions.
