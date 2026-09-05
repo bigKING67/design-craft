@@ -4,6 +4,9 @@ All notable local changes to `design-craft` are recorded here.
 
 ## Unreleased
 
+- Decode local Git comparison output explicitly as UTF-8 so Windows locale
+  defaults cannot corrupt non-ASCII paths; preserve literal filename newlines.
+
 - Detect incomplete GitHub comparison file and commit lists before issuing an
   absorption recommendation. Recover complete forward ranges from existing
   local Git objects, or explicitly retain manual-review status without fetching

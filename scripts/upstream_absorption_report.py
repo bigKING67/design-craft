@@ -323,10 +323,12 @@ def local_compare(path: Path, base: str, head: str, name: str) -> tuple[list[Rem
 
     def git(*args: str) -> str:
         result = subprocess.run(
-            ["git", "-C", str(path), *args], capture_output=True, text=True,
+            ["git", "-C", str(path), *args], capture_output=True,
             timeout=30, check=True,
         )
-        return result.stdout
+        # Git emits UTF-8 paths on Windows too. Decode explicitly and avoid
+        # text-mode newline translation for legal POSIX filename bytes.
+        return result.stdout.decode("utf-8", errors="surrogateescape")
 
     git("merge-base", "--is-ancestor", base, head)
     # NUL delimiters preserve tabs/newlines and non-ASCII filenames. Disable

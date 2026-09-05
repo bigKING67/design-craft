@@ -41,7 +41,7 @@ class CompareCompletenessTests(unittest.TestCase):
             base = git("rev-parse", "HEAD")
             names = [f"file-{i}.md" for i in range(301)] + ["中文.md"]
             if sys.platform != "win32":
-                names += ["tab\tname.md", "line\nname.md"]
+                names += ["tab\tname.md", "line\nname.md", "carriage\rname.md"]
             for name in names:
                 (root / name).write_text("fixture")
             git("add", "--", *names)
