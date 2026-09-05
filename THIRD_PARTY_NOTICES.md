@@ -2,7 +2,26 @@
 
 This project is a personal fusion layer built on top of upstream open-source
 design engineering and frontend quality skill projects. Upstream repositories
-are kept as pristine submodules under `upstreams/`.
+registered in the upstream lock are kept as pristine submodules under
+`upstreams/`. Selected external references are identified separately below.
+
+## jakubkrehel/skills
+
+- Repository: https://github.com/jakubkrehel/skills
+- Reviewed source revision: `267330e1adfc66a718fb65fa6918c1f06d0a689e`
+- License: MIT; copyright 2026 Jakub Krehel.
+- Selected sources: `skills/better-writing/SKILL.md`,
+  `skills/break/SKILL.md`, and `skills/break/scenarios.md`.
+
+Original local adaptations cover flow vocabulary, enabled-state toggle labels,
+complete localized messages, persistent guidance outside empty states, and
+component-input-driven scenario inspection. They live in the existing
+design-system and hardening references. No upstream plugin, host configuration,
+browser runtime or source snapshot is distributed. Other entrypoints remain
+screened candidates, not adopted behavior. This fixed external reference is
+not enrolled in the three-submodule freshness checks.
+
+The preserved distribution license is `LICENSES/MIT-upstreams.txt`.
 
 ## Leonxlnx/taste-skill
 

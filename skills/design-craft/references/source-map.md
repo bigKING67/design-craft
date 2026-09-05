@@ -139,6 +139,23 @@ contextual partial coverage.
 
 ## External design references
 
+### Jakub Krehel skills — selected writing and hardening guidance
+
+- Source: https://github.com/jakubkrehel/skills
+- Fixed reviewed revision: `267330e1adfc66a718fb65fa6918c1f06d0a689e`.
+- Selected paths: `skills/better-writing/SKILL.md`, `skills/break/SKILL.md`
+  and `skills/break/scenarios.md`.
+- Local adaptations: voice/content in `design-system-contract.md` and
+  component scenario inspection in `impeccable-workflow.md`.
+- License/attribution: MIT, copyright 2026 Jakub Krehel; preserved in the
+  package's third-party notices and MIT upstream license.
+
+This is a fixed external reference, not a fourth managed submodule. Only the
+selected instructional behavior is adapted. Exact global visual recipes,
+one-look browser limits, universal client-component conversion and upstream
+host orchestration are excluded. Local product authority and runtime evidence
+continue to govern; source incorporation does not prove a real-project run.
+
 ### Lieflat Charts — restricted external data-visualization reference
 
 - URL: `https://github.com/larashero3-dotcom/lieflat-charts`

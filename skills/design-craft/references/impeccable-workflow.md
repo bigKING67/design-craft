@@ -191,6 +191,51 @@ Use realistic hostile data:
 Fix with flexible layout, overflow handling, tooltips/disclosures where useful,
 clear error UI, bounded lists, pagination/virtualization, and explicit states.
 
+### Component scenario inspection
+
+When a hardening request needs rendered edge-state evidence for a component,
+reuse an existing story or isolated preview before building a local harness.
+Review-only authorization permits inspection of existing surfaces; creating or
+editing a harness needs implementation or exploration scope. Scope the unit
+from the request and component inputs rather than starting a whole-app sweep.
+
+Plan cases from reachable inputs, recording the applicable axis and why omitted
+axes do not apply. The hostile-data values above are examples, not mandatory
+loads or permission to exceed product limits:
+
+| Input or condition | Applicable cases |
+| --- | --- |
+| External text or translations | Empty, typical, long, unbreakable; supported scripts, emoji or mixed direction where relevant. |
+| Repeated items | Zero, one, typical and the supported upper bound; use local fixtures, not live traffic. |
+| Available space | Narrow and wide containers, plus flex/grid sibling pressure where used. |
+| Defined states | Loading, error, disabled and recovery paths the real component supports. |
+| Supported environment | Actual themes, viewport breakpoints, zoom, keyboard/input and reduced motion relevant to the request. |
+
+Import the real component with its fonts, tokens and necessary providers. Keep
+its server/client boundary intact; do not convert a server component into a
+client component to make a harness compile. Feed explicit local fixtures,
+isolate service/storage effects, and keep harness wiring out of production
+imports, navigation and shipping bundles. Use the existing isolated preview or
+Shadow Lab boundary when a scratch route would otherwise enter production.
+
+Label each case and place a short observed-failure note beside the affected
+instance. Container widths test container behavior only: they do not exercise
+viewport media queries, viewport units, browser zoom or device input. Exercise
+those through the actual runtime and verify the resulting conditions. Use
+real interactions for focus, hover and recovery rather than a styled imitation.
+
+Follow the established browser/native ownership and `validation-contract.md`.
+Report each planned case as observed pass, observed failure or unverified,
+with the exercised condition and evidence. A generated page, source prediction
+or URL handed to the user is not an observed pass. Keep performance claims
+separate from visual overflow observations. Recheck failing cases after a fix
+and broaden only when shared behavior or new evidence warrants it.
+
+Deliver the preview/artifact location, coverage, observed failures and owning
+component or rule. Retain only what the project's preview policy or the user
+requires, state cleanup ownership, and stop task-owned processes when their
+inspection purpose ends; do not keep a server alive merely to preserve a report.
+
 ## Optimize pass
 
 Measure or establish a baseline first. Then target:

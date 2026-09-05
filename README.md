@@ -670,6 +670,12 @@ The human-readable matrices are:
 - `docs/impeccable-absorption.md`
 - `docs/emilkowalski-absorption.md`
 
+Candidate references are assessed separately from those registered upstreams:
+
+- [Jakub Krehel skills candidate review](docs/jakubkrehel-candidate-review.md):
+  fixed-revision screening and selected writing/component-scenario adaptations;
+  remaining entrypoints are candidates, outside automated freshness checks.
+
 The taste and Emil Skill trees contain instructions and snippets rather than a
 component/runtime source library. Impeccable includes a substantial live and
 provider runtime; its matrix records why design-craft absorbs the workflow,

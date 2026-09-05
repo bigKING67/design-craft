@@ -4,6 +4,11 @@ All notable local changes to `design-craft` are recorded here.
 
 ## Unreleased
 
+- Selectively adapt Jakub Krehel's fixed-revision product-writing and component
+  scenario guidance into existing design-system and hardening references;
+  preserve MIT attribution and local runtime/authority boundaries. Other
+  entrypoints remain candidates; no fourth submodule or host runtime is added.
+
 ## 0.7.0 - 2026-09-04
 
 - Add project-neutral chart/report intent, question-and-data-shape selection,

@@ -215,6 +215,26 @@ UI copy is part of the system:
   `successfully`.
 - Empty states should point to the first useful action.
 - Loading states should describe the in-progress action.
+- Preserve the product's vocabulary across menus, dialogs, settings, and
+  toasts. Match nearby copy and localization conventions; adjust tone to the
+  consequence without inventing a new voice for a local edit.
+- Describe a toggle's enabled behavior, so the disabled behavior is easy to
+  infer. Prefer `Send read receipts` to a negative label that reverses twice.
+- Localize complete messages with the project's plural/select mechanism;
+  do not concatenate translated fragments around a count or name. Casing and
+  word order follow the target language, not an English-only template.
+- Keep persistent instructions outside empty states that disappear when data
+  arrives. Distinguish a new collection from a search with no matches; the
+  latter should identify the active query/filter and provide a useful exit.
+- Link labels should identify their destination independently. Placeholders
+  show examples or formats and never replace persistent field labels.
+- Error guidance must match the actual failed condition and an available
+  recovery action. Do not invent validation restrictions or blame a network
+  connection without evidence; recurring mistakes may require interaction fixes.
+
+Source inspection can verify terminology, templates, and action bindings.
+Translation fit, truncation, and assistive announcements require the relevant
+rendered or accessibility evidence from `validation-contract.md`.
 
 ## Audit checklist
 
