@@ -174,7 +174,8 @@ Read only references required by the current task.
   `references/product-design-principles.md`.
 - Subjective briefs such as "too AI", flat color, weak copy, poor mobile,
   jank, or messy structure: `references/intent-map.md`.
-- Surface-specific landing, dashboard, data-viz, report, and mobile rules:
+- Surface-specific landing, dashboard, persistent-agent workspace, data-viz,
+  report, and mobile rules:
   `references/surface-playbooks.md`.
 - Supplied, generated, or discovery-source references:
   `references/reference-workflow.md`; use its Reference Card, Pack, evidence,

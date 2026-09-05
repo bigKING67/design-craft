@@ -4,6 +4,11 @@ All notable local changes to `design-craft` are recorded here.
 
 ## Unreleased
 
+- Add a persistent-agent surface playbook for truthful task status,
+  control handoff, task-shaped results, and recurring work, with scoped use
+  and attribution to xAI's design case study. Preserve product architecture,
+  execution authority, and runtime evidence boundaries.
+
 - Clarify loaded-Skill helper paths versus repository maintenance commands,
   existing-project authority diagnosis, and bounded Shadow Lab retries while
   preserving failed receipts and source/runtime evidence boundaries.

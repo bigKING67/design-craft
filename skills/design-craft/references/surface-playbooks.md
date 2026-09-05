@@ -7,6 +7,7 @@ Use this to avoid applying the wrong aesthetic to the wrong surface.
 - [Choose the surface mode](#choose-the-surface-mode)
 - [Landing or brand page](#landing-or-brand-page)
 - [Dashboard or admin app](#dashboard-or-admin-app)
+- [Persistent agent workspace](#persistent-agent-workspace)
 - [Data visualization](#data-visualization)
 - [Static or special report](#static-or-special-report)
 - [Mobile flow](#mobile-flow)
@@ -49,6 +50,112 @@ Primary job: monitor, compare, operate, decide.
 - Tables need scanning, sorting/filtering, empty/loading/error states.
 - Charts need correct scales, labels, legends, tooltips, and responsive behavior.
 - Motion should be quiet and state-oriented.
+
+## Persistent agent workspace
+
+Primary job: delegate work, understand its progress, and retain control.
+
+An AI marketing page or ordinary chat input alone does not trigger this
+playbook.
+
+Use for product surfaces where delegated work outlives a single response,
+users supervise computer actions, or routines run later. Apply only supported
+capabilities; this reference does not require adding agents, scheduling,
+computer control, or a new execution architecture.
+
+### Start from the user's responsibility
+
+Identify what users return to manage: a project, task, workspace, conversation,
+or durable agent role. Preserve established product authority and navigation
+unless the task authorizes a change supported by user needs. A bot roster is
+useful only when durable roles are the user's organizing concept; it does not
+replace the product's session or workspace source of truth.
+
+Reuse [product-design-principles.md](product-design-principles.md) for agency
+and feedback, and [motion-quality.md](motion-quality.md) for motion behavior.
+Apply the following decisions to the affected flow, not every product screen.
+
+### Truthful progress
+
+- Map user-facing status to actual execution events. Distinguish active work,
+  waiting for input, waiting for authorization, a blocking condition, failure,
+  cancellation, and completion where those states exist. Use product-native
+  names; a new backend state enum is not required.
+- A spinner is not evidence of activity. If observation is disconnected or
+  stale, communicate that uncertainty rather than declaring the task running,
+  failed, or complete without evidence. Separate the last observed action from
+  the current connection state.
+- Show a compact status and the next action needed from the user, if any.
+  Offer current-action detail and expandable execution records when useful.
+  Report observed actions and outcomes, not fabricated internal reasoning or
+  invented percentage progress.
+- Make essential detail reachable by keyboard and touch, not only hover.
+  Motion may reinforce a state but cannot be its only indicator; reduced
+  motion must preserve the same information.
+
+### Observe, take control, return control
+
+- When computer control exists, distinguish a status summary, an inspection
+  preview, and interactive control as needed. Opening a preview must not
+  silently transfer ownership or grant execution permission.
+- Identify the affected environment and current controller. Make takeover and
+  return explicit, and reflect acknowledged runtime transitions. Do not show
+  control as transferred merely because the user clicked a button; pending,
+  rejected, and interrupted transfers need honest feedback.
+- Prevent the interface from implying simultaneous independent control when
+  the runtime cannot support it. If ownership enforcement is missing, report
+  that implementation gap; a visual label cannot prove safe handoff.
+- Keep task scope and existing authorization boundaries visible where users
+  decide. Returning control does not grant permission for a new operation.
+
+### Results that fit the task
+
+- Choose prose, a table, a review card, a visualization, or a document from the
+  user's next decision. Avoid converting every response into a card.
+- Separate a proposed action or draft from approval, execution, and confirmed
+  outcome. A successful tool invocation alone does not prove the user's goal
+  succeeded; show partial results and failures where they affect the decision.
+- Let users reopen durable outputs and connect them to their producing task
+  or run. Avoid making a long transcript the only way to find a deliverable.
+- Preserve action context across retries: show which attempt a result belongs
+  to and avoid presenting an earlier failure as the current result. Retrying
+  must respect existing authorization and duplicate-effect constraints.
+
+### Recurring work, when supported
+
+Expose responsibility, schedule or event trigger, relevant timezone, next
+scheduled run when applicable, latest result, pause state, and exceptions that
+need attention. Distinguish pausing future runs from stopping a current run.
+Do not infer shared memory, tool permissions, or autonomous coordination from
+the presence of several agent identities.
+
+### Acceptance in the affected product
+
+Choose checks for the changed capabilities; use the existing
+[validation-contract.md](validation-contract.md) evidence levels. For example:
+
+- An authorization wait stops looking like active execution and exposes the
+  relevant decision; a disconnected observer does not falsely mark completion.
+- A control transfer shows its pending and acknowledged states; returning
+  control restores the supported workflow without implying broader permission.
+- A user can distinguish a draft from an executed result and reopen the output
+  after leaving the conversation; a retry retains attempt-specific outcomes.
+- Essential status is understandable with reduced motion and accessible without
+  hover; a paused routine clearly explains what happens to an in-flight run.
+
+Source review or a mockup can establish intended behavior, not prove live
+execution, ownership enforcement, or usability. Mark unobserved behavior as
+unverified rather than treating a checklist as runtime evidence.
+
+### Design case source and limits
+
+Informed by xAI's [Designing Grok Bot for a world of persistent agents](https://x.ai/news/designing-grok-bot)
+(September 3, 2026; reviewed September 5, 2026), particularly its treatment of
+persistent responsibility, layered supervision, and task-shaped information.
+The operational checks above are Design Craft's own application of those
+ideas. The article is a vendor design account, not independent usability or
+runtime validation. It supplies no authority to copy brand assets, prescribe
+bot counts or avatar styles, or replace local architecture and permissions.
 
 ## Data visualization
 
