@@ -41,6 +41,12 @@ This document is the local release and maintenance checklist for
 - Keep the deterministic source gate independent of mutable upstream remote
   heads. Remote freshness belongs to explicit release-level readiness and the
   scheduled audit.
+- A GitHub comparison reaching 300 file records or omitting commits is
+  incomplete evidence. The report attempts a complete forward comparison using
+  existing local commit objects and labels its source `local_git`; it never
+  fetches or changes a pin automatically. If recovery is unavailable, details
+  retain an explicit error and `manual_review` recommendation. Review metadata
+  must not advance from a partial file list.
 - Keep GitHub Actions pinned to full reviewed SHAs. Dependabot may propose
   GitHub Actions or npm metadata updates, but those changes still require the
   normal validation and review gates.

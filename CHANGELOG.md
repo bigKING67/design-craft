@@ -4,6 +4,11 @@ All notable local changes to `design-craft` are recorded here.
 
 ## Unreleased
 
+- Detect incomplete GitHub comparison file and commit lists before issuing an
+  absorption recommendation. Recover complete forward ranges from existing
+  local Git objects, or explicitly retain manual-review status without fetching
+  or advancing upstream review metadata.
+
 - Register Jakub Krehel skills as a fourth pinned provenance submodule, with
   selective adoption metadata, inventory/hash checks, and shared freshness and
   explicit-pin synchronization support. Keep remaining entrypoints deferred.

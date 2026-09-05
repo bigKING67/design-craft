@@ -80,6 +80,7 @@ class UpstreamReport:
     status: list[str]
     changed_files: list[ChangedFile]
     notes: list[str]
+    remote_detail_source: str | None = None
 
 
 def run_git(path: Path, args: list[str], check: bool = False) -> subprocess.CompletedProcess[str]:
@@ -208,13 +209,18 @@ def github_compare(
         status = status_map.get(str(item.get("status", "")), "?")
         files.append(ChangedFile(status=status, path=path, category=categorize_changed_file(upstream_name, path)))
 
+    incomplete = []
+    if len(payload.get("files", [])) >= 300:
+        incomplete.append("file list reached the 300-entry limit")
+    if payload.get("total_commits", len(payload.get("commits", []))) > len(commits):
+        incomplete.append("commit list is truncated")
     return (
         str(payload.get("status", "")) or None,
         payload.get("ahead_by") if isinstance(payload.get("ahead_by"), int) else None,
         str(payload.get("html_url", "")) or api_url,
         commits,
         files,
-        None,
+        "Incomplete GitHub compare: " + "; ".join(incomplete) if incomplete else None,
     )
 
 
@@ -310,6 +316,35 @@ def parse_name_status(text: str, upstream_name: str) -> list[ChangedFile]:
     return files
 
 
+def local_compare(path: Path, base: str, head: str, name: str) -> tuple[list[RemoteCommit], list[ChangedFile]]:
+    """Read a complete forward range without fetching or changing the checkout."""
+    if not all(re.fullmatch(r"[0-9a-f]{40}", value) for value in (base, head)):
+        raise ValueError("local comparison requires full commit SHAs")
+
+    def git(*args: str) -> str:
+        result = subprocess.run(
+            ["git", "-C", str(path), *args], capture_output=True, text=True,
+            timeout=30, check=True,
+        )
+        return result.stdout
+
+    git("merge-base", "--is-ancestor", base, head)
+    # NUL delimiters preserve tabs/newlines and non-ASCII filenames. Disable
+    # rename heuristics so a large range cannot silently change coverage.
+    fields = git("diff", "--no-ext-diff", "--no-renames", "--name-status", "-z", base, head).split("\0")
+    if fields[-1] == "":
+        fields.pop()
+    if len(fields) % 2:
+        raise ValueError("invalid local name-status output")
+    files = [ChangedFile(fields[i], fields[i + 1], categorize_changed_file(name, fields[i + 1]))
+             for i in range(0, len(fields), 2)]
+    commits = []
+    for sha in git("rev-list", "--reverse", f"{base}..{head}").splitlines():
+        date, title = git("show", "-s", "--format=%cI%x00%s", sha).rstrip("\n").split("\0", 1)
+        commits.append(RemoteCommit(sha, date, title, ""))
+    return commits, files
+
+
 def build_report(
     root: Path,
     check_remote: bool = False,
@@ -358,6 +393,7 @@ def build_report(
         remote_commits: list[RemoteCommit] = []
         remote_changed_files: list[ChangedFile] = []
         remote_detail_error: str | None = None
+        remote_detail_source: str | None = None
 
         if cumulative_status not in CUMULATIVE_STATUSES:
             notes.append("lock cumulative_status is invalid")
@@ -427,6 +463,22 @@ def build_report(
                                 remote_changed_files,
                                 remote_detail_error,
                             ) = github_compare(meta.get("repo", ""), reviewed, remote_commit, name)
+                            remote_detail_source = "github_compare"
+                            if remote_detail_error:
+                                api_error = remote_detail_error
+                                try:
+                                    remote_commits, remote_changed_files = local_compare(
+                                        upstream_path, reviewed, remote_commit, name
+                                    )
+                                except (ValueError, OSError, subprocess.SubprocessError):
+                                    remote_recommendation = "manual_review"
+                                    notes.append("complete local comparison unavailable; details remain incomplete")
+                                else:
+                                    remote_detail_source = "local_git"
+                                    remote_detail_error = None
+                                    remote_compare_status = "ahead"
+                                    remote_ahead_by = len(remote_commits)
+                                    notes.append(api_error + "; recovered complete range from local Git")
                             if remote_detail_error:
                                 notes.append(remote_detail_error)
                             else:
@@ -471,6 +523,7 @@ def build_report(
                 status=status_lines,
                 changed_files=changed_files,
                 notes=notes,
+                remote_detail_source=remote_detail_source,
             )
         )
 
@@ -517,6 +570,10 @@ def print_text(reports: list[UpstreamReport]) -> None:
             print(f"  remote_ahead_by: {report.remote_ahead_by}")
             print(f"  remote_recommendation: {report.remote_recommendation}")
             print(f"  remote_compare_url: {report.remote_compare_url}")
+        if report.remote_detail_source:
+            print(f"  remote_detail_source: {report.remote_detail_source}")
+        if report.remote_detail_error:
+            print(f"  remote_detail_error: {report.remote_detail_error}")
         print(f"  dirty: {str(report.dirty).lower()}")
         for note in report.notes:
             print(f"  note: {note}")
@@ -579,6 +636,11 @@ def render_markdown_summary(reports: list[UpstreamReport]) -> str:
         lines.extend(["", f"## {report.name}"])
         if report.remote_compare_url:
             lines.append(f"- Compare: {report.remote_compare_url}")
+        if report.remote_detail_source:
+            lines.append(f"- Detail source: {report.remote_detail_source}")
+        for note in report.notes:
+            if "recovered complete range" in note:
+                lines.append(f"- Coverage: {note}")
         if report.remote_detail_error:
             lines.append(f"- Detail error: {report.remote_detail_error}")
         if report.remote_commits:
