@@ -37,7 +37,10 @@ Pick the smallest command set that covers the change:
 Prefer project scripts in `package.json`. Do not invent commands when the repo
 has established ones.
 
-For the `design-craft` source repo itself, use:
+For installed or source Skill runtime checks, resolve `DESIGN_CRAFT_RUNTIME`
+to the absolute loaded Skill directory as described in `SKILL.md`. Invoke the
+following `scripts/...` paths through that root, using `bash` for `.sh` and
+`python3` for `.py`; pass the target explicitly rather than relying on cwd:
 
 - `scripts/design_craft_route.sh --target <repo> --surface <surface> --intent <intent> --scope <scope>`
 - `scripts/design_craft_platform_scan.py --target <repo> --platform auto --json`
@@ -74,6 +77,11 @@ For the `design-craft` source repo itself, use:
   smell signals. Treat these as review prompts, not automatic design verdicts.
 - `scripts/design_craft_static_review.py --target <path> --json` when a single
   normalized static review packet is easier to attach to an agent handoff.
+
+The following maintenance commands require the design-craft **source repository
+root** as cwd. They are not part of an installed Skill's `scripts/` directory.
+Do not try to run them from the target project or infer a sibling source checkout:
+
 - `scripts/design_craft_doctor.sh --target <path>` for local portability and
   optional capability checks.
 - `scripts/design_craft_codex_route_pack.py --strict` to audit the local Codex
@@ -113,6 +121,31 @@ Route planner arguments must use fixed enum values:
 
 Do not pass natural-language task descriptions as route argument values. Record
 those notes in the plan or delivery summary instead.
+
+### Existing-project authority and preflight diagnosis
+
+Use the project's existing `DESIGN.md` or explicitly selected style authority
+without changing its direction. When an isolated evaluation has no such
+document, first inspect actual tokens, shared components, typography and
+interaction conventions. Record that existing baseline in a Markdown file
+inside the isolated lab, with source paths and Typography, Color, Motion and
+Components sections. This is a record of evidence, not permission to redesign
+or to add a document to the original read-only project. Missing evidence must
+stay explicit; a generic seed does not prove an existing baseline.
+
+For `STYLE_AUTHORITY_MISSING`, distinguish these causes in order:
+
+1. The explicit absolute path exists and is a readable regular file.
+2. The authority satisfies the active preflight's Markdown structure. The
+   current Codex contract requires typography, color, motion/interaction and
+   component section headings; a raw CSS/Stylus file alone does not meet it.
+3. The route's applicability, intent and evidence requirements are satisfied.
+
+When compact output hides the cause, inspect the existing full route output
+(`--output json`) and underlying preflight diagnostic. Fix the input or state
+the evidence gap; do not disable the gate, add empty headings just to pass, or
+alter global route-pack files. A structurally valid document is not proof of
+visual quality, and portable fallback readiness is not global-host parity.
 
 ## Browser validation
 

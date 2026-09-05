@@ -172,15 +172,20 @@ repo-external worktree, source status and tracked-diff digests, dirty path
 metadata, Git index metadata, and an explicit `source_writes_allowed=false`
 boundary. Dirty and untracked file contents are not read for baseline capture.
 
+Resolve `DESIGN_CRAFT_RUNTIME` to the absolute directory of the loaded Skill,
+as described in `SKILL.md`. The commands below work from either the source
+repository or the target directory; their script path is never target-relative.
+Use `PYTHONDONTWRITEBYTECODE=1` for direct Python checks in the source repository.
+
 Prepare and inspect a lab:
 
 ```bash
-python3 scripts/design_craft_shadow_lab.py prepare \
+PYTHONDONTWRITEBYTECODE=1 python3 "$DESIGN_CRAFT_RUNTIME/scripts/design_craft_shadow_lab.py" prepare \
   --source /absolute/path/to/target-repo \
   --ref <full-commit> \
   --network-policy install_only \
   --output-root /tmp/design-craft-shadow-labs
-python3 scripts/design_craft_shadow_lab.py verify \
+PYTHONDONTWRITEBYTECODE=1 python3 "$DESIGN_CRAFT_RUNTIME/scripts/design_craft_shadow_lab.py" verify \
   --manifest /tmp/design-craft-shadow-labs/<lab-id>/.design-craft-shadow-lab.json
 ```
 
@@ -188,14 +193,14 @@ python3 scripts/design_craft_shadow_lab.py verify \
 command that has not run. Use `execute` for each evidence-bearing phase:
 
 ```bash
-python3 scripts/design_craft_shadow_lab.py execute \
+PYTHONDONTWRITEBYTECODE=1 python3 "$DESIGN_CRAFT_RUNTIME/scripts/design_craft_shadow_lab.py" execute \
   --manifest /tmp/design-craft-shadow-labs/<lab-id>/.design-craft-shadow-lab.json \
   --evidence-id install \
   --phase install \
   --network-mode allowed \
   -- pnpm install --frozen-lockfile
 
-python3 scripts/design_craft_shadow_lab.py execute \
+PYTHONDONTWRITEBYTECODE=1 python3 "$DESIGN_CRAFT_RUNTIME/scripts/design_craft_shadow_lab.py" execute \
   --manifest /tmp/design-craft-shadow-labs/<lab-id>/.design-craft-shadow-lab.json \
   --evidence-id build \
   --phase build \
@@ -216,6 +221,30 @@ makes verification return nonzero. The legacy
 network authority; actual phase truth is the explicit `network_boundary` and
 its receipts.
 
+For a retry, use a new `--evidence-id` and retain the previous receipt and logs.
+Report `source.source_unchanged`, individual phase outcomes, and aggregate
+`boundary.network.evidence_status` separately. A successful retry does not
+erase an earlier failure: aggregate verification still fails and returns
+nonzero. State which attempt succeeded and which evidence remains incomplete;
+never delete failed receipts or reinterpret aggregate failure as proof that
+the latest build failed. Invalid receipts or source drift are not retry success.
+
+Choose `execute --timeout-seconds` for the expected phase before starting it.
+Install readiness is a completed package-manager command; build readiness is
+a completed build plus its expected outputs. For a persistent preview, use the
+task's managed process runner and require a listening port plus a successful
+local HTTP/health response, not process exit. Record preview/browser evidence
+separately from build receipts and stop task-owned servers after inspection.
+
+If a launcher stalls, inspect the bounded task process tree and captured output
+before retrying. When the installed CLI can perform the same selected phase,
+calling it directly is an option; record the exact executable/arguments and
+any project-script steps it omits. Preserve the original network restrictions
+and package policy. Direct CLI success does not certify omitted build steps.
+Browser tab and empty Agent-window cleanup outcomes are separate; report an
+external browser cleanup error without broadening cleanup or repairing the
+browser runtime as part of a design task.
+
 Run only the selected design-craft checks against the manifest's `worktree`.
 Do not point package managers, formatters, screenshot output, caches, or build
 output at the source repository. A build may mutate the disposable worktree;
@@ -228,7 +257,7 @@ Cleanup is fail-closed and requires the root ownership marker, the direct-child
 lab layout, disjoint source/output paths, and explicit confirmation:
 
 ```bash
-python3 scripts/design_craft_shadow_lab.py cleanup \
+PYTHONDONTWRITEBYTECODE=1 python3 "$DESIGN_CRAFT_RUNTIME/scripts/design_craft_shadow_lab.py" cleanup \
   --manifest /tmp/design-craft-shadow-labs/<lab-id>/.design-craft-shadow-lab.json \
   --confirm
 ```
@@ -270,10 +299,10 @@ Create the spec outside the source repository, then write the comparison beside
 the external evidence bundle:
 
 ```bash
-python3 scripts/design_craft_shadow_compare.py create \
+PYTHONDONTWRITEBYTECODE=1 python3 "$DESIGN_CRAFT_RUNTIME/scripts/design_craft_shadow_compare.py" create \
   --spec /absolute/external/path/comparison-spec.json \
   --output /absolute/external/path/comparison.json
-python3 scripts/design_craft_shadow_compare.py validate \
+PYTHONDONTWRITEBYTECODE=1 python3 "$DESIGN_CRAFT_RUNTIME/scripts/design_craft_shadow_compare.py" validate \
   --manifest /absolute/external/path/comparison.json \
   --require-live-labs
 ```

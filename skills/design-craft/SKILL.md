@@ -114,6 +114,15 @@ condition. Never claim those provisional gates were measured.
 
 ## Helpers
 
+Resolve helper paths from the Skill directory actually loaded in this task,
+not from the target project's working directory. Set `DESIGN_CRAFT_RUNTIME`
+to that absolute directory (the one containing this `SKILL.md`); invoke
+`python3 "$DESIGN_CRAFT_RUNTIME/scripts/<helper>.py"` or
+`bash "$DESIGN_CRAFT_RUNTIME/scripts/<helper>.sh"`. Pass the target through
+the helper's documented arguments. Do not guess a global install location or
+switch from reviewed source to an installed copy silently. Repository-only
+maintenance commands are explicitly separated in `references/validation-contract.md`.
+
 Use the smallest relevant bundled helper when available:
 
 - Route and pass: `scripts/design_craft_route.sh`,

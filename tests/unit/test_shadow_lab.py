@@ -5,6 +5,7 @@ import json
 import os
 import stat
 import subprocess
+import sys
 import tempfile
 import unittest
 from pathlib import Path
@@ -58,6 +59,45 @@ def create_repo(parent: Path) -> Path:
 
 
 class ShadowLabTests(unittest.TestCase):
+    def test_successful_retry_preserves_failure_and_source_boundary(self) -> None:
+        with tempfile.TemporaryDirectory() as raw:
+            parent = Path(raw)
+            repo = create_repo(parent)
+            prepared = shadow_lab.prepare_lab(
+                source_path=repo,
+                requested_ref="HEAD",
+                output_root_path=parent / "labs",
+                network_policy="allowed",
+            )
+            manifest_path = Path(prepared["manifest"]["isolation"]["manifest_path"])
+            failed = shadow_lab.execute_in_lab(
+                manifest_path=manifest_path, evidence_id="test-first",
+                phase="test", network_mode="allowed",
+                command=[sys.executable, "-c", "raise SystemExit(1)"],
+                timeout_seconds=10,
+            )
+            receipt_path = Path(failed["receipt_path"])
+            original_receipt = receipt_path.read_bytes()
+            succeeded = shadow_lab.execute_in_lab(
+                manifest_path=manifest_path, evidence_id="test-retry",
+                phase="test", network_mode="allowed",
+                command=[sys.executable, "-c", "print('retry completed')"],
+                timeout_seconds=10,
+            )
+            self.assertFalse(failed["ok"])
+            self.assertTrue(succeeded["ok"])
+            self.assertEqual(receipt_path.read_bytes(), original_receipt)
+            verified = shadow_lab.verify_lab(manifest_path)
+            self.assertFalse(verified["ok"])
+            self.assertTrue(verified["source"]["source_unchanged"])
+            self.assertEqual(verified["source"]["difference_fields"], [])
+            network = verified["boundary"]["network"]
+            self.assertEqual(network["evidence_status"], "failed")
+            self.assertEqual(
+                {r["id"]: r["status"] for r in network["receipts"]},
+                {"test-first": "fail", "test-retry": "pass"},
+            )
+
     def test_output_root_permissions_are_posix_only(self) -> None:
         root_info = SimpleNamespace(st_uid=1000, st_mode=stat.S_IFDIR | 0o777)
 

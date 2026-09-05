@@ -4,6 +4,10 @@ All notable local changes to `design-craft` are recorded here.
 
 ## Unreleased
 
+- Clarify loaded-Skill helper paths versus repository maintenance commands,
+  existing-project authority diagnosis, and bounded Shadow Lab retries while
+  preserving failed receipts and source/runtime evidence boundaries.
+
 - Selectively adapt Jakub Krehel's fixed-revision product-writing and component
   scenario guidance into existing design-system and hardening references;
   preserve MIT attribution and local runtime/authority boundaries. Other
