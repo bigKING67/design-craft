@@ -18,6 +18,7 @@ truth, scoped project rules, and project `DESIGN.md`.
 - [Color](#color)
 - [Layout and material](#layout-and-material)
 - [Motion](#motion)
+- [Optional expressive directions](#optional-expressive-directions)
 - [Final visual self-check](#final-visual-self-check)
 
 ## Design read first
@@ -134,6 +135,30 @@ dimension.
 - Use transform/opacity for common transitions.
 - Every nontrivial motion needs a reduced-motion fallback.
 - Do not hide content by default waiting for JS-triggered reveal.
+
+## Optional expressive directions
+
+Use these only when the brief or approved design evolution calls for them;
+they are internal options, not additional Skill dependencies or default styles.
+
+- Editorial/tactile: photography, serif/sans contrast, deliberate whitespace,
+  paper or quiet neutrals can build hierarchy. Glass, metal, diffused shadows,
+  and overlapping media are optional materials, not proof of premium quality.
+  Preserve contrast and measure expensive blur/compositing when actually used.
+- For a meaningful nested shell, relate inner and outer radii and keep
+  highlights restrained. Remove overlap or rotation on narrow screens when it
+  collides with content; use depth only when it explains grouping.
+- Motion-led promotion: choose a narrative composition and expressive type
+  from content, not simulated randomness. AIDA, pinned stories, staggered
+  reveals, accordions, and card stacks are options, never a required quota.
+  Keep the first viewport readable without prescribed line counts or heights.
+- Prefer the existing motion stack. A style choice alone does not justify a
+  new dependency. Preserve static content, keyboard/touch access, Reduced
+  Motion, interruption, and lifecycle cleanup through the motion references.
+
+Verify font availability and rights; do not assume premium assets exist.
+Flat surfaces, ordinary cards, and centered layouts remain valid when the
+project or content supports them. Do not broaden a polish task into redesign.
 
 ## Final visual self-check
 

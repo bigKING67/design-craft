@@ -135,6 +135,36 @@ caller's session JSONL.
 
 ## Route output modes
 
+### Consolidated design capabilities
+
+The canonical Skill owns the reusable design guidance. The host route must
+not require the retired independent `image-to-code`, `imagegen-frontend-web`,
+`gpt-taste`, `high-end-visual-design`, or `full-output-enforcement` installations.
+Keep `design-craft` in `candidate_skills` and expose only relevant internal
+paths in `design_craft_conditional_references`:
+
+| Requested work | Internal reference |
+| --- | --- |
+| Implement a supplied/selected image | `references/image-reference-implementation.md` |
+| Generate web concept images | `references/web-image-direction.md` |
+| Editorial/tactile or expressive promotion | `references/visual-judgment.md` |
+| Motion-led promotion | `references/motion-quality.md` |
+
+Existing `--style high-end` and `--style gpt-taste` values remain compatible
+direction aliases, not external Skill names. An internal direction must be
+explicitly carried through preflight with the design-craft baseline; it cannot
+bypass DESIGN authority or coexist ambiguously with an external style preset.
+Ordinary UI work does not load image references, and image-only work does not
+imply implementation. Complete output is a host delivery requirement, not an
+automatic design mode. Other specialized Skills are outside this retirement.
+
+The route implementation remains host-owned under `~/.codex`; this contract
+and the canonical Skill references are repository-owned. Update the scoped host
+route/preflight files and tests, verify them, and export the whitelisted pack
+for recovery. Do not maintain a second copy of the whole host implementation
+inside the Skill. A Skill install alone neither updates host policy nor removes
+old installations. Verify both before retiring exact old installation targets.
+
 Use the smallest output that matches the consumer:
 
 ```bash

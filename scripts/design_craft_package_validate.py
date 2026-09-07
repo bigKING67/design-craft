@@ -17,7 +17,9 @@ SCHEMA = "design-craft.package-verification.v1"
 ROOT = Path(__file__).resolve().parents[1]
 MAX_PACKED_BYTES = 1_000_000
 MAX_UNPACKED_BYTES = 2_000_000
-MAX_ENTRIES = 100
+# Two conditional image references replace independent design Skill installs.
+# Byte limits and payload allowlists remain unchanged.
+MAX_ENTRIES = 102
 
 EXPECTED_PACKAGE_FILES = {
     "skills/design-craft",
@@ -63,6 +65,8 @@ REQUIRED_PACKED_PATHS = {
     "skills/design-craft/references/comp-fidelity.md",
     "skills/design-craft/references/react-native-expo-motion.md",
     "skills/design-craft/references/reference-workflow.md",
+    "skills/design-craft/references/image-reference-implementation.md",
+    "skills/design-craft/references/web-image-direction.md",
     "skills/design-craft/scripts/design_craft_reference.py",
     "skills/design-craft/scripts/design_craft_shadow_compare.py",
     "skills/design-craft/scripts/design_craft_shadow_lab.py",
@@ -402,6 +406,10 @@ def self_check() -> list[str]:
     oversized = dict(valid_pack, size=MAX_PACKED_BYTES + 1)
     if not any("packed package" in item for item in pack_errors(oversized)):
         errors.append("package validator did not reject an oversized package")
+
+    too_many = dict(valid_pack, entryCount=MAX_ENTRIES + 1)
+    if not any("entry count" in item for item in pack_errors(too_many)):
+        errors.append("package validator did not reject an excessive file count")
 
     forbidden = dict(
         valid_pack,

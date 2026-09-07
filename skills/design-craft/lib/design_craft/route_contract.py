@@ -402,12 +402,26 @@ def build_route_payload(
     references = recommended_references(
         platform=platform,
         intent=intent,
+        style=style,
+        surface=surface,
         developer_product_seed_applicable=seed_applicable,
         has_reference=has_reference,
         needs_reference=needs_reference,
         react_native_expo=react_native_expo,
         evidence_mode=resolved_evidence_mode,
     )
+    conditional = route_payload.get("design_craft_conditional_references", [])
+    allowed_conditional = {
+        "references/image-reference-implementation.md",
+        "references/web-image-direction.md",
+        "references/visual-judgment.md",
+        "references/motion-quality.md",
+    }
+    if isinstance(conditional, list):
+        references = sorted(set(references) | {
+            reference for reference in conditional
+            if isinstance(reference, str) and reference in allowed_conditional
+        })
     route_payload.update(
         {
             "developer_product_seed_applicable": seed_applicable,
@@ -418,7 +432,11 @@ def build_route_payload(
             "reference_workflow": {
                 "required": bool(triggers),
                 "triggers": triggers,
-                "contract": "references/reference-workflow.md",
+                "contract": reference_workflow_contract(
+                    platform=platform, surface=surface, intent=intent,
+                    has_reference=has_reference, needs_reference=needs_reference,
+                    evidence_mode=resolved_evidence_mode,
+                ),
             },
             "evidence_workflow": evidence_contract,
             "react_native_expo_motion_applicable": react_native_expo,
@@ -441,6 +459,21 @@ def reference_workflow_triggers(
     return triggers
 
 
+def reference_workflow_contract(
+    *, platform: str, surface: str, intent: str,
+    has_reference: bool, needs_reference: bool, evidence_mode: str,
+) -> str:
+    if resolve_evidence_mode(evidence_mode) != "none":
+        return "references/comp-fidelity.md"
+    if needs_reference and platform == "web" and surface not in {"mobile", "brand"} and intent not in {
+        "mobile-flow", "brand"
+    }:
+        return "references/web-image-direction.md"
+    if has_reference and intent != "reference-only":
+        return "references/image-reference-implementation.md"
+    return "references/reference-workflow.md"
+
+
 def recommended_references(
     *,
     platform: str,
@@ -450,6 +483,8 @@ def recommended_references(
     needs_reference: bool = False,
     react_native_expo: bool = False,
     evidence_mode: str = "none",
+    style: str = "auto",
+    surface: str = "auto",
 ) -> list[str]:
     references = {"references/validation-contract.md", "references/product-context.md"}
     if platform == "ios":
@@ -475,12 +510,23 @@ def recommended_references(
                 "templates/developer-product/design.dark.md",
             }
         )
-    if reference_workflow_triggers(
-        intent=intent,
-        has_reference=has_reference,
-        needs_reference=needs_reference,
-    ):
-        references.add("references/reference-workflow.md")
+    if reference_workflow_triggers(intent=intent, has_reference=has_reference, needs_reference=needs_reference):
+        references.add(reference_workflow_contract(
+            platform=platform, surface=surface, intent=intent,
+            has_reference=has_reference, needs_reference=needs_reference,
+            evidence_mode=evidence_mode,
+        ))
+    if platform == "web":
+        if needs_reference and surface not in {"mobile", "brand"} and intent not in {
+            "mobile-flow", "brand"
+        }:
+            references.add("references/web-image-direction.md")
+        if (has_reference or needs_reference) and intent != "reference-only" and evidence_mode == "none":
+            references.add("references/image-reference-implementation.md")
+        if style in {"high-end", "gpt-taste"} or intent in {"high-motion", "brand"}:
+            references.add("references/visual-judgment.md")
+        if style == "gpt-taste" or intent == "high-motion":
+            references.add("references/motion-quality.md")
     if resolve_evidence_mode(evidence_mode) != "none":
         references.add("references/comp-fidelity.md")
     return sorted(references)

@@ -141,7 +141,7 @@ Expected result:
   L4 helpers run without the source repo.
 - Project-neutral L4 fixtures validate in strict mode.
 - Version in `VERSION` matches `package.json`.
-- `npm pack --dry-run` remains within 1 MB compressed, 2 MB unpacked, and 100
+- `npm pack --dry-run` remains within 1 MB compressed, 2 MB unpacked, and 102
   files, contains the canonical skill and required legal metadata, and excludes
   repository-only paths and user-home strings.
 - Source completeness is 100 as an internal contract metric. Development

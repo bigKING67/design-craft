@@ -79,6 +79,17 @@ COVERAGE = {
             "Motion must clarify",
         ],
     },
+    "image-to-code-skill": {
+        "paths": [
+            "skills/design-craft/references/image-reference-implementation.md",
+            "skills/design-craft/references/comp-fidelity.md",
+        ],
+        "terms": ["selected image", "label estimates", "not visual acceptance"],
+    },
+    "imagegen-frontend-web": {
+        "paths": ["skills/design-craft/references/web-image-direction.md"],
+        "terms": ["generation optional", "agreed scope and budget", "failed/missing"],
+    },
     "stitch-skill": {
         "paths": [
             "skills/design-craft/references/design-system-contract.md",

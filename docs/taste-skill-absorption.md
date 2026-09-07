@@ -21,10 +21,10 @@ The reviewed remote head contains the same thirteen Skill entrypoints, one
 snapshot. It contains no reusable component library, runtime package, test
 harness, or implementation script under `skills/`.
 
-`design-craft` therefore absorbs durable judgment and workflow behavior. It
-does not flatten every style preset, image-generation workflow, host-output
-policy, or product-specific generator into the default baseline. Those remain
-separate, explicitly selected Skills when their specialized surface is needed.
+`design-craft` absorbs durable judgment and workflow behavior into one design
+entrypoint with conditional references. Optional image and style capabilities
+do not become prerequisites for ordinary UI work. Host-output policy and
+specialized brand/mobile generators remain outside this consolidation.
 
 ## Status vocabulary
 
@@ -49,8 +49,8 @@ separate, explicitly selected Skills when their specialized surface is needed.
 | `brutalist-skill` | intentionally-rejected | separate style Skill | Industrial brutalism is a valid selected direction, not a safe default for every product surface. |
 | `gpt-tasteskill` | partial | `visual-judgment.md`, motion references | Variance, typography width, composition, anti-repetition, and motion craft are useful. Simulated Python randomness, mandatory AIDA, GSAP, fixed fonts, and universal cinematic spacing are rejected. |
 | `brandkit` | intentionally-rejected | separate `brandkit` Skill | Brand-board image generation is a specialized artifact workflow, not baseline UI implementation behavior. |
-| `image-to-code-skill` | intentionally-rejected | separate `image-to-code` Skill | Image-first visual reconstruction is opt-in because ordinary product work should not be forced through generated reference images. |
-| `imagegen-frontend-web` | intentionally-rejected | separate image-generation Skill | Section-by-section image generation is valuable only when the task explicitly needs visual references. |
+| `image-to-code-skill` | partial | `image-reference-implementation.md`, `comp-fidelity.md` | Selected-image extraction, faithful implementation, and bounded comparison are internal; forced generation and treating regenerated detail as source evidence remain rejected. |
+| `imagegen-frontend-web` | partial | `web-image-direction.md` | Requested web comps, coherent image sets, actual-tool execution, and implementation handoff are internal and opt-in; fixed generation counts and compulsory per-section output remain rejected. |
 | `imagegen-frontend-mobile` | intentionally-rejected | separate image-generation Skill | Mobile concept-image generation is not native implementation or general UI review. |
 | `stitch-skill` | partial | `design-system-contract.md`, developer-product templates | Agent-readable `DESIGN.md`, semantic tokens, typography roles, and state contracts are local; Google Stitch-specific generation stays opt-in. |
 | `soft-skill` | partial | `visual-judgment.md`, `product-ui-taste-review.md` | Premium specificity, rhythm, restrained surfaces, and anti-generic checks are local. Absolute font/icon/border bans and price/persona theater are rejected. |
@@ -71,16 +71,29 @@ or page-funnel formula. It also does not simulate tools that were not run.
 
 Project `PRODUCT.md`, project `DESIGN.md`, real content, live runtime evidence,
 accessibility, platform conventions, and measured performance always outrank a
-generic aesthetic prescription. Style Skills can be selected alongside
-`design-craft`; they do not silently redefine its default behavior.
+generic aesthetic prescription. Optional style references do not silently
+redefine default behavior. Actual image generation still follows the host's
+available tool and its required instructions, not a bundled provider runtime.
+
+## Local entrypoint consolidation
+
+The 2026-09-07 local consolidation reuses the previously reviewed Taste source
+and the locally simplified entrypoints; it makes no new remote-freshness claim
+and does not advance upstream pins. It retires the independent `image-to-code`,
+`imagegen-frontend-web`, `gpt-taste`, `high-end-visual-design`, and
+`full-output-enforcement` installation entries after source, route, and install
+validation. Preserve pristine upstream material and attribution for maintenance.
+The first four contribute conditional capabilities inside design-craft;
+complete output remains the host delivery policy, not a separate design mode.
 
 ## Current conclusion
 
 `missing-high-value`: none for the reviewed snapshot.
 
-The cumulative state is selective absorption: high-value design judgment and
-redesign behavior are local, while specialized style, image-generation,
-Stitch, brand-kit, and output-policy Skills remain deliberately independent.
+The cumulative state is selective absorption: design judgment, redesign,
+selected-image implementation, requested web comps, and useful expressive
+style guidance are local. Specialized Stitch, brand-kit, mobile generation,
+and host-output policy remain outside this five-entrypoint consolidation.
 The latest reviewed range after
 `dfb6f9f9e93a39f673b1827c0889cc28326d1800` through
 `ccbc15639c97057cbfcf32ecebc38ef716e4bb37` contains seven commits that update
@@ -89,8 +102,10 @@ or reusable design-engineering behavior. Its latest-range status is
 `provenance-only`; the submodule does not need to advance for those
 repository-presentation changes.
 
-Current independent blind evidence is recorded in
+Historical independent blind evidence for its recorded source is retained in
 `evals/comparative/taste-visual-critique-ablation/`: `design-craft` 98,
 focused taste upstream 96, no-skill baseline 95. The first controlled run
 exposed an incomplete move-budget rule; the Skill was repaired and the final
-evidence was rerun rather than editing the judge result.
+evidence was rerun rather than editing the judge result. Those scores do not
+certify the changed 2026-09-07 Skill tree; current behavioral evidence must be
+collected separately without rewriting historical hashes or judge results.

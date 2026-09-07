@@ -1,9 +1,12 @@
 # Visual reference workflow
 
-Use this contract when the task is reference-only, includes a supplied visual
-reference, or needs a generated reference before implementation. A reference
-is evidence for a bounded design mechanism, not permission to copy a brand or
-override project authority.
+Use this contract for discovery-source research, Reference Cards/Packs,
+reusable pattern promotion, or Shadow Labs. A reference is evidence for a
+bounded design mechanism, not permission to copy a brand or override project
+authority. Direct supplied/selected-image implementation uses
+`image-reference-implementation.md`; requested web comps use
+`web-image-direction.md`. Those tasks do not require a catalog or Pack unless
+they also enter the discovery or pattern-promotion workflow.
 
 ## Contents
 

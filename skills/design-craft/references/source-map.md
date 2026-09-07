@@ -33,6 +33,11 @@ evidence for an otherwise unchanged Skill tree.
 - Cumulative status: `selective_absorbed`; behavior through the initial
   `06d6028b5c623016c59ce8536f578e5a1127b499` snapshot is represented in the
   local visual-judgment, product-taste, design-move, and design-system layers.
+- Local consolidation also selects supplied-image implementation and opt-in
+  web concept-image direction into `image-reference-implementation.md` and
+  `web-image-direction.md`. Editorial/tactile and motion-led options live in
+  `visual-judgment.md`; these no longer require independent Taste Skill
+  installations. This local selection does not advance the remote review pin.
 - Contract: `docs/taste-skill-absorption.md`, validated by
   `scripts/design_craft_taste_absorption.py` in the canonical repository.
 - Primary material to inspect:

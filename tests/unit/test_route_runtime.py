@@ -39,6 +39,67 @@ def platform_payload(
 
 
 class RouteRuntimeTests(unittest.TestCase):
+    def test_required_reference_contract_is_recommended_across_platforms(self) -> None:
+        cases = (
+            ("ios", "mobile", "new-page", True, False),
+            ("web", "mobile", "reference-only", False, True),
+            ("web", "brand", "reference-only", False, True),
+            ("web", "landing", "reference-only", False, True),
+            ("web", "landing", "new-page", True, False),
+        )
+        for platform, surface, intent, has_reference, needs_reference in cases:
+            with self.subTest(platform=platform, surface=surface, intent=intent):
+                payload = route_runtime.build_route_payload(
+                    route_payload={}, platform_payload=platform_payload(platform),
+                    route_source="portable_fallback", surface=surface, intent=intent,
+                    scope="page", style="auto", style_authority_path="",
+                    design_authority_mode="auto", existing_project=True,
+                    has_reference=has_reference, needs_reference=needs_reference,
+                )
+                self.assertTrue(payload["reference_workflow"]["required"])
+                self.assertIn(payload["reference_workflow"]["contract"], payload["recommended_design_craft_references"])
+
+    def test_conditional_image_and_style_references_preserve_scope(self) -> None:
+        common = {"platform": "web", "developer_product_seed_applicable": False}
+        image = "references/image-reference-implementation.md"
+        generation = "references/web-image-direction.md"
+        plain = route_runtime.recommended_references(intent="functional", **common)
+        self.assertNotIn(image, plain)
+        self.assertNotIn(generation, plain)
+        supplied = route_runtime.recommended_references(
+            intent="new-page", has_reference=True, **common
+        )
+        self.assertIn(image, supplied)
+        self.assertNotIn(generation, supplied)
+        self.assertNotIn("references/reference-workflow.md", supplied)
+        for intent in ("reference-only", "new-page"):
+            refs = route_runtime.recommended_references(
+                intent=intent, needs_reference=True, **common
+            )
+            self.assertIn(generation, refs)
+            self.assertEqual(image in refs, intent == "new-page")
+            for relative in refs:
+                self.assertTrue((REPO_ROOT / "skills/design-craft" / relative).is_file())
+        for surface in ("brand", "mobile"):
+            refs = route_runtime.recommended_references(
+                intent="reference-only", surface=surface, needs_reference=True, **common
+            )
+            self.assertNotIn(generation, refs)
+        for style in ("high-end", "gpt-taste"):
+            refs = route_runtime.recommended_references(intent="new-page", style=style, **common)
+            self.assertIn("references/visual-judgment.md", refs)
+            self.assertEqual("references/motion-quality.md" in refs, style == "gpt-taste")
+        native = route_runtime.recommended_references(
+            platform="ios", intent="new-page", has_reference=True, needs_reference=True,
+            developer_product_seed_applicable=False,
+        )
+        self.assertNotIn(generation, native)
+        measurement = route_runtime.recommended_references(
+            intent="visual-refine", has_reference=True, evidence_mode="comp-fidelity", **common
+        )
+        self.assertIn("references/comp-fidelity.md", measurement)
+        self.assertNotIn(image, measurement)
+
     def test_fallback_tiers_cover_runtime_risk_levels(self) -> None:
         common = {
             "style": "auto",
@@ -98,6 +159,9 @@ class RouteRuntimeTests(unittest.TestCase):
                 "ok": True,
                 "frontend_tier": "L1-V",
                 "candidate_skills": ["design-craft"],
+                "design_craft_conditional_references": [
+                    "references/visual-judgment.md", "../../untrusted.md", {},
+                ],
                 "inputs": "invalid",
             },
             platform_payload=platform_payload(),
@@ -117,6 +181,8 @@ class RouteRuntimeTests(unittest.TestCase):
         self.assertEqual(payload["route_source"], "codex_global")
         self.assertFalse(payload["degraded"])
         self.assertEqual(payload["inputs"]["platform"], "web")
+        self.assertIn("references/visual-judgment.md", payload["recommended_design_craft_references"])
+        self.assertNotIn("../../untrusted.md", payload["recommended_design_craft_references"])
 
     def test_native_route_recommends_platform_references(self) -> None:
         references = route_runtime.recommended_references(

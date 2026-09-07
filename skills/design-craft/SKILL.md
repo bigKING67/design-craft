@@ -1,6 +1,6 @@
 ---
 name: design-craft
-description: "Use primarily for web and desktop product UI/UX design engineering: product context, visual critique, design systems, UI polish, motion and interaction, accessibility, responsive behavior, and frontend implementation quality. Also use for controlled reference-image fidelity measurement, screenshot comparison, and fixed-commit or sealed-manifest rendition evidence closeout. When the target is explicitly native, also covers iOS, Android, and adaptive quality. Do not use for backend-only, database-only, algorithm-only, or CLI-only work."
+description: "Design, implement, and review web and desktop UI/UX: product context, design systems, visual polish, motion, accessibility, responsive behavior, and frontend quality. Also handles supplied-image implementation, requested web concept-image direction, and controlled screenshot/rendition evidence. Covers iOS, Android, and adaptive quality when explicitly native. Not for backend-only, database-only, algorithm-only, or CLI-only work."
 ---
 
 # Design Craft
@@ -177,9 +177,12 @@ Read only references required by the current task.
 - Surface-specific landing, dashboard, persistent-agent workspace, data-viz,
   report, and mobile rules:
   `references/surface-playbooks.md`.
-- Supplied, generated, or discovery-source references:
-  `references/reference-workflow.md`; use its Reference Card, Pack, evidence,
-  rights, and promotion boundaries before implementation.
+- Supplied or selected design-image implementation:
+  `references/image-reference-implementation.md`.
+- Requested web concept images or section comps:
+  `references/web-image-direction.md`; generation is optional, not a UI prerequisite.
+- Discovery-source references, Reference Cards/Packs, pattern promotion, and
+  Shadow Labs: `references/reference-workflow.md`.
 - Approved comp versus captured implementation measurements:
   `references/comp-fidelity.md`; use only after both images share a controlled
   coordinate and capture context. The same reference defines sealed-rendition
