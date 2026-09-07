@@ -4,6 +4,10 @@ All notable local changes to `design-craft` are recorded here.
 
 ## Unreleased
 
+- Include submodule revision changes in recovered local upstream comparisons
+  even when local Git settings ignore submodules, preserving complete coverage
+  and absorption recommendations without changing user configuration.
+
 - Record the bounded Impeccable Rust-engine assessment and current detector
   compatibility boundary; defer adoption without advancing upstream pins or
   review metadata.

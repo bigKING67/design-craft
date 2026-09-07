@@ -332,8 +332,12 @@ def local_compare(path: Path, base: str, head: str, name: str) -> tuple[list[Rem
 
     git("merge-base", "--is-ancestor", base, head)
     # NUL delimiters preserve tabs/newlines and non-ASCII filenames. Disable
-    # rename heuristics so a large range cannot silently change coverage.
-    fields = git("diff", "--no-ext-diff", "--no-renames", "--name-status", "-z", base, head).split("\0")
+    # rename heuristics and override submodule ignores so local Git settings
+    # cannot silently change coverage.
+    fields = git(
+        "diff", "--no-ext-diff", "--no-renames", "--ignore-submodules=none",
+        "--name-status", "-z", base, head,
+    ).split("\0")
     if fields[-1] == "":
         fields.pop()
     if len(fields) % 2:

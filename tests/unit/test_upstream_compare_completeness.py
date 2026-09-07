@@ -66,6 +66,64 @@ class CompareCompletenessTests(unittest.TestCase):
             self.assertIn("Incomplete", report.remote_detail_error)
         self.assertIn("Incomplete", render_markdown_summary(reports))
 
+    def test_local_recovery_includes_gitlinks_ignored_by_local_config(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            upstream = root / "upstream"
+            upstream.mkdir()
+
+            def git(*args):
+                return subprocess.check_output(
+                    ["git", "-C", str(upstream), *args], text=True
+                ).strip()
+
+            git("init", "-q")
+            git("config", "user.name", "Fixture")
+            git("config", "user.email", "fixture@example.invalid")
+            git("commit", "--allow-empty", "-qm", "dependency one")
+            first = git("rev-parse", "HEAD")
+            git("commit", "--allow-empty", "-qm", "dependency two")
+            second = git("rev-parse", "HEAD")
+            (upstream / "README.md").write_text("old\n", encoding="utf-8")
+            git("add", "--", "README.md")
+            git("update-index", "--add", "--cacheinfo", f"160000,{first},skills/vendor")
+            git("commit", "-qm", "base")
+            base = git("rev-parse", "HEAD")
+            (upstream / "README.md").write_text("new\n", encoding="utf-8")
+            git("add", "--", "README.md")
+            git("update-index", "--cacheinfo", f"160000,{second},skills/vendor")
+            git("commit", "-qm", "update dependency and readme")
+            head = git("rev-parse", "HEAD")
+            git("config", "diff.ignoreSubmodules", "all")
+            before_status = git("status", "--short")
+
+            lock = json.loads((REPO_ROOT / "upstreams.lock.json").read_text())
+            name = next(iter(lock["upstreams"]))
+            meta = lock["upstreams"][name]
+            meta.update(
+                path="upstream", commit=head, reviewed_commit=base,
+                reviewed_through_commit=base, latest_range_head_commit=base,
+            )
+            lock["upstreams"] = {name: meta}
+            (root / "upstreams.lock.json").write_text(json.dumps(lock), encoding="utf-8")
+            with (
+                patch("upstream_absorption_report.remote_head", return_value=(head, "HEAD", None)),
+                patch("upstream_absorption_report.github_compare", return_value=self.compare(files=300)),
+            ):
+                report, = build_report(root, check_remote=True, fetch_remote_details=True)
+
+            self.assertEqual(report.remote_detail_source, "local_git")
+            self.assertIsNone(report.remote_detail_error)
+            self.assertEqual(
+                {item.path for item in report.remote_changed_files},
+                {"README.md", "skills/vendor"},
+            )
+            self.assertEqual(report.remote_recommendation, "absorption_review")
+            self.assertEqual([item.sha for item in report.remote_commits], [head])
+            self.assertEqual(git("config", "--get", "diff.ignoreSubmodules"), "all")
+            self.assertEqual(git("rev-parse", "HEAD"), head)
+            self.assertEqual(git("status", "--short"), before_status)
+
     def test_complete_local_recovery_clears_partial_evidence(self):
         result = self.compare(files=300)
         with patch("upstream_absorption_report.remote_head", return_value=("f" * 40, "HEAD", None)), \
