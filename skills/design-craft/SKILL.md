@@ -42,9 +42,20 @@ full evidence and completion boundary.
 
 ## Core workflow
 
-1. Inspect `git status --short`, relevant `AGENTS.md`, `PRODUCT.md`,
-   `DESIGN.md`, package/build scripts, platform targets, tokens, components,
-   routes, and nearby implementations. Resolve platform from evidence.
+1. Start at the task boundary.
+   - **L0 local visual refinement or read:** inspect applicable instructions,
+     the requested surface and goal, directly associated files, components, or
+     exemplars, and only the visual authority needed for that decision
+     (`DESIGN.md`, tokens, a shared component, or a verified runtime pattern).
+     When changing a repository, inspect `git status --short`. Do not load an
+     unrelated `PRODUCT.md`, platform target, package/build script, or distant
+     route merely as a checklist. Visible work still requires the applicable
+     runtime and visual-acceptance gates.
+   - **L1+ frontend work, and every functional, system, architecture, or
+     platform change:** inspect `git status --short`, relevant `AGENTS.md`,
+     `PRODUCT.md`, `DESIGN.md`, package/build scripts, platform targets,
+     tokens, components, routes, and nearby implementations. Resolve platform
+     from evidence and apply the full product and style-authority contract.
 2. For L1+ frontend work, run the route planner when available:
    `bash ~/.codex/tools/frontend_route_plan.sh --surface <surface> --intent <intent> --scope <scope> [--platform <auto|web|ios|android|adaptive>] [--product-context-path <abs PRODUCT.md>] [--style-authority-path <abs DESIGN.md>] --output compact-json`.
    Use enum values, not free-form task prose. Use full JSON only for contract
@@ -53,8 +64,10 @@ full evidence and completion boundary.
    for skills actually read and applied.
 4. Choose the smallest mode that covers the work, then load only its routed
    references.
-5. Establish product and style authority before changing visual language or
-   architecture. Measure before selecting or claiming performance fixes.
+5. Establish the applicable visual authority before changing visual language.
+   For L1+ or functional, system, architecture, and platform work, establish
+   product and style authority before proceeding. Measure before selecting or
+   claiming performance fixes.
 6. When selecting or migrating a headless component primitive, read
    `references/component-primitive-selection.md`, resolve project authority,
    and record `keep | adopt | migrate | defer`. A healthy existing library
