@@ -1,6 +1,6 @@
 ---
 name: design-craft
-description: "Design, implement, and review web and desktop UI/UX: product context, design systems, visual polish, motion, accessibility, responsive behavior, and frontend quality. Also handles supplied-image implementation, requested web concept-image direction, and controlled screenshot/rendition evidence. Covers iOS, Android, and adaptive quality when explicitly native. Not for backend-only, database-only, algorithm-only, or CLI-only work."
+description: "设计、实现或评审 Web/桌面 UI，以及明确的 iOS/Android 原生界面。作为 UX、设计系统、动效、可访问性与视觉验证基线；不用于纯后端、数据库、算法或 CLI 任务。"
 ---
 
 # Design Craft
