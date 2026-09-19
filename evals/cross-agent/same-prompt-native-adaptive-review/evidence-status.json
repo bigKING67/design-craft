@@ -4,7 +4,7 @@
   "hosts": {
     "codex": {
       "status": "observed",
-      "reason": "Retained prior observation from ad39c99; not current-source release evidence. Refresh at ab0ca11 failed after transport disconnects and upstream overload (503); no replacement output/score was admitted."
+      "reason": "Current-source score-v5/run-v3 from 2c4cc3c, domain skill-native-adaptive-review, projection 2e957cf06b11; rubric score 97/100. Static critique only; model is requested_by_cli."
     },
     "pi": {
       "status": "observed",
