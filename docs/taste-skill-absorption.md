@@ -88,6 +88,13 @@ complete output remains the host delivery policy, not a separate design mode.
 
 ## Current conclusion
 
+Freshness review on 2026-09-19 extends the reviewed head to
+`e79ca9ec7e071eb3a3b623c4fb752e853fc3ed58`: the three commits after `ccbc156`
+change only `README.md` sponsor presentation and `assets/sponsors/fluxion-ai.png`.
+The complete two-file comparison is provenance-only. The compatibility pin and
+absorbed behavior do not advance; the earlier range description below is retained
+as historical context.
+
 `missing-high-value`: none for the reviewed snapshot.
 
 The cumulative state is selective absorption: design judgment, redesign,

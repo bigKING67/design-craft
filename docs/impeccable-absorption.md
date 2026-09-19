@@ -266,6 +266,11 @@ evidence unless the corresponding local tool actually ran.
 
 ## Current conclusion
 
+The later `695df68..f2c7051` range, through
+`f2c7051853848826aac2f4646581d62a732155ad`, was screened on 2026-09-19 and deliberately
+deferred; see [the bounded adoption review](impeccable-release-review-2026-09-19.md).
+That review does not extend the behavioral completeness claim below.
+
 `missing-high-value`: none within the selected fusion boundary through remote
 head `695df68a5860da4d25cd629fc3727ec8f3c0991b`, reviewed on 2026-09-04.
 
