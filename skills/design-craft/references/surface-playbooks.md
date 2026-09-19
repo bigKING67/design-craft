@@ -11,6 +11,7 @@ Use this to avoid applying the wrong aesthetic to the wrong surface.
 - [Data visualization](#data-visualization)
 - [Static or special report](#static-or-special-report)
 - [Mobile flow](#mobile-flow)
+- [Mobile Web platform behavior](#mobile-web-platform-behavior)
 - [Native phone or tablet app](#native-phone-or-tablet-app)
 - [Forms and settings](#forms-and-settings)
 - [Existing redesign](#existing-redesign)
@@ -208,6 +209,106 @@ Primary job: complete one task under interruption.
 - For iOS, Android, or adaptive targets, read the matching platform reference
   and verify system navigation, insets, text scaling, screen reader order, and
   runtime gesture behavior.
+
+## Mobile Web platform behavior
+
+Load for a Web/PWA flow with viewport, keyboard, safe-area, touch, scrolling or
+browser-chrome symptoms. Keep `platform=web`; this does not select native iOS,
+Android or React Native guidance. Ordinary responsive spacing alone does not
+require this reference. Project components, browser support and observed
+behavior govern each change; there is no global mobile reset to install.
+
+### Viewport and keyboard
+
+- Choose height behavior from the surface: `svh` provides a stable small-viewport
+  baseline; `dvh` tracks dynamic browser UI and may resize content during scroll.
+  Neither guarantees that long content fits. Prefer minimum height and reachable
+  overflow for documents; constrain an app shell only when it owns scrolling.
+  Retain fallbacks only for the project's supported browsers.
+- Distinguish layout viewport from visual viewport before repairing a keyboard
+  overlap. `dvh` alone does not prove keyboard avoidance. In supporting browsers,
+  `interactive-widget=resizes-content` opts into layout-viewport resizing;
+  it is not a cross-browser default or a guarantee for embedded WebViews.
+  Use the existing framework's keyboard strategy; add VisualViewport handling
+  only for a demonstrated gap, with listener cleanup and no double compensation.
+- Keep focused inputs, validation messages and the submit action reachable when
+  the keyboard opens, after dismissal and in landscape. A smaller emulated
+  viewport tests reflow, not a real software keyboard.
+
+### Safe areas and theme
+
+- Use `viewport-fit=cover` only for an intended edge-to-edge layout. Apply
+  `env(safe-area-inset-*, 0px)` to exposed controls and content, retaining the
+  normal spacing token (add or take the maximum as the layout requires).
+  Avoid counting the same inset in both a parent shell and its child bar.
+  Safe-area padding is not keyboard avoidance; zero desktop insets do not prove
+  notched-device correctness. Test browser and standalone modes when shipped.
+- Root canvas and active theme follow `design-system-contract.md`. Browser
+  chrome, manifest colors and platform-specific status-bar settings have
+  different support and lifecycle behavior; inspect the supported target rather
+  than promising that one `theme-color` changes all of them.
+
+### Input and gesture ownership
+
+- Keep content and actions reachable without hover. Gate optional hover effects
+  by input capability, not viewport width or user-agent strings; do not assume
+  mouse, pen and touch are mutually exclusive. `hover`/`pointer` describe the
+  primary input and do not enumerate all attached devices.
+- Separate immediate press feedback from activation. Native buttons and their
+  `click` semantics preserve keyboard access and release/cancel behavior.
+  Pointer-down feedback must not submit, purchase or navigate early; custom
+  gestures must clear feedback on cancellation and lost capture.
+- Diagnose latency before prescribing `touch-action: manipulation`. It permits
+  panning and pinch zoom while restricting additional gestures such as double
+  tap; it is not a general repair for slow handlers or expensive rendering.
+- On a custom horizontal drag surface, consider `pan-y pinch-zoom` when the
+  browser should retain vertical scroll and pinch zoom. Values name browser
+  permissions, not the custom gesture's direction. Ancestor declarations also
+  constrain the effective behavior, and changing it after a gesture starts
+  does not change that gesture. Avoid broad `touch-action: none`; preserve
+  keyboard alternatives and test cross-axis scrolling. Prefer existing native
+  scrolling/scroll-snap when no custom drag behavior is needed.
+- Apply `overscroll-behavior` to the scroll container that owns the conflict.
+  `contain` suppresses chaining while retaining local boundary effects; `none`
+  suppresses those effects too. Root pull-to-refresh/navigation changes require
+  a product reason; do not disable them simply to make a document feel installed.
+  Check short/non-scrollable content as well as a genuinely scrollable sheet.
+- Keep browser tap/long-press feedback unless equivalent scoped feedback exists.
+  Do not globally remove text selection, link previews, callouts or text-size
+  adjustment as a cosmetic reset. Addresses, errors and other copyable content
+  must remain usable.
+
+### Forms and evidence
+
+- Preserve zoom. Investigate computed input font size and actual target behavior
+  when focus causes unwanted zoom. A 16 CSS px input size is a candidate for
+  affected Safari cases, not a reason to overwrite all project typography;
+  `1rem` is not necessarily 16px. Verify on the affected browser, including
+  focus, typing, blur and user text scaling.
+- Match native field semantics and keyboard hints to the data: `inputmode`,
+  `autocomplete`, `enterkeyhint` and suitable input types. Numeric-looking
+  identifiers may need leading zeros and are not automatically number inputs.
+  Keyboard hints neither validate data nor guarantee a particular keyboard.
+- Report source checks, browser/emulated observations and device observations
+  separately. Emulation can verify layout and selected input conditions; it
+  does not establish real browser-bar motion, keyboard, notch, latency or touch
+  feel. For a device-specific symptom, retain an unverified-device status until
+  the affected target is observed. Do not block unrelated desktop work on that
+  missing device evidence or open a LAN server merely because a recipe says so.
+
+### Technical references
+
+Reviewed 2026-09-19; consult the target support matrix before changing behavior:
+
+- [MDN viewport units](https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Values/length#relative_length_units_based_on_viewport)
+- [Chrome keyboard viewport policy](https://developer.chrome.com/blog/viewport-resize-behavior)
+- [WebKit safe-area guidance](https://webkit.org/blog/7929/designing-websites-for-iphone-x/)
+- [Pointer Events: touch-action](https://www.w3.org/TR/pointerevents3/#the-touch-action-css-property)
+- [MDN viewport metadata](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/meta/name/viewport)
+- [MDN overscroll behavior](https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Properties/overscroll-behavior)
+
+Selected upstream provenance is in `source-map.md`; its recipes are not a
+second platform or visual authority.
 
 ## Native phone or tablet app
 

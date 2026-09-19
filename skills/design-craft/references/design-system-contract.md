@@ -119,6 +119,14 @@ For light/dark work:
 - Components should not need `if dark` logic for basic colors when token parity
   can solve the problem.
 
+For Web page shells, give the document canvas an explicit background from the
+active page-surface token when overscroll or an uncovered viewport can expose
+it. A painted app wrapper is not the document canvas. Transparent `html` can
+inherit the body's canvas paint under browser rules; do not diagnose every
+transparent root as a visible defect. Verify initial load and theme switching
+in the target browser. Keep an existing `theme-color` in sync where supported;
+do not disable platform overscroll merely to conceal a mismatched background.
+
 ## Typography roles
 
 Choose typography by role before choosing size:
@@ -153,6 +161,13 @@ Treat optical detail as part of the role contract:
 - Use tabular figures for changing metrics, timers, and aligned numeric columns
   when the selected font supports them.
 
+For icons that appear off-center, inspect the actual glyph/viewBox and visual
+mass at the intended size before changing alignment. A temporary blurred view
+can help locate that mass; remove the diagnostic filter afterward. Keep any
+correction scoped to that icon and variant, preserving the control's hit area,
+focus ring and label spacing. Recheck relevant sizes and RTL/mirrored variants;
+a playback triangle's offset is not a universal icon-centering token.
+
 ## Layout rhythm
 
 Prefer a small spacing scale over ad hoc gaps:
@@ -165,6 +180,22 @@ Prefer a small spacing scale over ad hoc gaps:
 - Use spacing and borders for hierarchy before adding heavy shadows.
 - Responsive layouts should preserve grouping and priority, not merely stack all
   children in source order.
+
+When nested rounded surfaces are meant to follow the same circular contour,
+derive the inner radius from the outer radius minus the actual edge-to-edge
+inset, clamped at zero. Measure corresponding edges: parent border plus padding
+can both contribute. Use this as a geometric starting point within project
+tokens, not a requirement to round every child. Unequal insets, elliptical or
+noncircular corners, and children that do not reach the corner need individual
+inspection. Check the rendered gap at narrow sizes as well as the nominal size.
+
+When pale image edges disappear into their surface, consider a tokenized inner
+edge that does not change layout. Inspect representative images in each theme
+before choosing its color or opacity; it is not a mandatory frame for all media.
+For linked or focusable media, keep the decorative edge separate from the
+keyboard focus treatment. An overlay must not intercept input, and an inset
+shadow on the image itself must not be assumed to paint above replaced image
+content: verify the chosen outline or wrapper technique in the target browser.
 
 ## Component state matrix
 

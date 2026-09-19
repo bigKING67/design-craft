@@ -157,17 +157,17 @@
       "path": "upstreams/emilkowalski-skills",
       "license": "MIT",
       "commit": "7bb7061b5cf7de15ea1aeaf00fbd9e6592a20fce",
-      "reviewed_commit": "d23d7f88a2e21c9e4b1418c7abe420f5c1052ba7",
-      "absorbed_commit": "d23d7f88a2e21c9e4b1418c7abe420f5c1052ba7",
+      "reviewed_commit": "85e8e2363b713506e1d5b6e07a0eb2da66be1bc3",
+      "absorbed_commit": "85e8e2363b713506e1d5b6e07a0eb2da66be1bc3",
       "cumulative_status": "selective_absorbed",
-      "reviewed_through_commit": "d23d7f88a2e21c9e4b1418c7abe420f5c1052ba7",
-      "behavior_absorbed_through_commit": "d23d7f88a2e21c9e4b1418c7abe420f5c1052ba7",
-      "latest_range_base_commit": "78761e1b57f97dce65b983d640c70a68f39e8163",
-      "latest_range_head_commit": "d23d7f88a2e21c9e4b1418c7abe420f5c1052ba7",
+      "reviewed_through_commit": "85e8e2363b713506e1d5b6e07a0eb2da66be1bc3",
+      "behavior_absorbed_through_commit": "85e8e2363b713506e1d5b6e07a0eb2da66be1bc3",
+      "latest_range_base_commit": "d23d7f88a2e21c9e4b1418c7abe420f5c1052ba7",
+      "latest_range_head_commit": "85e8e2363b713506e1d5b6e07a0eb2da66be1bc3",
       "latest_range_status": "selective_absorbed",
-      "reviewed_at": "2026-08-29",
+      "reviewed_at": "2026-09-19",
       "decision": "partial",
-      "notes": "Pinned compatibility source remains 7bb7061. The 78761e1..d23d7f8 range was reviewed on 2026-08-29. React Native/Expo motion ownership, UI/worklet boundaries, gesture interruption, causal haptics, Reduced Motion, and release-build evidence for each actually shipped target were selectively adapted into a conditional reference that loads only when project dependencies prove the runtime. Recipe and README additions are provenance-only. The broad write-swift entrypoint is intentionally rejected from this web-first design baseline because it expands into general Swift implementation and repository editing beyond design-craft's UI/UX scope. The selected-behavior boundary advances without advancing the pinned five-skill compatibility snapshot.",
+      "notes": "Pinned compatibility source remains 7bb7061. The d23d7f8..85e8e23 range contains two commits and 16 changed files, reviewed in full on 2026-09-19. Original Mobile Web guidance in surface-playbooks selectively covers viewport and keyboard policy, safe-area ownership, input semantics, gesture permissions, and device-evidence limits. The mobile-native source is Mobile Web, not a native platform signal. Global CSS resets, unsupported cross-browser guarantees, and initial-response instructions are rejected. The performance cheatsheet is overlapping/contextual; README and empty .pl are provenance-only. No runtime, submodule checkout, global route pack or install changed. Hardware and independent model effectiveness remain unverified.",
       "coverage_contract": "design-craft.emil-absorption.v1",
       "coverage_matrix": "docs/emilkowalski-absorption.md",
       "skill_inventory": {
@@ -189,7 +189,8 @@
           "pick-ui-library": "intentionally_rejected",
           "prototype": "absorbed",
           "animate-expo": "partial",
-          "write-swift": "intentionally_rejected"
+          "write-swift": "intentionally_rejected",
+          "mobile-native": "partial"
         }
       }
     },

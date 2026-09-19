@@ -188,7 +188,7 @@ Read only references required by the current task.
 - Subjective briefs such as "too AI", flat color, weak copy, poor mobile,
   jank, or messy structure: `references/intent-map.md`.
 - Surface-specific landing, dashboard, persistent-agent workspace, data-viz,
-  report, and mobile rules:
+  report, and mobile Web viewport/input rules:
   `references/surface-playbooks.md`.
 - Supplied or selected design-image implementation:
   `references/image-reference-implementation.md`.

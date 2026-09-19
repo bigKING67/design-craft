@@ -103,11 +103,13 @@ production-readiness flows.
 - Pinned compatibility commit:
   `7bb7061b5cf7de15ea1aeaf00fbd9e6592a20fce`
 - Selected-behavior boundary:
-  `d23d7f88a2e21c9e4b1418c7abe420f5c1052ba7`
+  `85e8e2363b713506e1d5b6e07a0eb2da66be1bc3`
 - Cumulative status: `selective_absorbed`; the motion-opportunity gate,
   calibrated prototype workflow, project-authorized Base UI-specific
   application, and conditional React Native/Expo motion ownership and evidence
-  contract are local. The opinionated library picker, general Swift writer, fixed picker
+  contract are local. Conditional mobile Web viewport, keyboard, safe-area and
+  touch/scroll guidance lives in the Mobile Web section of `surface-playbooks.md`;
+  it never selects a native target. The opinionated library picker, general Swift writer, fixed picker
   visual/runtime, and Base UI-only universal prescription are intentionally
   rejected.
 - Stable selected behavior: original design-craft references cover
@@ -130,6 +132,7 @@ production-readiness flows.
   - `skills/improve-animations/PLAN-TEMPLATE.md`
   - `skills/animation-vocabulary/SKILL.md`
   - reviewed remote `skills/prototype/SKILL.md` and `PICKER.md` at `70744e3`
+  - reviewed remote `skills/mobile-native/SKILL.md` at `85e8e23`
 
 Use this upstream for motion purpose, frequency-based animation decisions,
 easing and duration standards, origin-aware physicality, interruptibility,
@@ -144,6 +147,28 @@ contextual partial coverage.
 
 ## External design references
 
+### Gustavo Fior Craft — selected interface details
+
+- Source: https://github.com/gustavo-fior/craft
+- Fixed reviewed revision: `1758451bc13c15f7b0c04fc4f22b673852425bbc`.
+- Selected concept paths: `content/layout/html-background.mdx`,
+  `content/layout/nested-border-radius.mdx`, `content/color/image-outlines.mdx`,
+  and `content/typography/optical-alignment.mdx`.
+- Local destination: original guidance in `design-system-contract.md` under
+  theme parity, typography roles and layout rhythm.
+- License observation: README declares MIT, but this revision contains no
+  standalone license/notice file. No upstream text, snippets, fonts, images,
+  components or generated Skill are redistributed.
+
+This is a fixed reference, not a managed submodule, runtime dependency or
+automatic freshness feed. The upstream launch list exposes seven concepts;
+other article files are not evidence of launched Skill coverage. Project
+tokens and verified rendering govern values. Optical-alignment prose and its
+sample disagree on horizontal direction, so no fixed icon offset is adopted.
+Sound, chart animation, decorative texture and upstream host instructions are
+outside this selection. The canonical repository records paths and source
+digests in `docs/gustavo-fior-craft-reference.md`.
+
 ### Jakub Krehel skills — selected writing and hardening guidance
 
 - Source: https://github.com/jakubkrehel/skills
@@ -155,8 +180,9 @@ contextual partial coverage.
 - License/attribution: MIT, copyright 2026 Jakub Krehel; preserved in the
   package's third-party notices and MIT upstream license.
 
-This is a fixed external reference, not a fourth managed submodule. Only the
-selected instructional behavior is adapted. Exact global visual recipes,
+This fixed selective reference is registered as a pristine submodule at
+`upstreams/jakubkrehel-skills` for freshness checks. Registration does not
+expand the selected instructional behavior. Exact global visual recipes,
 one-look browser limits, universal client-component conversion and upstream
 host orchestration are excluded. Local product authority and runtime evidence
 continue to govern; source incorporation does not prove a real-project run.

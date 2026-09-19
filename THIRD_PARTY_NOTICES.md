@@ -5,6 +5,23 @@ design engineering and frontend quality skill projects. Upstream repositories
 registered in the upstream lock are kept as pristine submodules under
 `upstreams/`. Reviewed sources and their adoption boundaries are identified below.
 
+## gustavo-fior/craft
+
+- Repository: https://github.com/gustavo-fior/craft
+- Fixed reference revision: `1758451bc13c15f7b0c04fc4f22b673852425bbc`
+- License observation: the README declares MIT; no standalone license or
+  notice file exists in the inspected revision. No copyright notice is inferred.
+- Referenced concepts: document canvas backgrounds, nested corner geometry,
+  image edge separation and per-glyph optical alignment.
+
+The local design-system guidance and evaluation fixture are original work.
+No upstream prose, code snippets, generated Skill, fonts, imagery, components
+or runtime dependencies are distributed. This reference is not registered as a
+managed submodule or automatic update source. Before any future substantial
+copying, obtain and preserve the applicable license and copyright notice.
+See `docs/gustavo-fior-craft-reference.md` in the source repository for the
+review scope and source digests.
+
 ## jakubkrehel/skills
 
 - Repository: https://github.com/jakubkrehel/skills
@@ -101,9 +118,15 @@ longer contain Vercel-authored snapshot text. See
 - Initial pinned commit:
   `a47903a06a05d2e24c483bd8961c85969a51a494`
 - Current absorbed commit:
-  `70744e3816f1d93eafb697161a8b880a7384c5ff`
+  `85e8e2363b713506e1d5b6e07a0eb2da66be1bc3`
 - Current reviewed commit:
-  `da80201b64de7d608a6dc5f723797ce6c65b692b`
+  `85e8e2363b713506e1d5b6e07a0eb2da66be1bc3`
+
+The 2026-09-19 update selectively adapts Mobile Web viewport, keyboard,
+safe-area and gesture-ownership concepts into original conditional guidance,
+calibrated against browser/standards documentation. No global CSS reset,
+initial-response block, component code or native-platform reclassification is
+imported. The compatibility submodule remains at `7bb7061`.
 
 The fusion layer references and adapts ideas around motion purpose, animation
 frequency, easing and duration standards, physicality, gesture handling,

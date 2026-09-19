@@ -2,7 +2,7 @@
 
 This document records the deliberate absorption boundary for
 `https://github.com/emilkowalski/skills` through reviewed remote commit
-`d23d7f88a2e21c9e4b1418c7abe420f5c1052ba7`. The compatibility submodule
+`85e8e2363b713506e1d5b6e07a0eb2da66be1bc3`. The compatibility submodule
 stays pinned at `7bb7061b5cf7de15ea1aeaf00fbd9e6592a20fce`.
 
 ## Contents
@@ -153,8 +153,46 @@ The local fusion does not copy these as universal truth:
 
 ## Current conclusion
 
+### Mobile Web selective update — 2026-09-19
+
+Compared `d23d7f88a2e21c9e4b1418c7abe420f5c1052ba7` through
+`85e8e2363b713506e1d5b6e07a0eb2da66be1bc3`: GitHub compare reports a forward
+range of two commits, both present, and 16 changed files, below the file cap.
+Reviewed the complete new 311-line `skills/mobile-native/SKILL.md` and the
+remaining file deltas. The final mobile source SHA-256 is
+`888b7651d66d66dbac4e72b7c554638eb19bd971d686d6cbdf030a5ef3788f55`.
+
+| Changed scope | Disposition | Reason / destination |
+| --- | --- | --- |
+| `mobile-native` | partial | Original guidance in the Mobile Web section of `surface-playbooks.md` uses the existing surface playbook route. Web/PWA stays Web. |
+| Twelve existing Skill entrypoints | intentionally-rejected | Eleven add an initial-response block; emil-design-eng removes its course mention. No underlying implementation guidance changed in those deltas. Existing capability decisions remain intact. |
+| `performance-cheatsheet.md` | partial | Transform/opacity, bounded rendering and explicit transitions overlap existing guidance. Fixed blur thresholds and universal render/GPU remedies are not imported. |
+| `README.md`, empty `.pl` | provenance-only | Navigation/empty metadata; no local runtime change. |
+
+Technical calibration uses the official sources linked from the new section:
+keyboard viewport policy is browser-dependent, safe-area padding preserves
+normal spacing, touch-action values grant browser gestures, and click remains
+the semantic activation boundary. Global overscroll/highlight/selection resets,
+fixed typography, default LAN exposure and the claim that no listed condition
+can be emulated are excluded. Device-specific acceptance still needs the
+affected device; emulation remains useful for its actual, bounded conditions.
+
+Validation is source/contract-only for this increment. No product UI or fixture
+was changed to manufacture a mobile-device pass. The earlier Craft component
+screenshots remain historical evidence for their hash-bound input; they do not
+validate this new section or its loading by an independent agent. No physical
+phone, software keyboard, Safari browser bar or PWA install was exercised.
+
+Source checks on 2026-09-19: the strict Emil absorption check and Skill quick
+validator passed. An initial standalone-reference layout exceeded the existing
+102-entry package limit. The guidance was moved intact into the existing
+surface playbook; no package limit was raised. The resulting portable run
+passed all 25 gates, including source tests and development maturity.
+
+### Cumulative boundary
+
 `missing-high-value`: none within the selected fusion boundary through remote
-head `d23d7f88a2e21c9e4b1418c7abe420f5c1052ba7`, reviewed on 2026-08-29.
+head `85e8e2363b713506e1d5b6e07a0eb2da66be1bc3`, reviewed on 2026-09-19.
 
 The cumulative state is now `selective_absorbed`, not an unqualified full-copy
 claim. High-value behavior from the five pinned Skills, the motion opportunity
@@ -167,7 +205,8 @@ review posture, host-policy conflicts, decorative recipes, and technically
 overbroad claims remain `intentionally-rejected`, `partial`, or
 `provenance-only` according to the matrix above.
 
-Current independent blind evidence is recorded in two cases:
+Historical independent blind evidence is recorded in two cases. These scores
+pre-date the mobile Web guidance and do not validate the current Skill tree:
 
 - `emil-motion-ablation`: `design-craft` 98, focused Emil upstream 96,
   no-skill baseline 91.

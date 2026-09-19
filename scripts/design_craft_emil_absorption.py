@@ -26,6 +26,7 @@ LATEST_RANGE_ENTRYPOINT_DECISIONS = {
     "prototype": "absorbed",
     "animate-expo": "partial",
     "write-swift": "intentionally_rejected",
+    "mobile-native": "partial",
 }
 LATEST_RANGE_COVERAGE = {
     "paths": [
@@ -35,6 +36,7 @@ LATEST_RANGE_COVERAGE = {
         "skills/design-craft/references/prototype-workflow.md",
         "skills/design-craft/references/component-primitive-selection.md",
         "skills/design-craft/references/react-native-expo-motion.md",
+        "skills/design-craft/references/surface-playbooks.md",
     ],
     "terms": [
         "Motion needs a reason",
@@ -305,6 +307,7 @@ def self_check() -> None:
         "prototype": "absorbed",
         "animate-expo": "partial",
         "write-swift": "intentionally_rejected",
+        "mobile-native": "partial",
     }:
         raise RuntimeError("latest-range entrypoint decisions drifted")
 
