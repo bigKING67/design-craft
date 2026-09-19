@@ -64,14 +64,10 @@ jobs:
           retention-days: 30
 
   full:
-    name: Diagnostic only - route-pack stage timing ${{ matrix.probe }}
-    strategy:
-      fail-fast: false
-      matrix:
-        probe: [1, 2]
+    name: Fixed-runner three-run full stability experiment
     if: github.event_name == 'workflow_dispatch' && inputs.mode == 'full'
     runs-on: ubuntu-24.04
-    timeout-minutes: 10
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
@@ -84,15 +80,12 @@ jobs:
       - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
         with:
           python-version: "3.13"
-      - name: Collect bounded same-SHA diagnostic samples
+      - name: Execute all three predeclared full measurements on this runner
         env:
           PYTHONDONTWRITEBYTECODE: "1"
         run: |
-          python3 - <<'PY_DIAGNOSTIC'
-          import os, sys
-          sys.argv = ['probe', '--output', os.path.join(os.environ['RUNNER_TEMP'], 'route-pack-diagnostic.json')]
-          """Bounded diagnostic only; never a release benchmark or baseline."""
-          import argparse
+          python3 - <<'PY_STABILITY'
+          """Predeclared three-run stability experiment; no sample filtering or promotion."""
           import hashlib
           import json
           import os
@@ -103,154 +96,93 @@ jobs:
           import sys
           import time
 
-          CHILD = r'''
-          import importlib, json, os, resource, sys, tempfile, time
-          from pathlib import Path
           sys.path.insert(0, str(Path.cwd()))
-          segments = {}
-          def timed(label, function):
-              def wrapper(*args, **kwargs):
-                  wall, cpu = time.perf_counter(), time.process_time()
-                  try:
-                      return function(*args, **kwargs)
-                  finally:
-                      entry = segments.setdefault(label, dict(calls=0, wall_ms=0, cpu_ms=0))
-                      entry['calls'] += 1
-                      entry['wall_ms'] += (time.perf_counter()-wall)*1000
-                      entry['cpu_ms'] += (time.process_time()-cpu)*1000
-              return wrapper
-          start, cpu_start = time.perf_counter(), time.process_time()
-          module = importlib.import_module('tools.design_craft.routing.self_check')
-          import_ms = (time.perf_counter()-start)*1000
-          import_cpu_ms = (time.process_time()-cpu_start)*1000
-          for name in ['build_manifest', 'copy_pack', 'write_manifest']:
-              setattr(module, name, timed('helper.'+name, getattr(module, name)))
-          for name in ['write_text', 'read_text', 'read_bytes', 'stat', 'resolve', 'mkdir', 'chmod', 'symlink_to', 'unlink']:
-              setattr(Path, name, timed('path.'+name, getattr(Path, name)))
-          for name in ['mkdir', 'unlink', 'rmdir', 'open', 'close', 'write', 'fsync', 'stat', 'chmod', 'symlink', 'scandir']:
-              setattr(os, name, timed('os.'+name, getattr(os, name)))
-          tempfile.mkdtemp = timed('tempfile.mkdtemp', tempfile.mkdtemp)
-          tempfile.TemporaryDirectory.cleanup = timed('tempfile.cleanup', tempfile.TemporaryDirectory.cleanup)
-          trace_state = {}
-          def trace(frame, event, arg):
-              if frame.f_code is not module.self_check.__code__:
-                  return None
-              wall, cpu = time.perf_counter(), time.process_time()
-              if 'line' in trace_state:
-                  entry = segments.setdefault('self_check.line.'+str(trace_state['line']), dict(calls=0, wall_ms=0, cpu_ms=0))
-                  entry['calls'] += 1
-                  entry['wall_ms'] += (wall-trace_state['wall'])*1000
-                  entry['cpu_ms'] += (cpu-trace_state['cpu'])*1000
-              trace_state.update(line=frame.f_lineno, wall=wall, cpu=cpu)
-              return trace
-          start, cpu_start = time.perf_counter(), time.process_time()
-          sys.settrace(trace)
-          try:
-              code = module.self_check()
-          finally:
-              sys.settrace(None)
-          result = dict(import_ms=import_ms, import_cpu_ms=import_cpu_ms,
-                        self_check_ms=(time.perf_counter()-start)*1000,
-                        self_check_cpu_ms=(time.process_time()-cpu_start)*1000,
-                        process_cpu_ms=time.process_time()*1000,
-                        segments=segments, exit_code=code)
-          print(json.dumps(result))
-          raise SystemExit(code)
-          '''
+          from tools.design_craft.benchmark.contract import compare_results
 
+          TARGET = 'f52ac60ad8fcebad89b125d761775bf5050cc4d0'
+          BASELINE = Path('benchmarks/baselines/v0.7.0-linux-x86_64-python3.13.json')
+          OUT = Path(os.environ['RUNNER_TEMP']) / 'route-pack-stability'
+          OUT.mkdir(exist_ok=False)
 
           def git(*args):
-              return subprocess.check_output(['git', *args], text=True).strip()
-
+              return subprocess.check_output(['git',*args],text=True).strip()
 
           def signals():
-              data = {}
-              for name in ['/proc/pressure/cpu', '/proc/pressure/io', '/sys/fs/cgroup/cpu.stat', '/sys/fs/cgroup/cpu.max']:
-                  p = Path(name)
-                  if p.is_file():
-                      data[name] = p.read_text()
-              return data
+              result = {}
+              for name in ['/proc/pressure/cpu','/proc/pressure/io','/sys/fs/cgroup/cpu.stat','/sys/fs/cgroup/cpu.max']:
+                  p=Path(name)
+                  if p.is_file(): result[name]=p.read_text()
+              return result
 
+          def verify_source():
+              if git('rev-parse','HEAD') != TARGET or git('status','--porcelain=v1','--untracked-files=all'):
+                  raise RuntimeError('source SHA or clean-worktree invariant failed')
 
-          def sample(kind, command, index):
-              before = resource.getrusage(resource.RUSAGE_CHILDREN)
-              started = time.perf_counter()
-              r = subprocess.run(command, capture_output=True, text=True, timeout=30)
-              elapsed = (time.perf_counter()-started)*1000
-              after = resource.getrusage(resource.RUSAGE_CHILDREN)
-              if r.returncode:
-                  raise RuntimeError(f'{kind} failed: {r.returncode}: {r.stderr[-400:]}')
-              entry = dict(kind=kind, index=index, wall_ms=elapsed,
-                           user_cpu_ms=(after.ru_utime-before.ru_utime)*1000,
-                           system_cpu_ms=(after.ru_stime-before.ru_stime)*1000)
-              for key in ['ru_nvcsw', 'ru_nivcsw', 'ru_majflt', 'ru_minflt', 'ru_inblock', 'ru_oublock']:
-                  entry[key] = getattr(after,key)-getattr(before,key)
-              if kind == 'instrumented':
-                  entry['child'] = json.loads(r.stdout)
-              return entry
+          verify_source()
+          base=json.loads(BASELINE.read_text())
+          plan=dict(schema='design-craft.full-stability-plan.v1',target_sha=TARGET,runs=3,
+                    baseline=str(BASELINE),baseline_sha256=hashlib.sha256(BASELINE.read_bytes()).hexdigest(),
+                    acceptance='All three complete full runs must pass the unchanged baseline comparison, and all ordered pairwise comparisons must pass.',
+                    stop_rule='No automatic retries. Execution failure stops collection; timing comparison failure does not discard later predeclared runs.',
+                    non_actions=['No baseline promotion','No threshold changes','No discarded samples','No release approval from this workflow alone'])
+          (OUT/'plan.json').write_text(json.dumps(plan,indent=2)+'\n')
+          result=dict(schema='design-craft.full-stability-result.v1',plan=plan,
+                      source_sha=TARGET,workflow_sha=os.environ.get('GITHUB_SHA'),run_id=os.environ.get('GITHUB_RUN_ID'),
+                      cpu_model=next((line.split(':',1)[1].strip() for line in Path('/proc/cpuinfo').read_text().splitlines() if line.startswith('model name')),'unknown'),
+                      cpu_count=os.cpu_count(),python=sys.version,platform=platform.platform(),
+                      image_os=os.environ.get('ImageOS'),image_version=os.environ.get('ImageVersion'),runs=[],pairwise=[],ok=False)
 
+          def save():
+              (OUT/'experiment.json').write_text(json.dumps(result,indent=2)+'\n')
 
-          def summary(rows):
-              values = sorted(x['wall_ms'] for x in rows)
-              n = len(values)
-              return dict(count=n, p50_ms=(values[(n-1)//2]+values[n//2])/2,
-                          p95_ms=values[round((n-1)*0.95)], max_ms=values[-1])
-
-
-          def main():
-              parser = argparse.ArgumentParser()
-              parser.add_argument('--output', required=True)
-              parser.add_argument('--cycles', type=int, default=60)
-              args = parser.parse_args()
-              if not 1 <= args.cycles <= 100:
-                  parser.error('cycles must be between 1 and 100')
-              head = git('rev-parse', 'HEAD')
-              clean = git('status', '--porcelain=v1', '--untracked-files=all') == ''
-              if not clean:
-                  raise RuntimeError('diagnostic target must be clean')
-              source_files = git('ls-files', 'tools/design_craft/routing', 'scripts/design_craft_codex_route_pack.py').splitlines()
-              source_hashes = {name:hashlib.sha256(Path(name).read_bytes()).hexdigest() for name in source_files}
-              before_signals = signals()
-              commands = {
-                  'startup': [sys.executable, '-c', 'pass'],
-                  'import': [sys.executable, '-c', 'import tools.design_craft.routing.self_check'],
-                  'canonical': [sys.executable, 'scripts/design_craft_codex_route_pack.py', '--check'],
-                  'instrumented': [sys.executable, '-c', CHILD],
-              }
-              # Preserve every sample. The first twenty canonical invocations are unmodified.
-              rows = [sample('canonical_initial', commands['canonical'], i) for i in range(20)]
-              kinds = list(commands)
-              for index in range(args.cycles):
-                  for kind in kinds[index%4:]+kinds[:index%4]:
-                      rows.append(sample(kind, commands[kind], index))
-              unchanged = head == git('rev-parse', 'HEAD') and git('status', '--porcelain=v1', '--untracked-files=all') == ''
-              if not unchanged:
-                  raise RuntimeError('source changed during diagnostics')
-              groups = {kind:summary([r for r in rows if r['kind']==kind]) for kind in ['canonical_initial', *kinds]}
-              result = dict(schema='design-craft.route-pack-diagnostic.v1', diagnostic_only=True,
-                            source_commit=head, worktree_unchanged=unchanged, source_hashes=source_hashes,
-                            python=sys.version, platform=platform.platform(), cpu_count=os.cpu_count(),
-                            cpu_model=next((line.split(':',1)[1].strip() for line in Path('/proc/cpuinfo').read_text().splitlines() if line.startswith('model name')), 'unknown') if Path('/proc/cpuinfo').exists() else platform.processor(),
-                            runner={key:os.environ.get(key) for key in ['ImageOS','ImageVersion','RUNNER_OS','RUNNER_ARCH','GITHUB_RUN_ID','GITHUB_SHA']},
-                            signals_before=before_signals, signals_after=signals(), summaries=groups, samples=rows,
-                            limits=['Instrumented helper and path times are inclusive and not additive.',
-                                    'Parent wall time includes process startup, shutdown and pipe communication.',
-                                    'Diagnostic samples do not replace a full release benchmark.'])
-              out = Path(args.output); out.parent.mkdir(parents=True,exist_ok=True)
-              out.write_text(json.dumps(result,indent=2)+'\n')
-              print(json.dumps(groups,indent=2))
-
-          if __name__ == '__main__':
-              main()
-          PY_DIAGNOSTIC
-      - name: Upload diagnostic evidence (not a release benchmark)
+          payloads=[]
+          for index in range(1,4):
+              verify_source()
+              print(f'START full run {index}/3',flush=True)
+              output=OUT/f'full-{index}.json'
+              pre=signals(); usage=resource.getrusage(resource.RUSAGE_CHILDREN); started=time.perf_counter()
+              with (OUT/f'full-{index}.log').open('w') as log:
+                  try:
+                      process=subprocess.run([sys.executable,'-m','tools.design_craft','benchmark','--scale','full','--output',str(output)],stdout=log,stderr=subprocess.STDOUT,timeout=900)
+                      returncode=process.returncode
+                  except subprocess.TimeoutExpired:
+                      returncode=124
+                      log.write('\nExecution timed out after the declared 900-second limit.\n')
+              after=resource.getrusage(resource.RUSAGE_CHILDREN)
+              row=dict(index=index,exit_code=returncode,wall_seconds=time.perf_counter()-started,
+                       child_user_cpu_seconds=after.ru_utime-usage.ru_utime,child_system_cpu_seconds=after.ru_stime-usage.ru_stime,
+                       voluntary_context_switches=after.ru_nvcsw-usage.ru_nvcsw,involuntary_context_switches=after.ru_nivcsw-usage.ru_nivcsw,
+                       signals_before=pre,signals_after=signals())
+              result['runs'].append(row)
+              if returncode:
+                  save(); raise SystemExit(returncode)
+              verify_source()
+              current=json.loads(output.read_text())
+              if current['source_commit'] != TARGET or current['source_dirty'] is not False:
+                  save(); raise RuntimeError('benchmark provenance invalid')
+              payloads.append(current)
+              row['output']=output.name; row['sha256']=hashlib.sha256(output.read_bytes()).hexdigest()
+              row['comparison']=compare_results(base,current)
+              row['route_pack']=current['metrics']['route_pack']
+              save()
+              print(f"RESULT full run {index}/3: baseline_ok={row['comparison']['ok']} route_pack_p95={row['route_pack']['p95']} errors={row['comparison']['errors']}",flush=True)
+          for i,a in enumerate(payloads):
+              for j,b in enumerate(payloads):
+                  if i != j:
+                      result['pairwise'].append(dict(baseline_index=i+1,current_index=j+1,comparison=compare_results(a,b)))
+          result['ok']=all(r['comparison']['ok'] for r in result['runs']) and all(p['comparison']['ok'] for p in result['pairwise'])
+          verify_source(); result['worktree_unchanged']=True; save()
+          print('EXPERIMENT PASS' if result['ok'] else 'EXPERIMENT FAIL',flush=True)
+          raise SystemExit(0 if result['ok'] else 1)
+          PY_STABILITY
+      - name: Upload every result including failures
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: route-pack-diagnostic-${{ github.run_id }}-${{ matrix.probe }}
-          path: ${{ runner.temp }}/route-pack-diagnostic.json
+          name: route-pack-stability-${{ github.run_id }}
+          path: ${{ runner.temp }}/route-pack-stability
           if-no-files-found: error
-          retention-days: 30
+          retention-days: 90
 
   operational-candidate:
     if: github.event_name == 'workflow_dispatch' && inputs.mode == 'operational-candidate'
