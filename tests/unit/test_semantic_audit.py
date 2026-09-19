@@ -1,6 +1,10 @@
 from __future__ import annotations
 
 import unittest
+import tempfile
+import json
+from concurrent.futures import Future
+from types import SimpleNamespace
 from pathlib import Path
 from unittest.mock import patch
 
@@ -9,11 +13,77 @@ from tools.design_craft.routing.semantic_contract import REQUIRED_FRAGMENTS, sem
 from tools.design_craft.routing.semantic_runtime import (
     RuntimeValidation,
     _validate_route_probes,
+    _validate_model_profiles,
     route_probe_requests,
 )
 
 
+from tools.design_craft.routing.semantic_static import validate_worker, validate_routing_config
+
+
 class SemanticAuditTests(unittest.TestCase):
+    def test_worker_accepts_inherited_and_explicit_role_profiles(self) -> None:
+        base = 'name = "worker"\ndescription = "Bounded worker"\ndeveloper_instructions = "Follow host authority"\n'
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "worker.toml"
+            for profile in ("", 'model = "gpt-5.6-sol"\nmodel_reasoning_effort = "high"\n'):
+                path.write_text(base + profile)
+                self.assertEqual(validate_worker(path), [])
+            for profile in ('model = ""', 'model = 42',
+                            'model_reasoning_effort = "unknown"',
+                            'model_reasoning_effort = false'):
+                with self.subTest(profile=profile):
+                    path.write_text(base + profile)
+                    self.assertTrue(validate_worker(path))
+
+    def test_explicit_worker_profile_is_checked_against_host_catalog(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            config = root / "config.toml"
+            worker = root / "worker.toml"
+            config.write_text("")
+            catalog = Future()
+            catalog.set_result(({
+                "gpt-5.6-sol": {"supported_reasoning_levels": [{"effort": "high"}]},
+            }, None))
+            paths = SimpleNamespace(config=config, worker_agent=worker)
+            batch = SimpleNamespace(model_catalog=catalog)
+            for model, effort, expected in (
+                ("gpt-5.6-sol", "high", ""),
+                ("unknown-model", "high", "unknown model"),
+                ("gpt-5.6-sol", "unsupported", "unsupported reasoning"),
+            ):
+                with self.subTest(model=model, effort=effort):
+                    worker.write_text(
+                        f'model = "{model}"\nmodel_reasoning_effort = "{effort}"\n'
+                    )
+                    profiles, issues, warnings, _ = _validate_model_profiles(paths, batch)
+                    self.assertEqual(profiles[0]["role"], "worker.toml")
+                    self.assertEqual(warnings, [])
+                    if expected:
+                        self.assertTrue(any(expected in issue for issue in issues))
+                    else:
+                        self.assertEqual(issues, [])
+
+    def test_ultra_does_not_imply_automatic_delegation(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "routing.json"
+            for value in (False, True, None):
+                reasoning = {level: {} for level in (
+                    "inherit", "low", "medium", "high", "xhigh", "max", "ultra"
+                )}
+                reasoning["ultra"] = {
+                    "explicit_override_allowed": False,
+                    "runtime_auto_delegation": value,
+                    "fallback_reasoning_target": "max",
+                }
+                path.write_text(json.dumps({"reasoning_overrides": reasoning}))
+                issues = validate_routing_config(path)
+                self.assertEqual(
+                    any("reasoning alone" in issue for issue in issues),
+                    value is not False,
+                )
+
     def test_static_work_runs_before_waiting_for_runtime_results(self) -> None:
         events: list[str] = []
         batch = object()
@@ -96,10 +166,12 @@ class SemanticAuditTests(unittest.TestCase):
             any("browser-lifecycle-observations.v1" in item for item in fragments)
         )
 
-    def test_runtime_probe_contract_keeps_six_bounded_routes(self) -> None:
+    def test_runtime_probe_contract_keeps_seven_bounded_routes(self) -> None:
         requests = route_probe_requests()
 
-        self.assertEqual(len(requests), 6)
+        self.assertEqual(len(requests), 7)
+        self.assertIn("parallel", requests[6][0])
+        self.assertEqual(requests[6][0][-2:], ["--delegation-authorization", "none"])
         self.assertEqual(requests[0][0][-1], "external")
         self.assertEqual(requests[3][0][-2:], ["--browser-context", "local"])
         self.assertEqual(requests[4][2], "ultra")
@@ -155,15 +227,20 @@ class SemanticAuditTests(unittest.TestCase):
             ),
             (0, compact, ""),
             (
-                2,
+                0,
                 {
-                    "route_status": "error",
-                    "route_error_code": "RUNTIME_PROFILE_CONFLICT",
-                    "gate_decision": "deny",
+                    "route_status": "ok",
+                    "route_error_code": "",
+                    "gate_decision": "allow",
                     "runtime_profile_verified": True,
-                    "runtime_remediation_policy": (
-                        "downgrade_to_max_or_authorize_delegation"
-                    ),
+                    "effective_model": "gpt-5.6-sol",
+                    "effective_reasoning": "ultra",
+                    "delegation_authorized": False,
+                    "delegation_authorization_missing": False,
+                    "planned_execution_mode": "main_serial",
+                    "actual_subagent_state": "not_started",
+                    "subagent_required": False,
+                    "runtime_auto_delegation_risk": False,
                 },
                 "",
             ),
@@ -187,10 +264,39 @@ class SemanticAuditTests(unittest.TestCase):
             ),
         ]
 
+        results.append((0, {
+            **results[4][1],
+            "route_status": "warning",
+            "delegation_authorization_missing": True,
+        }, ""))
         probes, issues = _validate_route_probes(results)
 
         self.assertEqual(issues, [])
         self.assertTrue(all(probe["ok"] for probe in probes))
+
+        # An allow decision must never hide delegation or a real route error.
+        for index in (4, 6):
+            original = results[index]
+            for field, invalid in (
+                ("delegation_authorized", True),
+                ("planned_execution_mode", "main_orchestrated"),
+                ("actual_subagent_state", "started"),
+                ("subagent_required", True),
+                ("runtime_auto_delegation_risk", True),
+                ("runtime_profile_verified", False),
+                ("gate_decision", "deny"),
+                ("route_status", "error"),
+                ("route_error_code", "RUNTIME_PROFILE_CONFLICT"),
+                ("delegation_authorization_missing", index != 6),
+            ):
+                with self.subTest(index=index, field=field):
+                    results[index] = (0, {**original[1], field: invalid}, "")
+                    self.assertTrue(_validate_route_probes(results)[1])
+            results[index] = (2, original[1], "preflight failed")
+            self.assertTrue(_validate_route_probes(results)[1])
+            results[index] = (0, {}, "")
+            self.assertTrue(_validate_route_probes(results)[1])
+            results[index] = original
 
         legacy_local = browser_payload()
         legacy_local["preferred_browser_tool"] = "in_app_browser"

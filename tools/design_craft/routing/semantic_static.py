@@ -132,9 +132,9 @@ def validate_routing_config(path: Path) -> list[str]:
                     "ultra must remain runtime-profile-only for controlled "
                     "frontend delegation"
                 )
-            if ultra.get("runtime_auto_delegation") is not True:
+            if ultra.get("runtime_auto_delegation") is not False:
                 issues.append(
-                    "ultra must disclose GPT-5.6 runtime automatic delegation"
+                    "ultra reasoning alone must not imply automatic delegation"
                 )
             if ultra.get("fallback_reasoning_target") != "max":
                 issues.append(
@@ -220,11 +220,17 @@ def validate_worker(path: Path) -> list[str]:
         for required in ["name", "description", "developer_instructions"]:
             if not str(worker.get(required, "")).strip():
                 issues.append(f"worker.toml missing required field: {required}")
-        if "model" in worker or "model_reasoning_effort" in worker:
-            issues.append(
-                "worker.toml must inherit model and reasoning from the "
-                "parent/runtime profile"
-            )
+        # Role-specific profiles and inherited profiles are both valid.
+        for field in ("model", "model_reasoning_effort"):
+            if field in worker and (
+                not isinstance(worker[field], str) or not worker[field].strip()
+            ):
+                issues.append(f"worker.toml {field} must be a non-empty string")
+        effort = worker.get("model_reasoning_effort")
+        if isinstance(effort, str) and effort not in {
+            "low", "medium", "high", "xhigh", "max", "ultra",
+        }:
+            issues.append("worker.toml has unsupported model_reasoning_effort")
     except (OSError, ValueError, tomllib.TOMLDecodeError) as exc:
         issues.append(f"failed to validate worker.toml: {exc}")
     return issues

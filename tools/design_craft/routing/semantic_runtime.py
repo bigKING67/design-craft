@@ -61,6 +61,11 @@ def route_probe_requests() -> list[RouteProbeRequest]:
         (compact_arguments, "gpt-5.6-sol", "max"),
         ([*probe_base, "--browser-context", "local"], "gpt-5.6-sol", "ultra"),
         (evidence_arguments, "gpt-5.6-sol", "max"),
+        (
+            [*probe_base, "--browser-context", "local",
+             "--orchestration", "parallel", "--delegation-authorization", "none"],
+            "gpt-5.6-sol", "ultra",
+        ),
     ]
 
 
@@ -211,29 +216,39 @@ def _validate_route_probes(
     if not compact_probe_ok:
         issues.append(f"compact route output probe failed: {detail[:240]}")
 
-    returncode, payload, detail = probe_results[4]
-    ultra_probe_ok = (
-        returncode == 2
-        and payload.get("route_status") == "error"
-        and payload.get("route_error_code") == "RUNTIME_PROFILE_CONFLICT"
-        and payload.get("gate_decision") == "deny"
-        and payload.get("runtime_profile_verified") is True
-        and payload.get("runtime_remediation_policy")
-        == "downgrade_to_max_or_authorize_delegation"
-    )
-    probes.append(
-        {
-            "name": "unauthorized_ultra_runtime_conflict",
-            "ok": ultra_probe_ok,
+    # Allowing a main-owned route is not authorization to spawn an agent.
+    for index, name, expected_status, authorization_missing in (
+        (4, "ultra_main_serial", "ok", False),
+        (6, "unauthorized_parallel_main_serial", "warning", True),
+    ):
+        returncode, payload, detail = probe_results[index]
+        probe_ok = (
+            returncode == 0
+            and payload.get("route_status") == expected_status
+            and payload.get("route_error_code") == ""
+            and payload.get("gate_decision") == "allow"
+            and payload.get("runtime_profile_verified") is True
+            and payload.get("effective_model") == "gpt-5.6-sol"
+            and payload.get("effective_reasoning") == "ultra"
+            and payload.get("delegation_authorized") is False
+            and payload.get("delegation_authorization_missing") is authorization_missing
+            and payload.get("planned_execution_mode") == "main_serial"
+            and payload.get("actual_subagent_state") == "not_started"
+            and payload.get("subagent_required") is False
+            and payload.get("runtime_auto_delegation_risk") is False
+        )
+        probes.append({
+            "name": name,
+            "ok": probe_ok,
             "returncode": returncode,
             "route_error_code": payload.get("route_error_code"),
             "gate_decision": payload.get("gate_decision"),
-        }
-    )
-    if not ultra_probe_ok:
-        issues.append(
-            f"unauthorized ultra runtime route probe failed: {detail[:240]}"
-        )
+            "planned_execution_mode": payload.get("planned_execution_mode"),
+            "actual_subagent_state": payload.get("actual_subagent_state"),
+            "delegation_authorized": payload.get("delegation_authorized"),
+        })
+        if not probe_ok:
+            issues.append(f"{name} route probe failed: {detail[:240]}")
 
     returncode, payload, detail = probe_results[5]
     evidence_contract = payload.get("evidence_contract")
@@ -279,6 +294,14 @@ def _validate_model_profiles(
         try:
             config = load_toml(paths.config)
             profiles = runtime_profiles(config)
+            worker = load_toml(paths.worker_agent)
+            worker_model = worker.get("model")
+            if isinstance(worker_model, str) and worker_model.strip():
+                profiles.append({
+                    "role": "worker.toml",
+                    "model": worker_model.strip(),
+                    "reasoning": str(worker.get("model_reasoning_effort", "")).strip(),
+                })
             catalog, catalog_warning = batch.model_catalog.result()
             if catalog_warning:
                 warnings.append(catalog_warning)
