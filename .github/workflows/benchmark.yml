@@ -64,7 +64,11 @@ jobs:
           retention-days: 30
 
   full:
-    name: Diagnostic only - route-pack stage timing
+    name: Diagnostic only - route-pack stage timing ${{ matrix.probe }}
+    strategy:
+      fail-fast: false
+      matrix:
+        probe: [1, 2]
     if: github.event_name == 'workflow_dispatch' && inputs.mode == 'full'
     runs-on: ubuntu-24.04
     timeout-minutes: 10
@@ -123,12 +127,28 @@ jobs:
               setattr(module, name, timed('helper.'+name, getattr(module, name)))
           for name in ['write_text', 'read_text', 'read_bytes', 'stat', 'resolve', 'mkdir', 'chmod', 'symlink_to', 'unlink']:
               setattr(Path, name, timed('path.'+name, getattr(Path, name)))
-          for name in ['mkdir', 'unlink', 'rmdir', 'open', 'close', 'fsync', 'stat', 'chmod', 'symlink', 'scandir']:
+          for name in ['mkdir', 'unlink', 'rmdir', 'open', 'close', 'write', 'fsync', 'stat', 'chmod', 'symlink', 'scandir']:
               setattr(os, name, timed('os.'+name, getattr(os, name)))
           tempfile.mkdtemp = timed('tempfile.mkdtemp', tempfile.mkdtemp)
           tempfile.TemporaryDirectory.cleanup = timed('tempfile.cleanup', tempfile.TemporaryDirectory.cleanup)
+          trace_state = {}
+          def trace(frame, event, arg):
+              if frame.f_code is not module.self_check.__code__:
+                  return None
+              wall, cpu = time.perf_counter(), time.process_time()
+              if 'line' in trace_state:
+                  entry = segments.setdefault('self_check.line.'+str(trace_state['line']), dict(calls=0, wall_ms=0, cpu_ms=0))
+                  entry['calls'] += 1
+                  entry['wall_ms'] += (wall-trace_state['wall'])*1000
+                  entry['cpu_ms'] += (cpu-trace_state['cpu'])*1000
+              trace_state.update(line=frame.f_lineno, wall=wall, cpu=cpu)
+              return trace
           start, cpu_start = time.perf_counter(), time.process_time()
-          code = module.self_check()
+          sys.settrace(trace)
+          try:
+              code = module.self_check()
+          finally:
+              sys.settrace(None)
           result = dict(import_ms=import_ms, import_cpu_ms=import_cpu_ms,
                         self_check_ms=(time.perf_counter()-start)*1000,
                         self_check_cpu_ms=(time.process_time()-cpu_start)*1000,
@@ -210,6 +230,7 @@ jobs:
               result = dict(schema='design-craft.route-pack-diagnostic.v1', diagnostic_only=True,
                             source_commit=head, worktree_unchanged=unchanged, source_hashes=source_hashes,
                             python=sys.version, platform=platform.platform(), cpu_count=os.cpu_count(),
+                            cpu_model=next((line.split(':',1)[1].strip() for line in Path('/proc/cpuinfo').read_text().splitlines() if line.startswith('model name')), 'unknown') if Path('/proc/cpuinfo').exists() else platform.processor(),
                             runner={key:os.environ.get(key) for key in ['ImageOS','ImageVersion','RUNNER_OS','RUNNER_ARCH','GITHUB_RUN_ID','GITHUB_SHA']},
                             signals_before=before_signals, signals_after=signals(), summaries=groups, samples=rows,
                             limits=['Instrumented helper and path times are inclusive and not additive.',
@@ -226,7 +247,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: route-pack-diagnostic-${{ github.run_id }}
+          name: route-pack-diagnostic-${{ github.run_id }}-${{ matrix.probe }}
           path: ${{ runner.temp }}/route-pack-diagnostic.json
           if-no-files-found: error
           retention-days: 30
