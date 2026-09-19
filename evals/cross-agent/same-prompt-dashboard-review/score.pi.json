@@ -8,64 +8,64 @@
   "model_observation": "requested_by_cli",
   "reasoning_profile": "high",
   "reasoning_observation": "requested_by_cli",
-  "runner_os": "macOS-15.7.7-arm64-arm-64bit-Mach-O",
-  "date": "2026-08-17",
+  "runner_os": "macOS-27.0-arm64-arm-64bit-Mach-O",
+  "date": "2026-09-19",
   "prompt_sha256": "7fd3c7f14647c8b54cc44ef371f2d7ea56bb77efa89cb8081f09a7b41ae777d6",
   "scorecard_json_sha256": "9b73f89575f83eecd859595a81851a57681987dbb8aee6d3b8230d5827081920",
   "contract_sha256": "69f694db240266e509b7efd666c627880175a7cf132ddde3ad651c4820f37122",
   "run_manifest_path": "run.pi.json",
-  "run_manifest_sha256": "3a1ec7b67ad22167b23c89c175c4ec9155288862f1d6d1325a7f48241eae06db",
-  "skill_version": "0.6.0",
-  "skill_source_commit": "7fbbb1a1e5788e9417f240c530532b979974503e",
+  "run_manifest_sha256": "bdd832c1c457558c2ac57375a32a2124cc614897697b5b15813e0f8629e21991",
+  "skill_version": "0.7.0",
+  "skill_source_commit": "ab0ca1121dd8d257e17fa704f4c4e13353ff92db",
   "skill_source_dirty": false,
   "repo_dirty": true,
   "release_state": "unknown",
-  "skill_tree_sha256": "0b6c1ad1af54ace726da84d72446551134e6bc1b09411a518ae63b668d1d4f22",
+  "skill_tree_sha256": "8da53f99d4ac651deeb72b63faf8c6522d009ea69e5aee5e9362e2a89fc1105b",
   "skill_path": "$BENCHMARK_WORKSPACE/.pi/skills/design-craft",
   "behavior_domain": "skill-production-review",
-  "behavior_sha256": "85becd78b543b04bb7444b8b416a85efed60b61363d727ea6adb4f17850135f1",
+  "behavior_sha256": "b4f925c164f3216fb6c9953f6b14d1d7a44c167920584898328c46cacd71b129",
   "behavior_source_dirty": false,
-  "projected_skill_tree_sha256": "8bf34f7cc8a72758d6e7c8047ab283d75db8719af645d3b0ba6dc752489346c0",
+  "projected_skill_tree_sha256": "c6889c56ba6a1b51b0d2a08d7098cf2a7e69541d3d08db6d36cc3e6f03805407",
   "provenance_skill_path": "$DESIGN_CRAFT_HOME/skills/design-craft",
   "command_summary": "pi --print --no-session --no-skills --skill '$BENCHMARK_SKILL' --no-context-files --tools read,grep,find,ls --model codex/gpt-5.5 --thinking high",
   "output_path": "pi-output.md",
-  "output_sha256": "01b0eb4fe5b4955daa3002aec63d9b3fbf7372260ab7aa540dd4246d4ec9f7fc",
-  "score": 100,
+  "output_sha256": "3cb03f9e596f281e388f321ebd7238e012840da9b495873c7e71125ca292081a",
+  "score": 98,
   "criteria": {
     "style_authority": {
       "passed": true,
       "earned": 15,
-      "note": "Preserves the restrained enterprise-console authority and frames the surface around urgent operator triage rather than broad reporting."
+      "note": "Anchors recommendations to hourly ecommerce triage, restrained enterprise style and token-backed color."
     },
     "reference_selection": {
       "passed": true,
-      "earned": 15,
-      "note": "Applies the relevant dashboard hierarchy, product-fit, table, state, accessibility, and validation guidance without unrelated reference material."
+      "earned": 13,
+      "note": "Output applies dashboard hierarchy, task-first table and evidence vocabulary; exact reference reads are not established by the retained final-output/run manifest, so full credit is withheld."
     },
     "anti_generic_redesign": {
       "passed": true,
       "earned": 15,
-      "note": "Diagnoses flat decision hierarchy and replaces generic cards, chart decoration, and tips with an operational lead object and exception workflow."
+      "note": "Replaces equal KPI cards and decorative chart emphasis with lead/support hierarchy and an exception queue; avoids marketing decoration."
     },
     "evidence_level": {
       "passed": true,
       "earned": 15,
-      "note": "Explicitly labels the review prompt-only and does not claim browser, responsive, accessibility, state, or data validation."
+      "note": "Explicitly labels prose-only/static evidence and qualifies its score band; no rendered UI score is claimed."
     },
     "verified_boundary": {
       "passed": true,
       "earned": 15,
-      "note": "Lists prompt-supported facts separately from unverified visual execution, table behavior, chart semantics, states, browser behavior, and performance."
+      "note": "Separates prompt facts from unverified responsive, interaction, accessibility and data semantics."
     },
     "design_moves": {
       "passed": true,
       "earned": 15,
-      "note": "Provides eight concrete moves for lead-risk hierarchy, context, exception queue, task-first table, diagnostic evidence, action rail, tokens, and operational states."
+      "note": "Eight concrete moves cover lead metrics, support strip, task-first table, diagnostic chart, exceptions, states and contextual actions."
     },
     "scope_control": {
       "passed": true,
       "earned": 10,
-      "note": "Stays read-only and dashboard-specific within 75 lines, with five blockers, eight moves, and a bounded validation plan."
+      "note": "Within 150 lines and five findings/eight moves. No backend implementation or unrelated source changes; runner reports unchanged worktree."
     }
   }
 }

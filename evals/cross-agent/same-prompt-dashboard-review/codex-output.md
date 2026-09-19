@@ -1,141 +1,76 @@
-# Dashboard 概念评审
+结论：这是一个“数据齐全、决策层级不足”的概念。当前结构更像通用 BI 总览，尚未形成面向下一小时行动的 revenue-ops 决策面。
 
-**方法**：`design-craft / critique`；目标按 Web `Operate` 型内部控制台评审。  
-**Authority**：仅采用本提示中的产品上下文与风格约束。  
-**执行边界**：只读；未编辑文件，未运行 route、浏览器、DOM 检查或截图验证。
+## 1. 证据等级与分数段
 
-## 1. 证据等级与分数带
-
-- **证据等级：L0 static**——只有文字描述。虽然提供了用户与任务上下文，但没有截图，因此不能升级为 L1 contextual。
-- **暂定 Product UI taste band：60–74 / Functional but ordinary**。
-- 该分数带只评价描述中的**信息架构和产品适配度**，不是对实际视觉执行的评分。
-- 基本模块齐备，说明它可能具备“查看数据”的能力；但平铺 KPI、装饰图表和通用提示没有形成面向下一小时的决策链。
-- 没有渲染证据，无法给出可信的精确分数，也无法确认它是否达到 75–84 的 “Clean but generic”。
+- **证据等级：L0 static**——仅有文字描述；虽有用户与任务上下文，但没有截图，不能升级为 L1。
+- **暂定概念分数段：60–74 / 100，Functional but ordinary。** 这不是渲染后 UI 分数。
+- 加分项：业务对象明确、数据型结构成立、风格权威与内部运营场景匹配。
+- 主要扣分：`card soup`、优先级扁平、图表无决策职责、建议与实体/行动脱节。
+- 即使视觉执行整洁，在这些结构问题解决前也不应高于 84。
+- Route：页面级 `critique`，实际使用 `design-craft`。路由器判为 L2/high，但因没有文件型 authority，preflight 未通过（`RUNTIME_ERROR`）；它不构成验收证据。未修改文件，未运行浏览器或生成截图。
 
 ## 2. Design read
 
-> Reading this as: 面向内部电商运营人员的 restrained、dense-but-calm revenue operations console，优化目标是让用户立即回答“哪个账户或活动最需要关注、为什么、影响多大、接下来做什么”；当前概念更像指标陈列页，而不是 operational decision surface。
+> Reading this as: 面向内部电商运营人员的克制型 revenue-ops command surface，dense but calm，优化目标是在几秒内识别未来一小时最值得处理的账户或活动，理解原因与影响，并直接进入下一步行动。
 
-它应优先优化：
+首要对象不是“全量指标”，而是**按紧迫度和收入影响排序的异常与待办**；指标、图表和表格都应服务于这一决策链。
 
-1. **发现异常**：现在最需要处理的对象是什么。
-2. **理解理由**：触发条件、变化幅度、阈值和数据时效是什么。
-3. **判断影响**：潜在收入损失、机会规模或 SLA 风险有多大。
-4. **完成动作**：负责人是谁，可以直接采取什么行动。
-5. **保留证据路径**：从优先队列进入趋势、明细和原始账户数据。
+## 3. 五个阻塞性问题
 
-## 3. 阻塞性层级与产品适配问题
+以下均为 **P1 概念阻塞项**；它们阻塞 implementation-ready 批准，但不代表已经观察到运行时故障。
 
-未从当前证据确认 P0；以下五项是概念层面的 **P1 delivery blockers**。
+| ID | 问题 | 产品影响 |
+|---|---|---|
+| F1 | 12 个 KPI 等宽等权，违反 `attention hierarchy` | 常规指标与经营风险获得相同视觉权重，用户必须先解读整片数据才能判断优先级。 |
+| F2 | 概念没有建立 `exception-first` 工作对象 | “下一小时处理谁”没有被转化为按影响、紧迫度、时效性排序的队列。 |
+| F3 | 面积图被定义为装饰性图表 | 它占据焦点，却没有回答趋势偏差、异常来源或阈值突破等运营问题。 |
+| F4 | 密集表格是核心实体表面，却没有明确任务型 anatomy | 账户身份、状态、风险、收入影响、负责人和下一步行动可能仍需横向解码；实际列结构尚未验证。 |
+| F5 | 泛化 tips 右栏与当前实体和证据脱节 | 它消耗关键横向空间，却不提供可追溯事实、业务影响、负责人或直接行动。 |
 
-### B1 — 平铺注意力，没有 operational focal point
+## 4. 八个具体设计动作
 
-12 张等权 KPI 卡把重复性误当成层级：高风险、机会、常规总量和诊断指标获得相同 surface weight。  
-结果是用户先解读一组数字，而不是先看到需要处理的账户或活动。
+1. **建立紧凑 command band。** 顶部只承载业务范围、时间窗口/时区、数据新鲜度和主过滤器；不做 hero treatment。
 
-### B2 — 决策上下文未进入概念合同
+2. **把 KPI grid 改成 `lead + support` 层级。** 用一个主要经营状态呈现最关键风险或机会，其余压缩为支持指标带；每个强调数值必须回答“相对哪个周期、基线或阈值”。
 
-描述中没有明确时间窗口、账户范围、比较基线、阈值、数据更新时间或时区。  
-缺少这些信息时，即使数字准确，用户也无法判断变化是紧急、正常还是已经过时。
+3. **在首屏加入 exception queue。** 按产品明确且可解释的影响、紧迫度和数据时效排序；每项显示实体、触发原因、预计影响、数据时间、负责人和直接行动。
 
-### B3 — 图表承担装饰而非诊断
+4. **把表格改成 `task-first table`。** 优先列建议为：账户/活动、状态、问题、收入影响、证据时间、负责人、下一步行动；数字右对齐并使用 tabular numerals，过滤器贴近表格，次要元数据进入详情或后置列。
 
-面积图被明确描述为 decorative，没有对应的 operational question、异常标注或明细路径。  
-它占据视觉注意力，却没有缩短判断或行动时间，形成 false hierarchy。
+5. **让图表承担诊断职责，否则删除。** 例如明确回答“过去 24 小时哪些账户造成收入偏差”；显示基线、阈值、单位和直接标签，点击标记后过滤同一张任务表。
 
-### B4 — 主要工作对象被降级为“密集明细”
+6. **移除或重构右侧 tips。** 只有同时包含具名实体、观测变化/阈值、业务影响、负责人或下一步行动，并能跳转到过滤结果时，才保留为 contextual insight；否则回收空间给队列和表格。
 
-账户表很可能才是核心操作面，但概念没有规定优先级排序、决策列、负责人、影响、触发原因和 next action。  
-“Dense”本身不是问题；没有 task-first anatomy 的密集才是问题。
+7. **应用 `enterprise dense` 表面系统。** 使用平面内容区、细分隔线、最少 elevation、token-backed 中性色和语义色；决策型表格正文暂以 `14px / 1.4` 为可读性下限，12–13px 仅用于次要 metadata。状态不能只依赖颜色。
 
-### B5 — Generic tips 不符合 insight contract
+8. **把 resilience 纳入组件合同。** 明确定义 loading、empty、error、stale、permission、partial-data、long-name、selected 和 keyboard-focus 状态；错误保留当前过滤上下文并提供局部恢复动作。
 
-常驻右栏挤压核心表格宽度，却没有与当前账户、异常或选择状态绑定。  
-通用提示缺少 `entity + evidence + impact + owner + action`，属于 decoration disguised as guidance。
+## 5. 已验证与未验证
 
-## 4. Concrete design moves
+**由 prompt 直接确认：**
 
-### M1 — 建立紧凑的 command/context band〔覆盖 B2〕
+- 产品是内部电商 revenue-ops dashboard。
+- 核心用户需要决定下一小时关注哪个账户或活动。
+- 当前有 12 个等权 KPI、装饰性面积图、密集账户表格和泛化 tips 右栏。
+- 目标语言是克制、密集但平静的企业控制台，并要求只使用 token 色彩。
 
-顶部只放页面身份、当前业务范围、时间窗口/时区、数据新鲜度和影响全局的筛选器；不做 marketing hero。  
-范围变化必须立即反映到 KPI、队列、图表和表格，并持续显示当前过滤上下文。
+**UNVERIFIED：**
 
-### M2 — 改为 `lead + support + action queue` 构图〔覆盖 B1、B4〕
+- 实际首屏、视觉焦点、间距、字号、对比度、边框、圆角及 token 是否真正落地。
+- KPI 的口径、比较周期、阈值、数据新鲜度和异常排序模型。
+- 图表的刻度、标签、数据绑定、tooltip、筛选联动及无障碍语义。
+- 表格列顺序、排序/筛选、行操作、sticky 行为、溢出及大数据性能。
+- Hover、focus、loading、empty、error、permission、stale 和恢复状态。
+- 键盘路径、屏幕阅读器、响应式布局、真实内容以及运行时性能。
 
-把首要风险对象或“待处理账户/活动”设为第一视觉焦点；其后是紧凑 supporting-metric strip，再进入明细证据。  
-验收目标是：正常桌面首屏内，运营人员能在约三秒内指出首要对象及其紧急原因。
+## 6. 实施前的最小验证计划
 
-### M3 — 将账户表升级为 task-first exception queue〔覆盖 B4〕
+1. **取得当前基线。** 在真实主要工作站视口获取页面截图，并检查 fold、DOM/computed type、对比度、间距和 token 使用；用它确认或推翻 F1–F5。
 
-优先列建议为：`Account/Campaign → Trigger/Status → Impact → Delta/Threshold → Age/SLA → Owner → Next action`。  
-次要元数据后置、分组或进入详情；筛选器贴近表格；文本左对齐，数字右对齐并使用 tabular numerals；行操作必须可见且键盘可达。
+2. **确认决策合同。** 用匿名真实样本与至少 3 名代表性运营人员核对：什么构成紧急、如何衡量收入影响、数据多旧就不可信、允许直接执行哪些动作。
 
-### M4 — 把 12 个 KPI 分成 lead、support、diagnostic 三层〔覆盖 B1、B2〕
+3. **只做一个现实数据原型。** 覆盖正常、单一严重异常、多异常/长名称、空数据、错误和 stale 数据；暂定门槛是用户能在 3 秒内指出首要实体，并说明“原因、影响、下一步”。
 
-首屏仅保留真正改变优先级的指标，其余进入紧凑分组或 progressive disclosure。  
-每个强调数字必须回答“哪个期间、相比什么、阈值是什么”；默认使用 neutral tokens，只有状态变化使用 semantic tokens，且不得只靠颜色传达。
+4. **冻结实现合同。** 明确模块顺序、表格列优先级、状态语义、token roles、焦点顺序及窄屏降级方式，再进入代码实现。
 
-### M5 — 将图表改为 diagnostic chart，否则删除〔覆盖 B3〕
-
-先定义问题，例如：“过去 60 分钟什么变化导致当前收入风险上升？”再选择图形。  
-保留时应有正确尺度、直接标签、阈值/异常注释，并能把用户带到对应的过滤队列；无法支持具体判断时应释放空间给主要工作对象。
-
-### M6 — 删除常驻 generic tips rail，改为 contextual insight〔覆盖 B5〕
-
-默认收回右栏宽度给队列和表格；确有价值时使用与当前选择绑定的 drawer 或 inline insight。  
-每条 insight 必须包含具名对象、观测值或阈值、业务影响、负责人和可执行动作，否则不展示。
-
-### M7 — 用密度梯度而非卡片装饰建立层级
-
-使用一套安静背景、克制分隔线和有限 surface elevation；不靠大量圆角卡片、阴影或彩色边框组织页面。  
-所有颜色必须来自 token role；决策型表格正文暂以 `14px / 1.4` 为可读性下限，`12–13px` 仅用于次要 metadata，并要求正常文本对比度达标。
-
-### M8 — 在实现前定义 resilient state family
-
-为 KPI、队列、图表和表格分别定义 `loading / empty / error / stale / permission / partial-data / long-content` 状态，说明保留哪些上下文以及如何恢复。  
-同时声明主要和最小支持宽度、键盘顺序、focus-visible、hover/selected 状态、非颜色状态编码及窄宽度下的列降级规则。
-
-## 5. Verified 与 unverified
-
-### Prompt-established，但不是 runtime-verified
-
-- 产品是内部电商 revenue operations dashboard。
-- 主要用户要决定下一小时优先处理哪个账户或活动。
-- 概念包含 12 张等权 KPI 卡、装饰性面积图、密集账户表和 generic tips 右栏。
-- 风格方向是 restrained enterprise console、dense but calm、无营销 hero、颜色仅使用 tokens。
-- 本次没有提供任何目标界面运行证据。
-
-### Unverified，因此未计为已确认质量
-
-- 实际首屏、滚动长度、布局轴线、间距、字体、边框、圆角和视觉噪声。
-- KPI 的真实语义、阈值、比较周期和数据刷新机制。
-- 图表尺度、标签、图例、tooltip、数据准确性及交互路径。
-- 表格列顺序、排序、筛选、固定列、行操作和大数据量性能。
-- token 是否真实存在并被一致应用，以及实际对比度。
-- hover、focus、keyboard、screen-reader、loading、empty、error、stale 和 permission 行为。
-- 长名称、极端数值、窄视口和响应式降级。
-- 任何浏览器、截图、DOM、computed style 或真实运营任务表现。
-
-**因此没有浏览器验证、响应式验证、可访问性通过或视觉验收通过的声明。**
-
-## 6. 实现前的最小验证计划
-
-1. **冻结 decision contract**  
-   与主要运营人员确认优先级依据、触发阈值、影响口径、数据时效、负责人和允许执行的动作；使用 3–5 个真实或脱敏案例覆盖风险、机会和正常状态。
-
-2. **取得当前 baseline**  
-   在实际主要视口和最小支持视口捕获页面截图、首屏边界及完整滚动状态；同时检查 DOM/computed typography、spacing、token、表格列序和现有 decision path。若尚无页面，则用包含真实长度数据的低保真原型代替，但证据仍保持 L0/L1。
-
-3. **验证关键任务，而不是审美偏好**  
-   让代表性运营人员完成三步场景：找出首要对象、解释排序原因、进入或执行 next action。记录首次正确判断时间、误判点、所需滚动和无法解释的字段；未通过时先改 IA，不进入视觉精修。
-
-4. **评审一个正常态和必要的异常态原型**  
-   至少覆盖 normal、loading、empty、error/stale、permission 和长名称/极端数值；确认筛选范围在失败与恢复后仍然保留。
-
-5. **设定 implementation entry gate**  
-   只有在首要对象、排序理由、影响、owner 和 next action 都能在主要视口清晰形成一条决策链后再编码。实现后的真实浏览器、键盘、响应式和 visual review 是后续交付门禁，本次均未执行。
-
-**结论**：保留“密集企业控制台”的方向，但应把页面从等权组件集合重构成 `context → priority → evidence → action` 决策表面；在这条链闭环前，不建议进入视觉 polish。
-
-**Memory:** `user:global + project:design-craft` 命中 3 条；仅用于保持 evidence honesty 和 blocker-to-move 覆盖，不作为目标产品事实；候选 0，写入 0。
-
+实现完成后仍需真实浏览器下的桌面/窄屏检查、键盘 focus walk、状态覆盖、图表数据追溯和最终 `design-craft` visual review；这些本次均未执行。

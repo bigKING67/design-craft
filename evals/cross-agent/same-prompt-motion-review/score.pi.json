@@ -8,64 +8,64 @@
   "model_observation": "requested_by_cli",
   "reasoning_profile": "high",
   "reasoning_observation": "requested_by_cli",
-  "runner_os": "macOS-15.7.7-arm64-arm-64bit-Mach-O",
-  "date": "2026-08-17",
+  "runner_os": "macOS-27.0-arm64-arm-64bit-Mach-O",
+  "date": "2026-09-19",
   "prompt_sha256": "15b25396696901c46fd0dde92cd556d10f30179ca38df969ab796228ce6d207f",
   "scorecard_json_sha256": "5b0b6a0d6df83ce49b9e2c598a9cdd79149efca50a9e12069667bc008462d183",
   "contract_sha256": "69f694db240266e509b7efd666c627880175a7cf132ddde3ad651c4820f37122",
   "run_manifest_path": "run.pi.json",
-  "run_manifest_sha256": "1735e3d217946b90ffc2a02e9f58687cde6826870680e60a36093a034b9fb40b",
-  "skill_version": "0.6.0",
-  "skill_source_commit": "dfeb3012e7a2a460b9f728552dd13d8c021c91d2",
+  "run_manifest_sha256": "a68928549c4099af31cc48187313d23faf3c99764908572ba20895039ca20190",
+  "skill_version": "0.7.0",
+  "skill_source_commit": "ab0ca1121dd8d257e17fa704f4c4e13353ff92db",
   "skill_source_dirty": false,
   "repo_dirty": true,
   "release_state": "unknown",
-  "skill_tree_sha256": "a1042918b108a6da77b2e22a52103764524f449879fe78d1d71bd79d34d40d79",
+  "skill_tree_sha256": "8da53f99d4ac651deeb72b63faf8c6522d009ea69e5aee5e9362e2a89fc1105b",
   "skill_path": "$BENCHMARK_WORKSPACE/.pi/skills/design-craft",
   "behavior_domain": "skill-motion-review",
-  "behavior_sha256": "ac517cc7d28d0c229df2bb332d4eb92ac9df7a2fce292db3fdd7e12c0a1c88e2",
+  "behavior_sha256": "ad51a65df0c61a97a6e8b6c61127e96f7408fbb67e46af5ee170aa6d1d2de621",
   "behavior_source_dirty": false,
-  "projected_skill_tree_sha256": "655e4d14f57f4eb5569d95f41a2b94f2b8823fe9a0b6caac1edde35caabaff67",
+  "projected_skill_tree_sha256": "6109f47269d38f29a10aefcce9ae7f9e507361ff241e6ce6b8af2e8d58376d75",
   "provenance_skill_path": "$DESIGN_CRAFT_HOME/skills/design-craft",
   "command_summary": "pi --print --no-session --no-skills --skill '$BENCHMARK_SKILL' --no-context-files --tools read,grep,find,ls --model codex/gpt-5.5 --thinking high",
   "output_path": "pi-output.md",
-  "output_sha256": "3803d0b6c1f87ec02b79b1860a7fbb0d2a69e99e9e12fa3fc943b42468711c9a",
-  "score": 100,
+  "output_sha256": "e36ebc2974c4f6a1181db3f515d605ecd90ac1dbb5da5c70d39eb84af3cf81c6",
+  "score": 96,
   "criteria": {
     "style_authority": {
       "passed": true,
       "earned": 15,
-      "note": "Preserves the calm utility posture and limits motion to direct manipulation, causal settling, and restrained pointer or state feedback."
+      "note": "Preserves calm repeated-use operations context and ties motion to causal feedback and direct manipulation."
     },
     "reference_selection": {
       "passed": true,
-      "earned": 15,
-      "note": "Applies the relevant gesture, interaction-physics, motion, accessibility, and validation guidance without loading unrelated design material."
+      "earned": 13,
+      "note": "Applies interaction physics, motion, accessibility and validation concepts; retained output and manifest do not establish exact reference reads."
     },
     "anti_generic_redesign": {
       "passed": true,
       "earned": 15,
-      "note": "Rejects transition-all, layout-property animation, whole-sheet scaling, decorative bounce, and the assumption that additional motion is inherently better."
+      "note": "Questions motion necessity and rejects broad transitions, whole-sheet scaling and decorative bounce."
     },
     "evidence_level": {
       "passed": true,
       "earned": 15,
-      "note": "Labels the review L0 static and makes no browser, pointer-trace, frame-timeline, responsive, Reduced Motion, or device-validation claim."
+      "note": "Labels static-only evidence and does not claim measured smoothness, frame rate or device performance."
     },
     "verified_boundary": {
       "passed": true,
       "earned": 15,
-      "note": "Separates code-visible risks from unverified runtime jank, cascade behavior, touch feel, responsive coordinates, hidden compensating code, and product semantics."
+      "note": "Separates code-visible defects from browser composition, actual feel, geometry and untested Reduced Motion behavior."
     },
     "design_moves": {
       "passed": true,
-      "earned": 15,
-      "note": "Provides eight implementable moves covering feedback, pointer capture, grab offset, transform ownership, interruption, velocity and projection, soft bounds, and Reduced Motion."
+      "earned": 13,
+      "note": "Eight actionable moves are present, but interruption step says cancel before reading current presentation position; without preserving that value first, implementation can jump to underlying style."
     },
     "scope_control": {
       "passed": true,
       "earned": 10,
-      "note": "Stays read-only and motion-specific, fits within 96 lines, and prioritizes exactly five blockers and eight concrete moves."
+      "note": "Stays within five findings and eight motion-specific moves; treats projected target changes as a separate product decision."
     }
   }
 }

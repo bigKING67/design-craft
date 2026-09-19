@@ -3,69 +3,69 @@
   "task_id": "same-prompt-dashboard-review",
   "agent": "codex",
   "verified": true,
-  "agent_version": "codex-cli 0.147.0",
+  "agent_version": "codex-cli 0.155.1",
   "model": "gpt-5.6-sol",
   "model_observation": "requested_by_cli",
   "reasoning_profile": "max",
   "reasoning_observation": "requested_by_cli",
-  "runner_os": "macOS-15.7.7-arm64-arm-64bit-Mach-O",
-  "date": "2026-08-17",
+  "runner_os": "macOS-27.0-arm64-arm-64bit-Mach-O",
+  "date": "2026-09-19",
   "prompt_sha256": "7fd3c7f14647c8b54cc44ef371f2d7ea56bb77efa89cb8081f09a7b41ae777d6",
   "scorecard_json_sha256": "9b73f89575f83eecd859595a81851a57681987dbb8aee6d3b8230d5827081920",
   "contract_sha256": "69f694db240266e509b7efd666c627880175a7cf132ddde3ad651c4820f37122",
   "run_manifest_path": "run.codex.json",
-  "run_manifest_sha256": "88bd7b8a7a52142cc50ee8241eaa4cf3b2997a5cdb424f14e1e76bba0823645c",
-  "skill_version": "0.6.0",
-  "skill_source_commit": "7fbbb1a1e5788e9417f240c530532b979974503e",
+  "run_manifest_sha256": "b42f097151b7dc63b85a97bc73f672f4a760ca9c50343cdcfecf3ade5439711c",
+  "skill_version": "0.7.0",
+  "skill_source_commit": "ab0ca1121dd8d257e17fa704f4c4e13353ff92db",
   "skill_source_dirty": false,
   "repo_dirty": true,
   "release_state": "unknown",
-  "skill_tree_sha256": "0b6c1ad1af54ace726da84d72446551134e6bc1b09411a518ae63b668d1d4f22",
+  "skill_tree_sha256": "8da53f99d4ac651deeb72b63faf8c6522d009ea69e5aee5e9362e2a89fc1105b",
   "skill_path": "$BENCHMARK_WORKSPACE/.agents/skills/design-craft",
   "behavior_domain": "skill-production-review",
-  "behavior_sha256": "85becd78b543b04bb7444b8b416a85efed60b61363d727ea6adb4f17850135f1",
+  "behavior_sha256": "b4f925c164f3216fb6c9953f6b14d1d7a44c167920584898328c46cacd71b129",
   "behavior_source_dirty": false,
-  "projected_skill_tree_sha256": "8bf34f7cc8a72758d6e7c8047ab283d75db8719af645d3b0ba6dc752489346c0",
+  "projected_skill_tree_sha256": "c6889c56ba6a1b51b0d2a08d7098cf2a7e69541d3d08db6d36cc3e6f03805407",
   "provenance_skill_path": "$DESIGN_CRAFT_HOME/skills/design-craft",
   "command_summary": "codex exec --ephemeral --sandbox read-only --skip-git-repo-check --ignore-rules -C '$BENCHMARK_WORKSPACE' --model gpt-5.6-sol -c 'model_reasoning_effort=\"max\"' --output-last-message '$BENCHMARK_WORKSPACE/.design-craft-host-output.md' -",
   "output_path": "codex-output.md",
-  "output_sha256": "c7e3acf31a333ea64f45827b654496e4f9047ade75788c17e42f4f9cfdf25e19",
-  "score": 100,
+  "output_sha256": "425fae29063716aff39a559e5b5d7d2ff5d88550bda4efce39f66ef2410b82de",
+  "score": 97,
   "criteria": {
     "style_authority": {
       "passed": true,
       "earned": 15,
-      "note": "Centers the restrained enterprise-console authority and the operator's next-hour triage job instead of applying a generic dashboard restyle."
+      "note": "Anchors recommendations to hourly ecommerce triage, restrained enterprise style and token-backed color."
     },
     "reference_selection": {
       "passed": true,
-      "earned": 15,
-      "note": "Uses the projected dashboard, visual hierarchy, design-move, state, accessibility, and validation guidance needed for this concept review."
+      "earned": 13,
+      "note": "Output applies dashboard hierarchy, task-first table and evidence vocabulary; exact reference reads are not established by the retained final-output/run manifest, so full credit is withheld."
     },
     "anti_generic_redesign": {
       "passed": true,
       "earned": 15,
-      "note": "Rejects equal-card soup, decorative charting, and generic tips in favor of a lead state, supporting strip, exception queue, and task-first table."
+      "note": "Replaces equal KPI cards and decorative chart emphasis with lead/support hierarchy and an exception queue; avoids marketing decoration."
     },
     "evidence_level": {
       "passed": true,
       "earned": 15,
-      "note": "Labels the evidence L0 static and confines the score band to the described information architecture rather than claiming rendered or runtime quality."
+      "note": "Explicitly labels prose-only/static evidence and qualifies its score band; no rendered UI score is claimed."
     },
     "verified_boundary": {
       "passed": true,
       "earned": 15,
-      "note": "Separates prompt-supported structure judgments from unverified rendering, tokens, interaction states, accessibility, responsiveness, data, and performance."
+      "note": "Separates prompt facts from unverified responsive, interaction, accessibility and data semantics."
     },
     "design_moves": {
       "passed": true,
       "earned": 15,
-      "note": "Provides exactly eight implementable moves covering lead/support hierarchy, exception queue, diagnostic chart, task-first table, contextual rail, visual tokens, and resilient states."
+      "note": "Eight concrete moves cover lead metrics, support strip, task-first table, diagnostic chart, exceptions, states and contextual actions."
     },
     "scope_control": {
       "passed": true,
-      "earned": 10,
-      "note": "Stays read-only and dashboard-specific within 141 lines, with five blockers, eight moves, explicit evidence boundaries, and a bounded validation plan."
+      "earned": 9,
+      "note": "Within 150 lines and five findings/eight moves. Adds a fixed three-user validation sample without task-specific justification; minor scope deduction."
     }
   }
 }
