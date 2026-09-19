@@ -4,32 +4,32 @@
   "judgment_schema_sha256": "f80a55f5da5692ecd98e1a34f3ab5e0884af7840e14870655dfb99dc5306cf58",
   "outputs": {
     "A": {
-      "path": "output.taste.md",
-      "run_path": "run.taste.json",
-      "run_sha256": "dd70fa542558f8994e1448056646ccb281c4b32159a9168ed1cda119393b16ec",
-      "sha256": "3564202fa30024b5e65ac6ccd8e8d46c9d5d6ebdba48086fb326993ca7d403cc",
-      "variant": "taste"
-    },
-    "B": {
-      "path": "output.baseline.md",
-      "run_path": "run.baseline.json",
-      "run_sha256": "004728dbf32366039f107cbc30c99179b3931c545a0d1cdba654480a23c82c49",
-      "sha256": "2d011ae58fdd9a729d3a04d22b08e06b58d9795ce7ea47b546715da3a39d1923",
-      "variant": "baseline"
-    },
-    "C": {
       "path": "output.design-craft.md",
       "run_path": "run.design-craft.json",
-      "run_sha256": "75b658b483e468568581e2bcdb39f33b8bc87276ee9d6f0c5ba5cc554b264ec8",
-      "sha256": "ed88f904e745ea69158084e79da4fb9e3d84888eef4d109f0c79e3ad1d34954a",
+      "run_sha256": "b6e880e5fdd8a52e4f969a47fba57ed224f2b15dfc9cb78b9b5ce1639e2d5ebb",
+      "sha256": "07749a8f52adc044e49193cd5f2f5c61609d14590b60e4830301d6c151472ab8",
       "variant": "design-craft"
+    },
+    "B": {
+      "path": "output.taste.md",
+      "run_path": "run.taste.json",
+      "run_sha256": "450c314d6b0f45ff68295ce1570327a1ebe33c48f9e740901ca9465e2d49834b",
+      "sha256": "87a5484d596e1bfce0160fc8940364e0e19ad53eabffb6b71df9383b92241b2e",
+      "variant": "taste"
+    },
+    "C": {
+      "path": "output.baseline.md",
+      "run_path": "run.baseline.json",
+      "run_sha256": "d8619ad00ae0a271f22b945da8c60811761a528c0acf5d3198e27c3c682d8069",
+      "sha256": "f5c93667b202234f68f40fe80466db3502beb93a2ec221e1acd126f999930bc1",
+      "variant": "baseline"
     }
   },
   "packet_path": "blind-packet.md",
-  "packet_sha256": "0576b4d2af3b482a6938e32d573919137b027c450835918d483aa8e3a733c0a1",
+  "packet_sha256": "eb015ed0fe2082fc614a75822e37678222af19f163a6b2b9d1bb6a18ae1aa22b",
   "prompt_sha256": "24483d75b8bec334c978ae4f120d5523ec4ee54a1b8c3bbeef97aafbd6090ed9",
   "schema": "design-craft.comparative-blind-map.v3",
   "scorecard_json_sha256": "fce00a94275af2560f20e1e69edb040a5c470a03a5caa51b71bb49ab07489c75",
   "scorecard_sha256": "a1f750a6c735ff178260bcc806a0ad089d0c4de4e2ff0cfd466ffcd08317d989",
-  "seed_sha256": "f3252147afd513fc8dcb6ab288246e3402e37bbedf6539afbc9b1164f942614e"
+  "seed_sha256": "1ec2cfc58a940aa158494688efc308e944f744a24bc4628ef3c26d92d959b33e"
 }

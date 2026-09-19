@@ -2,7 +2,7 @@
   "command": "pi --print --no-session --no-context-files --no-skills --tools read,grep,find,ls --model codex/gpt-5.5 --thinking high --skill '$VARIANT_SKILL_1' --skill '$VARIANT_SKILL_2'",
   "contract_sha256": "754b4b9ba3f127a6bf99b51aa5fc923a72fef58a72e2625989b3f38fe2bc74f4",
   "cwd": "$VARIANT_WORKSPACE",
-  "duration_seconds": 66.149,
+  "duration_seconds": 48.329,
   "host": "pi",
   "host_version": "0.80.6",
   "installed_skill_paths": {
@@ -12,17 +12,17 @@
   "model": "codex/gpt-5.5",
   "model_observation": "requested_by_cli",
   "output_path": "output.taste.md",
-  "output_sha256": "3564202fa30024b5e65ac6ccd8e8d46c9d5d6ebdba48086fb326993ca7d403cc",
+  "output_sha256": "87a5484d596e1bfce0160fc8940364e0e19ad53eabffb6b71df9383b92241b2e",
   "prompt_sha256": "24483d75b8bec334c978ae4f120d5523ec4ee54a1b8c3bbeef97aafbd6090ed9",
   "returncode": 0,
-  "runner_os": "macOS-15.7.7-arm64-arm-64bit-Mach-O",
+  "runner_os": "macOS-27.0-arm64-arm-64bit-Mach-O",
   "schema": "design-craft.comparative-run.v4",
   "skill_install_mode": "isolated_case_projection",
   "skill_trees": {
     "upstreams/taste-skill/skills/redesign-skill": "1fd74922e6bb2011c7c0d82aefd70d0cc1dbd31bd904054bec3f6cae4d731b90",
     "upstreams/taste-skill/skills/taste-skill": "40ef50925b446e08a4ad5cead8edeb98f48982eb498b0073fe6a0b27ea736769"
   },
-  "source_commit": "7fbbb1a1e5788e9417f240c530532b979974503e",
+  "source_commit": "773fe501cc1696f5887c5d9120fe409a8579980f",
   "source_fingerprints": {
     "upstreams/taste-skill/skills/redesign-skill": {
       "kind": "tree",
@@ -41,15 +41,15 @@
     "upstreams/taste-skill/skills/redesign-skill": "1fd74922e6bb2011c7c0d82aefd70d0cc1dbd31bd904054bec3f6cae4d731b90",
     "upstreams/taste-skill/skills/taste-skill": "40ef50925b446e08a4ad5cead8edeb98f48982eb498b0073fe6a0b27ea736769"
   },
-  "started_at": "2026-08-17T12:58:57Z",
+  "started_at": "2026-09-19T12:38:22Z",
   "stderr_bytes": 0,
   "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
   "thinking": "high",
   "thinking_observation": "requested_by_cli",
-  "timeout_seconds": 900,
+  "timeout_seconds": 600,
   "variant": "taste",
   "workspace_kind": "repo_external_isolated_project",
-  "worktree_after_sha256": "a630b62f2d576559880f459a6a061bbee2e9f78ab0c1061b36044b47d04c949f",
-  "worktree_before_sha256": "a630b62f2d576559880f459a6a061bbee2e9f78ab0c1061b36044b47d04c949f",
+  "worktree_after_sha256": "ae55f9e27f8ee222c9d55f2f1357d3972b68a388b949abab0ca910080f55cb4d",
+  "worktree_before_sha256": "ae55f9e27f8ee222c9d55f2f1357d3972b68a388b949abab0ca910080f55cb4d",
   "worktree_unchanged": true
 }

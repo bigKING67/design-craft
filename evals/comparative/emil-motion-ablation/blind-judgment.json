@@ -1,35 +1,35 @@
 {
-  "rationale": "C 最完整且最精确地满足全部八项标准：它不仅识别问题，还把“当前呈现值 → 中断/重定向 → 释放速度（CSS px/s）→ 投影端点 → snap 选择 → 可中断 settle”连成了闭环，同时严格避免把静态源码风险描述成已验证的卡顿或手感。B 的技术覆盖几乎同等完整，但开头对 jumpy、laggy 等体验作了静态推测，因此证据诚实度略低。A 在基础直接操控、性能和无障碍方面很强，但缺少呈现值续接与完整速度投影链路，且输出和验证计划相对冗长。Memory: 未使用历史结论，仅依据所给三个输出评分。",
+  "rationale": "C is the only output that fully satisfies every scorecard criterion. Compared with A and B, it explicitly supplies velocity units, bounded endpoint projection, measured-velocity settling, safe cancellation cleanup, and current-on-screen interruption while maintaining strict static-review boundaries and a non-vestibular Reduced Motion path.",
   "results": [
     {
       "criteria": {
         "accessibility": 10,
-        "actionability": 8,
+        "actionability": 10,
         "direct_manipulation": 15,
-        "evidence_honesty": 14,
-        "interruption": 4,
-        "motion_necessity": 9,
+        "evidence_honesty": 15,
+        "interruption": 15,
+        "motion_necessity": 10,
         "performance": 10,
-        "velocity_projection": 8
+        "velocity_projection": 12
       },
       "label": "A",
-      "summary": "A 对活动指针门控、抓取偏移、指针捕获、一对一跟随、布局属性、transition: all、transform 所有权及 Reduced Motion 都有充分覆盖。但它只观察到动画期间的输入锁定，没有要求取消进行中的动画并从当前屏幕呈现值无跳变续接；速度方案也缺少明确单位、投影端点和释放速度向 settle 的连续传递。内容可执行但偏长，运行验证范围也不算最小。",
-      "total": 78
+      "summary": "Strong, carefully bounded static critique with complete direct-manipulation, interruption, performance, accessibility, and validation guidance. It loses points because velocity units and explicit preservation of release velocity into the settling animation are not fully specified.",
+      "total": 97
     },
     {
       "criteria": {
         "accessibility": 10,
         "actionability": 10,
         "direct_manipulation": 15,
-        "evidence_honesty": 13,
+        "evidence_honesty": 12,
         "interruption": 15,
-        "motion_necessity": 10,
+        "motion_necessity": 9,
         "performance": 10,
-        "velocity_projection": 15
+        "velocity_projection": 13
       },
       "label": "B",
-      "summary": "B 完整覆盖中途抓取、从当前视觉位置续接、活动指针捕获、抓取偏移、一对一跟随、px/s 释放速度、投影端点、速度注入 settle，以及三个 snap state 的选择；性能、局部反馈和 Reduced Motion 路径也明确可执行。主要扣分是静态证据声明之后仍预测实现会“jumpy、laggy”等运行感受，虽有 likely 限定和后续边界说明，证据措辞仍不如 C 严谨。",
-      "total": 98
+      "summary": "Highly actionable and especially strong on interruption, pointer ownership, projected snapping, and accessibility. The opening makes unsupported runtime-feel claims such as lagginess, velocity units remain unspecified, and retaining even subtle bounce is less disciplined for the stated calm product context.",
+      "total": 94
     },
     {
       "criteria": {
@@ -43,7 +43,7 @@
         "velocity_projection": 15
       },
       "label": "C",
-      "summary": "C 对静态证据与未验证运行表现的边界最严格，并逐项覆盖输入锁定、指针捕获、抓取偏移、一对一跟随、当前呈现值中断续接、CSS px/s 速度、投影选点、速度交接、transform 热路径、transition-all 冲突和 Reduced Motion 的非空间状态反馈。整改步骤按优先级组织，运行计划最小且仍覆盖关键行为、无障碍和性能边界。",
+      "summary": "Most complete response: it clearly confines the verdict to static evidence, covers every direct-manipulation requirement, demands interruption from the current presentation value, specifies velocity in CSS pixels per second, uses bounded projection for snap selection, and provides a compact runtime plan.",
       "total": 100
     }
   ],

@@ -1,64 +1,88 @@
-**Verdict: Block on direct-manipulation quality and Reduced Motion.**  
-Evidence level: static source + stated product context only; no browser, device, frame-rate, or feel validation claimed.
+## Verdict
+
+**Block — static source review only.**  
+Evidence shows this is not yet a reliable direct-manipulation sheet for a calm, frequently used operations app. It can jump, track when not dragging, ignore velocity, lock during settle, animate layout properties, and lacks Reduced Motion behavior. No browser/device behavior is claimed.
 
 ## Prioritized findings
 
-**P0 — Reduced Motion is absent for meaningful spatial travel**  
-- **Evidence:** `sheet.animate(... duration: 480 ...)` always animates between snap points; no `prefers-reduced-motion` branch.  
-- **Risk:** Collapsed/half/full travel can be large, and this app is used repeatedly during the day.  
-- **Fix:** In reduced motion, immediately commit the snap state and use non-spatial feedback: state label, handle affordance, opacity/color/outline change, or a very short localized fade.
+**P0 — Drag ownership is broken**  
+- **Static evidence:** `pointermove` always writes `sheet.style.top`, even if no active drag began, the pointer left the element, a second pointer appears, or `animating` blocked `pointerdown`.
+- **Risk:** Cursor/touch movement can reposition the sheet outside an intended gesture.
+- **Fix:** Track `isDragging`, `pointerId`, pointer capture, `pointercancel`, and release cleanup.
 
-**P0 — Drag is not actually 1:1 direct manipulation**  
-- **Evidence:** `pointermove` sets `sheet.style.top = event.clientY`; CSS has `.sheet { transition: all 300ms; }`.  
-- **Risk:** During drag, the sheet may chase the pointer instead of staying attached; `transition: all` can animate every `top` update.  
-- **Fix:** Disable transitions during active drag; track `deltaY` from the grabbed presentation position; preserve grab offset.
+**P0 — The sheet will likely jump under the pointer**  
+- **Static evidence:** `startY` is recorded but never used; movement sets `top = event.clientY`.
+- **Risk:** The sheet’s top edge snaps to the pointer instead of preserving the grab offset.
+- **Fix:** Store `grabOffset = event.clientY - currentSheetY`; set position from `event.clientY - grabOffset`.
 
-**P1 — Layout-property animation is on the gesture hot path**  
-- **Evidence:** Both drag and settle use `top`; `offsetTop` is read on release.  
-- **Risk:** Layout/reflow work can become visible under data-heavy operations views. Static source proves the risky property choice, not measured jank.  
-- **Fix:** Own sheet position with `transform: translateY(...)`; keep snap state as data, not layout side effect.
+**P0 — Not Reduced Motion compliant**  
+- **Static evidence:** no `prefers-reduced-motion` branch; release always travels spatially for `480ms`.
+- **Product conflict:** Reduced Motion must preserve state feedback without large travel.
+- **Fix:** Under Reduced Motion, snap state logically with minimal or no travel; use short opacity/color/handle/state-label feedback instead of full spatial animation.
 
-**P1 — Release behavior ignores velocity and interruption**  
-- **Evidence:** Target is `nearestSnapPoint(sheet.offsetTop)`; animation is fixed `480ms ease-in`; `animating` blocks new `pointerdown`.  
-- **Risk:** A quick flick and a slow drag ending at the same coordinate resolve identically; users cannot re-grab mid-settle cleanly.  
-- **Fix:** Track recent pointer samples in CSS px/s; start settle from current presentation value; hand velocity into a spring-like settle; allow interruption.
+**P1 — Uses layout animation on the gesture hot path**  
+- **Static evidence:** writes and animates `top`; CSS has `transition: all 300ms`.
+- **Risk:** Layout/reflow and broad transition interference, especially in data-heavy operations screens.
+- **Fix:** Use compositor-friendly `transform: translateY(...)`; restrict transitions to named properties.
 
-**P1 — Visual/logical state can diverge after WAAPI fill**  
-- **Evidence:** `fill: "forwards"` holds the animated visual value, but the code does not explicitly commit final `top` or update a canonical sheet state.  
-- **Risk:** Later `offsetTop`, hit testing, focus scroll, or snap calculations may use a stale layout value depending on implementation details.  
-- **Fix:** On finish/cancel, set the canonical state and final transform explicitly; cancel the animation after committing.
+**P1 — Release motion is poorly matched to direct manipulation**  
+- **Static evidence:** fixed `480ms`, `ease-in`, nearest target from `offsetTop`, no velocity.
+- **Risk:** Ease-in delays response after release; quick flicks are ignored; settling cannot inherit momentum.
+- **Fix:** Measure release velocity in CSS px/s, choose target by product-owned snap rules, and settle with an interruptible spring or equivalent.
 
-**P2 — Gesture ownership is incomplete**  
-- **Evidence:** No pointer capture, no `pointercancel`, no active-pointer guard, no bounds/rubber-band, `startY` is unused.  
-- **Risk:** The sheet can move without a committed drag, lose tracking outside bounds, or respond to unintended pointers.  
-- **Fix:** Capture the initiating pointer after an 8–12px intent threshold; ignore other pointers; handle cancel; clamp or apply boundary resistance.
+**P1 — Interruption model is unsafe**  
+- **Static evidence:** global `animating` rejects `pointerdown`; `.finished.then` has no cancellation/error path.
+- **Risk:** Users cannot grab the sheet mid-flight; canceled animations may leave `animating = true`.
+- **Fix:** Allow retargeting from the current presentation value; cancel/replace active animation safely; always cleanup in `finally` or equivalent.
 
-**P2 — Press feedback is too broad for a sheet surface**  
-- **Evidence:** `.sheet:active { transform: scale(0.96); }`.  
-- **Risk:** Scaling the entire operations sheet during drag may feel decorative/heavy and can conflict with transform-based positioning unless composed deliberately.  
-- **Fix:** Put press feedback on the handle or a separate wrapper layer; keep it subtle, short, and disabled/replaced under reduced motion.
+**P2 — Transform ownership conflicts**  
+- **Static evidence:** `.sheet:active { transform: scale(0.96); }`; proposed drag should also use `transform`.
+- **Risk:** Press scale and drag translation can overwrite each other.
+- **Fix:** Use separate layers, e.g. outer wrapper owns `translateY`, inner surface owns press scale.
+
+**P2 — Snap/state model is implicit**  
+- **Static evidence:** collapsed/half/full are only inferred through `nearestSnapPoint(sheet.offsetTop)`.
+- **Risk:** No clear state feedback, no accessible state, no resilient source of truth.
+- **Fix:** Maintain explicit state: `collapsed | half | full`; reflect with attributes, handle affordance, focus/keyboard behavior, and reduced-motion feedback.
 
 ## Concrete direct-manipulation moves
 
-1. Model states explicitly: `collapsed | half | full`, each mapped to a snap `translateY`.
-2. On pointer down, record active pointer id, sheet presentation Y, pointer Y, and grab offset.
-3. After a small threshold, set `dragging=true`, capture pointer, and remove transition.
-4. On move, update only `transform: translateY(currentY)` with clamped or resisted bounds.
-5. Keep a short timestamped position history; compute release velocity in CSS px/s.
-6. Choose snap target from product semantics: nearest current position by default; projected endpoint only if momentum targeting is approved.
-7. Settle with an interruptible spring/retargetable animation, not fixed `ease-in`.
-8. Reduced Motion: commit state with minimal travel and local feedback, preserving collapsed/half/full clarity.
+1. Add `isDragging`, `activePointerId`, `pointer capture`, and `pointercancel` handling.  
+2. Preserve grab offset: `dragY = pointerClientY - grabOffset`, not raw `clientY`.  
+3. Use `transform: translateY(var(--sheet-y))` or a single transform owner instead of `top`.  
+4. Add an intent threshold around `8–12px` so taps/presses do not become drags.  
+5. Clamp to collapsed/half/full bounds, with optional soft resistance beyond edges.  
+6. Track recent pointer samples with timestamps; compute release velocity in CSS px/s.  
+7. Keep snap-target semantics explicit: nearest current position unless momentum-based targeting is intentionally approved.  
+8. If momentum is approved, select snap from a bounded projected endpoint, then settle with measured velocity.  
+9. Replace `ease-in 480ms` with a short, interruptible settle; default to no bounce for this product tone.  
+10. Replace `transition: all` with specific transitions, e.g. handle color, shadow, or inner press scale only.  
+11. Let users interrupt the settle by grabbing the current on-screen position.  
+12. For Reduced Motion, update state immediately or near-immediately and use non-travel cues: handle emphasis, state text, shadow/color change, or subtle opacity.
 
 ## Verified / unverified boundaries
 
-**Verified from static code:** use of `top`, `transition: all`, fixed `480ms ease-in`, missing reduced-motion branch, missing pointer capture/cancel, unused `startY`, and no visible velocity tracking.
+**Verified by static source**
+- Layout property `top` is mutated and animated.
+- `transition: all` is present.
+- `ease-in` and `480ms` are configured.
+- `startY` is unused.
+- Pointer capture, pointer identity, pointer cancel, velocity, hysteresis, bounds, and Reduced Motion branches are absent from the snippet.
+- Animation cleanup is incomplete if the animation is canceled/rejected.
 
-**Not verified:** actual smoothness, frame rate, browser-specific WAAPI behavior, touch feel, real snap geometry, focus behavior, or whether surrounding code compensates for these omissions.
+**Unverified**
+- Actual smoothness, jank, frame rate, and device feel.
+- Whether surrounding code clamps positions or supplies state elsewhere.
+- Whether CSS cascade or layout context changes the observed result.
+- Actual snap-point geometry.
+- Browser-specific WAAPI/`offsetTop` behavior in this app.
+- Touch hardware behavior and 60/120 Hz feel.
 
 ## Smallest runtime validation plan
 
-1. Static check: confirm final implementation has no `transition: all` on the sheet and no drag-time `top` animation.
-2. Browser interaction check: drag to each state, interrupt during settle, release inside/outside bounds, and verify canonical state matches visual state.
-3. Motion check: compare slow drag, fast flick, and reversal; inspect whether target choice and velocity handoff are intentional.
-4. Reduced Motion check: enable `prefers-reduced-motion`; verify state feedback remains clear without large spatial travel.
-5. Performance check: record one drag while the operations view is under realistic load; flag long tasks or layout work in the drag path.
+1. **Desktop pointer pass:** drag from each state to each other state; verify no jump, no move without active drag, and correct cleanup after cancel.  
+2. **Interruption pass:** release toward a snap point, grab mid-settle, reverse direction; verify no visual jump and no input lock.  
+3. **Velocity pass:** compare slow drag vs quick flick; verify product-approved target selection.  
+4. **Bounds pass:** drag beyond collapsed/full; verify clamp or soft resistance.  
+5. **Reduced Motion pass:** enable Reduced Motion; verify state feedback remains but large spatial travel/overshoot is removed.  
+6. **Performance pass:** inspect for layout work during drag under representative app load before claiming smoothness.

@@ -1,6 +1,6 @@
 {
-  "blind_map_sha256": "861b88126b723618bd90bd92f2450cc69d5a009c6d05199a5a69aab9a0730fdc",
-  "blind_packet_sha256": "365fceca61f691d19490f997ad10ec35f3ce05ec4c375f99fb53865e7591f1c6",
+  "blind_map_sha256": "857c5baaad906929a8dcb7b2dd0b53d4d34c9cccfa117259ecbac011d3cf48d1",
+  "blind_packet_sha256": "b12f7129735b05c2b85e26e7df2508861e2d18d2e026e54058f30ef9306ef924",
   "case_id": "emil-motion-planning-ablation",
   "focused_variant": "emil",
   "judge": {
@@ -8,65 +8,65 @@
     "model": "gpt-5.6-sol",
     "model_observation": "requested_by_cli",
     "raw_output_path": "judge-output.raw.txt",
-    "raw_output_sha256": "bfe6b174b7bc890f37a4a20d70a40052e035ab4ea9071338f54f345aab35d4a2",
+    "raw_output_sha256": "4e25597423e67e7483e8c286cf3b889dd988302df9336f19ecabfe3cf32b3a9f",
     "reasoning": "max",
     "reasoning_observation": "requested_by_cli",
     "run_path": "run.judge.json",
-    "run_sha256": "5b3c9bb470f3840a6aa5afe03ae265de28de76f1e779eefc0a8e743f8134879c",
-    "runner_os": "macOS-15.7.7-arm64-arm-64bit-Mach-O",
-    "version": "codex-cli 0.147.0"
+    "run_sha256": "8a62bef75c29cab6b25c239d8a8356e9e6f297ee7898ca4d404d77eb292925e3",
+    "runner_os": "macOS-27.0-arm64-arm-64bit-Mach-O",
+    "version": "codex-cli 0.155.1"
   },
   "judgment_path": "blind-judgment.json",
   "judgment_schema_sha256": "b90b0fc1ec877d783cbffba9848944df30f73b9a7270c094a1cab2d7c37d9e71",
-  "judgment_sha256": "ec67bbff57b599b7f5e560033c0f14b97ade7aeaa7cbc9661ed7c9a8ed290de9",
+  "judgment_sha256": "d3f8776e82d35f4ec1e5ce9dfbbf16b82df07c647e1e9468d5ef18e8d6cb8dba",
   "prompt_sha256": "81453e8d19e3de0d27bf7603b60f045cedaafa90b1a6fd7ee6dcc7249ca639ba",
-  "rationale": "A 明显最接近满分合同：它不仅复用了唯一被证明正确的本地约定，还以条件化语言覆盖了原点、属性成本、直接操控、抓取偏移、呈现值、中断、速度与 primitive 能力边界，并为每项计划给出机械检查、后续体验检查、Reduced Motion 和源漂移停止条件。B 是稳健但较浅的次选，尤其在拖拽技术链和 origin 上缺口明显；C 虽然更具体，却把未知框架变量、硬编码时间和未经证明的坐标/transform 重写直接写入实施步骤，技术风险最高。\nMemory: 已召回提示未用于评分；本次仅比较给定输出，候选与写入均为 0。",
-  "recorded_at": "2026-08-17T12:50:47Z",
+  "rationale": "B best satisfies the scorecard because it combines honest static recon with the strongest treatment of property cost, transform origin, interruption, pointer tracking, primitive capability checks, Reduced Motion, and later runtime measurement. A is safer and nearly as implementation-ready but does not examine the drag path or measurable performance as deeply. C contains useful findings and verification steps, yet its speculative framework and gesture code materially reduce technical reliability.",
+  "recorded_at": "2026-09-19T12:37:54Z",
   "results": {
     "baseline": {
-      "blind_label": "B",
-      "criteria": {
-        "accessibility_performance": 8,
-        "evidence_recon": 15,
-        "plan_self_containment": 18,
-        "prioritization": 8,
-        "project_conventions": 8,
-        "purpose_frequency": 9,
-        "technical_accuracy": 10,
-        "verification_quality": 8
-      },
-      "score": 84,
-      "summary": "整体结构完整、静态证据声明诚实，overlay 与 toast 方案基本可执行，也持续复用现有 token 和 Reduced Motion 先例。但它没有真正处理 popover 的 transform origin，拖拽部分遗漏抓取偏移、pointer capture、当前呈现值和可靠中断，并把逐 pointer event 写入较快归因于需要 `requestAnimationFrame` 合并；同时，如何让数值型 `animateTo` 复用 CSS token 仍不明确。"
-    },
-    "design-craft": {
       "blind_label": "A",
       "criteria": {
-        "accessibility_performance": 10,
+        "accessibility_performance": 9,
         "evidence_recon": 15,
-        "plan_self_containment": 19,
+        "plan_self_containment": 20,
         "prioritization": 9,
         "project_conventions": 10,
         "purpose_frequency": 10,
-        "technical_accuracy": 15,
+        "technical_accuracy": 12,
+        "verification_quality": 9
+      },
+      "score": 94,
+      "summary": "Strong static-evidence discipline, excellent convention reuse, and fully self-contained plans. It is comparatively lighter on pointer-path mechanics, animation interruption from the current presentation value, and explicit measured performance checks."
+    },
+    "design-craft": {
+      "blind_label": "B",
+      "criteria": {
+        "accessibility_performance": 10,
+        "evidence_recon": 15,
+        "plan_self_containment": 20,
+        "prioritization": 9,
+        "project_conventions": 10,
+        "purpose_frequency": 10,
+        "technical_accuracy": 14,
         "verification_quality": 10
       },
       "score": 98,
-      "summary": "证据边界、静态动效表面、现有 token、按钮先例、产品性格和频率分层均映射完整；对 popover 原点、显式属性、toast 布局属性、拖拽抓取偏移、pointer capture、当前呈现值、中断与底层 primitive 能力的处理最严谨。三份计划包含全部必需字段，验证项也明确标为后续执行。主要扣分是篇幅明显偏长，且少数步骤仍需在 `--duration-fast` 与 `--duration-panel`、具体样式归属之间现场择定。"
+      "summary": "The most complete and technically balanced output. It distinguishes observations from runtime unknowns, preserves existing tokens and semantics, addresses origin, interruption, pointer ownership, Reduced Motion, and trace-based verification, while keeping speculative primitive changes conditional on source inspection."
     },
     "emil": {
       "blind_label": "C",
       "criteria": {
-        "accessibility_performance": 7,
+        "accessibility_performance": 9,
         "evidence_recon": 14,
-        "plan_self_containment": 16,
-        "prioritization": 8,
-        "project_conventions": 5,
-        "purpose_frequency": 9,
+        "plan_self_containment": 19,
+        "prioritization": 7,
+        "project_conventions": 7,
+        "purpose_frequency": 8,
         "technical_accuracy": 8,
-        "verification_quality": 8
+        "verification_quality": 9
       },
-      "score": 75,
-      "summary": "重构后的代码片段让计划显得具体，频率导向和 transform/opacity 方向也基本正确，但多处具体化超出了证据：凭空引入 `--radix-popover-content-transform-origin`，新增硬编码 `120ms`、`220ms` 并在 TypeScript 中复制 easing；拖拽方案还可能覆盖既有 transform 组合、移除有意设计的 CSS 变量，并把可能是绝对坐标的 `currentY` 改成相对偏移。后置 stop condition 不能完全消除这些实施风险。"
+      "score": 81,
+      "summary": "Well structured and broadly evidence-aware, but several concrete prescriptions outrun the snippets: an unconfirmed framework-specific origin variable, unsupported spring options, absolute client-coordinate transforms that may overwrite existing transforms, ambiguous velocity units, and an unsupported assertion that the palette should have zero motion."
     }
   },
   "schema": "design-craft.comparative-result.v4",
@@ -79,12 +79,12 @@
       "host_version": "0.80.6",
       "model": "codex/gpt-5.5",
       "output_path": "output.baseline.md",
-      "output_sha256": "cf055289acf4defaf116209ee57b8a46c6da3e63d5841359b268450b9ac73730",
+      "output_sha256": "c0de4d7ae432979bdbc71e04a3b333fd94469bddbdd377353f07c43efeff2279",
       "run_path": "run.baseline.json",
-      "run_sha256": "937b9ceb40faa89cfffe7a2814cdbea8b13d17206d9ddbb10887961bcc5a4086",
+      "run_sha256": "bba090ac0e87bec319193e14de6ac33046906b1c7fbc557ea007fba8582f2d05",
       "skill_install_mode": "isolated_case_projection",
       "skill_trees": {},
-      "source_commit": "dfeb3012e7a2a460b9f728552dd13d8c021c91d2",
+      "source_commit": "773fe501cc1696f5887c5d9120fe409a8579980f",
       "source_fingerprints": {},
       "source_trees": {},
       "thinking": "high"
@@ -95,25 +95,25 @@
       "host_version": "0.80.6",
       "model": "codex/gpt-5.5",
       "output_path": "output.design-craft.md",
-      "output_sha256": "08979d54a4848fff146de48b9048a819878471073a15587c599af4ad6fa06940",
+      "output_sha256": "386bacb4dcc0e20d54d2e349fd14563d0ca905bb2618b1214769f21306ab45a5",
       "run_path": "run.design-craft.json",
-      "run_sha256": "1bd7b9273d14c2ae787157871ab71a65faf0bc1d9673ae80a0300139fd4279ed",
+      "run_sha256": "24c6cea5ef824d75678987bbffe8e08597c628ac8e5f3a5f1b001e6060c9bbae",
       "skill_install_mode": "isolated_case_projection",
       "skill_trees": {
-        "skills/design-craft": "655e4d14f57f4eb5569d95f41a2b94f2b8823fe9a0b6caac1edde35caabaff67"
+        "skills/design-craft": "6109f47269d38f29a10aefcce9ae7f9e507361ff241e6ce6b8af2e8d58376d75"
       },
-      "source_commit": "dfeb3012e7a2a460b9f728552dd13d8c021c91d2",
+      "source_commit": "773fe501cc1696f5887c5d9120fe409a8579980f",
       "source_fingerprints": {
         "skills/design-craft": {
           "domain": "skill-motion-review",
           "kind": "evidence_domain",
-          "projected_tree_sha256": "655e4d14f57f4eb5569d95f41a2b94f2b8823fe9a0b6caac1edde35caabaff67",
-          "sha256": "ac517cc7d28d0c229df2bb332d4eb92ac9df7a2fce292db3fdd7e12c0a1c88e2",
+          "projected_tree_sha256": "6109f47269d38f29a10aefcce9ae7f9e507361ff241e6ce6b8af2e8d58376d75",
+          "sha256": "ad51a65df0c61a97a6e8b6c61127e96f7408fbb67e46af5ee170aa6d1d2de621",
           "source_dirty": false
         }
       },
       "source_trees": {
-        "skills/design-craft": "a1042918b108a6da77b2e22a52103764524f449879fe78d1d71bd79d34d40d79"
+        "skills/design-craft": "8da53f99d4ac651deeb72b63faf8c6522d009ea69e5aee5e9362e2a89fc1105b"
       },
       "thinking": "high"
     },
@@ -123,16 +123,16 @@
       "host_version": "0.80.6",
       "model": "codex/gpt-5.5",
       "output_path": "output.emil.md",
-      "output_sha256": "be37639fc6e495d859a45d0ca43bf9df85aa8e8753d93f6b6403fcd9505fa15c",
+      "output_sha256": "442d6d4c8479678d73cae80fce421372efc6b28be9c4191e085d2f075422a1b9",
       "run_path": "run.emil.json",
-      "run_sha256": "c9ff5a3b52f142d6650ffa72bdfaecb64916ab22232db499b821dedfcff71495",
+      "run_sha256": "99853d830711073f5cbe4e6d9d88c3cd774b3ba8c2d7b42591be4bf225c64026",
       "skill_install_mode": "isolated_case_projection",
       "skill_trees": {
         "upstreams/emilkowalski-skills/skills/apple-design": "84ebad0905bc9274fc22eb0b100778adaee20e6d479a69168b5f3a2f018e19de",
         "upstreams/emilkowalski-skills/skills/improve-animations": "b4813f60575f3e1e3d916bb76def2b5821e91194fc6896e6d47177cc22a9e488",
         "upstreams/emilkowalski-skills/skills/review-animations": "b86f754de11344856c2e7ae5c809eb134c8b8c23920baa44adaa06e77cf4ad00"
       },
-      "source_commit": "dfeb3012e7a2a460b9f728552dd13d8c021c91d2",
+      "source_commit": "773fe501cc1696f5887c5d9120fe409a8579980f",
       "source_fingerprints": {
         "upstreams/emilkowalski-skills/skills/apple-design": {
           "kind": "tree",

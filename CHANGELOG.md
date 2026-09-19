@@ -2,15 +2,22 @@
 
 All notable local changes to `design-craft` are recorded here.
 
-## Unreleased
+## 0.7.0 - 2026-09-19
+
+- Refresh six controlled Codex/Pi observations and four independently judged
+  blind ablations against current behavior projections. Keep static critique
+  results separate from Simulator, Emulator, and physical-device evidence.
+
+- Configure native Android CI to install `platform-tools` explicitly instead
+  of requesting the retired SDK `tools` package.
 
 - Include submodule revision changes in recovered local upstream comparisons
   even when local Git settings ignore submodules, preserving complete coverage
   and absorption recommendations without changing user configuration.
 
 - Record the bounded Impeccable Rust-engine assessment and current detector
-  compatibility boundary; defer adoption without advancing upstream pins or
-  review metadata.
+  compatibility boundary. Review the complete upstream delta through
+  `f2c7051`, defer adoption, and preserve the compatible pinned revision.
 
 - Decode local Git comparison output explicitly as UTF-8 so Windows locale
   defaults cannot corrupt non-ASCII paths; preserve literal filename newlines.
@@ -36,9 +43,7 @@ All notable local changes to `design-craft` are recorded here.
 - Selectively adapt Jakub Krehel's fixed-revision product-writing and component
   scenario guidance into existing design-system and hardening references;
   preserve MIT attribution and local runtime/authority boundaries. Other
-  entrypoints remain candidates; no fourth submodule or host runtime is added.
-
-## 0.7.0 - 2026-09-04
+  entrypoints remain deferred; no additional host runtime is added.
 
 - Add project-neutral chart/report intent, question-and-data-shape selection,
   encoding-integrity, multi-chart composition, and browser-evidence guidance
