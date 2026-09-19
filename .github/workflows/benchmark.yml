@@ -64,14 +64,14 @@ jobs:
           retention-days: 30
 
   full:
-    if: >-
-      github.event_name == 'schedule' ||
-      (github.event_name == 'workflow_dispatch' && inputs.mode == 'full')
+    name: Diagnostic only - route-pack stage timing
+    if: github.event_name == 'workflow_dispatch' && inputs.mode == 'full'
     runs-on: ubuntu-24.04
-    timeout-minutes: 45
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
+          ref: f52ac60ad8fcebad89b125d761775bf5050cc4d0
           submodules: recursive
           fetch-depth: 0
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
@@ -80,20 +80,152 @@ jobs:
       - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
         with:
           python-version: "3.13"
-      - name: Run full benchmark suite
+      - name: Collect bounded same-SHA diagnostic samples
         env:
           PYTHONDONTWRITEBYTECODE: "1"
-        run: >-
-          python3 -m tools.design_craft benchmark
-          --scale full
-          --output "${RUNNER_TEMP}/benchmark-result-full.json"
-      - name: Upload full benchmark evidence
+        run: |
+          python3 - <<'PY_DIAGNOSTIC'
+          import os, sys
+          sys.argv = ['probe', '--output', os.path.join(os.environ['RUNNER_TEMP'], 'route-pack-diagnostic.json')]
+          """Bounded diagnostic only; never a release benchmark or baseline."""
+          import argparse
+          import hashlib
+          import json
+          import os
+          from pathlib import Path
+          import platform
+          import resource
+          import subprocess
+          import sys
+          import time
+
+          CHILD = r'''
+          import importlib, json, resource, sys, time
+          from pathlib import Path
+          sys.path.insert(0, str(Path.cwd()))
+          segments = {}
+          def timed(label, function):
+              def wrapper(*args, **kwargs):
+                  wall, cpu = time.perf_counter(), time.process_time()
+                  try:
+                      return function(*args, **kwargs)
+                  finally:
+                      entry = segments.setdefault(label, dict(calls=0, wall_ms=0, cpu_ms=0))
+                      entry['calls'] += 1
+                      entry['wall_ms'] += (time.perf_counter()-wall)*1000
+                      entry['cpu_ms'] += (time.process_time()-cpu)*1000
+              return wrapper
+          start, cpu_start = time.perf_counter(), time.process_time()
+          module = importlib.import_module('tools.design_craft.routing.self_check')
+          import_ms = (time.perf_counter()-start)*1000
+          import_cpu_ms = (time.process_time()-cpu_start)*1000
+          for name in ['build_manifest', 'copy_pack', 'write_manifest']:
+              setattr(module, name, timed('helper.'+name, getattr(module, name)))
+          for name in ['write_text', 'read_text', 'read_bytes', 'stat', 'resolve', 'mkdir', 'chmod', 'symlink_to', 'unlink']:
+              setattr(Path, name, timed('path.'+name, getattr(Path, name)))
+          start, cpu_start = time.perf_counter(), time.process_time()
+          code = module.self_check()
+          result = dict(import_ms=import_ms, import_cpu_ms=import_cpu_ms,
+                        self_check_ms=(time.perf_counter()-start)*1000,
+                        self_check_cpu_ms=(time.process_time()-cpu_start)*1000,
+                        process_cpu_ms=time.process_time()*1000,
+                        segments=segments, exit_code=code)
+          print(json.dumps(result))
+          raise SystemExit(code)
+          '''
+
+
+          def git(*args):
+              return subprocess.check_output(['git', *args], text=True).strip()
+
+
+          def signals():
+              data = {}
+              for name in ['/proc/pressure/cpu', '/proc/pressure/io', '/sys/fs/cgroup/cpu.stat', '/sys/fs/cgroup/cpu.max']:
+                  p = Path(name)
+                  if p.is_file():
+                      data[name] = p.read_text()
+              return data
+
+
+          def sample(kind, command, index):
+              before = resource.getrusage(resource.RUSAGE_CHILDREN)
+              started = time.perf_counter()
+              r = subprocess.run(command, capture_output=True, text=True, timeout=30)
+              elapsed = (time.perf_counter()-started)*1000
+              after = resource.getrusage(resource.RUSAGE_CHILDREN)
+              if r.returncode:
+                  raise RuntimeError(f'{kind} failed: {r.returncode}: {r.stderr[-400:]}')
+              entry = dict(kind=kind, index=index, wall_ms=elapsed,
+                           user_cpu_ms=(after.ru_utime-before.ru_utime)*1000,
+                           system_cpu_ms=(after.ru_stime-before.ru_stime)*1000)
+              for key in ['ru_nvcsw', 'ru_nivcsw', 'ru_majflt', 'ru_minflt', 'ru_inblock', 'ru_oublock']:
+                  entry[key] = getattr(after,key)-getattr(before,key)
+              if kind == 'instrumented':
+                  entry['child'] = json.loads(r.stdout)
+              return entry
+
+
+          def summary(rows):
+              values = sorted(x['wall_ms'] for x in rows)
+              n = len(values)
+              return dict(count=n, p50_ms=(values[(n-1)//2]+values[n//2])/2,
+                          p95_ms=values[round((n-1)*0.95)], max_ms=values[-1])
+
+
+          def main():
+              parser = argparse.ArgumentParser()
+              parser.add_argument('--output', required=True)
+              parser.add_argument('--cycles', type=int, default=60)
+              args = parser.parse_args()
+              if not 1 <= args.cycles <= 100:
+                  parser.error('cycles must be between 1 and 100')
+              head = git('rev-parse', 'HEAD')
+              clean = git('status', '--porcelain=v1', '--untracked-files=all') == ''
+              if not clean:
+                  raise RuntimeError('diagnostic target must be clean')
+              source_files = git('ls-files', 'tools/design_craft/routing', 'scripts/design_craft_codex_route_pack.py').splitlines()
+              source_hashes = {name:hashlib.sha256(Path(name).read_bytes()).hexdigest() for name in source_files}
+              before_signals = signals()
+              commands = {
+                  'startup': [sys.executable, '-c', 'pass'],
+                  'import': [sys.executable, '-c', 'import tools.design_craft.routing.self_check'],
+                  'canonical': [sys.executable, 'scripts/design_craft_codex_route_pack.py', '--check'],
+                  'instrumented': [sys.executable, '-c', CHILD],
+              }
+              # Preserve every sample. The first twenty canonical invocations are unmodified.
+              rows = [sample('canonical_initial', commands['canonical'], i) for i in range(20)]
+              kinds = list(commands)
+              for index in range(args.cycles):
+                  for kind in kinds[index%4:]+kinds[:index%4]:
+                      rows.append(sample(kind, commands[kind], index))
+              unchanged = head == git('rev-parse', 'HEAD') and git('status', '--porcelain=v1', '--untracked-files=all') == ''
+              if not unchanged:
+                  raise RuntimeError('source changed during diagnostics')
+              groups = {kind:summary([r for r in rows if r['kind']==kind]) for kind in ['canonical_initial', *kinds]}
+              result = dict(schema='design-craft.route-pack-diagnostic.v1', diagnostic_only=True,
+                            source_commit=head, worktree_unchanged=unchanged, source_hashes=source_hashes,
+                            python=sys.version, platform=platform.platform(), cpu_count=os.cpu_count(),
+                            runner={key:os.environ.get(key) for key in ['ImageOS','ImageVersion','RUNNER_OS','RUNNER_ARCH','GITHUB_RUN_ID','GITHUB_SHA']},
+                            signals_before=before_signals, signals_after=signals(), summaries=groups, samples=rows,
+                            limits=['Instrumented helper and path times are inclusive and not additive.',
+                                    'Parent wall time includes process startup, shutdown and pipe communication.',
+                                    'Diagnostic samples do not replace a full release benchmark.'])
+              out = Path(args.output); out.parent.mkdir(parents=True,exist_ok=True)
+              out.write_text(json.dumps(result,indent=2)+'\n')
+              print(json.dumps(groups,indent=2))
+
+          if __name__ == '__main__':
+              main()
+          PY_DIAGNOSTIC
+      - name: Upload diagnostic evidence (not a release benchmark)
+        if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: performance-full-${{ github.run_id }}
-          path: ${{ runner.temp }}/benchmark-result-full.json
+          name: route-pack-diagnostic-${{ github.run_id }}
+          path: ${{ runner.temp }}/route-pack-diagnostic.json
           if-no-files-found: error
-          retention-days: 90
+          retention-days: 30
 
   operational-candidate:
     if: github.event_name == 'workflow_dispatch' && inputs.mode == 'operational-candidate'
