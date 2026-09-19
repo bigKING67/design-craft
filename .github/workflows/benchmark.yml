@@ -100,7 +100,7 @@ jobs:
           import time
 
           CHILD = r'''
-          import importlib, json, resource, sys, time
+          import importlib, json, os, resource, sys, tempfile, time
           from pathlib import Path
           sys.path.insert(0, str(Path.cwd()))
           segments = {}
@@ -123,6 +123,10 @@ jobs:
               setattr(module, name, timed('helper.'+name, getattr(module, name)))
           for name in ['write_text', 'read_text', 'read_bytes', 'stat', 'resolve', 'mkdir', 'chmod', 'symlink_to', 'unlink']:
               setattr(Path, name, timed('path.'+name, getattr(Path, name)))
+          for name in ['mkdir', 'unlink', 'rmdir', 'open', 'close', 'fsync', 'stat', 'chmod', 'symlink', 'scandir']:
+              setattr(os, name, timed('os.'+name, getattr(os, name)))
+          tempfile.mkdtemp = timed('tempfile.mkdtemp', tempfile.mkdtemp)
+          tempfile.TemporaryDirectory.cleanup = timed('tempfile.cleanup', tempfile.TemporaryDirectory.cleanup)
           start, cpu_start = time.perf_counter(), time.process_time()
           code = module.self_check()
           result = dict(import_ms=import_ms, import_cpu_ms=import_cpu_ms,
