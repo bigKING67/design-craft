@@ -4,6 +4,11 @@ Date: 2026-09-19. Baseline repository commit: `8762cbe`.
 Decision: **PASS for the bounded fixture; real-product and independent-agent
 effectiveness remain UNVERIFIED.**
 
+Later application evidence: [New Money console](new-money-console-2026-09-19.md)
+records bounded use on an existing product and a fresh-session read-only check.
+It does not replace this fixture's historical verdict, prove every selected
+Craft concept on that product, or establish causal Skill improvement.
+
 ## Scope and authority
 
 The runnable original fixture is `evals/fixtures/craft-details/index.html`;
